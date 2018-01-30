@@ -26,28 +26,28 @@
 
 static const char *help_str =
 	"Usage: " PROGRAM_CMDNAME
-	" [-a] [-b] [-m message]... [-o output] message...\n\n"
-	"Options:\n"
-	"    -a  enable option a\n"
-	"    -b  enable option b\n"
-	"    -m  add header message\n"
-	"    -o  output file\n"
+	" [-a] [-b] [-m message]... [-o output] message...\n"
+	"\nOptions:\n"
+	"  -a            enable option a\n"
+	"  -b            enable option b\n"
+	"  -m message    add header message\n"
+	"  -o output     output file\n"
 	"\nGeneral:\n"
-	"    --help     help text\n"
-	"    --version  version information\n"
+	"  --help        help text\n"
+	"  --version     version information\n"
 	"\n";
 
 static void help(const char *fmt, ...)
 {
 	va_list va;
 	va_start(va, fmt);
-	fputs(help_str, (fmt) ? stderr : stdout);
 	if (fmt) {
 		fputs("Error: ", stderr);
 		vfprintf(stderr, fmt, va);
-		fputs("\n", stderr);
+		fputs("\n\n", stderr);
 	}
 	va_end(va);
+	fputs(help_str, (fmt) ? stderr : stdout);
 	exit((fmt) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 		argv[argc] = NULL;
 	}
 
-	opts.operands = argv;
+	opts.operands = (!argv[0]) ? &argv[0] : &argv[1];
 	if (program(&opts)) {
 		if (opts.error)
 			help(opts.error);

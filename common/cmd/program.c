@@ -22,13 +22,13 @@
 
 #include "program.h"
 
-#define NR_MESSAGES 4
-static const char *messages[NR_MESSAGES];
+#define MESSAGES_MAX 4
+static const char *messages[MESSAGES_MAX];
 
 int optfnc_m(struct options *opt, const char *arg)
 {
-	if (opt->nr_m >= NR_MESSAGES) {
-		opt->error = "too many additional messages";
+	if (opt->nr_m >= MESSAGES_MAX) {
+		opt->error = "too many header messages";
 		return 1;
 	}
 	messages[opt->nr_m++] = arg;
@@ -50,9 +50,9 @@ int program(struct options *opt)
 	for (i = 0; i < opt->nr_m; i++)
 		fprintf(out, "Message[%i]: %s\n", i, messages[i]);
 
-	if (opt->operands && *opt->operands && *(opt->operands + 1)) {
+	if (opt->operands && *opt->operands) {
 		fputs("\n", out);
-		for (i = 1; opt->operands[i]; i++)
+		for (i = 0; opt->operands[i]; i++)
 			fprintf(out, "%s ", opt->operands[i]);
 		fputs("\n", out);
 	}
