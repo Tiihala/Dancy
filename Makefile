@@ -14,7 +14,8 @@ DANCY_BIN_CFLAGS=-O2 -std=c89 -Wall -Wextra -pedantic
 all: $(DANCY_ALL_TARGET)
 
 SRC_DY_MBR=tools/dy-mbr.c \
- boot/mbr/mbr.c
+ boot/mbr/mbr.c \
+ common/crc32/crc32c.c
 bin/dy-mbr: $(SRC_DY_MBR) include/dancy.h
 	$(CC) -o bin/dy-mbr $(DANCY_BIN_CFLAGS) -Iinclude $(SRC_DY_MBR)
 
@@ -22,7 +23,8 @@ SRC_DY_VBR=tools/dy-vbr.c \
  boot/fat/floppy.c \
  boot/fat/ldr512.c \
  boot/fat/vbrchs.c \
- boot/fat/vbrlba.c
+ boot/fat/vbrlba.c \
+ common/crc32/crc32c.c
 bin/dy-vbr: $(SRC_DY_VBR) include/dancy.h
 	$(CC) -o bin/dy-vbr $(DANCY_BIN_CFLAGS) -Iinclude $(SRC_DY_VBR)
 

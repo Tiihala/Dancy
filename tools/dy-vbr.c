@@ -17,8 +17,8 @@
  *      Program for installing Dancy volume boot records
  */
 
-#include <stdarg.h>
 #include <errno.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,14 +28,17 @@ extern const unsigned char ldr512_bin[512];
 extern const unsigned char vbrchs_bin[512];
 extern const unsigned char vbrlba_bin[512];
 
+unsigned long crc32c(const void *, size_t);
+
 #define PROGRAM_CMDNAME "dy-vbr"
-#define PROGRAM_VERSION "1.0"
+#define PROGRAM_VERSION "1.1"
 
 struct options {
 	char **operands;
 	const char *error;
 	const char *arg_o;
 	const char *arg_t;
+	int verbose;
 };
 
 int program(struct options *opt)
@@ -65,6 +68,10 @@ int program(struct options *opt)
 			return perror("Error"), (void)fclose(fp), 1;
 		if ((errno = 0, fclose(fp)))
 			return perror("Error"), 1;
+		if (opt->verbose) {
+			unsigned long crc = crc32c(&ldr512_bin[0], 512u);
+			printf("ldr512_bin (crc32c): 0x%08lX\n", crc);
+		}
 	}
 
 	if (*opt->operands) {
@@ -103,6 +110,11 @@ int program(struct options *opt)
 			return perror("Error"), (void)fclose(fp), 1;
 		if ((errno = 0, fclose(fp)))
 			return perror("Error"), 1;
+
+		if (opt->verbose) {
+			unsigned long crc = crc32c(&vbr[0], 512u);
+			printf("vbr (crc32c): 0x%08lX\n", crc);
+		}
 	}
 	return 0;
 }
@@ -116,7 +128,8 @@ static const char *help_str =
 	"                floppy, chs (default), or lba\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
-	"  --version     version information\n"
+	"  --verbose, -v additional information\n"
+	"  --version, -V version information\n"
 	"\n";
 
 static void help(const char *fmt, ...)
@@ -158,6 +171,10 @@ int main(int argc, char *argv[])
 				help(NULL);
 			if (!strcmp(arg + 2, "version"))
 				version();
+			if (!strcmp(arg + 2, "verbose")) {
+				opts.verbose = 1;
+				break;
+			}
 			help("unknown long option \"%s\"", arg);
 		}
 		do {
@@ -175,6 +192,12 @@ int main(int argc, char *argv[])
 				break;
 			case 't':
 				optarg = &opts.arg_t;
+				break;
+			case 'v':
+				opts.verbose = 1;
+				break;
+			case 'V':
+				version();
 				break;
 			default:
 				help("unknown option \"-%c\"", *arg);

@@ -17,20 +17,23 @@
  *      Program for installing Dancy master boot record
  */
 
-#include <stdarg.h>
 #include <errno.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 extern const unsigned char mbr_bin[512];
 
+unsigned long crc32c(const void *, size_t);
+
 #define PROGRAM_CMDNAME "dy-mbr"
-#define PROGRAM_VERSION "1.0"
+#define PROGRAM_VERSION "1.1"
 
 struct options {
 	char **operands;
 	const char *error;
+	int verbose;
 };
 
 int program(struct options *opt)
@@ -71,6 +74,11 @@ int program(struct options *opt)
 		return perror("Error"), (void)fclose(fp), 1;
 	if ((errno = 0, fclose(fp)))
 		return perror("Error"), 1;
+
+	if (opt->verbose) {
+		unsigned long crc = crc32c(&mbr_bin[0], 512u);
+		printf("mbr_bin (crc32c): 0x%08lX\n", crc);
+	}
 	return 0;
 }
 
@@ -78,7 +86,8 @@ static const char *help_str =
 	"Usage: " PROGRAM_CMDNAME " hdd-image\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
-	"  --version     version information\n"
+	"  --verbose, -v additional information\n"
+	"  --version, -V version information\n"
 	"\n";
 
 static void help(const char *fmt, ...)
@@ -120,6 +129,10 @@ int main(int argc, char *argv[])
 				help(NULL);
 			if (!strcmp(arg + 2, "version"))
 				version();
+			if (!strcmp(arg + 2, "verbose")) {
+				opts.verbose = 1;
+				break;
+			}
 			help("unknown long option \"%s\"", arg);
 		}
 		do {
@@ -131,6 +144,12 @@ int main(int argc, char *argv[])
 				break;
 			case 'h':
 				help(NULL);
+				break;
+			case 'v':
+				opts.verbose = 1;
+				break;
+			case 'V':
+				version();
 				break;
 			default:
 				help("unknown option \"-%c\"", *arg);
