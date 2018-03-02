@@ -2,6 +2,16 @@
 
 ##############################################################################
 
+DY_BLOB_OBJECTS= \
+ ./tools/dy-blob/dy-blob.obj \
+ ./boot/fat/ldr512.obj \
+ ./loader/loader.obj
+
+./bin/dy-blob$(DANCY_EXE): $(DY_BLOB_OBJECTS)
+	$(DANCY_HOST_BINARY)$@ $(DY_BLOB_OBJECTS)
+
+##############################################################################
+
 DY_MBR_OBJECTS= \
  ./tools/dy-mbr/dy-mbr.obj \
  ./boot/mbr/mbr.obj \
@@ -48,6 +58,12 @@ DY_VBR_OBJECTS= \
 
 ./common/crc32/crc32c.obj: ./common/crc32/crc32c.c
 	$(DANCY_HOST_OBJECT)$@ ./common/crc32/crc32c.c
+
+./loader/loader.obj: ./loader/loader.c ./include/dancy.h
+	$(DANCY_HOST_OBJECT)$@ ./loader/loader.c
+
+./tools/dy-blob/dy-blob.obj: ./tools/dy-blob/dy-blob.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-blob/dy-blob.c
 
 ./tools/dy-mbr/dy-mbr.obj: ./tools/dy-mbr/dy-mbr.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-mbr/dy-mbr.c

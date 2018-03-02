@@ -17,7 +17,10 @@ clean:
 	@for /R %i in (dy-*.exe) do del "%i"
 	@for /R %i in (*.obj) do del "%i"
 
-./LOADER.512: ./bin/dy-vbr$(DANCY_EXE)
-	bin\dy-vbr$(DANCY_EXE) -o$@
+./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
+	bin\dy-blob$(DANCY_EXE) -t ldr512 $@
+
+./LOADER.AT: ./bin/dy-blob$(DANCY_EXE)
+	bin\dy-blob$(DANCY_EXE) -t loader $@
 
 !include .\scripts\footer.mk

@@ -13,11 +13,14 @@ include ./scripts/header.mk
 all: $(DANCY_TARGET_ALL)
 
 clean:
-	$(RM) LOADER.512
+	$(RM) LOADER.*
 	$(RM) `find bin -name "dy-*"`
 	$(RM) `find -name "*.obj"`
 
-./LOADER.512: ./bin/dy-vbr$(DANCY_EXE)
-	./bin/dy-vbr$(DANCY_EXE) -o$@
+./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
+	./bin/dy-blob$(DANCY_EXE) -t ldr512 $@
+
+./LOADER.AT: ./bin/dy-blob$(DANCY_EXE)
+	./bin/dy-blob$(DANCY_EXE) -t loader $@
 
 include ./scripts/footer.mk
