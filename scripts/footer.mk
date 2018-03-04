@@ -12,6 +12,15 @@ DY_BLOB_OBJECTS= \
 
 ##############################################################################
 
+DY_INIT_OBJECTS= \
+ ./tools/dy-init/dy-init.obj \
+ ./common/crc32/crc32c.obj
+
+./bin/dy-init$(DANCY_EXE): $(DY_INIT_OBJECTS)
+	$(DANCY_HOST_BINARY)$@ $(DY_INIT_OBJECTS)
+
+##############################################################################
+
 DY_MBR_OBJECTS= \
  ./tools/dy-mbr/dy-mbr.obj \
  ./boot/mbr/mbr.obj \
@@ -64,6 +73,9 @@ DY_VBR_OBJECTS= \
 
 ./tools/dy-blob/dy-blob.obj: ./tools/dy-blob/dy-blob.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-blob/dy-blob.c
+
+./tools/dy-init/dy-init.obj: ./tools/dy-init/dy-init.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/dy-init.c
 
 ./tools/dy-mbr/dy-mbr.obj: ./tools/dy-mbr/dy-mbr.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-mbr/dy-mbr.c
