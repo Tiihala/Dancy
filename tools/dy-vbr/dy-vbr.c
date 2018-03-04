@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
-				break;
+				continue;
 			}
 			help("unknown long option \"%s\"", arg);
 		}
