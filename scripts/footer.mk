@@ -4,6 +4,7 @@
 
 DY_BLOB_OBJECTS= \
  ./tools/dy-blob/dy-blob.obj \
+ ./boot/cd/eltorito.obj \
  ./boot/fat/ldr512.obj \
  ./loader/loader.obj
 
@@ -43,6 +44,9 @@ DY_VBR_OBJECTS= \
 	$(DANCY_HOST_BINARY)$@ $(DY_VBR_OBJECTS)
 
 ##############################################################################
+
+./boot/cd/eltorito.obj: ./boot/cd/eltorito.c ./include/dancy.h
+	$(DANCY_HOST_OBJECT)$@ ./boot/cd/eltorito.c
 
 ./boot/fat/floppy.obj: ./boot/fat/floppy.c ./include/dancy.h
 	$(DANCY_HOST_OBJECT)$@ ./boot/fat/floppy.c

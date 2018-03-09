@@ -24,6 +24,12 @@
 #include <string.h>
 
 /*
+ * file_name: ELTORITO.BIN
+ * file_size: 2048
+ */
+extern const unsigned char eltorito_bin[2048];
+
+/*
  * file_name: LOADER.512
  * file_size: 512
  */
@@ -38,7 +44,7 @@ extern const unsigned char ldr512_bin[512];
 extern const unsigned char loader[32752];
 
 #define PROGRAM_CMDNAME "dy-blob"
-#define PROGRAM_VERSION "1.0"
+#define PROGRAM_VERSION "1.1"
 
 struct options {
 	char **operands;
@@ -55,7 +61,8 @@ int program(struct options *opt)
 	if (!opt->arg_t || !*opt->operands || *(opt->operands + 1))
 		return opt->error = "missing/unsupported arguments", 1;
 
-	if (!strcmp(opt->arg_t, "ldr512")) {
+	if (!strcmp(opt->arg_t, "eltorito")) {
+		const unsigned char *blob = &eltorito_bin[0];
 		if (strcmp(*opt->operands, "-")) {
 			fp = (errno = 0, fopen(*opt->operands, "wb"));
 			if (!fp)
@@ -64,13 +71,30 @@ int program(struct options *opt)
 			fp = stdout;
 			is_stdout = 1;
 		}
-		if ((errno = 0, fwrite(&ldr512_bin[0], 1u, 512u, fp)) != 512u)
+		if ((errno = 0, fwrite(blob, 1u, 2048u, fp)) != 2048u)
 			return perror("Error"), (void)fclose(fp), 1;
 		if (!is_stdout && (errno = 0, fclose(fp)))
 			return perror("Error"), 1;
-		if (opt->verbose)
-			printf("\"ldr512\" written to %s\n", *opt->operands);
-	} else if (!strcmp(opt->arg_t, "loader")) {
+		return 0;
+	}
+	if (!strcmp(opt->arg_t, "ldr512")) {
+		const unsigned char *blob = &ldr512_bin[0];
+		if (strcmp(*opt->operands, "-")) {
+			fp = (errno = 0, fopen(*opt->operands, "wb"));
+			if (!fp)
+				return perror("Error"), 1;
+		} else {
+			fp = stdout;
+			is_stdout = 1;
+		}
+		if ((errno = 0, fwrite(blob, 1u, 512u, fp)) != 512u)
+			return perror("Error"), (void)fclose(fp), 1;
+		if (!is_stdout && (errno = 0, fclose(fp)))
+			return perror("Error"), 1;
+		return 0;
+	}
+	if (!strcmp(opt->arg_t, "loader")) {
+		const unsigned char *blob = &loader[0];
 		static unsigned char zero_bytes[16];
 		if (strcmp(*opt->operands, "-")) {
 			fp = (errno = 0, fopen(*opt->operands, "wb"));
@@ -80,18 +104,15 @@ int program(struct options *opt)
 			fp = stdout;
 			is_stdout = 1;
 		}
-		if ((errno = 0, fwrite(&loader[0], 1u, 32752u, fp)) != 32752u)
+		if ((errno = 0, fwrite(blob, 1u, 32752u, fp)) != 32752u)
 			return perror("Error"), (void)fclose(fp), 1;
 		if ((errno = 0, fwrite(&zero_bytes[0], 1u, 16u, fp)) != 16u)
 			return perror("Error"), (void)fclose(fp), 1;
 		if (!is_stdout && (errno = 0, fclose(fp)))
 			return perror("Error"), 1;
-		if (opt->verbose)
-			printf("\"loader\" written to %s\n", *opt->operands);
-	} else {
-		return opt->error = "unknown type", 1;
+		return 0;
 	}
-	return 0;
+	return opt->error = "unknown type", 1;
 }
 
 static const char *help_str =
@@ -99,7 +120,7 @@ static const char *help_str =
 	" -t type output-file\n"
 	"\nOptions:\n"
 	"  -t type       binary blob type\n"
-	"                ldr512 or loader\n"
+	"                eltorito, ldr512, or loader\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
