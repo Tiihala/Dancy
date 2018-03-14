@@ -18,20 +18,39 @@
  */
 
 #include <errno.h>
+#include <limits.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-unsigned long crc32c(const void *, size_t);
+static unsigned long crc32c(const void *obj, size_t len)
+{
+	const unsigned char *ptr = (const unsigned char *)obj;
+	unsigned long crc = 0xFFFFFFFFul;
+	int i;
+
+	while (len--) {
+		crc ^= (unsigned long)*ptr++;
+		for (i = 0; i < CHAR_BIT; i++) {
+			if (crc & 1ul)
+				crc >>= 1, crc ^= 0x82F63B78ul;
+			else
+				crc >>= 1;
+		}
+	}
+	return ~crc & 0xFFFFFFFFul;
+}
 
 #define PROGRAM_CMDNAME "dy-init"
-#define PROGRAM_VERSION "1.0"
+#define PROGRAM_VERSION "1.1"
 
 struct options {
 	char **operands;
 	const char *error;
 	const char *arg_t;
+	int legacy;
 	int set_header;
 	int verbose;
 };
@@ -56,7 +75,8 @@ static int set_header(unsigned char type, unsigned char *buf, size_t size)
 	memcpy(&buf[16], &zero_bytes[0], sizeof(zero_bytes));
 	buf[16] = (size) & 0xFFu;
 	buf[17] = (size >> 8) & 0xFFu;
-	buf[28] = type;
+	buf[28] = type & 0x7Fu;
+	buf[30] = (type & 0x80u) ? 0x01u : 0x00u;
 
 	crc = crc32c(buf, size);
 	buf[24] = (crc) & 0xFFu;
@@ -82,6 +102,8 @@ int program(struct options *opt)
 			type = 0x64u;
 		else
 			return fputs("Error: unknown type", stderr), 1;
+		if (opt->legacy)
+			type |= 0x80u;
 	}
 
 	if (opt->set_header) {
@@ -130,6 +152,7 @@ static const char *help_str =
 	"\nOptions:\n"
 	"  -t type       init executable type\n"
 	"                ia16, ia32, or x64\n"
+	"  --legacy      set legacy flag\n"
 	"  --set-header  write header and crc32c checksum\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
@@ -176,6 +199,10 @@ int main(int argc, char *argv[])
 				help(NULL);
 			if (!strcmp(arg + 2, "version"))
 				version();
+			if (!strcmp(arg + 2, "legacy")) {
+				opts.legacy = 1;
+				continue;
+			}
 			if (!strcmp(arg + 2, "set-header")) {
 				opts.set_header = 1;
 				continue;

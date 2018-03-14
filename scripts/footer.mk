@@ -14,8 +14,7 @@ DY_BLOB_OBJECTS= \
 ##############################################################################
 
 DY_INIT_OBJECTS= \
- ./tools/dy-init/dy-init.obj \
- ./common/crc32/crc32c.obj
+ ./tools/dy-init/dy-init.obj
 
 ./bin/dy-init$(DANCY_EXE): $(DY_INIT_OBJECTS)
 	$(DANCY_HOST_BINARY)$@ $(DY_INIT_OBJECTS)
