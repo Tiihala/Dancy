@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2017 Antti Tiihala
+;; Copyright (c) 2017, 2018 Antti Tiihala
 ;;
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -19,12 +19,9 @@
 ;; Build instructions
 ;;      nasm -f bin -o gpt.bin gpt.asm
 ;;
-;; Version
-;;      2017-10-18      VERSION 1.0
-;;
 
         BITS 16
-        ORG 0x7C00
+        ORG 0x0600
 
 MasterBootRecord:
         ; This part is 8086 compatible.
@@ -44,7 +41,7 @@ ReadLbaVariable:
 
         ; The memory area from offset 0x0009 to offset 0x000F contains
         ; zero bytes. It should make detecting the format a bit more
-        ; robust, e.g. whether it is an emulated floppy or a hd (USB).
+        ; robust, e.g. whether it is an emulated floppy or an HDD (USB).
 
 times 16 - ($ - $$) db 0
 BootPartitionGuid:
@@ -53,13 +50,24 @@ BootPartitionGuid:
         ; A disk format tool writes the GUID. It is a good practice to
         ; check this specific string before patching the binary image.
 
+        ; This first part of code is position-independent.
+
 times 32 - ($ - $$) db 0
 SetupStack:
         xor ax, ax                      ; ax = 0x0000
+        mov es, ax                      ; es = 0x0000
+        mov ds, ax                      ; ds = 0x0000
+        mov cx, 512 / 2                 ; cx = bytes to copy / 2
+        mov si, 0x7C00                  ; ds:si = source
+        mov di, 0x0600                  ; es:di = destination
         cli                             ; disable interrupts
-        mov ss, ax                      ; ss = 0x0000 ("uninterruptible")
+times 48 - ($ - $$) db 0
+        db 0x8E, 0xD0                   ; (bit 0 is clear)
+        ; mov ss, ax                    ; ss = 0x0000 ("uninterruptible")
         mov sp, 0x7C00                  ; sp = 0x7C00
         sti                             ; enable interrupts
+        cld                             ; clear direction flag
+        rep movsw                       ; relocate boot sector
         mov dh, 0x03                    ; dh = 0x03 (general retry counter)
         jmp 0x0000:CheckExtensions      ; cs = 0x0000
 
@@ -67,10 +75,11 @@ SetupStack:
         ; and ds or direction flag. As a defensive practice, those are set
         ; afterwards because it costs practically nothing ("stack usage").
 
-times 48 - ($ - $$) db 0
+        ; This part of code is position-dependent.
+
+times 64 - ($ - $$) db 0
 CheckExtensions:
-        db 0x50                         ; this byte must have bit 0 cleared
-        ; push ax                       ; push 0x0000 (for es)
+        push ax                         ; push 0x0000 (for es)
         push ax                         ; push 0x0000 (for ds)
         push dx                         ; save register dx
         stc                             ; set carry flag
@@ -100,7 +109,7 @@ CheckExtensions:
         ; primary table is not at LBA 1, we try LBA 2, 4, and 8. According to
         ; the results, the "ReadLba" is patched to support GPT LBAs.
 
-times 80 - ($ - $$) db 0
+times 96 - ($ - $$) db 0
 ReadGptHeader:
         mov si, ReadLbaVariable         ; si = address of "ReadLbaVariable"
         call ReadLba                    ; try to read gpt header
@@ -202,37 +211,53 @@ ReadBootManager:
         mov si, sp                      ; si = boot manager lba
         call ReadLba                    ; try to read boot partition
         jc short ReadBootManager        ; (this is not an endless loop)
-        cmp dword [0x8000], 0xEB4D42B8  ; test magic value
+        cmp word [0x7DFE], 0xAA55       ; test magic value
         jne short TryAlternateTable     ; (stack is ok)
         mov dh, [ReadLba.Patch]         ; dh = gpt block size in sectors
 
 PrepareStackFrame:
         push dx                         ; save register dx
-        mov cx, 51                      ; for three "popad" instructions + 3
+        mov cx, 18                      ; for a "popad" instruction + 2
 .L1:    push cs                         ; push word 0x0000
         loop .L1
-
-TcgCheckStatus:
-        popad                           ; clear general purpose registers (1)
-        mov ah, 0xBB                    ; eax = 0x0000BB00, status check
-        int 0x1A                        ; bios call
         pop ds                          ; ds = 0x0000 (defensive programming)
-        add eax, ebx                    ; eax is 0x00000000 if supported
-        cmp eax, [Tcpa]                 ; check signature "TCPA"
-        popad                           ; clear general purpose registers (2)
-        jne short TcgEnd
-TcgCompactHashLogExtendEvent:
-        mov dl, 0x08                    ; edx = 8
-        mov ch, 0x02                    ; ecx = 512
-        mov di, 0x8000                  ; es:di = 0x0000:0x8000
-        ; mov ebx, 0x41504354           ; ebx = "TCPA"
-        db 0x66,0xBB
-Tcpa:   dd 0x41504354
-        mov ax, 0xBB07                  ; compact hash log extend event
-        int 0x1A                        ; bios call
-TcgEnd: popad                           ; clear general purpose registers (3)
-        sti                             ; enable interrupts
-        jmp short JumpToBootManager
+        pop es                          ; es = 0x0000 (defensive programming)
+
+RelocateSector:
+        mov ch, 0x01                    ; cx = bytes to copy
+        mov si, 0x8000                  ; si = source
+        mov di, 0x7C00                  ; di = destination
+        cld                             ; clear direction flag
+        rep movsw                       ; relocate sector
+
+JumpToNextStage:
+        popad                           ; clear general purpose registers
+        pop dx                          ; dx = return value
+
+        mov cl, dh                      ; cl = return value
+        mov dh, 0x00                    ; dh = 0x00
+        mov ebp, 'GPT '                 ; magic string
+
+        ; This is the end of this Master Boot Record. The next stage
+        ; takes control of the boot process.
+        ;
+        ; [esp+4] = (dword) lba (high)
+        ; [esp+0] = (dword) lba (low)
+        ;
+        ; cl = gpt block size in sectors
+        ; dl = boot drive number
+        ;
+        ; eax = 0x00000000      ecx = 0x000000??
+        ; edx = 0x000000??      ebx = 0x00000000
+        ; esp = 0x00007DF8      ebp = 'GPT '
+        ; esi = 0x00000000      edi = 0x00000000
+        ;
+        ; es = cs = 0x0000
+        ; ss = ds = 0x0000
+        ; fs = unknown
+        ; gs = unknown
+
+        jmp near 0x7C00
 
 times 304 - ($ - $$) db 0
 ReadLba:
@@ -304,42 +329,6 @@ Error:
         jnz short .L1                   ; loop
 .Halt:  hlt                             ; halt
         jmp short .Halt                 ; endless loop (interrupts enabled)
-
-JumpToBootManager:
-        pop ds                          ; ds = 0x0000 (defensive programming)
-        pop es                          ; es = 0x0000 (defensive programming)
-        pop dx                          ; dx = return value
-        sahf                            ; clear SF, ZF, AF, PF, and CF
-
-        ; This is the end of this Master Boot Record. The next stage,
-        ; the Boot Manager, takes control of the boot process.
-        ;
-        ; [esp+4] = (dword) boot manager lba (high)
-        ; [esp+0] = (dword) boot manager lba (low)
-        ;
-        ; dl = boot drive number
-        ; dh = gpt block size in sectors
-        ;
-        ; eax = 0x00000000      ecx = 0x00000000
-        ; edx = 0x0000????      ebx = 0x00000000
-        ; esp = 0x00007DF8      ebp = 0x00000000
-        ; esi = 0x00000000      edi = 0x00000000
-        ;
-        ; es = cs = 0x0000
-        ; ss = ds = 0x0000
-        ; fs = unknown
-        ; gs = unknown
-        ;
-        ; [0x8000] = "mov ax, 'BM'; jmp short ?"
-        ;
-        ;    First instruction is not executed (eax = 0 after jump) and this
-        ;    can be used to detect this particular boot protocol.
-        ;
-        ; [0x8000-0x81FF] = start of boot manager (always available, TPM)
-        ; [0x8200-0x8FFF] = rest of the first block or zero bytes
-        ; [0x9000-0xFFFF] = zero bytes
-
-        jmp near 0x8003
 
 Err1:   db '! LBA', 13, 0               ; "! LBA"
 Err2:   db '? '                         ; "? EFI PART"

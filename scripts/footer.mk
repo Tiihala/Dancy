@@ -13,6 +13,16 @@ DY_BLOB_OBJECTS= \
 
 ##############################################################################
 
+DY_GPT_OBJECTS= \
+ ./tools/dy-gpt/dy-gpt.obj \
+ ./boot/gpt/gpt.obj \
+ ./common/crc32/crc32c.obj
+
+./bin/dy-gpt$(DANCY_EXE): $(DY_GPT_OBJECTS)
+	$(DANCY_HOST_BINARY)$@ $(DY_GPT_OBJECTS)
+
+##############################################################################
+
 DY_INIT_OBJECTS= \
  ./tools/dy-init/dy-init.obj
 
@@ -76,6 +86,9 @@ DY_VBR_OBJECTS= \
 
 ./tools/dy-blob/dy-blob.obj: ./tools/dy-blob/dy-blob.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-blob/dy-blob.c
+
+./tools/dy-gpt/dy-gpt.obj: ./tools/dy-gpt/dy-gpt.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-gpt/dy-gpt.c
 
 ./tools/dy-init/dy-init.obj: ./tools/dy-init/dy-init.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/dy-init.c
