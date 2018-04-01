@@ -115,6 +115,7 @@ static const char *help_str =
 	"\nOptions:\n"
 	"  -f format     output format\n"
 	"  -o output     output file\n"
+	"  --dump        object file information\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -162,6 +163,10 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "dump")) {
+				opts.dump = 1;
 				continue;
 			}
 			help("unknown long option \"%s\"", arg);

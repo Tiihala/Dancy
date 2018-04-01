@@ -29,6 +29,7 @@ struct options {
 	const char *arg_f;
 	const char *arg_o;
 	int verbose;
+	int dump;
 	int nr_mfiles;
 	struct mfile *mfiles;
 };

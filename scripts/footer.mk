@@ -31,6 +31,17 @@ DY_INIT_OBJECTS= \
 
 ##############################################################################
 
+DY_LINK_OBJECTS= \
+ ./tools/dy-link/main.obj \
+ ./tools/dy-link/program.obj
+DY_LINK_HEADERS= \
+ ./tools/dy-link/program.h
+
+./bin/dy-link$(DANCY_EXE): $(DY_LINK_OBJECTS)
+	$(DANCY_HOST_BINARY)$@ $(DY_LINK_OBJECTS)
+
+##############################################################################
+
 DY_MBR_OBJECTS= \
  ./tools/dy-mbr/dy-mbr.obj \
  ./boot/mbr/mbr.obj \
@@ -92,6 +103,12 @@ DY_VBR_OBJECTS= \
 
 ./tools/dy-init/dy-init.obj: ./tools/dy-init/dy-init.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/dy-init.c
+
+./tools/dy-link/main.obj: ./tools/dy-link/main.c $(DY_LINK_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/main.c
+
+./tools/dy-link/program.obj: ./tools/dy-link/program.c $(DY_LINK_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/program.c
 
 ./tools/dy-mbr/dy-mbr.obj: ./tools/dy-mbr/dy-mbr.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-mbr/dy-mbr.c
