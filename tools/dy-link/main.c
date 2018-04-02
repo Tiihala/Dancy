@@ -67,7 +67,6 @@ static int read_mfile(const char *name, int i)
 		}
 		mfiles[i].data = ptr;
 		ptr = mfiles[i].data + mfiles[i].size;
-		ptr = mfiles[i].data;
 
 		errno = 0;
 		size = (int)fread(ptr, 1u, (size_t)MFILES_CHUNK, fp);

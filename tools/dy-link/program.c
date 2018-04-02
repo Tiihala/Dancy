@@ -70,7 +70,7 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 		fprintf(stderr, "%s: section table error\n", name);
 		return 1;
 	}
-	if (LE16(&buf[2]) > 4096) {
+	if (LE16(&buf[2]) > 16384) {
 		fprintf(stderr, "%s: too many sections\n", name);
 		return 1;
 	}
@@ -277,14 +277,24 @@ static void dump_obj(const char *name, const unsigned char *buf)
 			printf("%-8s", "static");
 		else if (sym[16] == 0x06u)
 			printf("%-8s", "label");
+		else if (sym[16] == 0x67u)
+			printf("%-8s", "file");
 		else
 			printf("type%-3u ", (unsigned)sym[16]);
 
-		printf("%-6s", LE16(&sym[14]) ? "func" : "-");
+		if (LE16(&sym[14]) == 0x0000ul)
+			printf("%-6s", "-");
+		else if (LE16(&sym[14]) == 0x0020ul)
+			printf("%-6s", "func");
+		else
+			printf("%-6s", "\?");
+
 		if (LE16(&sym[12]) == 0x0000u)
 			printf("%-6s", "-");
 		else if (LE16(&sym[12]) == 0xFFFFu)
 			printf("%-6s", "abs");
+		else if (LE16(&sym[12]) == 0xFFFEu)
+			printf("%-6s", "dbg");
 		else if (LE16(&sym[12]) <= section_count)
 			printf("#%-5lu", LE16(&sym[12]));
 		else
