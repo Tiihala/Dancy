@@ -70,7 +70,7 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 		fprintf(stderr, "%s: section table error\n", name);
 		return 1;
 	}
-	if (LE16(&buf[2]) > 16384) {
+	if (LE16(&buf[2]) > 16384ul) {
 		fprintf(stderr, "%s: too many sections\n", name);
 		return 1;
 	}
@@ -225,12 +225,12 @@ static void dump_obj(const char *name, const unsigned char *buf)
 
 	for (i = 0; i < (int)LE16(&buf[2]); i++) {
 		const unsigned char *sect = &buf[20 + i * 40];
-		unsigned long flags;
+		unsigned long flags = LE32(&sect[36]);
 		unsigned sect_alignment;
-		printf("section_name:   %-8.8s -> #%i\n", &sect[0], i + 1);
 
-		flags = LE32(&sect[36]);
+		printf("section_name:   %-8.8s -> #%i\n", &sect[0], i + 1);
 		printf("section_flags:  %08lX ->", flags);
+
 		if (flags & 0x00000020ul)
 			printf(" code");
 		if (flags & 0x00000040ul)
@@ -239,12 +239,21 @@ static void dump_obj(const char *name, const unsigned char *buf)
 			printf(" bss");
 		if (flags & 0x00000200ul)
 			printf(" info");
+		if (flags & 0x00000800ul)
+			printf(" rem");
+		if (flags & 0x00001000ul)
+			printf(" comd");
+		if (flags & 0x02000000ul)
+			printf(" disc");
+		if (flags & 0x10000000ul)
+			printf(" share");
 		if (flags & 0x20000000ul)
 			printf(" exec");
 		if (flags & 0x40000000ul)
 			printf(" read");
 		if (flags & 0x80000000ul)
 			printf(" write");
+
 		sect_alignment = (unsigned)((flags & 0x00F00000ul) >> 20);
 		if (sect_alignment)
 			printf(" align%u", (1u << (sect_alignment - 1)));
@@ -254,10 +263,10 @@ static void dump_obj(const char *name, const unsigned char *buf)
 		if (LE32(&sect[20]))
 			printf("data_offset:    %08lX\n", LE32(&sect[20]));
 		if (LE16(&sect[32])) {
-			unsigned reloc_offset = (unsigned)LE32(&sect[24]);
-			unsigned reloc_count = (unsigned)LE16(&sect[32]);
-			printf("reloc_offset:   %08X\n", reloc_offset);
-			printf("reloc_count:    %04X\n", reloc_count);
+			unsigned long reloc_offset = LE32(&sect[24]);
+			unsigned long reloc_count = LE16(&sect[32]);
+			printf("reloc_offset:   %08lX\n", reloc_offset);
+			printf("reloc_count:    %04lX\n", reloc_count);
 		}
 		printf("\n");
 	}
@@ -289,11 +298,11 @@ static void dump_obj(const char *name, const unsigned char *buf)
 		else
 			printf("%-6s", "\?");
 
-		if (LE16(&sym[12]) == 0x0000u)
+		if (LE16(&sym[12]) == 0x0000ul)
 			printf("%-6s", "-");
-		else if (LE16(&sym[12]) == 0xFFFFu)
+		else if (LE16(&sym[12]) == 0xFFFFul)
 			printf("%-6s", "abs");
-		else if (LE16(&sym[12]) == 0xFFFEu)
+		else if (LE16(&sym[12]) == 0xFFFEul)
 			printf("%-6s", "dbg");
 		else if (LE16(&sym[12]) <= section_count)
 			printf("#%-5lu", LE16(&sym[12]));
