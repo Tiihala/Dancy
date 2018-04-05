@@ -144,6 +144,8 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 					if (section_number > LE16(&buf[2]))
 						err = 1;
 				}
+				if ((unsigned)sym[17] > 0x01u)
+					err = 1;
 				i = i + (unsigned long)sym[17] + 1ul;
 			}
 			if (i != symbols)
@@ -231,12 +233,20 @@ static void dump_obj(const char *name, const unsigned char *buf)
 		printf("section_name:   %-8.8s -> #%i\n", &sect[0], i + 1);
 		printf("section_flags:  %08lX ->", flags);
 
+		/*
+		 * Code, data, or bss. These are the main categories
+		 * as far as sections are concerned.
+		 */
 		if (flags & 0x00000020ul)
 			printf(" code");
 		if (flags & 0x00000040ul)
 			printf(" data");
 		if (flags & 0x00000080ul)
 			printf(" bss");
+		/*
+		 * Some sections can be ignored. This will simplify the
+		 * linker, i.e. unknown data structures can be skipped.
+		 */
 		if (flags & 0x00000200ul)
 			printf(" info");
 		if (flags & 0x00000800ul)
@@ -245,6 +255,10 @@ static void dump_obj(const char *name, const unsigned char *buf)
 			printf(" comd");
 		if (flags & 0x02000000ul)
 			printf(" disc");
+		/*
+		 * "Shared, "executable", "read", and "write" flags. This
+		 * information can be used for paging.
+		 */
 		if (flags & 0x10000000ul)
 			printf(" share");
 		if (flags & 0x20000000ul)
@@ -273,6 +287,17 @@ static void dump_obj(const char *name, const unsigned char *buf)
 
 	for (i = 0; i < (int)symtab_count; i++) {
 		const unsigned char *sym = &buf[(int)symtab_offset + i * 18];
+		int is_section = 0;
+
+		/*
+		 * Detect whether a symbol record refers to a section. There
+		 * should be some additional information available in the
+		 * next symbol table entry ("the extended symbol entry").
+		 */
+		if (!LE32(&sym[8]) && sym[16] == 0x03u && sym[17]) {
+			if (LE16(&sym[12]) && LE16(&sym[12]) < 0x8000ul)
+				is_section = 1;
+		}
 		printf("  [%08lX]", (unsigned long)i);
 		if (sym[17])
 			printf("+%-2X ", (unsigned)sym[17]);
@@ -308,9 +333,18 @@ static void dump_obj(const char *name, const unsigned char *buf)
 			printf("#%-5lu", LE16(&sym[12]));
 		else
 			printf("%04lX  ", LE16(&sym[12]));
+		/*
+		 * Print value at offset 14 from the next symbol entry if
+		 * this is the section symbol. Also, print an exclamation
+		 * mark if there are unexpected extended symbol entries.
+		 */
+		if (is_section)
+			printf("%02X  ", (unsigned)sym[18 + 14]);
+		else
+			printf("%-4s", (!sym[17]) ? "-" : "-  !");
 
 		if (LE32(&sym[0])) {
-			printf("-> %-8.8s ", &sym[0]);
+			printf("-> %.8s", &sym[0]);
 		} else {
 			const unsigned char *str;
 			str = &buf[(int)(symtab_offset + symtab_count * 18u)];
