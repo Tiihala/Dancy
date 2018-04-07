@@ -32,6 +32,7 @@
 static int validate_obj(const char *name, const unsigned char *buf, int size)
 {
 	static unsigned type;
+	unsigned long strtab_size = 0ul;
 
 	if (size < 20) {
 		fprintf(stderr, "%s: unsupported file format\n", name);
@@ -55,9 +56,9 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 	}
 
 	/*
-	 * There must not be an optional header or flags.
+	 * There must not be an optional header.
 	 */
-	if (buf[16] || buf[17] || buf[18] || buf[19]) {
+	if (buf[16] || buf[17]) {
 		fprintf(stderr, "%s: unsupported header format\n", name);
 		return 1;
 	}
@@ -81,7 +82,6 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 	if (LE32(&buf[12])) {
 		unsigned long offset = LE32(&buf[8]);
 		unsigned long symbols = LE32(&buf[12]);
-		unsigned long strings = 0ul;
 		int err = 1;
 
 		/*
@@ -101,19 +101,23 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 
 		/*
 		 * The size of the string table is 4 bytes if there are
-		 * no actual string table entries.
+		 * no actual string table entries. The last byte of the
+		 * table must be zero so that strlen-like functions are
+		 * safe even if the data itself were not valid.
 		 */
 		offset = offset + symbols;
 		if (offset > ULONG_MAX - 4ul)
 			err = 1;
 		else
-			strings = LE32(&buf[(int)offset]);
+			strtab_size = LE32(&buf[(int)offset]);
 
-		if (strings < 4ul)
+		if (strtab_size < 4ul)
 			err = 1;
-		if (offset > ULONG_MAX - strings)
+		if (offset > ULONG_MAX - strtab_size)
 			err = 1;
-		if (offset + strings > (unsigned long)size)
+		if (offset + strtab_size > (unsigned long)size)
+			err = 1;
+		if (!err && buf[(int)(offset + strtab_size - 1ul)])
 			err = 1;
 		if (err) {
 			fprintf(stderr, "%s: string table error\n", name);
@@ -136,7 +140,7 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 				if (!LE32(&sym[0])) {
 					if (LE32(&sym[4]) < 4ul)
 						err = 1;
-					if (LE32(&sym[4]) >= strings)
+					if (LE32(&sym[4]) >= strtab_size)
 						err = 1;
 				}
 				section_number = LE16(&sym[12]);
@@ -144,8 +148,19 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 					if (section_number > LE16(&buf[2]))
 						err = 1;
 				}
-				if ((unsigned)sym[17] > 0x01u)
-					err = 1;
+				if (!section_number && !LE32(&sym[8])) {
+					if ((unsigned)sym[16] != 0x02u)
+						err = 1;
+				}
+				/*
+				 * Allow more than one extra record for long
+				 * file names only. Other structures should
+				 * not need more than one. Change if needed.
+				 */
+				if ((unsigned)sym[17] > 0x01u) {
+					if ((unsigned)sym[16] != 0x67u)
+						err = 1;
+				}
 				i = i + (unsigned long)sym[17] + 1ul;
 			}
 			if (i != symbols)
@@ -175,18 +190,69 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 			unsigned long relo_size = LE16(&sect[32]) * 10ul;
 			unsigned long flags = LE32(&sect[36]);
 
+			/*
+			 * If the section name starts with a '/', then use the
+			 * following number as an offset to the string table.
+			 * The biggest number is 9999999 and unsigned long can
+			 * hold it without overflows. Check that there are no
+			 * trailing zeros (no "octal numbers" supported).
+			 */
+			if ((unsigned)sect[0] == 0x2Fu) {
+				int j;
+				unsigned long offset = 0ul;
+
+				if ((unsigned)sect[1] < 0x31u)
+					err = 1;
+				for (j = 1; j < 8 && sect[j]; j++) {
+					unsigned long a;
+					if ((unsigned)sect[j] < 0x30u)
+						err = 1;
+					if ((unsigned)sect[j] > 0x39u)
+						err = 1;
+					a = (unsigned long)sect[j] - 0x30ul;
+					offset *= 10ul;
+					offset += a;
+				}
+				if (offset >= strtab_size)
+					err = 1;
+			}
+
 			if (LE32(&sect[8]) || LE32(&sect[12]))
 				err = 1;
 			if (data_offset && flags & 0x00000080ul)
 				err = 1;
 			/*
 			 * Do not support any "special relocations" or data
-			 * alignment requirements more strict than 4096.
+			 * alignment requirements more strict than 4096. If
+			 * the section is marked as "executable" it must be
+			 * a code section.
 			 */
 			if (flags & 0x01000000ul)
 				err = 1;
 			if ((flags & 0x00F00000ul) > 0x00D00000ul)
 				err = 1;
+			if (flags & 0x20000000ul) {
+				if (!(flags & 0x20ul))
+					err = 1;
+			}
+			/*
+			 * Sections can be code, data or bss but not any
+			 * combination of these categories. It could make
+			 * sense to have text and data combined. At this
+			 * point this linker implementation does not have
+			 * support for this. If there were many files not
+			 * meeting the criteria, this should be changed.
+			 */
+			if (flags & 0x20ul) {
+				if ((flags & 0x40ul) || (flags & 0x80ul))
+					err = 1;
+			} else if (flags & 0x40ul) {
+				if ((flags & 0x20ul) || (flags & 0x80ul))
+					err = 1;
+			} else if (flags & 0x80ul) {
+				if ((flags & 0x20ul) || (flags & 0x40ul))
+					err = 1;
+			}
 
 			if (data_size > ULONG_MAX - data_offset)
 				err = 1;
@@ -335,13 +401,12 @@ static void dump_obj(const char *name, const unsigned char *buf)
 			printf("%04lX  ", LE16(&sym[12]));
 		/*
 		 * Print value at offset 14 from the next symbol entry if
-		 * this is the section symbol. Also, print an exclamation
-		 * mark if there are unexpected extended symbol entries.
+		 * this is the section symbol.
 		 */
 		if (is_section)
 			printf("%02X  ", (unsigned)sym[18 + 14]);
 		else
-			printf("%-4s", (!sym[17]) ? "-" : "-  !");
+			printf("%-4s", "-");
 
 		if (LE32(&sym[0])) {
 			printf("-> %.8s", &sym[0]);
