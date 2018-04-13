@@ -1,11 +1,11 @@
 # Dancy Operating System
 
-CPPFLAGS=-I./include
-CFLAGS=-O2 -std=c89 -Wall -Wextra -pedantic
+HOST_CPPFLAGS=-I./include
+HOST_CFLAGS=-O2 -std=c89 -Wall -Wextra -pedantic
 
 DANCY_EXE=
 DANCY_HOST_BINARY=$(CC) -o
-DANCY_HOST_OBJECT=$(CC) -c $(CPPFLAGS) $(CFLAGS) -o
+DANCY_HOST_OBJECT=$(CC) -c $(HOST_CPPFLAGS) $(HOST_CFLAGS) -o
 
 include ./VERSION
 include ./scripts/header.mk
@@ -13,9 +13,12 @@ include ./scripts/header.mk
 all: $(DANCY_TARGET_ALL)
 
 clean:
-	$(RM) LOADER.*
-	$(RM) `find bin -name "dy-*"`
-	$(RM) `find -name "*.obj"`
+	@rm -fv LOADER.*
+	@rm -fv `find bin -name "dy-*"`
+	@rm -fv `find -name "*.o*"`
+
+distclean: clean
+	@rm -rf external
 
 ./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
 	./bin/dy-blob$(DANCY_EXE) -t ldr512 $@
