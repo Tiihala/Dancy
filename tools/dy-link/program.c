@@ -29,6 +29,41 @@
 #define LE16(a) (B8((a),0,0) | B8((a),1,8))
 #define LE32(a) (B8((a),0,0) | B8((a),1,8) | B8((a),2,16) | B8((a),3,24))
 
+static int validate_reloc_type(unsigned arch_type, unsigned reloc_type)
+{
+	/*
+	 * The return value tells how many bytes must be accessible from
+	 * the reloc offset in the relocatable section. Accessible does
+	 * not necessarily mean that the relocation modifies all bytes.
+	 */
+	int bytes_to_access = 0;
+
+	if (arch_type == 0x014Cu && reloc_type < 0x8000u) {
+		switch ((int)reloc_type) {
+		case 0x06: bytes_to_access = 0x04; break;
+		case 0x07: bytes_to_access = 0x04; break;
+		case 0x14: bytes_to_access = 0x04; break;
+		default: break;
+		}
+	}
+	if (arch_type == 0x8664u && reloc_type < 0x8000u) {
+		switch ((int)reloc_type) {
+		case 0x01: bytes_to_access = 0x08; break;
+		case 0x03: bytes_to_access = 0x04; break;
+		case 0x04: bytes_to_access = 0x05; break;
+		case 0x05: bytes_to_access = 0x06; break;
+		case 0x06: bytes_to_access = 0x07; break;
+		case 0x07: bytes_to_access = 0x08; break;
+		case 0x08: bytes_to_access = 0x09; break;
+		case 0x09: bytes_to_access = 0x0A; break;
+		default: break;
+		}
+	}
+	if (!bytes_to_access)
+		fprintf(stderr, "Unknown reloc type %04X\n", reloc_type);
+	return bytes_to_access;
+}
+
 static int validate_obj(const char *name, const unsigned char *buf, int size)
 {
 	static unsigned type;
@@ -180,6 +215,7 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 	 */
 	if (LE16(&buf[2])) {
 		unsigned nr_sections = (unsigned)LE16(&buf[2]);
+		unsigned long nr_symbols = LE32(&buf[12]);
 		int err = 0;
 		int i = 0;
 		while (!err && (unsigned)i < nr_sections) {
@@ -189,6 +225,7 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 			unsigned long relo_offset = LE32(&sect[24]);
 			unsigned long relo_size = LE16(&sect[32]) * 10ul;
 			unsigned long flags = LE32(&sect[36]);
+			const unsigned char *relo_ptr;
 
 			/*
 			 * If the section name starts with a '/', then use the
@@ -263,6 +300,33 @@ static int validate_obj(const char *name, const unsigned char *buf, int size)
 				err = 1;
 			if (relo_size + relo_offset > (unsigned long)size)
 				err = 1;
+			/*
+			 * Check the relocation entries if those are available
+			 * and make sure reloc offsets, symbol table indices,
+			 * and relocation types are safe to use.
+			 */
+			if ((relo_size % 10ul) != 0ul)
+				err = 1;
+			relo_ptr = &buf[(int)relo_offset];
+			while (!err && relo_size) {
+				unsigned long r_off = LE32(relo_ptr+0);
+				unsigned long r_idx = LE32(relo_ptr+4);
+				unsigned r_typ = (unsigned)LE16(relo_ptr+8);
+				int bytes;
+
+				bytes = validate_reloc_type(type, r_typ);
+				if (!bytes)
+					err = 1;
+				if (r_off & 0x80000000ul)
+					err = 1;
+				if (r_off + (unsigned long)bytes > data_size)
+					err = 1;
+				if (r_idx >= nr_symbols)
+					err = 1;
+
+				relo_ptr += 10;
+				relo_size -= 10ul;
+			}
 		}
 		if (err) {
 			fprintf(stderr, "%s: section table error\n", name);
