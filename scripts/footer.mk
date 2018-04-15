@@ -33,7 +33,9 @@ DY_INIT_OBJECTS= \
 
 DY_LINK_OBJECTS= \
  ./tools/dy-link/main.obj \
- ./tools/dy-link/program.obj
+ ./tools/dy-link/dump.obj \
+ ./tools/dy-link/program.obj \
+ ./tools/dy-link/validate.obj
 DY_LINK_HEADERS= \
  ./tools/dy-link/program.h
 
@@ -104,11 +106,17 @@ DY_VBR_OBJECTS= \
 ./tools/dy-init/dy-init.obj: ./tools/dy-init/dy-init.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/dy-init.c
 
+./tools/dy-link/dump.obj: ./tools/dy-link/dump.c $(DY_LINK_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/dump.c
+
 ./tools/dy-link/main.obj: ./tools/dy-link/main.c $(DY_LINK_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/main.c
 
 ./tools/dy-link/program.obj: ./tools/dy-link/program.c $(DY_LINK_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/program.c
+
+./tools/dy-link/validate.obj: ./tools/dy-link/validate.c $(DY_LINK_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/validate.c
 
 ./tools/dy-mbr/dy-mbr.obj: ./tools/dy-mbr/dy-mbr.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-mbr/dy-mbr.c
