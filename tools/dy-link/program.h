@@ -30,6 +30,7 @@ struct options {
 	const char *arg_o;
 	int verbose;
 	int dump;
+	int dump_ext;
 	int nr_mfiles;
 	struct mfile *mfiles;
 };
@@ -46,6 +47,7 @@ struct mfile {
 /*
  * dump.c
  */
+void dump_ext(const char *name, const unsigned char *buf);
 void dump_obj(const char *name, const unsigned char *buf);
 
 /*

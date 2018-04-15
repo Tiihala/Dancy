@@ -25,6 +25,61 @@
 
 #include "program.h"
 
+void dump_ext(const char *name, const unsigned char *buf)
+{
+	unsigned long symtab_offset = LE32(&buf[8]);
+	unsigned long symtab_count = LE32(&buf[12]);
+	int i;
+
+	if (name && buf)
+		printf("undefined_syms: %s\n\n", name);
+	else
+		return;
+
+	for (i = 0; i < (int)symtab_count; i++) {
+		const unsigned char *sym = &buf[(int)symtab_offset + i * 18];
+
+		/*
+		 * Dump only symbol table entries that are unresolved. It
+		 * means that other object files must have them defined.
+		 */
+		if (LE32(&sym[8]) || LE16(&sym[12])) {
+			i = i + (int)sym[17];
+			continue;
+		}
+		printf("  [%08lX]    ", (unsigned long)i);
+		printf("%08lX  ", LE32(&sym[8]));
+		/*
+		 * It is expected that only extern is found but all other
+		 * types are also dumped (debug), i.e. type0, type1, etc.
+		 */
+		if (sym[16] == 0x02u)
+			printf("%-8s", "extern");
+		else
+			printf("type%-3u ", (unsigned)sym[16]);
+
+		if (LE16(&sym[14]) == 0x0000ul)
+			printf("%-6s", "-");
+		else if (LE16(&sym[14]) == 0x0020ul)
+			printf("%-6s", "func");
+		else
+			printf("%-6s", "\?");
+
+		printf("%-6s-   ", "-");
+		if (LE32(&sym[0])) {
+			printf("-> %.8s", &sym[0]);
+		} else {
+			const unsigned char *str;
+			str = &buf[(int)(symtab_offset + symtab_count * 18u)];
+			str = str + (int)LE32(&sym[4]);
+			printf("-> %s", str);
+		}
+		printf("\n");
+		i = i + (int)sym[17];
+	}
+	printf("\n");
+}
+
 void dump_obj(const char *name, const unsigned char *buf)
 {
 	unsigned long section_count = LE16(&buf[2]);

@@ -115,6 +115,7 @@ static const char *help_str =
 	"  -f format     output format\n"
 	"  -o output     output file\n"
 	"  --dump        object file information\n"
+	"  --dump-ext    unresolved symbols\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -166,6 +167,10 @@ int main(int argc, char *argv[])
 			}
 			if (!strcmp(arg + 2, "dump")) {
 				opts.dump = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "dump-ext")) {
+				opts.dump_ext = 1;
 				continue;
 			}
 			help("unknown long option \"%s\"", arg);

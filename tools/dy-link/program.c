@@ -35,6 +35,8 @@ int program(struct options *opt)
 			return 1;
 		if (opt->dump)
 			dump_obj(opt->operands[i], obj->data);
+		if (opt->dump_ext)
+			dump_ext(opt->operands[i], obj->data);
 	}
 	return 0;
 }
