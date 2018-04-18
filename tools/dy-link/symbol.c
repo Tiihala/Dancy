@@ -13,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dy-link/program.c
+ * dy-link/symbol.c
  *      Linker for Dancy operating system
  */
 
@@ -25,27 +25,10 @@
 
 #include "program.h"
 
-int program(struct options *opt)
+#define NR_BUCKETS 1024
+struct symbol *symbol_buckets[NR_BUCKETS];
+
+unsigned symbol_hash(const char *key)
 {
-	unsigned long nr_symbols = 0ul;
-	void *buf_symbols;
-	int i;
-
-	for (i = 0; i < opt->nr_mfiles; i++) {
-		struct mfile *obj = &opt->mfiles[i];
-		if (validate_obj(opt->operands[i], obj->data, obj->size))
-			return 1;
-		if (opt->dump)
-			dump_obj(opt->operands[i], obj->data);
-		if (opt->dump_ext)
-			dump_ext(opt->operands[i], obj->data);
-		nr_symbols += LE32(obj->data + 12);
-	}
-
-	buf_symbols = malloc((size_t)nr_symbols * sizeof(struct symbol));
-	if (!buf_symbols)
-		return fputs("Error: not enough memory\n", stderr), 1;
-
-	free(buf_symbols);
-	return 0;
+	return 0u;
 }

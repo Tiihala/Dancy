@@ -40,6 +40,11 @@ struct mfile {
 	int size;
 };
 
+struct symbol {
+	struct symbol *next;
+	void *data;
+};
+
 #define B8(a,b,c) (((unsigned long)((a)[(b)]) & 0xFFul) << (c))
 #define LE16(a) (B8((a),0,0) | B8((a),1,8))
 #define LE32(a) (B8((a),0,0) | B8((a),1,8) | B8((a),2,16) | B8((a),3,24))
@@ -54,6 +59,11 @@ void dump_obj(const char *name, const unsigned char *buf);
  * program.c
  */
 int program(struct options *opt);
+
+/*
+ * symbol.c
+ */
+unsigned symbol_hash(const char *key);
 
 /*
  * validate.c

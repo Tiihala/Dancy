@@ -31,10 +31,7 @@ void dump_ext(const char *name, const unsigned char *buf)
 	unsigned long symtab_count = LE32(&buf[12]);
 	int i;
 
-	if (name && buf)
-		printf("undefined_syms: %s\n\n", name);
-	else
-		return;
+	printf("undefined_syms: %s\n\n", name);
 
 	for (i = 0; i < (int)symtab_count; i++) {
 		const unsigned char *sym = &buf[(int)symtab_offset + i * 18];
@@ -82,19 +79,15 @@ void dump_ext(const char *name, const unsigned char *buf)
 
 void dump_obj(const char *name, const unsigned char *buf)
 {
+	unsigned long arch_type = LE16(&buf[0]);
 	unsigned long section_count = LE16(&buf[2]);
 	unsigned long symtab_offset = LE32(&buf[8]);
 	unsigned long symtab_count = LE32(&buf[12]);
+	const char *arch_name = (arch_type == 0x014Cu) ? "i386" : "x86-64";
 	int i;
 
-	if (name && buf) {
-		unsigned type = (unsigned)LE16(&buf[0]);
-		const char *type_name = (type == 0x014Cu) ? "i386" : "x86-64";
-		printf("file_name:      %s\n", name);
-		printf("magic_word:     %04X     -> %s\n", type, type_name);
-	} else {
-		return;
-	}
+	printf("file_name:      %s\n", name);
+	printf("magic_word:     %04X     -> %s\n", arch_type, arch_name);
 	printf("section_count:  %04lX\n", section_count);
 	printf("symtab_offset:  %08lX\n", symtab_offset);
 	printf("symtab_count:   %08lX\n\n", symtab_count);
