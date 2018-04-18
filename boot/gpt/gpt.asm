@@ -61,7 +61,7 @@ SetupStack:
         mov si, 0x7C00                  ; ds:si = source
         mov di, 0x0600                  ; es:di = destination
         cli                             ; disable interrupts
-times 48 - ($ - $$) db 0
+times 48 - ($ - $$) db 0x90
         db 0x8E, 0xD0                   ; (bit 0 is clear)
         ; mov ss, ax                    ; ss = 0x0000 ("uninterruptible")
         mov sp, 0x7C00                  ; sp = 0x7C00
