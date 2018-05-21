@@ -34,6 +34,7 @@ DY_INIT_OBJECTS= \
 DY_LINK_OBJECTS= \
  ./tools/dy-link/main.obj \
  ./tools/dy-link/dump.obj \
+ ./tools/dy-link/link.obj \
  ./tools/dy-link/program.obj \
  ./tools/dy-link/symbol.obj \
  ./tools/dy-link/validate.obj
@@ -109,6 +110,9 @@ DY_VBR_OBJECTS= \
 
 ./tools/dy-link/dump.obj: ./tools/dy-link/dump.c $(DY_LINK_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/dump.c
+
+./tools/dy-link/link.obj: ./tools/dy-link/link.c $(DY_LINK_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/link.c
 
 ./tools/dy-link/main.obj: ./tools/dy-link/main.c $(DY_LINK_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/main.c

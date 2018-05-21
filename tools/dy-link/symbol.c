@@ -26,7 +26,26 @@
 #include "program.h"
 
 #define NR_BUCKETS 1024
-struct symbol *symbol_buckets[NR_BUCKETS];
+static struct symbol *symbol_buckets[NR_BUCKETS];
+static unsigned char *symbol_buffer;
+
+void symbol_add(int obj, int idx)
+{
+	struct symbol *sym = &(((struct symbol *)symbol_buffer)[obj]);
+	unsigned long offset = LE32(sym->data + 8);
+	unsigned long symbols = LE32(sym->data + 12);
+
+}
+
+void *symbol_find(int obj, int idx)
+{
+	return NULL;
+}
+
+void symbol_init(void *buf)
+{
+	symbol_buffer = (unsigned char *)buf;
+}
 
 unsigned symbol_hash(const char *key)
 {

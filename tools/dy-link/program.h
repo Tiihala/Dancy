@@ -42,7 +42,7 @@ struct mfile {
 
 struct symbol {
 	struct symbol *next;
-	void *data;
+	unsigned char *data;
 };
 
 #define B8(a,b,c) (((unsigned long)((a)[(b)]) & 0xFFul) << (c))
@@ -63,6 +63,9 @@ int program(struct options *opt);
 /*
  * symbol.c
  */
+void symbol_add(int obj, int idx);
+void *symbol_find(int obj, int idx);
+void symbol_init(void *buf);
 unsigned symbol_hash(const char *key);
 
 /*

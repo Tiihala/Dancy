@@ -87,7 +87,7 @@ void dump_obj(const char *name, const unsigned char *buf)
 	int i;
 
 	printf("file_name:      %s\n", name);
-	printf("magic_word:     %04X     -> %s\n", arch_type, arch_name);
+	printf("magic_word:     %04lX     -> %s\n", arch_type, arch_name);
 	printf("section_count:  %04lX\n", section_count);
 	printf("symtab_offset:  %08lX\n", symtab_offset);
 	printf("symtab_count:   %08lX\n\n", symtab_count);
