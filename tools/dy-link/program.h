@@ -61,14 +61,6 @@ void dump_obj(const char *name, const unsigned char *buf);
 int program(struct options *opt);
 
 /*
- * symbol.c
- */
-void symbol_add(int obj, int idx);
-void *symbol_find(int obj, int idx);
-void symbol_init(void *buf);
-unsigned symbol_hash(const char *key);
-
-/*
  * validate.c
  */
 int validate_obj(const char *name, const unsigned char *buf, int size);
