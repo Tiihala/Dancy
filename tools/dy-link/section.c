@@ -58,7 +58,7 @@ static int get_size(struct options *opt, const char *name)
 int section_check_sizes(struct options *opt)
 {
 	int total_size = 0;
-	char *sections[] = {
+	const char *sections[] = {
 		".text",
 		".rdata",
 		".data",
