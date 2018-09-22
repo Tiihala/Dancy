@@ -61,6 +61,15 @@ void dump_obj(const char *name, const unsigned char *buf);
 int program(struct options *opt);
 
 /*
+ * section.c
+ */
+int section_check_sizes(struct options *opt);
+int section_get_text_size(struct options *opt);
+int section_get_rdata_size(struct options *opt);
+int section_get_data_size(struct options *opt);
+int section_get_bss_size(struct options *opt);
+
+/*
  * validate.c
  */
 int validate_obj(const char *name, const unsigned char *buf, int size);

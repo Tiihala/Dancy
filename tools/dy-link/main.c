@@ -227,12 +227,19 @@ int main(int argc, char *argv[])
 	opts.operands = (!argv[0]) ? &argv[0] : &argv[1];
 	if (*opts.operands) {
 		int i = 0;
+		int total_size = 0;
 		argv_i = opts.operands;
 		if ((errno = 0, atexit(free_mfiles)))
 			return perror("atexit error"), EXIT_FAILURE;
 		while (*argv_i) {
 			if (read_mfile(*argv_i, i))
 				return EXIT_FAILURE;
+			if (total_size < (INT_MAX - mfiles[i].size)) {
+				total_size += mfiles[i].size;
+			} else {
+				fputs("Error: total size\n", stderr);
+				return EXIT_FAILURE;
+			}
 			if (opts.verbose) {
 				const char *fmt = "Read file %s, %i bytes\n";
 				printf(fmt, *argv_i, mfiles[i].size);

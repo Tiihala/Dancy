@@ -1,7 +1,7 @@
 # Dancy Operating System
 
 HOST_CPPFLAGS=-I./include
-HOST_CFLAGS=/O2 /Wall /wd4996 /nologo
+HOST_CFLAGS=/O2 /Wall /wd4711 /wd4996 /nologo
 
 DANCY_EXE=.exe
 DANCY_HOST_BINARY=CL /Fe

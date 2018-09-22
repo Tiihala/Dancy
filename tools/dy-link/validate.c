@@ -46,12 +46,12 @@ static int validate_reloc_type(unsigned arch_type, unsigned reloc_type)
 		switch ((int)reloc_type) {
 		case 0x01: bytes_to_access = 0x08; break;
 		case 0x03: bytes_to_access = 0x04; break;
-		case 0x04: bytes_to_access = 0x05; break;
-		case 0x05: bytes_to_access = 0x06; break;
-		case 0x06: bytes_to_access = 0x07; break;
-		case 0x07: bytes_to_access = 0x08; break;
-		case 0x08: bytes_to_access = 0x09; break;
-		case 0x09: bytes_to_access = 0x0A; break;
+		case 0x04: bytes_to_access = 0x04; break;
+		case 0x05: bytes_to_access = 0x05; break;
+		case 0x06: bytes_to_access = 0x06; break;
+		case 0x07: bytes_to_access = 0x07; break;
+		case 0x08: bytes_to_access = 0x08; break;
+		case 0x09: bytes_to_access = 0x09; break;
 		default: break;
 		}
 	}
@@ -64,6 +64,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 {
 	static unsigned type;
 	unsigned long strtab_size = 0ul;
+	int total_size = 0;
 
 	if (size < 20) {
 		fprintf(stderr, "%s: unsupported file format\n", name);
@@ -252,8 +253,17 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 
 			if (LE32(&sect[8]) || LE32(&sect[12]))
 				err = 1;
-			if (data_offset && flags & 0x00000080ul)
-				err = 1;
+			/*
+			 * The section cannot overlap with the header unless
+			 * it is a bss section ("uninitialized data").
+			 */
+			if (flags & 0x00000080ul) {
+				if (data_offset)
+					err = 1;
+			} else {
+				if (data_offset < 0x14ul)
+					err = 1;
+			}
 			/*
 			 * Do not support any "special relocations" or data
 			 * alignment requirements more strict than 4096. If
@@ -290,7 +300,8 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			if (data_size > ULONG_MAX - data_offset)
 				err = 1;
 			if (data_size + data_offset > (unsigned long)size)
-				err = 1;
+				if (!(flags & 0x80ul))
+					err = 1;
 
 			if (relo_size > ULONG_MAX - relo_offset)
 				err = 1;
@@ -322,6 +333,26 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 
 				relo_ptr += 10;
 				relo_size -= 10ul;
+			}
+			/*
+			 * Check the total size of all sections and add 40
+			 * bytes (the size of a section entry) to each one
+			 * as an extra size. The reason for this check is
+			 * to make sure that the size of all sections would
+			 * not be more than INT_MAX.
+			 */
+			if (data_size > ULONG_MAX - 40ul)
+				err = 1;
+			if (!err) {
+				unsigned long add = data_size + 40ul;
+				if (add < (unsigned long)INT_MAX) {
+					if (total_size < INT_MAX - (int)add)
+						total_size += (int)add;
+					else
+						err = 1;
+				} else {
+					err = 1;
+				}
 			}
 		}
 		if (err) {
