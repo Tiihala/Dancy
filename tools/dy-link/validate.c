@@ -17,12 +17,6 @@
  *      Linker for Dancy operating system
  */
 
-#include <errno.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "program.h"
 
 static int validate_reloc_type(unsigned arch_type, unsigned reloc_type)
@@ -176,7 +170,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 						err = 1;
 				}
 				section_number = LE16(&sym[12]);
-				if (section_number < 0x8000ul) {
+				if (section_number < 0xFFFEul) {
 					if (section_number > LE16(&buf[2]))
 						err = 1;
 				}
@@ -255,11 +249,16 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 				err = 1;
 			/*
 			 * The section cannot overlap with the header unless
-			 * it is a bss section ("uninitialized data").
+			 * it is a bss section ("uninitialized data"). At this
+			 * point, relocs for bss sections are not supported.
 			 */
 			if (flags & 0x00000080ul) {
 				if (data_offset)
 					err = 1;
+				if (relo_offset || relo_size) {
+					fputs("Error: bss relocs\n", stderr);
+					err = 1;
+				}
 			} else {
 				if (data_offset < 0x14ul)
 					err = 1;
@@ -295,6 +294,33 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			} else if (flags & 0x80ul) {
 				if ((flags & 0x20ul) || (flags & 0x40ul))
 					err = 1;
+			}
+			/*
+			 * Check the (de facto) standard section names.
+			 */
+			if (!strcmp((const char *)&sect[0], ".text")) {
+				if ((flags & 0xF0ul) != 0x20ul) {
+					fputs("Error: .text\n", stderr);
+					err = 1;
+				}
+			}
+			if (!strcmp((const char *)&sect[0], ".rdata")) {
+				if ((flags & 0xF0ul) != 0x40ul) {
+					fputs("Error: .rdata\n", stderr);
+					err = 1;
+				}
+			}
+			if (!strcmp((const char *)&sect[0], ".data")) {
+				if ((flags & 0xF0ul) != 0x40ul) {
+					fputs("Error: .data\n", stderr);
+					err = 1;
+				}
+			}
+			if (!strcmp((const char *)&sect[0], ".bss")) {
+				if ((flags & 0xF0ul) != 0x80ul) {
+					fputs("Error: .bss\n", stderr);
+					err = 1;
+				}
 			}
 
 			if (data_size > ULONG_MAX - data_offset)

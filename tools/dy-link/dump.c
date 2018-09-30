@@ -17,12 +17,6 @@
  *      Linker for Dancy operating system
  */
 
-#include <errno.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "program.h"
 
 void dump_ext(const char *name, const unsigned char *buf)

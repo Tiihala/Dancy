@@ -23,6 +23,13 @@
 #define PROGRAM_CMDNAME "dy-link"
 #define PROGRAM_VERSION "0.1"
 
+#include <errno.h>
+#include <limits.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 struct options {
 	char **operands;
 	const char *error;
@@ -40,11 +47,6 @@ struct mfile {
 	int size;
 };
 
-struct symbol {
-	struct symbol *next;
-	unsigned char *data;
-};
-
 #define B8(a,b,c) (((unsigned long)((a)[(b)]) & 0xFFul) << (c))
 #define LE16(a) (B8((a),0,0) | B8((a),1,8))
 #define LE32(a) (B8((a),0,0) | B8((a),1,8) | B8((a),2,16) | B8((a),3,24))
@@ -56,6 +58,11 @@ void dump_ext(const char *name, const unsigned char *buf);
 void dump_obj(const char *name, const unsigned char *buf);
 
 /*
+ * link.c
+ */
+int link_main(struct options *opt);
+
+/*
  * program.c
  */
 int program(struct options *opt);
@@ -64,10 +71,19 @@ int program(struct options *opt);
  * section.c
  */
 int section_check_sizes(struct options *opt);
-int section_get_text_size(struct options *opt);
-int section_get_rdata_size(struct options *opt);
-int section_get_data_size(struct options *opt);
-int section_get_bss_size(struct options *opt);
+int section_sizeof_text(struct options *opt);
+int section_sizeof_text_reloc(struct options *opt);
+int section_sizeof_rdata(struct options *opt);
+int section_sizeof_rdata_reloc(struct options *opt);
+int section_sizeof_data(struct options *opt);
+int section_sizeof_data_reloc(struct options *opt);
+
+/*
+ * symbol.c
+ */
+int symbol_check_sizes(struct options *opt);
+int symbol_sizeof_string(struct options *opt);
+int symbol_sizeof_table(struct options *opt);
 
 /*
  * validate.c
