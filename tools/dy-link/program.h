@@ -51,6 +51,16 @@ struct mfile {
 #define LE16(a) (B8((a),0,0) | B8((a),1,8))
 #define LE32(a) (B8((a),0,0) | B8((a),1,8) | B8((a),2,16) | B8((a),3,24))
 
+#define W_LE16(a,d) ( \
+	*((a) + 0) = (unsigned char)(((unsigned)(d) >> 0) & 0xFFu), \
+	*((a) + 1) = (unsigned char)(((unsigned)(d) >> 8) & 0xFFu))
+
+#define W_LE32(a,d) ( \
+	*((a) + 0) = (unsigned char)(((unsigned long)(d) >>  0) & 0xFFul), \
+	*((a) + 1) = (unsigned char)(((unsigned long)(d) >>  8) & 0xFFul), \
+	*((a) + 2) = (unsigned char)(((unsigned long)(d) >> 16) & 0xFFul), \
+	*((a) + 3) = (unsigned char)(((unsigned long)(d) >> 24) & 0xFFul))
+
 /*
  * dump.c
  */
@@ -71,17 +81,23 @@ int program(struct options *opt);
  * section.c
  */
 int section_check_sizes(struct options *opt);
+int section_copy_d(struct options *opt, const char *name, unsigned char *out);
+int section_copy_r(struct options *opt, const char *name, unsigned char *out);
+int section_reloc(struct options *opt, int obj, int sec, unsigned long *addr);
 int section_sizeof_text(struct options *opt);
 int section_sizeof_text_reloc(struct options *opt);
 int section_sizeof_rdata(struct options *opt);
 int section_sizeof_rdata_reloc(struct options *opt);
 int section_sizeof_data(struct options *opt);
 int section_sizeof_data_reloc(struct options *opt);
+int section_sizeof_bss(struct options *opt);
 
 /*
  * symbol.c
  */
 int symbol_check_sizes(struct options *opt);
+int symbol_copy_table(struct options *opt, unsigned char *out);
+int symbol_process(struct options *opt, unsigned char *obj);
 int symbol_sizeof_string(struct options *opt);
 int symbol_sizeof_table(struct options *opt);
 

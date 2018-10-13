@@ -29,6 +29,80 @@ int symbol_check_sizes(struct options *opt)
 	return fputs("Error: total symbol table size\n", stderr), INT_MAX;
 }
 
+int symbol_copy_table(struct options *opt, unsigned char *out)
+{
+	int total_size = 0;
+	int i;
+
+	for (i = 0; i < opt->nr_mfiles; i++) {
+		unsigned char *buf = opt->mfiles[i].data;
+		unsigned char *sym = buf + LE32(&buf[8]);
+		int syms = (int)LE32(&buf[12]);
+		int j;
+
+		for (j = 0; j < syms; j++) {
+			unsigned long addr = 0ul;
+			unsigned long sec = LE16(&sym[12]);
+			int skip = 0;
+			int add = 18;
+
+			if (sec > 0x0000ul && sec < 0xFFFEul) {
+				int s = (int)sec;
+				s = section_reloc(opt, i, s, &addr);
+				skip = s ? 0 : 1;
+				sec = s;
+			}
+
+			if (LE32(&sym[0])) {
+				memcpy(&out[0], &sym[0], 8);
+			} else {
+				W_LE16(&out[4], i);
+				W_LE16(&out[6], j);
+			}
+
+			/*
+			 * Copy the main entries and translate the values
+			 * and section numbers.
+			 */
+			if (!skip) {
+				unsigned long s8 = LE32(&sym[8]) + addr;
+				unsigned long s12 = sec;
+				unsigned long s14 = LE16(&sym[14]);
+				unsigned char s16 = sym[16];
+
+				W_LE32(&out[8], s8);
+				W_LE16(&out[12], s12);
+				W_LE16(&out[14], s14);
+				out[16] = s16;
+			} else {
+				memcpy(&out[0], "___EMPTY", 8);
+				W_LE32(&out[8], 0xFFFFFFFFul);
+				out[16] = 2;
+			}
+
+			/*
+			 * Copy the extra entries as they are. Those will be
+			 * eventually deleted from the final object.
+			 */
+			if (sym[17]) {
+				size_t n = (size_t)((int)sym[17] * 18);
+				memcpy(out + 18, sym + 18, n);
+				out[17] = sym[17];
+				j += (int)sym[17];
+				add += (int)n;
+			}
+			out += add, sym += add;
+			total_size += add;
+		}
+	}
+	return total_size;
+}
+
+int symbol_process(struct options *opt, unsigned char *obj)
+{
+	return 0;
+}
+
 int symbol_sizeof_string(struct options *opt)
 {
 	int total_size = 0;

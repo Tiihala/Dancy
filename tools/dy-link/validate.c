@@ -260,7 +260,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 					err = 1;
 				}
 			} else {
-				if (data_offset < 0x14ul)
+				if (data_size && data_offset < 0x14ul)
 					err = 1;
 			}
 			/*
