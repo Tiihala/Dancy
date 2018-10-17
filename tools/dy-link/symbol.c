@@ -98,8 +98,74 @@ int symbol_copy_table(struct options *opt, unsigned char *out)
 	return total_size;
 }
 
+static int symbol_delete(unsigned char *obj, int sym)
+{
+	int symtab = (int)LE32(&obj[8]);
+	int syms = (int)LE32(&obj[12]);
+	int i;
+
+	if (sym >= syms)
+		return 1;
+	/*
+	 * Check that relocation entries do not point
+	 * to the symbol that will be deleted.
+	 */
+	for (i = 0; i < 3; i++) {
+		unsigned char *sec = obj + 20 + (i * 40);
+		unsigned char *r_off = obj + LE32(&sec[24]);
+		unsigned long r_num = LE16(&sec[32]);
+
+		while (r_num--) {
+			if (sym == (int)LE32(&r_off[4]))
+				return 2;
+			r_off += 10;
+		}
+	}
+
+	/*
+	 * Delete the symbol from the table.
+	 */
+	{
+		unsigned char *dst = obj + symtab + (sym * 18) + 0;
+		unsigned char *src = obj + symtab + (sym * 18) + 18;
+		size_t size = (size_t)((syms - sym - 1) * 18);
+
+		if (size)
+			memmove(dst, src, size);
+		dst = obj + symtab + (syms * 18) - 18;
+		memset(dst, 0, 18u);
+	}
+
+	/*
+	 * Fix relocation entries.
+	 */
+	for (i = 0; i < 3; i++) {
+		unsigned char *sec = obj + 20 + (i * 40);
+		unsigned char *r_off = obj + LE32(&sec[24]);
+		unsigned long r_num = LE16(&sec[32]);
+
+		while (r_num--) {
+			int s = (int)LE32(&r_off[4]);
+			if (sym < s--)
+				W_LE32(&r_off[4], s);
+			r_off += 10;
+		}
+	}
+
+	syms -= 1;
+	W_LE32(&obj[12], syms);
+	return 0;
+}
+
 int symbol_process(struct options *opt, unsigned char *obj)
 {
+	int symtab = (int)LE32(&obj[8]);
+	int syms = (int)LE32(&obj[12]);
+	int i;
+
+	for (i = 0; i < syms; i++) {
+
+	}
 	return 0;
 }
 

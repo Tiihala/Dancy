@@ -54,10 +54,29 @@ static int validate_reloc_type(unsigned arch_type, unsigned reloc_type)
 	return bytes_to_access;
 }
 
+static int validate_section_name(const char *name, size_t n)
+{
+	int err = 0;
+
+	if (n >= 6 && !strncmp(name, ".text$", 6))
+		err = 1;
+	if (n >= 6 && !strncmp(name, ".data$", 6))
+		err = 1;
+	if (n >= 7 && !strncmp(name, ".rdata$", 7))
+		err = 1;
+	if (n >= 5 && !strncmp(name, ".bss$", 5))
+		err = 1;
+
+	if (err)
+		fprintf(stderr, "Error: grouped section \"%.*s\"\n", n, name);
+	return err;
+}
+
 int validate_obj(const char *name, const unsigned char *buf, int size)
 {
 	static unsigned type;
 	unsigned long strtab_size = 0ul;
+	const unsigned char *strtab_off = NULL;
 	int total_size = 0;
 
 	if (size < 20) {
@@ -132,10 +151,12 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 		 * safe even if the data itself were not valid.
 		 */
 		offset = offset + symbols;
-		if (offset > ULONG_MAX - 4ul)
+		if (offset > ULONG_MAX - 4ul) {
 			err = 1;
-		else
+		} else {
+			strtab_off = &buf[(int)offset];
 			strtab_size = LE32(&buf[(int)offset]);
+		}
 
 		if (strtab_size < 4ul)
 			err = 1;
@@ -241,8 +262,16 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 					offset *= 10ul;
 					offset += a;
 				}
-				if (offset >= strtab_size)
+				if (offset < strtab_size) {
+					const void *t1 = strtab_off + offset;
+					size_t t2 = strlen((const char *)t1);
+					err |= validate_section_name(t1, t2);
+				} else {
 					err = 1;
+				}
+			} else {
+				const void *t1 = &sect[0];
+				err |= validate_section_name(t1, 8u);
 			}
 
 			if (LE32(&sect[8]) || LE32(&sect[12]))

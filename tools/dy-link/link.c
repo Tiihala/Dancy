@@ -160,6 +160,15 @@ int link_main(struct options *opt)
 	add_with_align((off = 0, &off), get_pre_size());
 
 	/*
+	 * Set the header values.
+	 */
+	{
+		unsigned long magic = LE16(opt->mfiles[0].data);
+		W_LE16(&out[0], magic);
+		W_LE16(&out[2], 4);
+	}
+
+	/*
 	 * Section: .text
 	 */
 	{
@@ -231,15 +240,10 @@ int link_main(struct options *opt)
 		unsigned long flags = 0xC0D00080ul;
 
 		strcpy((char *)(section + 0), name);
+		(void)section_copy_d(opt, name, NULL);
 		W_LE32(section + 16, section_sizeof_bss(opt));
 		W_LE32(section + 36, flags);
 	}
-
-	/*
-	 * Set the header values.
-	 */
-	W_LE16(out + 0, LE16(opt->mfiles[0].data));
-	W_LE16(out + 2, 4);
 
 	/*
 	 * Symbol table.

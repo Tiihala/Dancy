@@ -157,7 +157,7 @@ int section_copy_d(struct options *opt, const char *name, unsigned char *out)
 				/*
 				 * Copy the section data.
 				 */
-				if (add) {
+				if (out && add) {
 					void *t1 = (void *)(out + total_size);
 					void *t2 = (void *)(dat + off);
 					size_t t3 = (size_t)add;
