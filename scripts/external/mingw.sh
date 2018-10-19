@@ -13,7 +13,7 @@ then
     exit 1
 fi
 
-if [ -d "external/usr/bin" ] || [ -d "external/usr/src" ]
+if [ -d "external/bin" ] || [ -d "external/src" ]
 then
     echo "Error: remove previous tools first (make distclean)" 1>&2
     exit 1
@@ -24,13 +24,13 @@ which tar
 which wget
 
 export DANCY_EXTERNAL=`pwd`/external
-mkdir -p $DANCY_EXTERNAL/usr/bin
-mkdir -p $DANCY_EXTERNAL/usr/src
+mkdir -p $DANCY_EXTERNAL/bin
+mkdir -p $DANCY_EXTERNAL/src
 
-export PREFIX="$DANCY_EXTERNAL/usr"
+export PREFIX="$DANCY_EXTERNAL"
 export PATH="$PREFIX/bin:$PATH"
 
-pushd external/usr/src
+pushd external/src
     wget $BIN_LINK
     wget $GCC_LINK
     tar -xf binutils-$BIN_VERSION.tar.xz
@@ -39,12 +39,12 @@ pushd external/usr/src
     rm gcc-$GCC_VERSION.tar.xz
 popd
 
-pushd external/usr/src/gcc-$GCC_VERSION
+pushd external/src/gcc-$GCC_VERSION
     contrib/download_prerequisites
 popd
 
-mkdir external/usr/src/binutils-build
-pushd external/usr/src/binutils-build
+mkdir external/src/binutils-build
+pushd external/src/binutils-build
     ../binutils-$BIN_VERSION/configure \
         --prefix=$PREFIX \
         --target=x86_64-w64-mingw32 \
@@ -54,8 +54,8 @@ pushd external/usr/src/binutils-build
     make install
 popd
 
-mkdir external/usr/src/gcc-build
-pushd external/usr/src/gcc-build
+mkdir external/src/gcc-build
+pushd external/src/gcc-build
     which -- x86_64-w64-mingw32-as
     ../gcc-$GCC_VERSION/configure \
         --prefix=$PREFIX \
@@ -67,3 +67,6 @@ pushd external/usr/src/gcc-build
     make all-gcc
     make install-gcc
 popd
+
+rm -rf external/src
+echo "scripts/external/mingw.sh: done"

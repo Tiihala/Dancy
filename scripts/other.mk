@@ -15,7 +15,8 @@ all: $(DANCY_TARGET_ALL)
 clean:
 	@for %i in (LOADER.*) do del "%i"
 	@for /R %i in (dy-*.exe) do del "%i"
-	@for /R %i in (*.o*) do del "%i"
+	@for /R %i in (*.o) do del "%i"
+	@for /R %i in (*.obj) do del "%i"
 
 distclean: clean
 	@if exist external rmdir external /S /Q

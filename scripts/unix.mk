@@ -15,7 +15,8 @@ all: $(DANCY_TARGET_ALL)
 clean:
 	@rm -fv LOADER.*
 	@rm -fv `find bin -name "dy-*"`
-	@rm -fv `find -name "*.o*"`
+	@rm -fv `find -name "*.o"`
+	@rm -fv `find -name "*.obj"`
 
 distclean: clean
 	@rm -rf external
