@@ -21,7 +21,6 @@
 
 void dump_ext(const char *name, const unsigned char *buf)
 {
-	unsigned long section_count = LE16(&buf[2]);
 	unsigned long symtab_offset = LE32(&buf[8]);
 	unsigned long symtab_count = LE32(&buf[12]);
 	int i;
@@ -34,12 +33,11 @@ void dump_ext(const char *name, const unsigned char *buf)
 		/*
 		 * Dump only symbol table entries that are external.
 		 */
-		if (sym[16] != 0x02u) {
+		if (sym[16] != 0x02u || LE16(&sym[12]) || LE32(&sym[8])) {
 			i = i + (int)sym[17];
 			continue;
 		}
-		printf("  [%08lX]    ", (unsigned long)i);
-		printf("%08lX  ", LE32(&sym[8]));
+		printf("  [%08lX]    00000000  ", (unsigned long)i);
 		printf("%-8s", "extern");
 
 		if (LE16(&sym[14]) == 0x0000ul)
@@ -49,17 +47,7 @@ void dump_ext(const char *name, const unsigned char *buf)
 		else
 			printf("%-6s", "\?");
 
-		if (LE16(&sym[12]) == 0x0000ul)
-			printf("%-6s", "-");
-		else if (LE16(&sym[12]) == 0xFFFFul)
-			printf("%-6s", "abs");
-		else if (LE16(&sym[12]) == 0xFFFEul)
-			printf("%-6s", "dbg");
-		else if (LE16(&sym[12]) <= section_count)
-			printf("#%-5lu", LE16(&sym[12]));
-		else
-			printf("%04lX  ", LE16(&sym[12]));
-
+		printf("%-6s", "-");
 		printf("%-4s", "-");
 		if (LE32(&sym[0])) {
 			printf("-> %.8s", &sym[0]);

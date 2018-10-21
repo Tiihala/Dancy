@@ -330,7 +330,9 @@ static int match(struct options *opt, unsigned char *s1, unsigned char *s2)
 
 int symbol_process(struct options *opt, unsigned char *obj)
 {
-	static const char *err1 = "Error: unexpected symbol reference\n";
+	static const char *err1 = "Error: unknown symbol relocated\n";
+	static const char *err2 = "Error: debug symbol relocated\n";
+	static const char *err3 = "Error: absolute symbol relocated\n";
 	int symtab = (int)LE32(&obj[8]);
 	int i;
 
@@ -353,7 +355,12 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	}
 
 	/*
-	 * Delete unnecessary symbols and change types.
+	 * Delete unnecessary symbols. All but external symbols are
+	 * deleted if there are no relocation entries pointing to
+	 * them. Do not allow "section 0" if it is not an external
+	 * symbol. Also, absolute and debug symbols cannot be used
+	 * in relocation entries. This policy can be changed if it
+	 * turns out to be a problem in the future.
 	 */
 	for (i = 0; i < (int)LE32(&obj[12]); /* void */) {
 		unsigned char *sym = obj + symtab + (i * 18);
@@ -370,7 +377,22 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				continue;
 			}
 		}
-		if (sec > 4 || (unsigned)sym[16] != 2u) {
+		if (sec == 0xFFFEul) {
+			if (symbol_delete(obj, i))
+				return fputs(err2, stderr), 1;
+			continue;
+		}
+		if (sec == 0xFFFFul) {
+			if (symbol_delete(obj, i))
+				return fputs(err3, stderr), 1;
+			continue;
+		}
+		if (sec > 0x0004ul) {
+			if (symbol_delete(obj, i))
+				return fputs(err1, stderr), 1;
+			continue;
+		}
+		if ((unsigned)sym[16] != 2u) {
 			if (!symbol_delete(obj, i))
 				continue;
 		}
@@ -481,15 +503,35 @@ int symbol_process(struct options *opt, unsigned char *obj)
 						break;
 				s2 = NULL;
 			}
-			if (s1 != s2)
+			if (s2 != NULL && s1 != s2)
 				memcpy(s1, s2, 18u);
 		}
 	}
 
 	/*
+	 * Insert section symbols.
+	 */
+	{
+		int syms = (int)LE32(&obj[12]);
+		unsigned char *sym = obj + symtab + (syms * 18);
+
+		/*
+		 * Use temporary names.
+		 */
+		memset(&sym[0], 0u, (4u * 18u));
+		sym[0] = 0x54u, sym[12] = 1u, sym[16] = 3u, sym += 18;
+		sym[0] = 0x54u, sym[12] = 2u, sym[16] = 3u, sym += 18;
+		sym[0] = 0x54u, sym[12] = 3u, sym[16] = 3u, sym += 18;
+		sym[0] = 0x54u, sym[12] = 4u, sym[16] = 3u, sym += 18;
+
+		syms += 4;
+		W_LE32(&obj[12], syms);
+	}
+
+	/*
 	 * Sort all symbols.
 	 */
-	if (LE32(&obj[12])) {
+	{
 		struct { unsigned long i; void *s; void *n; } *sym;
 		size_t syms = (size_t)LE32(&obj[12]);
 		void *arr = calloc(syms, sizeof(*sym));
@@ -520,7 +562,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	/*
 	 * Merge duplicate symbols.
 	 */
-	if (LE32(&obj[12])) {
+	{
 		for (i = 0; i < ((int)LE32(&obj[12]) - 1); /* void */) {
 			unsigned char *s1 = obj + symtab + ((i + 0) * 18);
 			unsigned char *s2 = obj + symtab + ((i + 1) * 18);
@@ -533,7 +575,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				i += 1;
 				continue;
 			}
-			if (!match(opt, s1, s2)) {
+			if ((unsigned)s1[16] == 2u && !match(opt, s1, s2)) {
 				i += 1;
 				continue;
 			}
@@ -544,21 +586,39 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	}
 
 	/*
-	 * Rename non-external symbols.
+	 * Handle non-external symbols.
 	 */
-	if (LE32(&obj[12])) {
+	{
 		int syms = (int)LE32(&obj[12]);
 
 		for (i = 0; i < syms; i++) {
 			unsigned char *s = obj + symtab + (i * 18);
 
 			if ((unsigned)s[16] == 2u)
-				continue;
-			if ((unsigned)s[16] == 0xFFu)
-				s[16] = 3u;
+				break;
 
-			memset(&s[0], 0u, 8u);
-			sprintf((char *)&s[0], "_L_%u", (unsigned)i);
+			if (!LE32(&s[8]) && (unsigned)s[16] == 3u) {
+				unsigned s_num = (unsigned)LE16(&s[12]);
+				memset(&s[0], 0u, 8u);
+				s[14] = 0u, s[15] = 0u;
+
+				if (s_num == 1ul) {
+					strcpy((char *)&s[0], ".text");
+				} else if (s_num == 2ul) {
+					strcpy((char *)&s[0], ".rdata");
+				} else if (s_num == 3ul) {
+					strcpy((char *)&s[0], ".data");
+				} else if (s_num == 4ul) {
+					strcpy((char *)&s[0], ".bss");
+				} else {
+					fprintf(stderr, "Error: %u\n", s_num);
+					return 1;
+				}
+			} else {
+				memset(&s[0], 0u, 8u);
+				sprintf((char *)&s[0], "_L_%u", (unsigned)i);
+				s[14] = 0u, s[15] = 0u, s[16] = 6u;
+			}
 		}
 	}
 	return 0;
@@ -606,5 +666,5 @@ int symbol_sizeof_table(struct options *opt)
 		else
 			return INT_MAX;
 	}
-	return (total_size / 18 <= 32767) ? total_size : INT_MAX;
+	return (total_size / 18 <= 0x7FF0) ? total_size : INT_MAX;
 }

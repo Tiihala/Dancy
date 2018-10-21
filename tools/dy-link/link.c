@@ -135,12 +135,12 @@ static int set_max_size(struct options *opt, int *size)
 		return fputs("Error: overflow (string table)\n", stderr), 1;
 
 	/*
-	 * The extra space for alignments.
+	 * The extra space for alignments and symbols.
 	 */
-	if (*size < INT_MAX - (add = 256))
+	if (*size < INT_MAX - (add = 512))
 		*size += add;
 	else
-		return fputs("Error: overflow (alignment)\n", stderr), 1;
+		return fputs("Error: overflow (extra space)\n", stderr), 1;
 	return 0;
 }
 
