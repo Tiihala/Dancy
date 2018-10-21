@@ -75,9 +75,8 @@ int symbol_copy_table(struct options *opt, unsigned char *out)
 				W_LE16(&out[14], s14);
 				out[16] = s16;
 			} else {
-				memcpy(&out[0], "___EMPTY", 8);
-				W_LE32(&out[8], 0xFFFFFFFFul);
-				out[16] = 2;
+				unsigned char s16 = sym[16];
+				out[16] = s16;
 			}
 
 			/*
@@ -96,6 +95,92 @@ int symbol_copy_table(struct options *opt, unsigned char *out)
 		}
 	}
 	return total_size;
+}
+
+static int qsort_compare(const void *s1, const void *s2)
+{
+	const struct { unsigned long i; void *s; void *n; } *sym1 = s1;
+	const struct { unsigned long i; void *s; void *n; } *sym2 = s2;
+	const char *str1 = sym1->n;
+	const char *str2 = sym2->n;
+	char buf1[9];
+	char buf2[9];
+
+	if (*((unsigned char *)sym1->s)) {
+		memcpy(&buf1[0], sym1->s, 8);
+		buf1[8] = '\0';
+		str1 = &buf1[0];
+	}
+	if (*((unsigned char *)sym2->s)) {
+		memcpy(&buf2[0], sym2->s, 8);
+		buf2[8] = '\0';
+		str2 = &buf2[0];
+	}
+
+	/*
+	 * Compare class values and names.
+	 */
+	{
+		unsigned char t1 = *((unsigned char *)sym1->s + 16);
+		unsigned char t2 = *((unsigned char *)sym2->s + 16);
+		int r;
+
+		if ((unsigned)t1 != (unsigned)t2) {
+			if ((unsigned)t1 == 2u)
+				return 1;
+			if ((unsigned)t2 == 2u)
+				return -1;
+		}
+
+		if ((unsigned)t1 == 2u) {
+			if ((r = strcmp(str1, str2)) != 0)
+				return r;
+		}
+	}
+
+	/*
+	 * Compare section numbers.
+	 */
+	{
+		unsigned char *p1 = (unsigned char *)sym1->s;
+		unsigned char *p2 = (unsigned char *)sym2->s;
+		unsigned long t1 = LE16(&p1[12]);
+		unsigned long t2 = LE16(&p2[12]);
+
+		if (t1 != t2)
+			return (t1 < t2) ? -1 : 1;
+	}
+
+	/*
+	 * Compare symbol values.
+	 */
+	{
+		unsigned char *p1 = (unsigned char *)sym1->s;
+		unsigned char *p2 = (unsigned char *)sym2->s;
+		unsigned long t1 = LE32(&p1[8]);
+		unsigned long t2 = LE32(&p2[8]);
+
+		if (t1 != t2)
+			return (t1 < t2) ? -1 : 1;
+	}
+
+	/*
+	 * Compare type values.
+	 */
+	{
+		unsigned char *p1 = (unsigned char *)sym1->s;
+		unsigned char *p2 = (unsigned char *)sym2->s;
+		unsigned long t1 = LE16(&p1[14]);
+		unsigned long t2 = LE16(&p2[14]);
+
+		if (t1 != t2)
+			return (t1 < t2) ? -1 : 1;
+	}
+
+	/*
+	 * Make sure that the order is always defined.
+	 */
+	return (sym1->i < sym2->i) ? -1 : 1;
 }
 
 static int symbol_delete(unsigned char *obj, int sym)
@@ -157,14 +242,324 @@ static int symbol_delete(unsigned char *obj, int sym)
 	return 0;
 }
 
-int symbol_process(struct options *opt, unsigned char *obj)
+static void reloc_update1(unsigned char *obj, const void *arr, int n)
 {
-	int symtab = (int)LE32(&obj[8]);
-	int syms = (int)LE32(&obj[12]);
+	const struct { unsigned long i; void *s; void *n; } *table = arr;
+	int i;
+	int j;
+
+	for (i = 0; i < 3; i++) {
+		unsigned char *sec = obj + 20 + (i * 40);
+		unsigned char *r_off = obj + LE32(&sec[24]);
+		unsigned long r_num = LE16(&sec[32]);
+
+		while (r_num--) {
+			unsigned long s = (int)LE32(&r_off[4]);
+			for (j = 0; j < n; j++) {
+				if (s == table[j].i) {
+					W_LE32(&r_off[4], j);
+					break;
+				}
+			}
+			r_off += 10;
+		}
+	}
+}
+
+static void reloc_update2(unsigned char *obj, int old_s, int new_s)
+{
 	int i;
 
-	for (i = 0; i < syms; i++) {
+	for (i = 0; i < 3; i++) {
+		unsigned char *sec = obj + 20 + (i * 40);
+		unsigned char *r_off = obj + LE32(&sec[24]);
+		unsigned long r_num = LE16(&sec[32]);
 
+		while (r_num--) {
+			int s = (int)LE32(&r_off[4]);
+			if (s == old_s)
+				W_LE32(&r_off[4], new_s);
+			r_off += 10;
+		}
+	}
+}
+
+static char *get_long_name(struct options *opt, unsigned char *sym)
+{
+	static char empty[] = "";
+
+	if (!LE32(&sym[0])) {
+		int t1 = (int)LE16(&sym[4]);
+		int t2 = (int)LE16(&sym[6]);
+		unsigned char *t3 = opt->mfiles[t1].data;
+		unsigned char *t4 = t3 + LE32(&t3[8]);
+		unsigned char *t5 = t4 + LE32(&t3[12]) * 18ul;
+		unsigned char *t6 = t4 + t2 * 18;
+
+		return (char *)(t5 + LE32(&t6[4]));
+	}
+	return &empty[0];
+}
+
+static int match(struct options *opt, unsigned char *s1, unsigned char *s2)
+{
+	const char *str1;
+	const char *str2;
+	char buf1[9];
+	char buf2[9];
+
+	if (!memcmp(s1, s2, 8u))
+		return 1;
+
+	if (*s1) {
+		memcpy(&buf1[0], s1, 8u);
+		buf1[8] = '\0';
+		str1 = &buf1[0];
+	} else {
+		str1 = get_long_name(opt, s1);
+	}
+	if (*s2) {
+		memcpy(&buf2[0], s2, 8u);
+		buf2[8] = '\0';
+		str2 = &buf2[0];
+	} else {
+		str2 = get_long_name(opt, s2);
+	}
+	return (!strcmp(str1, str2)) ? 1 : 0;
+}
+
+int symbol_process(struct options *opt, unsigned char *obj)
+{
+	static const char *err1 = "Error: unexpected symbol reference\n";
+	int symtab = (int)LE32(&obj[8]);
+	int i;
+
+	/*
+	 * Delete extra records.
+	 */
+	for (i = 0; i < (int)LE32(&obj[12]); /* void */) {
+		unsigned char *sym = obj + symtab + (i * 18);
+		unsigned extra = (unsigned)sym[17];
+
+		if (extra) {
+			while (extra--) {
+				if (symbol_delete(obj, i + 1))
+					return fputs(err1, stderr), 1;
+			}
+			sym[17] = 0u;
+			continue;
+		}
+		i += 1;
+	}
+
+	/*
+	 * Delete unnecessary symbols and change types.
+	 */
+	for (i = 0; i < (int)LE32(&obj[12]); /* void */) {
+		unsigned char *sym = obj + symtab + (i * 18);
+		unsigned sec = (unsigned)LE16(&sym[12]);
+
+		if (sec == 0 && (unsigned)sym[16] == 2u) {
+			if (!symbol_delete(obj, i))
+				continue;
+		}
+		if (sec == 0 && (unsigned)sym[16] != 2u) {
+			if ((unsigned)sym[16] != 0xFFu) {
+				if (symbol_delete(obj, i))
+					return fputs(err1, stderr), 1;
+				continue;
+			}
+		}
+		if (sec > 4 || (unsigned)sym[16] != 2u) {
+			if (!symbol_delete(obj, i))
+				continue;
+		}
+		i += 1;
+	}
+
+	/*
+	 * Handle common symbols.
+	 */
+	if (LE32(&obj[12])) {
+		int syms = (int)LE32(&obj[12]);
+		int j;
+
+		for (i = 0; i < syms; i++) {
+			unsigned char *s1 = obj + symtab + (i * 18);
+			unsigned char *s2 = NULL;
+			unsigned long add = LE32(&s1[8]);
+			unsigned long bss_size = LE32(&obj[156]);
+			int err = 0;
+
+			if (!add || LE16(&s1[12]))
+				continue;
+			/*
+			 * Find the largest storage allocation.
+			 */
+			for (j = 0; j < syms; j++) {
+				s2 = obj + symtab + (j * 18);
+				if (!LE32(&s2[8]) || LE16(&s2[12]))
+					continue;
+				if (!match(opt, s1, s2))
+					continue;
+				if (add < LE32(&s2[8]))
+					add = LE32(&s2[8]);
+			}
+
+			if (add > 2ul) {
+				if (bss_size < UINT_MAX - 1ul) {
+					bss_size += 1ul;
+					bss_size &= ~(1ul);
+				} else {
+					err = 1;
+				}
+			} else if (add == 4ul) {
+				if (bss_size < UINT_MAX - 3ul) {
+					bss_size += 3ul;
+					bss_size &= ~(3ul);
+				} else {
+					err = 1;
+				}
+			} else if (add != 1ul) {
+				if (bss_size < UINT_MAX - 7ul) {
+					bss_size += 7ul;
+					bss_size &= ~(7ul);
+				} else {
+					err = 1;
+				}
+			}
+
+			W_LE32(&s1[8], bss_size);
+			W_LE16(&s1[12], 4ul);
+
+			for (j = 0; j < syms; j++) {
+				s2 = obj + symtab + (j * 18);
+				if (!LE32(&s2[8]) || LE16(&s2[12]))
+					continue;
+				if (!match(opt, s1, s2))
+					continue;
+				W_LE32(&s2[8], bss_size);
+				W_LE16(&s2[12], 4ul);
+			}
+
+			if (bss_size < UINT_MAX - add) {
+				bss_size += add;
+				if (bss_size >= 0xFFFF0000ul)
+					err = 1;
+			} else {
+				err = 1;
+			}
+			if (err) {
+				fputs("Error: .bss overflow\n", stderr);
+				return 1;
+			}
+			W_LE32(&obj[156], bss_size);
+		}
+	}
+
+	/*
+	 * Link symbols.
+	 */
+	if (LE32(&obj[12])) {
+		int syms = (int)LE32(&obj[12]);
+		int j;
+
+		for (i = 0; i < syms; i++) {
+			unsigned char *s1 = obj + symtab + (i * 18);
+			unsigned char *s2 = NULL;
+			unsigned type = (unsigned)s1[16];
+
+			if (LE32(&s1[8]) || LE16(&s1[12]))
+				continue;
+			if (type != 2u && type != 0xFFu)
+				continue;
+
+			for (j = 0; j < syms; j++) {
+				s2 = obj + symtab + (j * 18);
+				if ((unsigned)s2[16] == type && LE16(&s2[12]))
+					if (match(opt, s1, s2))
+						break;
+				s2 = NULL;
+			}
+			if (s1 != s2)
+				memcpy(s1, s2, 18u);
+		}
+	}
+
+	/*
+	 * Sort all symbols.
+	 */
+	if (LE32(&obj[12])) {
+		struct { unsigned long i; void *s; void *n; } *sym;
+		size_t syms = (size_t)LE32(&obj[12]);
+		void *arr = calloc(syms, sizeof(*sym));
+		void *buf = calloc(syms, 18u);
+
+		if (!arr || !buf) {
+			fputs("Error: not enough memory\n", stderr);
+			free(buf), free(arr);
+			return 1;
+		}
+		for (i = 0, sym = arr; i < (int)syms; i++) {
+			unsigned char *s = obj + symtab + (i * 18);
+			sym->i = (unsigned long)i;
+			sym->s = s;
+			sym->n = get_long_name(opt, s);
+			sym += 1;
+		}
+		qsort(arr, syms, sizeof(*sym), qsort_compare);
+		for (i = 0, sym = arr; i < (int)syms; i++) {
+			memcpy((unsigned char *)buf + (i * 18), sym->s, 18u);
+			sym += 1;
+		}
+		memcpy(obj + symtab, buf, (syms * 18u));
+		reloc_update1(obj, arr, syms);
+		free(buf), free(arr);
+	}
+
+	/*
+	 * Merge duplicate symbols.
+	 */
+	if (LE32(&obj[12])) {
+		for (i = 0; i < ((int)LE32(&obj[12]) - 1); /* void */) {
+			unsigned char *s1 = obj + symtab + ((i + 0) * 18);
+			unsigned char *s2 = obj + symtab + ((i + 1) * 18);
+
+			if (memcmp(&s1[8], &s2[8], 6u)) {
+				i += 1;
+				continue;
+			}
+			if ((unsigned)s1[16] != (unsigned)s2[16]) {
+				i += 1;
+				continue;
+			}
+			if (!match(opt, s1, s2)) {
+				i += 1;
+				continue;
+			}
+			reloc_update2(obj, i + 1, i);
+			if (symbol_delete(obj, i + 1))
+				return fputs(err1, stderr), 1;
+		}
+	}
+
+	/*
+	 * Rename non-external symbols.
+	 */
+	if (LE32(&obj[12])) {
+		int syms = (int)LE32(&obj[12]);
+
+		for (i = 0; i < syms; i++) {
+			unsigned char *s = obj + symtab + (i * 18);
+
+			if ((unsigned)s[16] == 2u)
+				continue;
+			if ((unsigned)s[16] == 0xFFu)
+				s[16] = 3u;
+
+			memset(&s[0], 0u, 8u);
+			sprintf((char *)&s[0], "_L_%u", (unsigned)i);
+		}
 	}
 	return 0;
 }

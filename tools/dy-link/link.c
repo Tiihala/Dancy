@@ -160,6 +160,33 @@ int link_main(struct options *opt)
 	add_with_align((off = 0, &off), get_pre_size());
 
 	/*
+	 * Handle "duplicate" sections.
+	 */
+	{
+		int i;
+		int j;
+
+		/*
+		 * Replace special value 0xFF with 0x06 (label).
+		 */
+		for (i = 0; i < opt->nr_mfiles; i++) {
+			unsigned char *dat = opt->mfiles[i].data;
+			unsigned char *sym = dat + LE32(&dat[8]);
+			int syms = (int)LE32(&dat[12]);
+
+			for (j = 0; j < syms; j++) {
+				if ((unsigned)sym[16] == 0xFFu)
+					sym[16] = 6u;
+				if ((unsigned)sym[17]) {
+					j += (int)sym[17];
+					sym += (int)sym[17] * 18;
+				}
+				sym += 18;
+			}
+		}
+	}
+
+	/*
 	 * Set the header values.
 	 */
 	{
