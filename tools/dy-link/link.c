@@ -80,40 +80,40 @@ static int set_max_size(struct options *opt, int *size)
 	*size = get_pre_size();
 
 	/*
-	 * Section .text data and relocation.
+	 * Section .text and relocation.
 	 */
-	if (*size < INT_MAX - (add = section_sizeof_text(opt)))
+	if (*size < INT_MAX - (add = section_data_size(opt, ".text")))
 		*size += add;
 	else
 		return fputs("Error: overflow (.text)\n", stderr), 1;
 
-	if (*size < INT_MAX - (add = section_sizeof_text_reloc(opt)))
+	if (*size < INT_MAX - (add = section_reloc_size(opt, ".text")))
 		*size += add;
 	else
 		return fputs("Error: overflow (.text reloc)\n", stderr), 1;
 
 	/*
-	 * Section .rdata data and relocation.
+	 * Section .rdata and relocation.
 	 */
-	if (*size < INT_MAX - (add = section_sizeof_rdata(opt)))
+	if (*size < INT_MAX - (add = section_data_size(opt, ".rdata")))
 		*size += add;
 	else
 		return fputs("Error: overflow (.rdata)\n", stderr), 1;
 
-	if (*size < INT_MAX - (add = section_sizeof_rdata_reloc(opt)))
+	if (*size < INT_MAX - (add = section_reloc_size(opt, ".rdata")))
 		*size += add;
 	else
 		return fputs("Error: overflow (.rdata reloc)\n", stderr), 1;
 
 	/*
-	 * Section .data data and relocation.
+	 * Section .data and relocation.
 	 */
-	if (*size < INT_MAX - (add = section_sizeof_data(opt)))
+	if (*size < INT_MAX - (add = section_data_size(opt, ".data")))
 		*size += add;
 	else
 		return fputs("Error: overflow (.data)\n", stderr), 1;
 
-	if (*size < INT_MAX - (add = section_sizeof_data_reloc(opt)))
+	if (*size < INT_MAX - (add = section_reloc_size(opt, ".data")))
 		*size += add;
 	else
 		return fputs("Error: overflow (.data reloc)\n", stderr), 1;
@@ -121,7 +121,7 @@ static int set_max_size(struct options *opt, int *size)
 	/*
 	 * The symbol table.
 	 */
-	if (*size < INT_MAX - (add = symbol_sizeof_table(opt)))
+	if (*size < INT_MAX - (add = symbol_table_size(opt)))
 		*size += add;
 	else
 		return fputs("Error: overflow (symbol table)\n", stderr), 1;
@@ -129,7 +129,7 @@ static int set_max_size(struct options *opt, int *size)
 	/*
 	 * The string table.
 	 */
-	if (*size < INT_MAX - (add = symbol_sizeof_string(opt)))
+	if (*size < INT_MAX - (add = symbol_string_size(opt)))
 		*size += add;
 	else
 		return fputs("Error: overflow (string table)\n", stderr), 1;
@@ -265,10 +265,11 @@ int link_main(struct options *opt)
 		const char *name = ".bss";
 		unsigned char *section = out + 20 + 3 * 40;
 		unsigned long flags = 0xC0D00080ul;
+		unsigned long nbytes = section_data_size(opt, ".bss");
 
 		strcpy((char *)(section + 0), name);
 		(void)section_copy_d(opt, name, NULL);
-		W_LE32(section + 16, section_sizeof_bss(opt));
+		W_LE32(section + 16, nbytes);
 		W_LE32(section + 36, flags);
 	}
 

@@ -43,15 +43,5 @@ int program(struct options *opt)
 		if (symbol_check_sizes(opt) == INT_MAX)
 			return 1;
 	}
-	if (opt->dump) {
-		const char *fmt = "\n  **** Total of %i file%s ****\n\n";
-		printf(fmt, opt->nr_mfiles, (opt->nr_mfiles > 1) ? "s" : "");
-
-		printf("size_of_text:   %08X\n", section_sizeof_text(opt));
-		printf("size_of_rdata:  %08X\n", section_sizeof_rdata(opt));
-		printf("size_of_data:   %08X\n", section_sizeof_data(opt));
-		printf("size_of_symtab: %08X\n", symbol_sizeof_table(opt));
-		printf("size_of_strtab: %08X\n", symbol_sizeof_string(opt));
-	}
 	return link_main(opt);
 }

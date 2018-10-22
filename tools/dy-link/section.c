@@ -19,7 +19,7 @@
 
 #include "program.h"
 
-static int section_data_size(struct options *opt, const char *name)
+int section_data_size(struct options *opt, const char *name)
 {
 	int total_size = 0;
 	int i;
@@ -64,7 +64,7 @@ static int section_data_size(struct options *opt, const char *name)
 	return total_size;
 }
 
-static int section_reloc_size(struct options *opt, const char *name)
+int section_reloc_size(struct options *opt, const char *name)
 {
 	int total_size = 0;
 	int i;
@@ -229,39 +229,4 @@ int section_reloc(struct options *opt, int obj, int sec, unsigned long *addr)
 	if (!strcmp((char *)dat, ".bss"))
 		return 4;
 	return 0;
-}
-
-int section_sizeof_text(struct options *opt)
-{
-	return section_data_size(opt, ".text");
-}
-
-int section_sizeof_text_reloc(struct options *opt)
-{
-	return section_reloc_size(opt, ".text");
-}
-
-int section_sizeof_rdata(struct options *opt)
-{
-	return section_data_size(opt, ".rdata");
-}
-
-int section_sizeof_rdata_reloc(struct options *opt)
-{
-	return section_reloc_size(opt, ".rdata");
-}
-
-int section_sizeof_data(struct options *opt)
-{
-	return section_data_size(opt, ".data");
-}
-
-int section_sizeof_data_reloc(struct options *opt)
-{
-	return section_reloc_size(opt, ".data");
-}
-
-int section_sizeof_bss(struct options *opt)
-{
-	return section_data_size(opt, ".bss");
 }

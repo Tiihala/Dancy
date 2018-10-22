@@ -84,13 +84,8 @@ int section_check_sizes(struct options *opt);
 int section_copy_d(struct options *opt, const char *name, unsigned char *out);
 int section_copy_r(struct options *opt, const char *name, unsigned char *out);
 int section_reloc(struct options *opt, int obj, int sec, unsigned long *addr);
-int section_sizeof_text(struct options *opt);
-int section_sizeof_text_reloc(struct options *opt);
-int section_sizeof_rdata(struct options *opt);
-int section_sizeof_rdata_reloc(struct options *opt);
-int section_sizeof_data(struct options *opt);
-int section_sizeof_data_reloc(struct options *opt);
-int section_sizeof_bss(struct options *opt);
+int section_data_size(struct options *opt, const char *name);
+int section_reloc_size(struct options *opt, const char *name);
 
 /*
  * symbol.c
@@ -98,8 +93,8 @@ int section_sizeof_bss(struct options *opt);
 int symbol_check_sizes(struct options *opt);
 int symbol_copy_table(struct options *opt, unsigned char *out);
 int symbol_process(struct options *opt, unsigned char *obj);
-int symbol_sizeof_string(struct options *opt);
-int symbol_sizeof_table(struct options *opt);
+int symbol_string_size(struct options *opt);
+int symbol_table_size(struct options *opt);
 
 /*
  * validate.c

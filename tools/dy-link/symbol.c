@@ -21,8 +21,8 @@
 
 int symbol_check_sizes(struct options *opt)
 {
-	int s1 = symbol_sizeof_string(opt);
-	int s2 = symbol_sizeof_table(opt);
+	int s1 = symbol_string_size(opt);
+	int s2 = symbol_table_size(opt);
 
 	if (s1 < INT_MAX - s2)
 		return s1 + s2;
@@ -183,7 +183,7 @@ static int qsort_compare(const void *s1, const void *s2)
 	return (sym1->i < sym2->i) ? -1 : 1;
 }
 
-static int symbol_delete(unsigned char *obj, int sym)
+static int delete_record(unsigned char *obj, int sym)
 {
 	int symtab = (int)LE32(&obj[8]);
 	int syms = (int)LE32(&obj[12]);
@@ -345,7 +345,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 
 		if (extra) {
 			while (extra--) {
-				if (symbol_delete(obj, i + 1))
+				if (delete_record(obj, i + 1))
 					return fputs(err1, stderr), 1;
 			}
 			sym[17] = 0u;
@@ -367,33 +367,33 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		unsigned sec = (unsigned)LE16(&sym[12]);
 
 		if (sec == 0 && (unsigned)sym[16] == 2u) {
-			if (!symbol_delete(obj, i))
+			if (!delete_record(obj, i))
 				continue;
 		}
 		if (sec == 0 && (unsigned)sym[16] != 2u) {
 			if ((unsigned)sym[16] != 0xFFu) {
-				if (symbol_delete(obj, i))
+				if (delete_record(obj, i))
 					return fputs(err1, stderr), 1;
 				continue;
 			}
 		}
 		if (sec == 0xFFFEul) {
-			if (symbol_delete(obj, i))
+			if (delete_record(obj, i))
 				return fputs(err2, stderr), 1;
 			continue;
 		}
 		if (sec == 0xFFFFul) {
-			if (symbol_delete(obj, i))
+			if (delete_record(obj, i))
 				return fputs(err3, stderr), 1;
 			continue;
 		}
 		if (sec > 0x0004ul) {
-			if (symbol_delete(obj, i))
+			if (delete_record(obj, i))
 				return fputs(err1, stderr), 1;
 			continue;
 		}
 		if ((unsigned)sym[16] != 2u) {
-			if (!symbol_delete(obj, i))
+			if (!delete_record(obj, i))
 				continue;
 		}
 		i += 1;
@@ -580,7 +580,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				continue;
 			}
 			reloc_update2(obj, i + 1, i);
-			if (symbol_delete(obj, i + 1))
+			if (delete_record(obj, i + 1))
 				return fputs(err1, stderr), 1;
 		}
 	}
@@ -624,7 +624,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	return 0;
 }
 
-int symbol_sizeof_string(struct options *opt)
+int symbol_string_size(struct options *opt)
 {
 	int total_size = 0;
 	int i;
@@ -652,7 +652,7 @@ int symbol_sizeof_string(struct options *opt)
 	return (total_size) ? total_size + 4 : 0;
 }
 
-int symbol_sizeof_table(struct options *opt)
+int symbol_table_size(struct options *opt)
 {
 	int total_size = 0;
 	int i;
