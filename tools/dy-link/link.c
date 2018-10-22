@@ -210,6 +210,10 @@ int link_main(struct options *opt)
 		W_LE32(section + 20, nbytes ? off : 0);
 		add_with_align(&off, nbytes);
 		nbytes = section_copy_r(opt, name, out + off);
+		if ((unsigned)nbytes / 10u > 0xFFFEu) {
+			fputs("Error: too many .text relocations\n", stderr);
+			return free(out), 1;
+		}
 		W_LE32(section + 24, nbytes ? off : 0);
 		W_LE16(section + 32, nbytes / 10);
 		add_with_align(&off, nbytes);
@@ -231,6 +235,10 @@ int link_main(struct options *opt)
 		W_LE32(section + 20, nbytes ? off : 0);
 		add_with_align(&off, nbytes);
 		nbytes = section_copy_r(opt, name, out + off);
+		if ((unsigned)nbytes / 10u > 0xFFFEu) {
+			fputs("Error: too many .rdata relocations\n", stderr);
+			return free(out), 1;
+		}
 		W_LE32(section + 24, nbytes ? off : 0);
 		W_LE16(section + 32, nbytes / 10);
 		add_with_align(&off, nbytes);
@@ -252,6 +260,10 @@ int link_main(struct options *opt)
 		W_LE32(section + 20, nbytes ? off : 0);
 		add_with_align(&off, nbytes);
 		nbytes = section_copy_r(opt, name, out + off);
+		if ((unsigned)nbytes / 10u > 0xFFFEu) {
+			fputs("Error: too many .data relocations\n", stderr);
+			return free(out), 1;
+		}
 		W_LE32(section + 24, nbytes ? off : 0);
 		W_LE16(section + 32, nbytes / 10);
 		add_with_align(&off, nbytes);
@@ -265,7 +277,7 @@ int link_main(struct options *opt)
 		const char *name = ".bss";
 		unsigned char *section = out + 20 + 3 * 40;
 		unsigned long flags = 0xC0D00080ul;
-		unsigned long nbytes = section_data_size(opt, ".bss");
+		int nbytes = section_data_size(opt, ".bss");
 
 		strcpy((char *)(section + 0), name);
 		(void)section_copy_d(opt, name, NULL);

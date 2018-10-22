@@ -131,7 +131,9 @@ static int qsort_compare(const void *s1, const void *s2)
 			if ((unsigned)t2 == 2u)
 				return -1;
 		}
-
+		/*
+		 * Only externals are sorted by name.
+		 */
 		if ((unsigned)t1 == 2u) {
 			if ((r = strcmp(str1, str2)) != 0)
 				return r;
@@ -328,11 +330,18 @@ static int match(struct options *opt, unsigned char *s1, unsigned char *s2)
 	return (!strcmp(str1, str2)) ? 1 : 0;
 }
 
+static void reloc_error(unsigned sec)
+{
+	if (sec == 0xFFFEu)
+		fputs("Error: relocations to debug symbol\n", stderr);
+	else if (sec == 0xFFFFu)
+		fputs("Error: relocations to absolute symbol\n", stderr);
+	else
+		fputs("Error: relocations to unknown symbol\n", stderr);
+}
+
 int symbol_process(struct options *opt, unsigned char *obj)
 {
-	static const char *err1 = "Error: unknown symbol relocated\n";
-	static const char *err2 = "Error: debug symbol relocated\n";
-	static const char *err3 = "Error: absolute symbol relocated\n";
 	int symtab = (int)LE32(&obj[8]);
 	int i;
 
@@ -346,7 +355,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		if (extra) {
 			while (extra--) {
 				if (delete_record(obj, i + 1))
-					return fputs(err1, stderr), 1;
+					return reloc_error(0), 1;
 			}
 			sym[17] = 0u;
 			continue;
@@ -373,23 +382,23 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		if (sec == 0 && (unsigned)sym[16] != 2u) {
 			if ((unsigned)sym[16] != 0xFFu) {
 				if (delete_record(obj, i))
-					return fputs(err1, stderr), 1;
+					return reloc_error(0), 1;
 				continue;
 			}
 		}
-		if (sec == 0xFFFEul) {
+		if (sec == 0xFFFEu) {
 			if (delete_record(obj, i))
-				return fputs(err2, stderr), 1;
+				return reloc_error(sec), 1;
 			continue;
 		}
-		if (sec == 0xFFFFul) {
+		if (sec == 0xFFFFu) {
 			if (delete_record(obj, i))
-				return fputs(err3, stderr), 1;
+				return reloc_error(sec), 1;
 			continue;
 		}
-		if (sec > 0x0004ul) {
+		if (sec > 0x0004u) {
 			if (delete_record(obj, i))
-				return fputs(err1, stderr), 1;
+				return reloc_error(0), 1;
 			continue;
 		}
 		if ((unsigned)sym[16] != 2u) {
@@ -581,7 +590,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			}
 			reloc_update2(obj, i + 1, i);
 			if (delete_record(obj, i + 1))
-				return fputs(err1, stderr), 1;
+				return reloc_error(0), 1;
 		}
 	}
 
