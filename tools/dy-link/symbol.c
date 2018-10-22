@@ -386,12 +386,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				continue;
 			}
 		}
-		if (sec == 0xFFFEu) {
-			if (delete_record(obj, i))
-				return reloc_error(sec), 1;
-			continue;
-		}
-		if (sec == 0xFFFFu) {
+		if (sec == 0xFFFEu || sec == 0xFFFFu) {
 			if (delete_record(obj, i))
 				return reloc_error(sec), 1;
 			continue;
@@ -437,24 +432,27 @@ int symbol_process(struct options *opt, unsigned char *obj)
 					add = LE32(&s2[8]);
 			}
 
-			if (add > 2ul) {
-				if (bss_size < UINT_MAX - 1ul) {
-					bss_size += 1ul;
-					bss_size &= ~(1ul);
+			/*
+			 * Adjust the alignment of the symbol.
+			 */
+			if (add == 2ul || add == 4ul || add == 8ul) {
+				if (bss_size < UINT_MAX - (add - 1ul)) {
+					bss_size += (add - 1ul);
+					bss_size &= ~(add - 1ul);
 				} else {
 					err = 1;
 				}
-			} else if (add == 4ul) {
-				if (bss_size < UINT_MAX - 3ul) {
-					bss_size += 3ul;
-					bss_size &= ~(3ul);
+			} else if (add > 1ul && add < 8ul) {
+				if (bss_size < UINT_MAX - 7ul) {
+					bss_size += 7ul;
+					bss_size &= ~(7ul);
 				} else {
 					err = 1;
 				}
 			} else if (add != 1ul) {
-				if (bss_size < UINT_MAX - 7ul) {
-					bss_size += 7ul;
-					bss_size &= ~(7ul);
+				if (bss_size < UINT_MAX - 15ul) {
+					bss_size += 15ul;
+					bss_size &= ~(15ul);
 				} else {
 					err = 1;
 				}
