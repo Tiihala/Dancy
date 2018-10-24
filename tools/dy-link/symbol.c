@@ -471,14 +471,12 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				W_LE16(&s2[12], 4ul);
 			}
 
-			if (bss_size < UINT_MAX - add) {
+			if (bss_size < UINT_MAX - add)
 				bss_size += add;
-				if (bss_size >= 0xFFFF0000ul)
-					err = 1;
-			} else {
+			else
 				err = 1;
-			}
-			if (err) {
+
+			if (err || !(bss_size < 0x7FFFFFFFul)) {
 				fputs("Error: .bss overflow\n", stderr);
 				return 1;
 			}

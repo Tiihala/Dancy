@@ -115,9 +115,12 @@ int section_check_sizes(struct options *opt)
 				continue;
 			}
 		}
-		return fputs("Error: total size\n", stderr), INT_MAX;
+		total_size = INT_MAX;
+		break;
 	}
-	return total_size;
+	if (total_size < INT_MAX && (unsigned long)total_size < 0x7FFFFFFFul)
+		return total_size;
+	return fputs("Error: total size of sections\n", stderr), INT_MAX;
 }
 
 int section_copy_d(struct options *opt, const char *name, unsigned char *out)

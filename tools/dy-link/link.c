@@ -137,11 +137,23 @@ static int set_max_size(struct options *opt, int *size)
 	/*
 	 * The extra space for alignments and symbols.
 	 */
-	if (*size < INT_MAX - (add = 512))
+	if (*size < INT_MAX - (add = 512)) {
 		*size += add;
-	else
+		*size = (int)((unsigned)(*size) & ~(31u));
+	} else {
 		return fputs("Error: overflow (extra space)\n", stderr), 1;
-	return 0;
+	}
+
+	/*
+	 * Check the total file size. If sizeof(int) were larger
+	 * than 4 bytes, this error could happen. The object file
+	 * format does not support very large objects so this is
+	 * the simplest way to make sure that all values fit into
+	 * the variables.
+	 */
+	if ((unsigned long)(*size) < 0x7FFFFFFFul)
+		return 0;
+	return fputs("Error: overflow (file size)\n", stderr), 1;
 }
 
 int link_main(struct options *opt)
@@ -302,6 +314,35 @@ int link_main(struct options *opt)
 	}
 
 	/*
+	 * Check the memory layout.
+	 */
+	{
+		unsigned char *section = out + 20;
+		unsigned long total_size = 0ul;
+		int err = 0;
+		int i;
+
+		for (i = 0; i < 4; i++, section += 40) {
+			unsigned long add = LE32(&section[16]);
+			if (add < ULONG_MAX - 4095ul) {
+				add += 4095ul;
+				add &= ~(4095ul);
+				if (total_size < ULONG_MAX - add) {
+					total_size += add;
+					continue;
+				}
+			}
+			err = 1;
+			break;
+		}
+		if (err || !(total_size < 0x7FFFFFFFul)) {
+			const char *e = "Error: memory layout, %08lX bytes\n";
+			fprintf(stderr, e, total_size);
+			return free(out), 1;
+		}
+	}
+
+	/*
 	 * String table.
 	 */
 	{
@@ -336,10 +377,15 @@ int link_main(struct options *opt)
 		off += strs;
 	}
 
+	if (opt->verbose) {
+		printf("Output buffer, %i bytes\n", size);
+		printf("Output file, %i bytes\n", off);
+	}
+
 	/*
 	 * Adjust the size and write the output.
 	 */
-	if (off >= size - 32)
+	if (off >= size - 128)
 		fputs("Error: buffer overflow\n", stderr), exit(1);
 	size = off;
 	return end(opt, out, (size_t)size);
