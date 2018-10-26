@@ -50,6 +50,17 @@ static int end(struct options *opt, unsigned char *out, size_t size)
 	return fclose(fp) ? perror("Error"), 1 : 0;
 }
 
+static int duplicate(const char *name, int obj, int sym, int type)
+{
+	if (type == INT_MAX) {
+		fputs("Error: inconsistent symbol table", stderr);
+		return 1;
+	}
+	if (name)
+		printf("duplicate: %i %i %i %s\n", type, sym, obj, name);
+	return 0;
+}
+
 static int get_pre_size(void)
 {
 	/*
@@ -178,17 +189,60 @@ int link_main(struct options *opt)
 		int i;
 		int j;
 
-		/*
-		 * Replace special value 0xFF with 0x06 (label).
-		 */
 		for (i = 0; i < opt->nr_mfiles; i++) {
 			unsigned char *dat = opt->mfiles[i].data;
 			unsigned char *sym = dat + LE32(&dat[8]);
+			const char *str = (char *)sym + LE32(&dat[12]) * 18ul;
 			int syms = (int)LE32(&dat[12]);
+			int state = 0;
 
 			for (j = 0; j < syms; j++) {
-				if ((unsigned)sym[16] == 0xFFu)
+				unsigned type = (unsigned)sym[16];
+
+				if (type == 0xFFu)
 					sym[16] = 6u;
+
+				if (!state && type == 3u && !LE32(&sym[8])) {
+					const char *n = (const char *)&sym[0];
+					int sec = (int)LE16(&sym[12]);
+					if (!strcmp(n, ".rdata"))
+						state = 1;
+					if (!strcmp(n, ".text"))
+						state = 1;
+					if (!sec)
+						state = 0;
+					if (sym[17] && !sym[18 + 14])
+						state = 0;
+					if (state) {
+						unsigned char *t1 = dat + 20;
+						t1 += (sec - 1) * 40;
+						if (memcmp(t1, n, 8u))
+							state = 0;
+						if (!(t1[37] & 0x10u))
+							state = 0;
+					}
+					state = state ? (int)sym[17] : 0;
+				} else if (state) {
+					unsigned char *t1 = sym - state * 18;
+					unsigned char *t2 = t1 - 18;
+					int t3 = (int)(*(t1 + 14));
+					const char *n;
+					char buf[9];
+
+					if (LE32(&sym[0])) {
+						memcpy(&buf[0], sym, 8u);
+						buf[8] = '\0';
+						n = &buf[0];
+					} else {
+						n = str + LE32(&sym[4]);
+					}
+					if (LE16(&sym[12]) != LE16(&t2[12]))
+						t3 = INT_MAX;
+					if (duplicate(n, i, j, t3))
+						return free(out), 1;
+					state = 0;
+				}
+
 				if ((unsigned)sym[17]) {
 					j += (int)sym[17];
 					sym += (int)sym[17] * 18;
@@ -196,6 +250,8 @@ int link_main(struct options *opt)
 				sym += 18;
 			}
 		}
+		if (duplicate(NULL, 0, 0, 0))
+			return free(out), 1;
 	}
 
 	/*

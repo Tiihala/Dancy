@@ -591,7 +591,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	}
 
 	/*
-	 * Handle non-external symbols.
+	 * Handle non-external symbols and detect multiply defined externals.
 	 */
 	{
 		int syms = (int)LE32(&obj[12]);
@@ -605,7 +605,6 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			if (!LE32(&s[8]) && (unsigned)s[16] == 3u) {
 				unsigned s_num = (unsigned)LE16(&s[12]);
 				memset(&s[0], 0u, 8u);
-				s[14] = 0u, s[15] = 0u;
 
 				if (s_num == 1ul) {
 					strcpy((char *)&s[0], ".text");
@@ -622,8 +621,33 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			} else {
 				memset(&s[0], 0u, 8u);
 				sprintf((char *)&s[0], "_L_%u", (unsigned)i);
-				s[14] = 0u, s[15] = 0u, s[16] = 6u;
+				s[16] = 6u;
 			}
+			s[14] = 0u, s[15] = 0u;
+		}
+		while (i < syms - 1) {
+			unsigned char *s1 = obj + symtab + ((i + 0) * 18);
+			unsigned char *s2 = obj + symtab + ((i + 1) * 18);
+			unsigned long t1 = LE32(&s1[0]);
+			unsigned long t2 = LE32(&s2[0]);
+
+			if (t1 && t2 && (t1 != t2)) {
+				i += 1;
+				continue;
+			}
+			if (match(opt, s1, s2)) {
+				const char *name = (const char *)s1;
+				fputs("Error: symbol \"", stderr);
+				if (t1) {
+					fprintf(stderr, "%.8s", name);
+				} else {
+					name = get_long_name(opt, s1);
+					fprintf(stderr, "%s", name);
+				}
+				fputs("\" multiply defined\n", stderr);
+				return 1;
+			}
+			i += 1;
 		}
 	}
 	return 0;
