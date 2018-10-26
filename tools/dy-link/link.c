@@ -50,14 +50,16 @@ static int end(struct options *opt, unsigned char *out, size_t size)
 	return fclose(fp) ? perror("Error"), 1 : 0;
 }
 
-static int duplicate(const char *name, int obj, int sym, int type)
+static int duplicate(unsigned char *obj, unsigned char *sym, int type)
 {
-	if (type == INT_MAX) {
-		fputs("Error: inconsistent symbol table", stderr);
-		return 1;
+	unsigned char *str = obj + LE32(&obj[8]) + (LE32(&obj[12]) * 18ul);
+
+	if (!obj)
+		return 0;
+	if (!LE32(&sym[0])) {
+		printf("duplicate (%i): %s\n", type, str + LE32(&sym[4]));
 	}
-	if (name)
-		printf("duplicate: %i %i %i %s\n", type, sym, obj, name);
+
 	return 0;
 }
 
@@ -175,24 +177,18 @@ int link_main(struct options *opt)
 
 	if (!opt->arg_o)
 		return 0;
-	if (set_max_size(opt, &size))
-		return 0;
-	out = calloc((size_t)size, sizeof(unsigned char));
-	if (!out)
-		return fputs("Error: not enough memory\n", stderr), 1;
-	add_with_align((off = 0, &off), get_pre_size());
 
 	/*
 	 * Handle "duplicate" sections.
 	 */
 	{
+		static const char *err = "Error: inconsistent symbol table\n";
 		int i;
 		int j;
 
 		for (i = 0; i < opt->nr_mfiles; i++) {
 			unsigned char *dat = opt->mfiles[i].data;
 			unsigned char *sym = dat + LE32(&dat[8]);
-			const char *str = (char *)sym + LE32(&dat[12]) * 18ul;
 			int syms = (int)LE32(&dat[12]);
 			int state = 0;
 
@@ -226,20 +222,13 @@ int link_main(struct options *opt)
 					unsigned char *t1 = sym - state * 18;
 					unsigned char *t2 = t1 - 18;
 					int t3 = (int)(*(t1 + 14));
-					const char *n;
-					char buf[9];
 
-					if (LE32(&sym[0])) {
-						memcpy(&buf[0], sym, 8u);
-						buf[8] = '\0';
-						n = &buf[0];
-					} else {
-						n = str + LE32(&sym[4]);
+					if (LE16(&sym[12]) != LE16(&t2[12])) {
+						fputs(err, stderr);
+						return 1;
 					}
-					if (LE16(&sym[12]) != LE16(&t2[12]))
-						t3 = INT_MAX;
-					if (duplicate(n, i, j, t3))
-						return free(out), 1;
+					if (duplicate(dat, sym, t3))
+						return 1;
 					state = 0;
 				}
 
@@ -250,9 +239,18 @@ int link_main(struct options *opt)
 				sym += 18;
 			}
 		}
-		if (duplicate(NULL, 0, 0, 0))
-			return free(out), 1;
+		(void)duplicate(NULL, NULL, 0);
 	}
+
+	/*
+	 * Allocate the buffer.
+	 */
+	if (set_max_size(opt, &size))
+		return 0;
+	out = calloc((size_t)size, sizeof(unsigned char));
+	if (!out)
+		return fputs("Error: not enough memory\n", stderr), 1;
+	add_with_align((off = 0, &off), get_pre_size());
 
 	/*
 	 * Set the header values.
