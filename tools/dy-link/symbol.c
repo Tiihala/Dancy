@@ -576,10 +576,6 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				i += 1;
 				continue;
 			}
-			if ((unsigned)s1[16] != (unsigned)s2[16]) {
-				i += 1;
-				continue;
-			}
 			if ((unsigned)s1[16] == 2u && !match(opt, s1, s2)) {
 				i += 1;
 				continue;
@@ -602,7 +598,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			if ((unsigned)s[16] == 2u)
 				break;
 
-			if (!LE32(&s[8]) && (unsigned)s[16] == 3u) {
+			if (!LE32(&s[8])) {
 				unsigned s_num = (unsigned)LE16(&s[12]);
 				memset(&s[0], 0u, 8u);
 
@@ -618,6 +614,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 					fprintf(stderr, "Error: %u\n", s_num);
 					return 1;
 				}
+				s[16] = 3u;
 			} else {
 				memset(&s[0], 0u, 8u);
 				sprintf((char *)&s[0], "_L_%u", (unsigned)i);

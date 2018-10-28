@@ -50,17 +50,75 @@ static int end(struct options *opt, unsigned char *out, size_t size)
 	return fclose(fp) ? perror("Error"), 1 : 0;
 }
 
-static int duplicate(unsigned char *obj, unsigned char *sym, int type)
+static int match(unsigned char *obj, unsigned char *s1, unsigned char *s2)
 {
 	unsigned char *str = obj + LE32(&obj[8]) + (LE32(&obj[12]) * 18ul);
+	const char *str1;
+	const char *str2;
+	char buf1[9];
+	char buf2[9];
 
-	if (!obj)
-		return 0;
-	if (!LE32(&sym[0])) {
-		printf("duplicate (%i): %s\n", type, str + LE32(&sym[4]));
+	if (*s1) {
+		memcpy(&buf1[0], s1, 8u);
+		buf1[8] = '\0';
+		str1 = &buf1[0];
+	} else {
+		str1 = (const char *)str + LE32(&s1[4]);
 	}
+	if (*s2) {
+		memcpy(&buf2[0], s2, 8u);
+		buf2[8] = '\0';
+		str2 = &buf2[0];
+	} else {
+		str2 = (const char *)str + LE32(&s2[4]);
+	}
+	return (!strcmp(str1, str2)) ? 1 : 0;
+}
 
-	return 0;
+static int duplicate(unsigned char *obj, unsigned char *sym, int type)
+{
+	static void *typ2 = NULL;
+	static int typ2_num = 0;
+	const int chunk = 32;
+	struct { unsigned char *o; unsigned char *s; } *record = NULL;
+	int i;
+
+	if (obj && type == 2) {
+		for (i = 0; i < typ2_num; i++) {
+			record = typ2;
+			record += i;
+			if (match(obj, record->s, sym))
+				break;
+			record = NULL;
+		}
+		if (record) {
+			unsigned char *sec;
+			sec = obj + 20ul + ((LE16(&sym[12]) - 1ul) * 40ul);
+			memcpy(&sec[0], "____SKIP", 8u);
+			return 0;
+		}
+		if ((typ2_num % chunk) == 0) {
+			size_t s1 = sizeof(record[0]);
+			if (!typ2) {
+				size_t s2 = (size_t)chunk * s1;
+				typ2 = malloc(s2);
+			} else {
+				size_t s2 = (size_t)(typ2_num + chunk) * s1;
+				typ2 = realloc(typ2, s2);
+			}
+		}
+		if (!typ2) {
+			fputs("Error: not enough memory\n", stderr);
+			return 1;
+		}
+		record = typ2;
+		record[typ2_num].o = obj;
+		record[typ2_num].s = sym;
+		return typ2_num++, 0;
+	}
+	if (obj)
+		return 0;
+	return free(typ2), 0;
 }
 
 static int get_pre_size(void)
@@ -179,7 +237,7 @@ int link_main(struct options *opt)
 		return 0;
 
 	/*
-	 * Handle "duplicate" sections.
+	 * Handle "duplicate" sections and remove "mangled" names.
 	 */
 	{
 		static const char *err = "Error: inconsistent symbol table\n";
@@ -189,21 +247,27 @@ int link_main(struct options *opt)
 		for (i = 0; i < opt->nr_mfiles; i++) {
 			unsigned char *dat = opt->mfiles[i].data;
 			unsigned char *sym = dat + LE32(&dat[8]);
+			unsigned char *str = sym + (LE32(&dat[12]) * 18ul);
 			int syms = (int)LE32(&dat[12]);
 			int state = 0;
 
 			for (j = 0; j < syms; j++) {
+				unsigned sec = (unsigned)LE16(&sym[12]);
 				unsigned type = (unsigned)sym[16];
+				const char *name = (char *)sym;
 
+				if (!*sym)
+					name = (char *)str + LE32(&sym[4]);
 				if (type == 0xFFu)
 					sym[16] = 6u;
 
 				if (!state && type == 3u && !LE32(&sym[8])) {
 					const char *n = (const char *)&sym[0];
-					int sec = (int)LE16(&sym[12]);
+					if (!strcmp(n, ".text"))
+						state = 1;
 					if (!strcmp(n, ".rdata"))
 						state = 1;
-					if (!strcmp(n, ".text"))
+					if (!strcmp(n, ".data"))
 						state = 1;
 					if (!sec)
 						state = 0;
@@ -211,7 +275,7 @@ int link_main(struct options *opt)
 						state = 0;
 					if (state) {
 						unsigned char *t1 = dat + 20;
-						t1 += (sec - 1) * 40;
+						t1 += ((int)sec - 1) * 40;
 						if (memcmp(t1, n, 8u))
 							state = 0;
 						if (!(t1[37] & 0x10u))
@@ -232,6 +296,8 @@ int link_main(struct options *opt)
 					state = 0;
 				}
 
+				if (sec && *name != '_' && !isalpha(*name))
+					sym[16] = 0xFFu;
 				if ((unsigned)sym[17]) {
 					j += (int)sym[17];
 					sym += (int)sym[17] * 18;

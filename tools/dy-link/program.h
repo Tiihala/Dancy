@@ -23,6 +23,7 @@
 #define PROGRAM_CMDNAME "dy-link"
 #define PROGRAM_VERSION "0.1"
 
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
