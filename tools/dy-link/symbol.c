@@ -510,6 +510,8 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			}
 			if (s2 != NULL && s1 != s2)
 				memcpy(s1, s2, 18u);
+			if (!LE16(&s1[12]))
+				s1[16] = 2u;
 		}
 	}
 
@@ -591,36 +593,39 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	 */
 	{
 		int syms = (int)LE32(&obj[12]);
+		int i_t = 1, i_r = 1, i_d = 1, i_b = 1;
 
 		for (i = 0; i < syms; i++) {
 			unsigned char *s = obj + symtab + (i * 18);
+			unsigned s_num = (unsigned)LE16(&s[12]);
 
 			if ((unsigned)s[16] == 2u)
 				break;
-
-			if (!LE32(&s[8])) {
-				unsigned s_num = (unsigned)LE16(&s[12]);
-				memset(&s[0], 0u, 8u);
-
-				if (s_num == 1ul) {
-					strcpy((char *)&s[0], ".text");
-				} else if (s_num == 2ul) {
-					strcpy((char *)&s[0], ".rdata");
-				} else if (s_num == 3ul) {
-					strcpy((char *)&s[0], ".data");
-				} else if (s_num == 4ul) {
-					strcpy((char *)&s[0], ".bss");
-				} else {
-					fprintf(stderr, "Error: %u\n", s_num);
-					return 1;
-				}
-				s[16] = 3u;
-			} else {
-				memset(&s[0], 0u, 8u);
-				sprintf((char *)&s[0], "_L_%u", (unsigned)i);
-				s[16] = 6u;
+			if (s_num < 1 || s_num > 4) {
+				fprintf(stderr, "Error: %u\n", s_num);
+				return 1;
 			}
-			s[14] = 0u, s[15] = 0u;
+			memset(&s[0], 0u, 8u);
+			if (!LE32(&s[8])) {
+				if (s_num == 1u)
+					strcpy((char *)&s[0], ".text");
+				else if (s_num == 2u)
+					strcpy((char *)&s[0], ".rdata");
+				else if (s_num == 3u)
+					strcpy((char *)&s[0], ".data");
+				else if (s_num == 4u)
+					strcpy((char *)&s[0], ".bss");
+			} else {
+				if (s_num == 1u)
+					sprintf((char *)&s[0], "_t%i", i_t++);
+				else if (s_num == 2u)
+					sprintf((char *)&s[0], "_r%i", i_r++);
+				else if (s_num == 3u)
+					sprintf((char *)&s[0], "_d%i", i_d++);
+				else if (s_num == 4u)
+					sprintf((char *)&s[0], "_b%i", i_b++);
+			}
+			s[14] = 0u, s[15] = 0u, s[16] = 3u;
 		}
 		while (i < syms - 1) {
 			unsigned char *s1 = obj + symtab + ((i + 0) * 18);
