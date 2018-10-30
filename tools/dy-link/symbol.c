@@ -375,10 +375,6 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		unsigned char *sym = obj + symtab + (i * 18);
 		unsigned sec = (unsigned)LE16(&sym[12]);
 
-		if (sec == 0 && (unsigned)sym[16] == 2u) {
-			if (!delete_record(obj, i))
-				continue;
-		}
 		if (sec == 0 && (unsigned)sym[16] != 2u) {
 			if ((unsigned)sym[16] != 0xFFu) {
 				if (delete_record(obj, i))
@@ -386,17 +382,12 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				continue;
 			}
 		}
-		if (sec == 0xFFFEu || sec == 0xFFFFu) {
+		if (sec > 0x0004u) {
 			if (delete_record(obj, i))
 				return reloc_error(sec), 1;
 			continue;
 		}
-		if (sec > 0x0004u) {
-			if (delete_record(obj, i))
-				return reloc_error(0), 1;
-			continue;
-		}
-		if ((unsigned)sym[16] != 2u) {
+		if (sec == 0 || (unsigned)sym[16] != 2u) {
 			if (!delete_record(obj, i))
 				continue;
 		}

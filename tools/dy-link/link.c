@@ -50,44 +50,44 @@ static int end(struct options *opt, unsigned char *out, size_t size)
 	return fclose(fp) ? perror("Error"), 1 : 0;
 }
 
-static int match(unsigned char *obj, unsigned char *s1, unsigned char *s2)
+static int match(unsigned char *objs[], unsigned char *syms[])
 {
-	unsigned char *str = obj + LE32(&obj[8]) + (LE32(&obj[12]) * 18ul);
-	const char *str1;
-	const char *str2;
-	char buf1[9];
-	char buf2[9];
+	unsigned char *o1 = objs[0];
+	unsigned char *o2 = objs[1];
+	unsigned char *s1 = syms[0];
+	unsigned char *s2 = syms[1];
+	unsigned char b1 = s1[8];
+	unsigned char b2 = s2[8];
+	int r;
 
-	if (*s1) {
-		memcpy(&buf1[0], s1, 8u);
-		buf1[8] = '\0';
-		str1 = &buf1[0];
-	} else {
-		str1 = (const char *)str + LE32(&s1[4]);
-	}
-	if (*s2) {
-		memcpy(&buf2[0], s2, 8u);
-		buf2[8] = '\0';
-		str2 = &buf2[0];
-	} else {
-		str2 = (const char *)str + LE32(&s2[4]);
-	}
-	return (!strcmp(str1, str2)) ? 1 : 0;
+	if (!*s1)
+		s1 = o1 + LE32(&o1[8]) + (LE32(&o1[12]) * 18u) + LE32(&s1[4]);
+	if (!*s2)
+		s2 = o2 + LE32(&o2[8]) + (LE32(&o2[12]) * 18u) + LE32(&s2[4]);
+
+	r = strcmp((const char *)s1, (const char *)s2);
+	syms[0][8] = b1;
+	syms[1][8] = b2;
+	return r ? 0 : 1;
 }
 
 static int duplicate(unsigned char *obj, unsigned char *sym, int type)
 {
-	static void *typ2 = NULL;
-	static int typ2_num = 0;
-	const int chunk = 32;
+	static void *type2 = NULL;
+	static int type2_num = 0;
 	struct { unsigned char *o; unsigned char *s; } *record = NULL;
-	int i;
 
 	if (obj && type == 2) {
-		for (i = 0; i < typ2_num; i++) {
-			record = typ2;
-			record += i;
-			if (match(obj, record->s, sym))
+		const int chunk = 32;
+		unsigned char *objs[2];
+		unsigned char *syms[2];
+		int i;
+
+		for (i = 0; i < type2_num; i++) {
+			record = type2;
+			objs[0] = (record + i)->o, objs[1] = obj;
+			syms[0] = (record + i)->s, syms[1] = sym;
+			if (match(objs, syms))
 				break;
 			record = NULL;
 		}
@@ -97,28 +97,33 @@ static int duplicate(unsigned char *obj, unsigned char *sym, int type)
 			memcpy(&sec[0], "____SKIP", 8u);
 			return 0;
 		}
-		if ((typ2_num % chunk) == 0) {
+		if ((type2_num % chunk) == 0) {
 			size_t s1 = sizeof(record[0]);
-			if (!typ2) {
+			if (!type2) {
 				size_t s2 = (size_t)chunk * s1;
-				typ2 = malloc(s2);
+				type2 = malloc(s2);
 			} else {
-				size_t s2 = (size_t)(typ2_num + chunk) * s1;
-				typ2 = realloc(typ2, s2);
+				size_t s2 = (size_t)(type2_num + chunk) * s1;
+				type2 = realloc(type2, s2);
 			}
 		}
-		if (!typ2) {
+		if (!type2) {
 			fputs("Error: not enough memory\n", stderr);
 			return 1;
 		}
-		record = typ2;
-		record[typ2_num].o = obj;
-		record[typ2_num].s = sym;
-		return typ2_num++, 0;
+		record = type2;
+		record[type2_num].o = obj;
+		record[type2_num].s = sym;
+		return type2_num++, 0;
 	}
 	if (obj)
 		return 0;
-	return free(typ2), 0;
+	return free(type2), 0;
+}
+
+static int mangled(const char *name)
+{
+	return 0;
 }
 
 static int get_pre_size(void)
@@ -254,10 +259,7 @@ int link_main(struct options *opt)
 			for (j = 0; j < syms; j++) {
 				unsigned sec = (unsigned)LE16(&sym[12]);
 				unsigned type = (unsigned)sym[16];
-				const char *name = (char *)sym;
 
-				if (!*sym)
-					name = (char *)str + LE32(&sym[4]);
 				if (type == 0xFFu)
 					sym[16] = 6u;
 
@@ -296,8 +298,22 @@ int link_main(struct options *opt)
 					state = 0;
 				}
 
-				if (sec && *name != '_' && !isalpha(*name))
-					sym[16] = 0xFFu;
+				/*
+				 * The special type 0xFF means that the symbol
+				 * is external but the name will be discarded.
+				 */
+				if (type == 2u) {
+					unsigned char *name = sym;
+					unsigned char b;
+
+					if (!*sym)
+						name = str + LE32(&sym[4]);
+					b = sym[8], sym[8] = 0u;
+					if (mangled((const char *)name))
+						sym[16] = 0xFFu;
+					sym[8] = b;
+				}
+
 				if ((unsigned)sym[17]) {
 					j += (int)sym[17];
 					sym += (int)sym[17] * 18;
