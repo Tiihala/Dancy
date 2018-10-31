@@ -200,6 +200,26 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 						err = 1;
 				}
 				/*
+				 * Check that all first 4 bytes are zero
+				 * if the first one is. Check that there
+				 * are no hidden information after the
+				 * first zero if it is a valid short name.
+				 */
+				if (!sym[0]) {
+					if (LE32(&sym[0]))
+						err = 1;
+				} else {
+					int i7 = 0;
+					while (i7 < 8) {
+						if (!sym[i7++])
+							break;
+					}
+					while (i7 < 8) {
+						if (sym[i7++])
+							err = 1;
+					}
+				}
+				/*
 				 * Allow more than one extra record for long
 				 * file names only. Other structures should
 				 * not need more than one. Change if needed.

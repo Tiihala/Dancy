@@ -62,12 +62,15 @@ static int match(unsigned char *objs[], unsigned char *syms[])
 
 	if (!*s1)
 		s1 = o1 + LE32(&o1[8]) + (LE32(&o1[12]) * 18u) + LE32(&s1[4]);
+	else
+		s1[8] = 0u;
 	if (!*s2)
 		s2 = o2 + LE32(&o2[8]) + (LE32(&o2[12]) * 18u) + LE32(&s2[4]);
+	else
+		s2[8] = 0u;
 
 	r = strcmp((const char *)s1, (const char *)s2);
-	syms[0][8] = b1;
-	syms[1][8] = b2;
+	syms[0][8] = b1, syms[1][8] = b2;
 	return r ? 0 : 1;
 }
 
