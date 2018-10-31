@@ -1,7 +1,7 @@
 # Dancy Operating System
 
 HOST_CPPFLAGS=-I./include
-HOST_CFLAGS=-O2 -std=c89 -Wall -Wextra -Wwrite-strings -pedantic
+HOST_CFLAGS=-O2 -std=c89 -Wall -Wextra -Wshadow -Wwrite-strings -pedantic
 
 DANCY_EXE=
 DANCY_HOST_BINARY=$(CC) -o
