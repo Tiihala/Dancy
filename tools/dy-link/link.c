@@ -126,6 +126,15 @@ static int duplicate(unsigned char *obj, unsigned char *sym, int type)
 
 static int mangled(const char *name)
 {
+	char c;
+
+	if (*name == '\0' && isdigit(*name))
+		return 1;
+
+	while ((c = *name++) != '\0') {
+		if (c != '_' && !isalnum(c))
+			return 1;
+	}
 	return 0;
 }
 
@@ -305,7 +314,7 @@ int link_main(struct options *opt)
 				 * The special type 0xFF means that the symbol
 				 * is external but the name will be discarded.
 				 */
-				if (type == 2u) {
+				if (sec && type == 2u) {
 					unsigned char *name = sym;
 					unsigned char b;
 
