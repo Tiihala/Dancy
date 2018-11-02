@@ -24,6 +24,8 @@ static int end(struct options *opt, unsigned char *out, size_t size)
 	FILE *fp = stdout;
 	int is_stdout = 1;
 
+	if (!opt->arg_o)
+		return 0;
 	if (!out || !size)
 		return 1;
 
@@ -249,9 +251,6 @@ int link_main(struct options *opt)
 	unsigned char *out;
 	int size;
 	int off;
-
-	if (!opt->arg_o)
-		return 0;
 
 	/*
 	 * Handle "duplicate" sections and remove "mangled" names.

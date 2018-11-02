@@ -19,6 +19,44 @@
 
 #include "program.h"
 
+struct iterate {
+	struct options *opt;
+	const char *name;
+	unsigned obj;
+	unsigned sec;
+	unsigned group;
+};
+
+static void iterate_init(struct iterate *it, void *opt, const void *name)
+{
+	it->opt = opt;
+	it->name = name;
+	it->obj = 0u;
+	it->sec = 0u;
+	it->group = 0u;
+}
+
+static unsigned char *iterate_next(struct iterate *it)
+{
+	unsigned i;
+
+	for (i = it->obj; i < (unsigned)it->opt->nr_mfiles; i++) {
+		unsigned char *dat = it->opt->mfiles[i].data;
+		unsigned secs = LE16(&dat[2]);
+		unsigned j;
+
+		for (j = it->sec; j < secs; j++) {
+			unsigned char *sec = dat + 20u + j * 40u;
+			if (!strncmp((const char *)sec, it->name, 8u)) {
+				it->obj = i;
+				it->sec = ++j;
+				return sec;
+			}
+		}
+	}
+	return NULL;
+}
+
 int section_data_size(struct options *opt, const char *name)
 {
 	int total_size = 0;
