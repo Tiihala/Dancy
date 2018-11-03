@@ -38,10 +38,16 @@ int program(struct options *opt)
 			dump_obj(opt->operands[i], obj->data);
 		if (opt->dump_ext)
 			dump_ext(opt->operands[i], obj->data);
-		if (section_check_sizes(opt) == INT_MAX)
-			return 1;
-		if (symbol_check_sizes(opt) == INT_MAX)
-			return 1;
 	}
+	/*
+	 * Handle grouped sections first and then check
+	 * the total size of all relevant sections.
+	 */
+	if (section_group(opt))
+		return 1;
+	if (section_check_sizes(opt) == INT_MAX)
+		return 1;
+	if (symbol_check_sizes(opt) == INT_MAX)
+		return 1;
 	return link_main(opt);
 }

@@ -120,6 +120,11 @@ int section_reloc_size(struct options *opt, const char *name)
 	return total_size;
 }
 
+int section_group(struct options *opt)
+{
+	return 0;
+}
+
 int section_check_sizes(struct options *opt)
 {
 	const char *sections[] = {

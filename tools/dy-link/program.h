@@ -81,6 +81,7 @@ int program(struct options *opt);
 /*
  * section.c
  */
+int section_group(struct options *opt);
 int section_check_sizes(struct options *opt);
 int section_copy_d(struct options *opt, const char *name, unsigned char *out);
 int section_copy_r(struct options *opt, const char *name, unsigned char *out);
