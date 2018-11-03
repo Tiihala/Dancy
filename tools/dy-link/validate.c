@@ -54,21 +54,37 @@ static int validate_reloc_type(unsigned arch_type, unsigned reloc_type)
 	return bytes_to_access;
 }
 
-static int validate_section_name(const char *name, size_t n)
+static int validate_name(const char *name, unsigned long flags)
 {
 	int err = 0;
 
-	if (n >= 6 && !strncmp(name, ".text$", 6))
-		err = 1;
-	if (n >= 6 && !strncmp(name, ".data$", 6))
-		err = 1;
-	if (n >= 7 && !strncmp(name, ".rdata$", 7))
-		err = 1;
-	if (n >= 5 && !strncmp(name, ".bss$", 5))
-		err = 1;
-
-	if (err)
-		fprintf(stderr, "Error: grouped section \"%.*s\"\n", n, name);
+	/*
+	 * Check the (de facto) standard section names.
+	 */
+	if (!strncmp(name, ".text", 5u)) {
+		if ((flags & 0xF0ul) != 0x20ul) {
+			fputs("Error: .text flags\n", stderr);
+			err = 1;
+		}
+	}
+	if (!strncmp(name, ".rdata", 6u)) {
+		if ((flags & 0xF0ul) != 0x40ul) {
+			fputs("Error: .rdata flags\n", stderr);
+			err = 1;
+		}
+	}
+	if (!strncmp(name, ".data", 5u)) {
+		if ((flags & 0xF0ul) != 0x40ul) {
+			fputs("Error: .data flags\n", stderr);
+			err = 1;
+		}
+	}
+	if (!strncmp(name, ".bss", 4u)) {
+		if ((flags & 0xF0ul) != 0x80ul) {
+			fputs("Error: .bss flags\n", stderr);
+			err = 1;
+		}
+	}
 	return err;
 }
 
@@ -196,8 +212,9 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 						err = 1;
 				}
 				if (!section_number && !LE32(&sym[8])) {
-					if ((unsigned)sym[16] != 0x02u)
-						err = 1;
+					if ((unsigned)sym[16] != 2u)
+						if ((unsigned)sym[16] != 105u)
+							err = 1;
 				}
 				/*
 				 * Check that all first 4 bytes are zero
@@ -284,14 +301,13 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 				}
 				if (offset < strtab_size) {
 					const void *t1 = strtab_off + offset;
-					size_t t2 = strlen((const char *)t1);
-					err |= validate_section_name(t1, t2);
+					err |= validate_name(t1, flags);
 				} else {
 					err = 1;
 				}
 			} else {
 				const void *t1 = &sect[0];
-				err |= validate_section_name(t1, 8u);
+				err |= validate_name(t1, flags);
 			}
 
 			if (LE32(&sect[8]) || LE32(&sect[12]))
@@ -343,33 +359,6 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			} else if (flags & 0x80ul) {
 				if ((flags & 0x20ul) || (flags & 0x40ul))
 					err = 1;
-			}
-			/*
-			 * Check the (de facto) standard section names.
-			 */
-			if (!strcmp((const char *)&sect[0], ".text")) {
-				if ((flags & 0xF0ul) != 0x20ul) {
-					fputs("Error: .text\n", stderr);
-					err = 1;
-				}
-			}
-			if (!strcmp((const char *)&sect[0], ".rdata")) {
-				if ((flags & 0xF0ul) != 0x40ul) {
-					fputs("Error: .rdata\n", stderr);
-					err = 1;
-				}
-			}
-			if (!strcmp((const char *)&sect[0], ".data")) {
-				if ((flags & 0xF0ul) != 0x40ul) {
-					fputs("Error: .data\n", stderr);
-					err = 1;
-				}
-			}
-			if (!strcmp((const char *)&sect[0], ".bss")) {
-				if ((flags & 0xF0ul) != 0x80ul) {
-					fputs("Error: .bss\n", stderr);
-					err = 1;
-				}
 			}
 
 			if (data_size > ULONG_MAX - data_offset)
