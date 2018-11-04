@@ -22,40 +22,83 @@
 struct iterate {
 	struct options *opt;
 	const char *name;
+	unsigned grp;
 	unsigned obj;
 	unsigned sec;
-	unsigned group;
+	unsigned i;
 };
 
 static void iterate_init(struct iterate *it, void *opt, const void *name)
 {
 	it->opt = opt;
 	it->name = name;
+	it->grp = 0u;
 	it->obj = 0u;
 	it->sec = 0u;
-	it->group = 0u;
+	it->i = 0u;
 }
 
 static unsigned char *iterate_next(struct iterate *it)
 {
+	int next_group = 0;
 	unsigned i;
+	unsigned j;
 
-	for (i = it->obj; i < (unsigned)it->opt->nr_mfiles; i++) {
-		unsigned char *dat = it->opt->mfiles[i].data;
-		unsigned secs = LE16(&dat[2]);
-		unsigned j;
+	do {
+		for (i = it->obj; i < (unsigned)it->opt->nr_mfiles; i++) {
+			unsigned char *dat = it->opt->mfiles[i].data;
+			unsigned secs = LE16(&dat[2]);
 
-		for (j = it->sec; j < secs; j++) {
-			unsigned char *sec = dat + 20u + j * 40u;
-			if (!strncmp((const char *)sec, it->name, 8u)) {
+			/*
+			 * Do not rely on grp variable if it->name is NULL.
+			 */
+			for (j = it->sec; j < secs; j++) {
+				unsigned char *sec = dat + 20u + j * 40u;
+				unsigned grp = (unsigned)LE32(&sec[28]);
+
+				if (it->name) {
+					const char *s = (const char *)sec;
+					if (strncmp(s, it->name, 8u))
+						continue;
+					if (grp > it->grp)
+						next_group = 1;
+					if (grp != it->grp)
+						continue;
+				}
 				it->obj = i;
 				it->sec = ++j;
 				return sec;
 			}
+			it->sec = 0u;
 		}
-		it->sec = 0u;
-	}
+		it->obj = 0u;
+		it->grp++;
+	} while (next_group-- > 0);
+
+	it->obj = UINT_MAX;
 	return NULL;
+}
+
+static int qsort_compare(const void *s1, const void *s2)
+{
+	const struct { unsigned char *s; char *n; size_t l; } *t1 = s1;
+	const struct { unsigned char *s; char *n; size_t l; } *t2 = s2;
+	const char *str1 = &t1->n[0];
+	const char *str2 = &t2->n[0];
+	char buf1[9];
+	char buf2[9];
+
+	if (t1->l == 8u) {
+		memcpy(&buf1[0], str1, 8u);
+		buf1[8] = '\0';
+		str1 = &buf1[0];
+	}
+	if (t2->l == 8u) {
+		memcpy(&buf2[0], str2, 8u);
+		buf2[8] = '\0';
+		str2 = &buf2[0];
+	}
+	return strcmp(str1, str2);
 }
 
 int section_data_size(struct options *opt, const char *name)
@@ -122,7 +165,90 @@ int section_reloc_size(struct options *opt, const char *name)
 
 int section_group(struct options *opt)
 {
-	return 0;
+	size_t buf_size = 0;
+	void *buf_sort;
+	struct { unsigned char *s; char *n; size_t l; } *sec;
+	unsigned char *buf;
+	struct iterate it;
+
+	/*
+	 * The linker does not use (or copy) line numbers
+	 * but uses those fields internally.
+	 */
+	iterate_init(&it, opt, NULL);
+	while ((buf = iterate_next(&it)) != NULL) {
+		W_LE32(&buf[28], 0);
+		W_LE16(&buf[34], 0);
+		buf_size += sizeof(*sec);
+	}
+	buf_sort = malloc(buf_size);
+	if (!buf_sort)
+		return fputs("Error: not enough memory\n", stderr), 1;
+
+	iterate_init(&it, opt, NULL);
+	while ((buf = iterate_next(&it)) != NULL) {
+		char *str = (char *)&buf[0];
+		size_t len = 8u;
+		size_t i;
+
+		if ((unsigned)buf[0] == 0x2Fu) {
+			unsigned char *dat = opt->mfiles[it.obj].data;
+			unsigned long offset = 0ul;
+
+			for (i = 1u; i < 8u && buf[i]; i++) {
+				unsigned long a;
+				a = (unsigned long)buf[i] - 0x30ul;
+				offset *= 10ul;
+				offset += a;
+			}
+			dat = dat + LE32(&dat[8]) + (LE32(&dat[12]) * 18u);
+			str = (char *)(dat + offset);
+			len = strlen(str);
+		}
+		for (i = 0u; i < len; i++) {
+			if ((unsigned)str[i] == 0x24u) {
+				sec = buf_sort;
+				sec += it.i++;
+				sec->s = &buf[0];
+				sec->n = str;
+				sec->l = len;
+				break;
+			}
+		}
+	}
+	qsort(buf_sort, it.i, sizeof(*sec), qsort_compare);
+
+	/*
+	 * Assign group numbers to the sections.
+	 */
+	if (it.i) {
+		unsigned long grp = 1ul;
+		unsigned char name[8];
+		unsigned i;
+		unsigned j;
+
+		for (i = 0u; i < it.i; i++) {
+			sec = buf_sort;
+			sec += i;
+			if (i > 0u && qsort_compare(sec, sec - 1)) {
+				if (grp < 0x7FFFul)
+					grp++;
+			}
+			W_LE32(&sec->s[28], grp);
+		}
+		for (i = 0u; i < it.i; i++) {
+			sec = buf_sort;
+			sec += i;
+			memset(&name[0], 0, 8u);
+			for (j = 0u; j < 8u; j++) {
+				if ((unsigned)sec->n[j] == 0x24u)
+					break;
+				name[j] = (unsigned char)sec->n[j];
+			}
+			memcpy(&sec->s[0], &name[0], 8u);
+		}
+	}
+	return free(buf_sort), 0;
 }
 
 int section_check_sizes(struct options *opt)

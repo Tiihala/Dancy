@@ -273,6 +273,8 @@ int link_main(struct options *opt)
 
 				if (type == 0xFFu)
 					sym[16] = 6u;
+				if (type == 105u)
+					sym[16] = 2u;
 
 				if (!state && type == 3u && !LE32(&sym[8])) {
 					const char *n = (const char *)&sym[0];
