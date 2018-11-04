@@ -271,10 +271,16 @@ int link_main(struct options *opt)
 				unsigned sec = (unsigned)LE16(&sym[12]);
 				unsigned type = (unsigned)sym[16];
 
+				/*
+				 * The current implementation changes weak
+				 * externals to "normal" externals. Symbol
+				 * type 0xFF is replaced with type 6. The
+				 * value of 0xFF is used internally.
+				 */
 				if (type == 0xFFu)
-					sym[16] = 6u;
+					sym[16] = (unsigned char)(type = 6u);
 				if (type == 105u)
-					sym[16] = 2u;
+					sym[16] = (unsigned char)(type = 2u);
 
 				if (!state && type == 3u && !LE32(&sym[8])) {
 					const char *n = (const char *)&sym[0];
