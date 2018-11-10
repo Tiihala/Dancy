@@ -25,6 +25,14 @@ int program(struct options *opt)
 
 	if (!opt->nr_mfiles)
 		return fputs("Warning: no input\n", stderr), 1;
+	if (opt->arg_f && strcmp(opt->arg_f, "obj")) {
+		if (strcmp(opt->arg_f, "at") && strcmp(opt->arg_f, "init")) {
+			fputs("Error: unknown output format\n", stderr);
+			return 1;
+		}
+	} else {
+		opt->arg_f = "obj";
+	}
 
 	for (i = 0; i < opt->nr_mfiles; i++) {
 		struct mfile *obj = &opt->mfiles[i];

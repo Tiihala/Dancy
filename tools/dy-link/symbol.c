@@ -583,6 +583,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	 * Handle non-external symbols and detect multiply defined externals.
 	 */
 	{
+		int allow_ext = strcmp(opt->arg_f, "obj") ? 0 : 1;
 		int syms = (int)LE32(&obj[12]);
 		int i_t = 1, i_r = 1, i_d = 1, i_b = 1;
 
@@ -624,6 +625,10 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			unsigned long t1 = LE32(&s1[0]);
 			unsigned long t2 = LE32(&s2[0]);
 
+			if (!allow_ext && !LE16(&s1[12])) {
+				fputs("Error: unresolved symbols\n", stderr);
+				return 1;
+			}
 			if (t1 && t2 && (t1 != t2)) {
 				i += 1;
 				continue;

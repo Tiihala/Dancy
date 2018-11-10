@@ -140,14 +140,20 @@ static int mangled(const char *name)
 	return 0;
 }
 
-static int get_pre_size(void)
+static int get_pre_size(struct options *opt)
 {
 	/*
 	 * The file header and section entries, i.e. text,
 	 * rdata, data, and bss. Use the maximum value,
 	 * assuming that all sections are available.
 	 */
-	return 20 + 4 * 40;
+	int size = 20 + 4 * 40;
+
+	if (!strcmp(opt->arg_f, "at"))
+		size += AT_HEADER_SIZE;
+	else if (!strcmp(opt->arg_f, "init"))
+		size += IN_HEADER_SIZE;
+	return size;
 }
 
 static void add_with_align(int *off, int add)
@@ -167,7 +173,7 @@ static int set_max_size(struct options *opt, int *size)
 	/*
 	 * The file header and section entries.
 	 */
-	*size = get_pre_size();
+	*size = get_pre_size(opt);
 
 	/*
 	 * Section .text and relocation.
@@ -351,7 +357,7 @@ int link_main(struct options *opt)
 	out = calloc((size_t)size, sizeof(unsigned char));
 	if (!out)
 		return fputs("Error: not enough memory\n", stderr), 1;
-	add_with_align((off = 0, &off), get_pre_size());
+	add_with_align((off = 0, &off), get_pre_size(opt));
 
 	/*
 	 * Set the header values.
@@ -368,7 +374,7 @@ int link_main(struct options *opt)
 	{
 		const char *name = ".text";
 		unsigned char *section = out + 20 + 0 * 40;
-		unsigned long flags = 0x60D00020ul;
+		unsigned long flags = 0x60000020ul | opt->align_flags;
 		int nbytes;
 
 		strcpy((char *)(section + 0), name);
@@ -393,7 +399,7 @@ int link_main(struct options *opt)
 	{
 		const char *name = ".rdata";
 		unsigned char *section = out + 20 + 1 * 40;
-		unsigned long flags = 0x40D00040ul;
+		unsigned long flags = 0x40000040ul | opt->align_flags;
 		int nbytes;
 
 		strcpy((char *)(section + 0), name);
@@ -418,7 +424,7 @@ int link_main(struct options *opt)
 	{
 		const char *name = ".data";
 		unsigned char *section = out + 20 + 2 * 40;
-		unsigned long flags = 0xC0D00040ul;
+		unsigned long flags = 0xC0000040ul | opt->align_flags;
 		int nbytes;
 
 		strcpy((char *)(section + 0), name);
@@ -443,7 +449,7 @@ int link_main(struct options *opt)
 	{
 		const char *name = ".bss";
 		unsigned char *section = out + 20 + 3 * 40;
-		unsigned long flags = 0xC0D00080ul;
+		unsigned long flags = 0xC0000080ul | opt->align_flags;
 		int nbytes = section_data_size(opt, ".bss");
 
 		strcpy((char *)(section + 0), name);
@@ -490,6 +496,14 @@ int link_main(struct options *opt)
 			err = 1;
 			break;
 		}
+		if (!strcmp(opt->arg_f, "init")) {
+			if (opt->align_flags > 0x00500000ul) {
+				fputs("Error: init alignment\n", stderr);
+				return free(out), 1;
+			}
+			if (!(total_size < 0x0000E000))
+				err = 1;
+		}
 		if (err || !(total_size < 0x7FFFFFFFul)) {
 			const char *e = "Error: memory layout, %08lX bytes\n";
 			fprintf(stderr, e, total_size);
@@ -535,6 +549,23 @@ int link_main(struct options *opt)
 	if (opt->verbose) {
 		printf("Output buffer, %i bytes\n", size);
 		printf("Output file, %i bytes\n", off);
+	}
+
+	/*
+	 * Handle custom headers.
+	 */
+	if (!strcmp(opt->arg_f, "at")) {
+		size_t s = (size_t)AT_HEADER_SIZE;
+		memmove(&out[s], &out[0], (20u + 4u * 40u));
+		memset(&out[0], 0, s);
+	} else if (!strcmp(opt->arg_f, "init")) {
+		size_t s = (size_t)IN_HEADER_SIZE;
+		memmove(&out[s], &out[0], (20u + 4u * 40u));
+		memset(&out[0], 0, s);
+		if ((unsigned)off > 0xF000u) {
+			fputs("Error: init file overflow\n", stderr);
+			return free(out), 1;
+		}
 	}
 
 	/*

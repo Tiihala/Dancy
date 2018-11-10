@@ -41,6 +41,7 @@ struct options {
 	int dump_ext;
 	int nr_mfiles;
 	struct mfile *mfiles;
+	unsigned long align_flags;
 };
 
 struct mfile {
@@ -61,6 +62,9 @@ struct mfile {
 	*((a) + 1) = (unsigned char)(((unsigned long)(d) >>  8) & 0xFFul), \
 	*((a) + 2) = (unsigned char)(((unsigned long)(d) >> 16) & 0xFFul), \
 	*((a) + 3) = (unsigned char)(((unsigned long)(d) >> 24) & 0xFFul))
+
+#define AT_HEADER_SIZE (0x0020)
+#define IN_HEADER_SIZE (0x01A0)
 
 /*
  * dump.c

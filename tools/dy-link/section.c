@@ -117,6 +117,9 @@ int section_data_size(struct options *opt, const char *name)
 			align = 1 << (align - 1);
 		else
 			align = 16;
+
+		if (opt->align_flags < (bit & 0x00F00000ul))
+			opt->align_flags = (bit & 0x00F00000ul);
 		/*
 		 * Handle section alignments correctly. The
 		 * total size has the padding bytes included.
