@@ -39,6 +39,7 @@ static int validate_reloc_type(unsigned arch_type, unsigned reloc_type)
 	if (arch_type == 0x8664u && reloc_type < 0x8000u) {
 		switch ((int)reloc_type) {
 		case 0x01: bytes_to_access = 0x08; break;
+		case 0x02: bytes_to_access = 0x04; break;
 		case 0x03: bytes_to_access = 0x04; break;
 		case 0x04: bytes_to_access = 0x04; break;
 		case 0x05: bytes_to_access = 0x05; break;
