@@ -24,7 +24,9 @@ DY_GPT_OBJECTS= \
 ##############################################################################
 
 DY_INIT_OBJECTS= \
- ./tools/dy-init/dy-init.obj
+ ./tools/dy-init/dy-init.obj \
+ ./tools/dy-init/ia32.obj \
+ ./tools/dy-init/x64.obj
 
 ./bin/dy-init$(DANCY_EXE): $(DY_INIT_OBJECTS)
 	$(DANCY_HOST_BINARY)$@ $(DY_INIT_OBJECTS)
@@ -108,6 +110,12 @@ DY_VBR_OBJECTS= \
 
 ./tools/dy-init/dy-init.obj: ./tools/dy-init/dy-init.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/dy-init.c
+
+./tools/dy-init/ia32.obj: ./tools/dy-init/ia32.c ./include/dancy.h
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/ia32.c
+
+./tools/dy-init/x64.obj: ./tools/dy-init/x64.c ./include/dancy.h
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/x64.c
 
 ./tools/dy-link/dump.obj: ./tools/dy-link/dump.c $(DY_LINK_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/dump.c

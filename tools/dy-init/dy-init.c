@@ -25,6 +25,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern const unsigned char ia32[416];
+extern const unsigned char x64[416];
+
 static unsigned long crc32c(const void *obj, size_t len)
 {
 	const unsigned char *ptr = (const unsigned char *)obj;
@@ -44,7 +47,7 @@ static unsigned long crc32c(const void *obj, size_t len)
 }
 
 #define PROGRAM_CMDNAME "dy-init"
-#define PROGRAM_VERSION "1.1"
+#define PROGRAM_VERSION "2.0"
 
 struct options {
 	char **operands;
@@ -70,6 +73,29 @@ static int set_header(unsigned char type, unsigned char *buf, size_t size)
 		; /* Accept */
 	else
 		return 1;
+
+	if (type == 0x32u) {
+		size_t code_size = sizeof(ia32);
+		size_t i;
+
+		for (i = 0u; i < code_size; i++) {
+			if ((unsigned)buf[i])
+				break;
+		}
+		if (i == code_size)
+			memcpy(&buf[0], &ia32[0], code_size);
+	}
+	if (type == 0x64u) {
+		size_t code_size = sizeof(x64);
+		size_t i;
+
+		for (i = 0u; i < code_size; i++) {
+			if ((unsigned)buf[i])
+				break;
+		}
+		if (i == code_size)
+			memcpy(&buf[0], &x64[0], code_size);
+	}
 
 	memcpy(&buf[0], &file_header[0], sizeof(file_header));
 	memcpy(&buf[16], &zero_bytes[0], sizeof(zero_bytes));
