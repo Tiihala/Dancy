@@ -252,6 +252,40 @@ static int set_max_size(struct options *opt, int *size)
 	return fputs("Error: overflow (file size)\n", stderr), 1;
 }
 
+static unsigned long crc32c(const void *obj, size_t len)
+{
+	const unsigned char *ptr = (const unsigned char *)obj;
+	unsigned long crc = 0xFFFFFFFFul;
+	int i;
+
+	while (len--) {
+		crc ^= (unsigned long)*ptr++;
+		for (i = 0; i < CHAR_BIT; i++) {
+			if (crc & 1ul)
+				crc >>= 1, crc ^= 0x82F63B78ul;
+			else
+				crc >>= 1;
+		}
+	}
+	return ~crc & 0xFFFFFFFFul;
+}
+
+static void set_at_header(unsigned char *buf, int size)
+{
+	static const unsigned char file_header[16] = {
+		0x8Du, 0x41u, 0x54u, 0x0Du, 0x0Au, 0x73u, 0x74u, 0x64u,
+		0x0Cu, 0x43u, 0x0Cu, 0x45u, 0x0Cu, 0x0Au, 0x71u, 0xF8u
+	};
+	unsigned long crc;
+
+	memset(&buf[0], 0, (size_t)AT_HEADER_SIZE);
+	memcpy(&buf[0], &file_header[0], sizeof(file_header));
+	W_LE32(&buf[16], size);
+
+	crc = crc32c(buf, size);
+	W_LE32(&buf[24], crc);
+}
+
 int link_main(struct options *opt)
 {
 	unsigned char *out;
@@ -552,27 +586,31 @@ int link_main(struct options *opt)
 	}
 
 	/*
+	 * Adjust the size.
+	 */
+	if (off >= size - 128)
+		fputs("Error: buffer overflow\n", stderr), exit(1);
+	size = off;
+
+	/*
 	 * Handle custom headers.
 	 */
 	if (!strcmp(opt->arg_f, "at")) {
 		size_t s = (size_t)AT_HEADER_SIZE;
 		memmove(&out[s], &out[0], (20u + 4u * 40u));
-		memset(&out[0], 0, s);
+		set_at_header(&out[0], size);
 	} else if (!strcmp(opt->arg_f, "init")) {
 		size_t s = (size_t)IN_HEADER_SIZE;
 		memmove(&out[s], &out[0], (20u + 4u * 40u));
 		memset(&out[0], 0, s);
-		if ((unsigned)off > 0xF000u) {
+		if ((unsigned)size > 0xF000u) {
 			fputs("Error: init file overflow\n", stderr);
 			return free(out), 1;
 		}
 	}
 
 	/*
-	 * Adjust the size and write the output.
+	 * Write the output.
 	 */
-	if (off >= size - 128)
-		fputs("Error: buffer overflow\n", stderr), exit(1);
-	size = off;
 	return end(opt, out, (size_t)size);
 }
