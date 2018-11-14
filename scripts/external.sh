@@ -70,4 +70,4 @@ pushd external/src/gcc-build
 popd
 
 rm -rf external/src
-echo "scripts/external/mingw.sh: done"
+echo "scripts/external.sh: done"
