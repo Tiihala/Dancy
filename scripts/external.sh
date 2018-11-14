@@ -7,7 +7,7 @@ GCC_VERSION=7.3.0
 BIN_LINK=ftp://ftp.gnu.org/gnu/binutils/binutils-$BIN_VERSION.tar.xz
 GCC_LINK=ftp://ftp.gnu.org/gnu/gcc/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz
 
-if [ ! -f "scripts/external/mingw.sh" ]
+if [ ! -f "scripts/external.sh" ]
 then
     echo "Error: does not look like a root of Dancy source tree" 1>&2
     exit 1
@@ -19,6 +19,7 @@ then
     exit 1
 fi
 
+which gcc
 which make
 which tar
 which wget
