@@ -21,6 +21,7 @@
 #define DANCY_H
 
 #include <dancy/limits.h>
+#include <dancy/types.h>
 
 #define DANCY_BLOB(a,b,c,d,e,f,g,h) \
 (unsigned)(a) >> 8 & 0xFFu, (unsigned)(a) & 0xFFu, \
@@ -92,11 +93,13 @@ struct b_video_info {
 	uint32_t width;
 	uint32_t height;
 	uint32_t stride;
-	union {
-		phys_addr_t address;
-		uint8_t raw_address[8];
-	} framebuffer;
+	phys_addr_t framebuffer;
+
+#if defined(DANCY_64_BIT)
 	uint8_t reserved[8];
+#else
+	uint8_t reserved[12];
+#endif
 };
 
 enum dancy_key {

@@ -12,4 +12,5 @@ DANCY_TARGET_ALL= \
 
 DANCY_HEADERS= \
  ./include/dancy/limits.h \
+ ./include/dancy/types.h \
  ./include/dancy.h

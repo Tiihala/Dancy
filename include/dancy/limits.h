@@ -42,18 +42,14 @@
 #error Definition of UINT_MAX is not compatible
 #endif
 
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int uint32_t;
-
-#if defined (ULLONG_MAX)
+#if defined (DANCY_64_BIT) && defined (ULLONG_MAX)
 #if ULLONG_MAX != 18446744073709551615ull
 #error Definition of ULLONG_MAX is not compatible
 #endif
-	typedef unsigned long long uint64_t;
-	typedef unsigned long long phys_addr_t;
-#else
-	typedef unsigned int phys_addr_t;
+#endif
+
+#if defined (DANCY_64_BIT) && !defined (ULLONG_MAX)
+#error Definition of ULLONG_MAX is not available
 #endif
 
 #endif
