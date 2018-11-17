@@ -94,12 +94,22 @@ struct b_video_info {
 	uint32_t height;
 	uint32_t stride;
 	phys_addr_t framebuffer;
-
 #if defined(DANCY_64_BIT)
 	uint8_t reserved[8];
 #else
 	uint8_t reserved[12];
 #endif
+};
+
+enum b_mode {
+	B_MODE_VGA,
+	B_MODE_PALETTE,
+	B_MODE_15_BIT,
+	B_MODE_16_BIT,
+	B_MODE_RED_GREEN_BLUE,
+	B_MODE_BLUE_GREEN_RED,
+	B_MODE_RED_GREEN_BLUE_RESERVED,
+	B_MODE_BLUE_GREEN_RED_RESERVED
 };
 
 enum dancy_key {
