@@ -20,6 +20,8 @@
 #ifndef DANCY_H
 #define DANCY_H
 
+#include <dancy/limits.h>
+
 #define DANCY_BLOB(a,b,c,d,e,f,g,h) \
 (unsigned)(a) >> 8 & 0xFFu, (unsigned)(a) & 0xFFu, \
 (unsigned)(b) >> 8 & 0xFFu, (unsigned)(b) & 0xFFu, \
@@ -29,6 +31,73 @@
 (unsigned)(f) >> 8 & 0xFFu, (unsigned)(f) & 0xFFu, \
 (unsigned)(g) >> 8 & 0xFFu, (unsigned)(g) & 0xFFu, \
 (unsigned)(h) >> 8 & 0xFFu, (unsigned)(h) & 0xFFu
+
+unsigned long b_a0(const char *, unsigned int);
+unsigned long b_a1(const char *, unsigned int);
+unsigned long b_a2(unsigned int, unsigned int);
+unsigned long b_a3(void);
+unsigned long b_a4(void);
+unsigned long b_a5(unsigned char);
+unsigned long b_a6(void);
+unsigned long b_a7(unsigned char);
+unsigned long b_a8(unsigned int);
+unsigned long b_a9(void *, unsigned int);
+unsigned long b_aa(void *, unsigned int);
+unsigned long b_ab(unsigned int, unsigned int);
+unsigned long b_ac(void *, unsigned int);
+unsigned long b_ad(unsigned int, unsigned int);
+unsigned long b_ae(void);
+unsigned long b_af(void);
+
+#define b_output_string         (b_a0)
+#define b_output_string_hl      (b_a1)
+#define b_output_control        (b_a2)
+#define b_get_keycode           (b_a3)
+#define b_get_byte_com1         (b_a4)
+#define b_put_byte_com1         (b_a5)
+#define b_get_byte_com2         (b_a6)
+#define b_put_byte_com2         (b_a7)
+#define b_get_parameter         (b_a8)
+#define b_get_structure         (b_a9)
+#define b_set_read_buffer       (b_aa)
+#define b_read_blocks           (b_ab)
+#define b_set_write_buffer      (b_ac)
+#define b_write_blocks          (b_ad)
+#define b_pause                 (b_ae)
+#define b_exit                  (b_af)
+
+enum b_parameter {
+	B_BYTES_PER_BLOCK,
+	B_TOTAL_BLOCKS,
+	B_HIDDEN_BLOCKS,
+	B_DRIVE_NUMBER,
+	B_MEDIA_CHANGED,
+	B_A20_STATE,
+	B_DROPPED_BYTES_COM1,
+	B_DROPPED_BYTES_COM2,
+	B_DRIVE_PARAMETERS_80H,
+	B_DRIVE_PARAMETERS_81H,
+	B_DRIVE_PARAMETERS_82H,
+	B_DRIVE_PARAMETERS_83H,
+	B_ACPI_POINTER
+};
+
+enum b_structure {
+	B_VIDEO_INFO,
+	B_VIDEO_EDID
+};
+
+struct b_video_info {
+	uint32_t mode;
+	uint32_t width;
+	uint32_t height;
+	uint32_t stride;
+	union {
+		phys_addr_t address;
+		uint8_t raw_address[8];
+	} framebuffer;
+	uint8_t reserved[8];
+};
 
 enum dancy_key {
 	DANCY_KEY_NULL,

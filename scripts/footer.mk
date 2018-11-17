@@ -72,25 +72,25 @@ DY_VBR_OBJECTS= \
 
 ##############################################################################
 
-./boot/cd/eltorito.obj: ./boot/cd/eltorito.c ./include/dancy.h
+./boot/cd/eltorito.obj: ./boot/cd/eltorito.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/cd/eltorito.c
 
-./boot/fat/floppy.obj: ./boot/fat/floppy.c ./include/dancy.h
+./boot/fat/floppy.obj: ./boot/fat/floppy.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/fat/floppy.c
 
-./boot/fat/ldr512.obj: ./boot/fat/ldr512.c ./include/dancy.h
+./boot/fat/ldr512.obj: ./boot/fat/ldr512.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/fat/ldr512.c
 
-./boot/fat/vbrchs.obj: ./boot/fat/vbrchs.c ./include/dancy.h
+./boot/fat/vbrchs.obj: ./boot/fat/vbrchs.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/fat/vbrchs.c
 
-./boot/fat/vbrlba.obj: ./boot/fat/vbrlba.c ./include/dancy.h
+./boot/fat/vbrlba.obj: ./boot/fat/vbrlba.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/fat/vbrlba.c
 
-./boot/gpt/gpt.obj: ./boot/gpt/gpt.c ./include/dancy.h
+./boot/gpt/gpt.obj: ./boot/gpt/gpt.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/gpt/gpt.c
 
-./boot/mbr/mbr.obj: ./boot/mbr/mbr.c ./include/dancy.h
+./boot/mbr/mbr.obj: ./boot/mbr/mbr.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/mbr/mbr.c
 
 ./common/crc32/crc32.obj: ./common/crc32/crc32.c
@@ -99,7 +99,7 @@ DY_VBR_OBJECTS= \
 ./common/crc32/crc32c.obj: ./common/crc32/crc32c.c
 	$(DANCY_HOST_OBJECT)$@ ./common/crc32/crc32c.c
 
-./loader/loader.obj: ./loader/loader.c ./include/dancy.h
+./loader/loader.obj: ./loader/loader.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./loader/loader.c
 
 ./tools/dy-blob/dy-blob.obj: ./tools/dy-blob/dy-blob.c
@@ -111,10 +111,10 @@ DY_VBR_OBJECTS= \
 ./tools/dy-init/dy-init.obj: ./tools/dy-init/dy-init.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/dy-init.c
 
-./tools/dy-init/ia32.obj: ./tools/dy-init/ia32.c ./include/dancy.h
+./tools/dy-init/ia32.obj: ./tools/dy-init/ia32.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/ia32.c
 
-./tools/dy-init/x64.obj: ./tools/dy-init/x64.c ./include/dancy.h
+./tools/dy-init/x64.obj: ./tools/dy-init/x64.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/x64.c
 
 ./tools/dy-link/dump.obj: ./tools/dy-link/dump.c $(DY_LINK_HEADERS)

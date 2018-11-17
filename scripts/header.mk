@@ -9,3 +9,7 @@ DANCY_TARGET_ALL= \
  ./bin/dy-link$(DANCY_EXE) \
  ./bin/dy-mbr$(DANCY_EXE) \
  ./bin/dy-vbr$(DANCY_EXE)
+
+DANCY_HEADERS= \
+ ./include/dancy/limits.h \
+ ./include/dancy.h
