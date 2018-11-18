@@ -47,7 +47,7 @@ static unsigned long crc32c(const void *obj, size_t len)
 }
 
 #define PROGRAM_CMDNAME "dy-init"
-#define PROGRAM_VERSION "2.0"
+#define PROGRAM_VERSION "2.1"
 
 struct options {
 	char **operands;
@@ -133,7 +133,11 @@ int program(struct options *opt)
 	}
 
 	if (opt->set_header) {
+#if INT_MAX <= 0x7FFF
 		static unsigned char buf[32767];
+#else
+		static unsigned char buf[65536];
+#endif
 		size_t nbytes;
 		FILE *fp;
 		if (!type)
