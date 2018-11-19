@@ -239,8 +239,6 @@ int main(int argc, char *argv[])
 			}
 			argv_i++, i++, nr_mfiles++;
 		}
-	} else {
-		help("missing input files");
 	}
 	opts.nr_mfiles = nr_mfiles;
 	opts.mfiles = &mfiles[0];

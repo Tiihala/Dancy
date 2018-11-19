@@ -19,20 +19,54 @@
 
 #include "program.h"
 
+static int default_obj(struct options *opt, unsigned magic)
+{
+	size_t size = 20u;
+	unsigned char *m;
+
+	if (opt->nr_mfiles) {
+		const char *e = "Error: format %s with input files\n";
+		fprintf(stderr, e, opt->arg_f);
+		return 1;
+	}
+	/*
+	 * This memory allocation is handled like mfiles in general.
+	 */
+	if ((m = calloc(size, sizeof(unsigned char))) != NULL) {
+		W_LE16(&m[0], magic);
+		opt->mfiles[0].data = m;
+		opt->mfiles[0].size = (int)size;
+	} else {
+		return fputs("Error: not enough memory\n", stderr), 1;
+	}
+	return opt->nr_mfiles++, 0;
+}
+
 int program(struct options *opt)
 {
 	int i;
 
-	if (!opt->nr_mfiles)
-		return fputs("Warning: no input\n", stderr), 1;
 	if (opt->arg_f && strcmp(opt->arg_f, "obj")) {
-		if (strcmp(opt->arg_f, "at") && strcmp(opt->arg_f, "init")) {
+		if (!strcmp(opt->arg_f, "at")) {
+			; /* Accept */
+		} else if (!strcmp(opt->arg_f, "init")) {
+			; /* Accept */
+		} else if (!strcmp(opt->arg_f, "32")) {
+			if (default_obj(opt, 0x014Cu))
+				return 1;
+		} else if (!strcmp(opt->arg_f, "64")) {
+			if (default_obj(opt, 0x8664u))
+				return 1;
+		} else {
 			fputs("Error: unknown output format\n", stderr);
 			return 1;
 		}
 	} else {
 		opt->arg_f = "obj";
 	}
+
+	if (!opt->nr_mfiles)
+		return fputs("Warning: no input\n", stderr), 1;
 
 	for (i = 0; i < opt->nr_mfiles; i++) {
 		struct mfile *obj = &opt->mfiles[i];
