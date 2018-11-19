@@ -21,6 +21,7 @@
 #define DANCY_TYPES_H
 
 #include <dancy/limits.h>
+#include <stddef.h>
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
