@@ -20,9 +20,6 @@
 #ifndef DANCY_H
 #define DANCY_H
 
-#include <dancy/limits.h>
-#include <dancy/types.h>
-
 #define DANCY_BLOB(a,b,c,d,e,f,g,h) \
 (unsigned)(a) >> 8 & 0xFFu, (unsigned)(a) & 0xFFu, \
 (unsigned)(b) >> 8 & 0xFFu, (unsigned)(b) & 0xFFu, \
@@ -32,6 +29,11 @@
 (unsigned)(f) >> 8 & 0xFFu, (unsigned)(f) & 0xFFu, \
 (unsigned)(g) >> 8 & 0xFFu, (unsigned)(g) & 0xFFu, \
 (unsigned)(h) >> 8 & 0xFFu, (unsigned)(h) & 0xFFu
+
+#if defined(DANCY_32_BIT) || defined(DANCY_64_BIT)
+
+#include <dancy/limits.h>
+#include <dancy/types.h>
 
 unsigned long b_a0(const char *, unsigned int);
 unsigned long b_a1(const char *, unsigned int);
@@ -228,4 +230,5 @@ enum dancy_key {
 #define DANCY_KEYMOD_SHIFT  (DANCY_KEYMOD_LSHIFT | DANCY_KEYMOD_RSHIFT)
 #define DANCY_KEYMOD_ALT    (DANCY_KEYMOD_LALT   | DANCY_KEYMOD_RALT)
 
+#endif
 #endif
