@@ -47,7 +47,6 @@ static unsigned long crc32c(const void *obj, size_t len)
 }
 
 #define PROGRAM_CMDNAME "dy-init"
-#define PROGRAM_VERSION "2.1"
 
 struct options {
 	char **operands;
@@ -206,7 +205,11 @@ static void help(const char *fmt, ...)
 
 static void version(void)
 {
-	fputs(PROGRAM_CMDNAME " " PROGRAM_VERSION "\n", stdout);
+#if defined(DANCY_MAJOR) && defined(DANCY_MINOR)
+	printf(PROGRAM_CMDNAME " (Dancy) %i.%i\n", DANCY_MAJOR, DANCY_MINOR);
+#else
+	fputs(PROGRAM_CMDNAME " (Dancy)\n", stdout);
+#endif
 	exit(EXIT_SUCCESS);
 }
 

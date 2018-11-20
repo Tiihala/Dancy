@@ -1,14 +1,14 @@
 # Dancy Operating System
 
-HOST_CPPFLAGS=-I./include
+include ./VERSION
+include ./scripts/header.mk
+
+HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
 HOST_CFLAGS=-O2 -std=c89 -Wall -Wextra -Wshadow -Wwrite-strings -pedantic
 
 DANCY_EXE=
 DANCY_HOST_BINARY=$(CC) -o
 DANCY_HOST_OBJECT=$(CC) -c $(HOST_CPPFLAGS) $(HOST_CFLAGS) -o
-
-include ./VERSION
-include ./scripts/header.mk
 
 all: $(DANCY_TARGET_ALL)
 

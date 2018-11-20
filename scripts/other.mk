@@ -1,14 +1,14 @@
 # Dancy Operating System
 
-HOST_CPPFLAGS=-I./include
+!include .\VERSION
+!include .\scripts\header.mk
+
+HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
 HOST_CFLAGS=/O2 /Wall /wd4711 /wd4996 /nologo
 
 DANCY_EXE=.exe
 DANCY_HOST_BINARY=CL /Fe
 DANCY_HOST_OBJECT=CL /c $(HOST_CPPFLAGS) $(HOST_CFLAGS) /Fo
-
-!include .\VERSION
-!include .\scripts\header.mk
 
 all: $(DANCY_TARGET_ALL)
 

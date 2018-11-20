@@ -14,3 +14,5 @@ DANCY_HEADERS= \
  ./include/dancy/limits.h \
  ./include/dancy/types.h \
  ./include/dancy.h
+
+DANCY_VERSION=-DDANCY_MAJOR=$(DANCY_MAJOR) -DDANCY_MINOR=$(DANCY_MINOR)

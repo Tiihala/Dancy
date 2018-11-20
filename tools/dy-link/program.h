@@ -21,7 +21,6 @@
 #define PROGRAM_H
 
 #define PROGRAM_CMDNAME "dy-link"
-#define PROGRAM_VERSION "1.1"
 
 #include <ctype.h>
 #include <errno.h>
