@@ -12,14 +12,22 @@ DANCY_HOST_OBJECT=CL /c $(HOST_CPPFLAGS) $(HOST_CFLAGS) /Fo
 
 all: $(DANCY_TARGET_ALL)
 
+bin:
+	mkdir "bin"
+
 clean:
+	@if exist bin rmdir bin /S /Q
+	@if exist o32 rmdir o32 /S /Q
+	@if exist o64 rmdir o64 /S /Q
+	@if exist system rmdir system /S /Q
 	@for %i in (LOADER.*) do del "%i"
-	@for /R %i in (dy-*.exe) do del "%i"
-	@for /R %i in (*.o) do del "%i"
 	@for /R %i in (*.obj) do del "%i"
 
 distclean: clean
 	@if exist external rmdir external /S /Q
+
+system:
+	mkdir "system"
 
 ./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
 	bin\dy-blob$(DANCY_EXE) -t ldr512 $@

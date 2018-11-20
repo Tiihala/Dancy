@@ -12,14 +12,22 @@ include ./scripts/header.mk
 
 all: $(DANCY_TARGET_ALL)
 
+bin:
+	mkdir bin
+
 clean:
+	@rm -rf bin
+	@rm -rf o32
+	@rm -rf o64
+	@rm -rf system
 	@rm -fv LOADER.*
-	@rm -fv `find bin -name "dy-*"`
-	@rm -fv `find -name "*.o"`
 	@rm -fv `find -name "*.obj"`
 
 distclean: clean
 	@rm -rf external
+
+system:
+	mkdir system
 
 ./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
 	./bin/dy-blob$(DANCY_EXE) -t ldr512 $@

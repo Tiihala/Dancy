@@ -1,5 +1,8 @@
+/bin/
 /external/
+/o32/
+/o64/
+/system/
 LOADER.512
 LOADER.AT
-*.o
 *.obj
