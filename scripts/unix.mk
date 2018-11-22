@@ -2,6 +2,7 @@
 
 include ./VERSION
 include ./scripts/header.mk
+PATH=$(shell ./scripts/path.sh)
 
 HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
 HOST_CFLAGS=-O2 -std=c89 -Wall -Wextra -Wshadow -Wwrite-strings -pedantic
@@ -10,10 +11,19 @@ DANCY_EXE=
 DANCY_HOST_BINARY=$(CC) -o
 DANCY_HOST_OBJECT=$(CC) -c $(HOST_CPPFLAGS) $(HOST_CFLAGS) -o
 
-all: $(DANCY_TARGET_ALL)
+DANCY_AS=nasm
+DANCY_CC=x86_64-w64-mingw32-gcc
+DANCY_OBJECT_32=$(DANCY_CC) $(DANCY_CPPFLAGS) $(DANCY_CFLAGS) -c -m32 -o
+DANCY_OBJECT_64=$(DANCY_CC) $(DANCY_CPPFLAGS) $(DANCY_CFLAGS) -c -m64 -o
+
+all: all-system all-tools
+
+all-system: $(DANCY_TARGET_SYSTEM)
+
+all-tools: $(DANCY_TARGET_TOOLS)
 
 bin:
-	mkdir bin
+	@mkdir bin
 
 clean:
 	@rm -rf bin
@@ -26,13 +36,17 @@ clean:
 distclean: clean
 	@rm -rf external
 
+external:
+	@bash ./scripts/external.sh
+
 system:
-	mkdir system
+	@mkdir system
 
 ./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
-	./bin/dy-blob$(DANCY_EXE) -t ldr512 $@
+	dy-blob$(DANCY_EXE) -t ldr512 $@
 
 ./LOADER.AT: ./bin/dy-blob$(DANCY_EXE)
-	./bin/dy-blob$(DANCY_EXE) -t loader $@
+	dy-blob$(DANCY_EXE) -t loader $@
 
-include ./scripts/footer.mk
+include ./scripts/system.mk
+include ./scripts/tools.mk
