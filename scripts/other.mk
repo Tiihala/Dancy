@@ -2,7 +2,7 @@
 
 !include .\VERSION
 !include .\scripts\header.mk
-PATH=$(MAKEDIR)\bin;$(PATH)
+DANCY_PATH=$(MAKEDIR)\bin;$(PATH)
 
 HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
 HOST_CFLAGS=/O2 /Wall /wd4711 /wd4996 /nologo
@@ -40,16 +40,16 @@ external:
 	@mkdir "external"
 
 path: ./bin/dy-path$(DANCY_EXE)
-	@dy-path$(DANCY_EXE)
+	@cmd /C "set PATH=$(DANCY_PATH) && bin\dy-path$(DANCY_EXE)"
 
 system:
 	@mkdir "system"
 
 ./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
-	dy-blob$(DANCY_EXE) -t ldr512 $@
+	bin\dy-blob$(DANCY_EXE) -t ldr512 $@
 
 ./LOADER.AT: ./bin/dy-blob$(DANCY_EXE)
-	dy-blob$(DANCY_EXE) -t loader $@
+	bin\dy-blob$(DANCY_EXE) -t loader $@
 
 !include .\scripts\system.mk
 !include .\scripts\tools.mk
