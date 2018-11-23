@@ -39,6 +39,9 @@ distclean: clean
 external:
 	@mkdir "external"
 
+path: ./bin/dy-path$(DANCY_EXE)
+	@dy-path$(DANCY_EXE)
+
 system:
 	@mkdir "system"
 

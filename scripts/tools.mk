@@ -59,6 +59,14 @@ DY_MBR_OBJECTS= \
 
 ##############################################################################
 
+DY_PATH_OBJECTS= \
+ ./tools/dy-path/dy-path.obj
+
+./bin/dy-path$(DANCY_EXE): bin $(DY_PATH_OBJECTS)
+	$(DANCY_HOST_BINARY)$@ $(DY_PATH_OBJECTS)
+
+##############################################################################
+
 DY_VBR_OBJECTS= \
  ./tools/dy-vbr/dy-vbr.obj \
  ./boot/fat/floppy.obj \
@@ -140,6 +148,9 @@ DY_VBR_OBJECTS= \
 
 ./tools/dy-mbr/dy-mbr.obj: ./tools/dy-mbr/dy-mbr.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-mbr/dy-mbr.c
+
+./tools/dy-path/dy-path.obj: ./tools/dy-path/dy-path.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-path/dy-path.c
 
 ./tools/dy-vbr/dy-vbr.obj: ./tools/dy-vbr/dy-vbr.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-vbr/dy-vbr.c
