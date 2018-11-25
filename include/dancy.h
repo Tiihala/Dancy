@@ -30,7 +30,7 @@
 (unsigned)(g) >> 8 & 0xFFu, (unsigned)(g) & 0xFFu, \
 (unsigned)(h) >> 8 & 0xFFu, (unsigned)(h) & 0xFFu
 
-#if defined(DANCY_32_BIT) || defined(DANCY_64_BIT)
+#if defined(DANCY_32) || defined(DANCY_64)
 
 #include <dancy/limits.h>
 #include <dancy/stdarg.h>
@@ -97,7 +97,7 @@ struct b_video_info {
 	uint32_t height;
 	uint32_t stride;
 	phys_addr_t framebuffer;
-#if defined(DANCY_64_BIT)
+#if defined(DANCY_64)
 	uint8_t reserved[8];
 #else
 	uint8_t reserved[12];

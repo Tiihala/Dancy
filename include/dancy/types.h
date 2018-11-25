@@ -27,7 +27,7 @@ typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 
-#if defined(DANCY_64_BIT)
+#if defined(DANCY_64)
 	typedef unsigned long long addr_t;
 	typedef unsigned long long phys_addr_t;
 	typedef unsigned long long uint64_t;
