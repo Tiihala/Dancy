@@ -19,6 +19,13 @@ then
     exit 1
 fi
 
+echo ""
+echo -e "\e[33mBuilding a cross compiler:\e[0m"
+echo -e "\e[33m    binutils-$BIN_VERSION\e[0m"
+echo -e "\e[33m    gcc-$GCC_VERSION\e[0m"
+echo ""
+sleep 5
+
 which gcc
 which make
 which tar
@@ -26,10 +33,17 @@ which wget
 
 export DANCY_EXTERNAL=`pwd`/external
 mkdir -p $DANCY_EXTERNAL/bin
+mkdir -p $DANCY_EXTERNAL/mingw/include
 mkdir -p $DANCY_EXTERNAL/src
 
 export PREFIX="$DANCY_EXTERNAL"
 export PATH="$PREFIX/bin:$PATH"
+
+pushd external/mingw/include
+    touch limits.h
+    touch stdarg.h
+    touch stddef.h
+popd
 
 pushd external/src
     wget $BIN_LINK
@@ -50,7 +64,8 @@ pushd external/src/binutils-build
         --prefix=$PREFIX \
         --target=x86_64-w64-mingw32 \
         --enable-targets=x86_64-w64-mingw32,i686-w64-mingw32 \
-        --disable-nls
+        --disable-nls \
+        --with-sysroot=$PREFIX
     make
     make install
 popd
@@ -62,12 +77,14 @@ pushd external/src/gcc-build
         --prefix=$PREFIX \
         --target=x86_64-w64-mingw32 \
         --enable-targets=all \
-        --disable-nls \
+        --enable-languages=c \
         --without-headers \
-        --enable-languages=c
+        --disable-nls \
+        --with-sysroot=$PREFIX
     make all-gcc
     make install-gcc
 popd
 
 rm -rf external/src
-echo "scripts/external.sh: done"
+echo -e "scripts/external.sh: \e[32mREADY\e[0m"
+echo ""
