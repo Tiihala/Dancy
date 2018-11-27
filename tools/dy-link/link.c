@@ -156,13 +156,13 @@ static int get_pre_size(struct options *opt)
 	return size;
 }
 
-static void add_with_align(int *off, int add)
+static void add_with_align(int *off, int add, int init)
 {
-	const unsigned u15 = 15u;
+	unsigned u = (init) ? 63u : 15u;
 	int t = *off;
 
 	t = t + add;
-	t = (int)(((unsigned)t + u15) & ~u15);
+	t = (int)(((unsigned)t + u) & ~u);
 	*off = t;
 }
 
@@ -233,9 +233,9 @@ static int set_max_size(struct options *opt, int *size)
 	/*
 	 * The extra space for alignments and symbols.
 	 */
-	if (*size < INT_MAX - (add = 512)) {
+	if (*size < INT_MAX - (add = 4096 + 1024)) {
 		*size += add;
-		*size = (int)((unsigned)(*size) & ~(31u));
+		*size = (int)((unsigned)(*size) & ~(4095u));
 	} else {
 		return fputs("Error: overflow (extra space)\n", stderr), 1;
 	}
@@ -288,6 +288,7 @@ static void set_at_header(unsigned char *buf, int size)
 
 int link_main(struct options *opt)
 {
+	int init = (strcmp(opt->arg_f, "init")) ? 0 : 1;
 	unsigned char *out;
 	int size;
 	int off;
@@ -391,7 +392,7 @@ int link_main(struct options *opt)
 	out = calloc((size_t)size, sizeof(unsigned char));
 	if (!out)
 		return fputs("Error: not enough memory\n", stderr), 1;
-	add_with_align((off = 0, &off), get_pre_size(opt));
+	add_with_align((off = 0, &off), get_pre_size(opt), init);
 
 	/*
 	 * Set the header values.
@@ -415,7 +416,7 @@ int link_main(struct options *opt)
 		nbytes = section_copy_d(opt, name, out + off);
 		W_LE32(section + 16, nbytes);
 		W_LE32(section + 20, nbytes ? off : 0);
-		add_with_align(&off, nbytes);
+		add_with_align(&off, nbytes, 0);
 		nbytes = section_copy_r(opt, name, out + off);
 		if ((unsigned)nbytes / 10u > 0xFFFEu) {
 			fputs("Error: too many .text relocations\n", stderr);
@@ -423,7 +424,7 @@ int link_main(struct options *opt)
 		}
 		W_LE32(section + 24, nbytes ? off : 0);
 		W_LE16(section + 32, nbytes / 10);
-		add_with_align(&off, nbytes);
+		add_with_align(&off, nbytes, init);
 		W_LE32(section + 36, flags);
 	}
 
@@ -440,7 +441,7 @@ int link_main(struct options *opt)
 		nbytes = section_copy_d(opt, name, out + off);
 		W_LE32(section + 16, nbytes);
 		W_LE32(section + 20, nbytes ? off : 0);
-		add_with_align(&off, nbytes);
+		add_with_align(&off, nbytes, 0);
 		nbytes = section_copy_r(opt, name, out + off);
 		if ((unsigned)nbytes / 10u > 0xFFFEu) {
 			fputs("Error: too many .rdata relocations\n", stderr);
@@ -448,7 +449,7 @@ int link_main(struct options *opt)
 		}
 		W_LE32(section + 24, nbytes ? off : 0);
 		W_LE16(section + 32, nbytes / 10);
-		add_with_align(&off, nbytes);
+		add_with_align(&off, nbytes, init);
 		W_LE32(section + 36, flags);
 	}
 
@@ -465,7 +466,7 @@ int link_main(struct options *opt)
 		nbytes = section_copy_d(opt, name, out + off);
 		W_LE32(section + 16, nbytes);
 		W_LE32(section + 20, nbytes ? off : 0);
-		add_with_align(&off, nbytes);
+		add_with_align(&off, nbytes, 0);
 		nbytes = section_copy_r(opt, name, out + off);
 		if ((unsigned)nbytes / 10u > 0xFFFEu) {
 			fputs("Error: too many .data relocations\n", stderr);
@@ -473,7 +474,7 @@ int link_main(struct options *opt)
 		}
 		W_LE32(section + 24, nbytes ? off : 0);
 		W_LE16(section + 32, nbytes / 10);
-		add_with_align(&off, nbytes);
+		add_with_align(&off, nbytes, init);
 		W_LE32(section + 36, flags);
 	}
 
@@ -531,7 +532,7 @@ int link_main(struct options *opt)
 			break;
 		}
 		if (!strcmp(opt->arg_f, "init")) {
-			if (opt->align_flags > 0x00500000ul) {
+			if (opt->align_flags > 0x00700000ul) {
 				fputs("Error: init alignment\n", stderr);
 				return free(out), 1;
 			}
