@@ -42,6 +42,62 @@ static int default_obj(struct options *opt, unsigned magic)
 	return opt->nr_mfiles++, 0;
 }
 
+static void native_obj(unsigned char *data, int size)
+{
+	const int at_size = AT_HEADER_SIZE + (20 + 4 * 40);
+	const int in_size = IN_HEADER_SIZE + (20 + 4 * 40);
+	unsigned char header[20 + 4 * 40];
+
+	if (size < 32)
+		return;
+	if (LE32(&data[0]) != 0x00000000ul && LE32(&data[0]) != 0x0D54418Dul)
+		return;
+	/*
+	 * Normal executables.
+	 */
+	if (LE32(&data[8]) == 0x450C430Cul && size >= at_size) {
+		if (LE16(&data[AT_HEADER_SIZE + 2]) != 4ul)
+			return;
+		if (LE32(&data[AT_HEADER_SIZE + 16]) != 0ul)
+			return;
+		memcpy(&header[0], &data[AT_HEADER_SIZE], sizeof(header));
+		memset(&data[0], 0, at_size);
+		memcpy(&data[0], &header[0], sizeof(header));
+		return;
+	}
+	/*
+	 * Init executables (with header).
+	 */
+	if (LE32(&data[8]) == 0x4E0C490Cul && size >= in_size) {
+		if (LE16(&data[IN_HEADER_SIZE + 2]) != 4ul)
+			return;
+		if (LE32(&data[IN_HEADER_SIZE + 16]) != 0ul)
+			return;
+		memcpy(&header[0], &data[IN_HEADER_SIZE], sizeof(header));
+		memset(&data[0], 0, in_size);
+		memcpy(&data[0], &header[0], sizeof(header));
+		return;
+	}
+	/*
+	 * Init executables (without header).
+	 */
+	if (LE32(&data[0]) == 0x00000000ul && size >= in_size) {
+		int i;
+		for (i = 4; i < IN_HEADER_SIZE; i++) {
+			if (data[i])
+				return;
+		}
+		if (LE16(&data[IN_HEADER_SIZE + 2]) != 4ul)
+			return;
+		if (LE32(&data[IN_HEADER_SIZE + 16]) != 0ul)
+			return;
+		memcpy(&header[0], &data[IN_HEADER_SIZE], sizeof(header));
+		memset(&data[0], 0, in_size);
+		memcpy(&data[0], &header[0], sizeof(header));
+		return;
+	}
+}
+
 int program(struct options *opt)
 {
 	int i;
@@ -70,6 +126,10 @@ int program(struct options *opt)
 
 	for (i = 0; i < opt->nr_mfiles; i++) {
 		struct mfile *obj = &opt->mfiles[i];
+		/*
+		 * Translate native executables to normal objects.
+		 */
+		native_obj(obj->data, obj->size);
 		/*
 		 * Validating the input files is very important. Other code
 		 * procedures assume that the data buffers are safe to use.
