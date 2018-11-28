@@ -142,6 +142,13 @@ int program(struct options *opt)
 			dump_ext(opt->operands[i], obj->data);
 	}
 	/*
+	 * Set default alignment bits for sections.
+	 */
+	opt->alignbits_t = 0x00500000ul;
+	opt->alignbits_r = 0x00300000ul;
+	opt->alignbits_d = 0x00300000ul;
+	opt->alignbits_b = 0x00500000ul;
+	/*
 	 * Handle grouped sections first and then check
 	 * the total size of all relevant sections.
 	 */

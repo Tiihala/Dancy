@@ -392,7 +392,7 @@ int link_main(struct options *opt)
 	out = calloc((size_t)size, sizeof(unsigned char));
 	if (!out)
 		return fputs("Error: not enough memory\n", stderr), 1;
-	add_with_align((off = 0, &off), get_pre_size(opt), init);
+	add_with_align((off = 0, &off), get_pre_size(opt), 0);
 
 	/*
 	 * Set the header values.
@@ -409,7 +409,7 @@ int link_main(struct options *opt)
 	{
 		const char *name = ".text";
 		unsigned char *section = out + 20 + 0 * 40;
-		unsigned long flags = 0x60000020ul | opt->align_flags;
+		unsigned long flags = 0x60000020ul | opt->alignbits_t;
 		int nbytes;
 
 		strcpy((char *)(section + 0), name);
@@ -434,7 +434,7 @@ int link_main(struct options *opt)
 	{
 		const char *name = ".rdata";
 		unsigned char *section = out + 20 + 1 * 40;
-		unsigned long flags = 0x40000040ul | opt->align_flags;
+		unsigned long flags = 0x40000040ul | opt->alignbits_r;
 		int nbytes;
 
 		strcpy((char *)(section + 0), name);
@@ -459,7 +459,7 @@ int link_main(struct options *opt)
 	{
 		const char *name = ".data";
 		unsigned char *section = out + 20 + 2 * 40;
-		unsigned long flags = 0xC0000040ul | opt->align_flags;
+		unsigned long flags = 0xC0000040ul | opt->alignbits_d;
 		int nbytes;
 
 		strcpy((char *)(section + 0), name);
@@ -484,7 +484,7 @@ int link_main(struct options *opt)
 	{
 		const char *name = ".bss";
 		unsigned char *section = out + 20 + 3 * 40;
-		unsigned long flags = 0xC0000080ul | opt->align_flags;
+		unsigned long flags = 0xC0000080ul | opt->alignbits_b;
 		int nbytes = section_data_size(opt, ".bss");
 
 		strcpy((char *)(section + 0), name);
@@ -532,8 +532,25 @@ int link_main(struct options *opt)
 			break;
 		}
 		if (!strcmp(opt->arg_f, "init")) {
-			if (opt->align_flags > 0x00700000ul) {
-				fputs("Error: init alignment\n", stderr);
+			/*
+			 * section .text  align 16
+			 * section .data  align 64
+			 * section .rdata align 64
+			 * section .bss   align 16
+			 */
+			if (opt->alignbits_t > 0x00500000ul) {
+				fputs("Warning: init .text align\n", stderr);
+			}
+			if (opt->alignbits_r > 0x00700000ul) {
+				fputs("Error: init .rdata align\n", stderr);
+				return free(out), 1;
+			}
+			if (opt->alignbits_d > 0x00700000ul) {
+				fputs("Error: init .data align\n", stderr);
+				return free(out), 1;
+			}
+			if (opt->alignbits_b > 0x00500000ul) {
+				fputs("Error: init .bss align\n", stderr);
 				return free(out), 1;
 			}
 			if (!(total_size < 0x0000E000))

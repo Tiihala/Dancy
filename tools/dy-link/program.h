@@ -40,7 +40,10 @@ struct options {
 	int dump_ext;
 	int nr_mfiles;
 	struct mfile *mfiles;
-	unsigned long align_flags;
+	unsigned long alignbits_t;
+	unsigned long alignbits_r;
+	unsigned long alignbits_d;
+	unsigned long alignbits_b;
 };
 
 struct mfile {
