@@ -70,6 +70,15 @@ unsigned long b_af(void);
 #define b_pause                 (b_ae)
 #define b_exit                  (b_af)
 
+enum b_ctl {
+	B_CLEAR_CONSOLE,
+	B_GET_CURSOR,
+	B_SET_CURSOR
+};
+
+#define B_CURSOR(col,row) \
+(((unsigned)(col) & 0xFFu) | ((unsigned)(row) << 8 & 0xFF00u))
+
 enum b_parameter {
 	B_BYTES_PER_BLOCK,
 	B_TOTAL_BLOCKS,
@@ -104,6 +113,10 @@ struct b_video_info {
 #endif
 };
 
+struct b_video_edid {
+	uint8_t edid[128];
+};
+
 enum b_mode {
 	B_MODE_VGA,
 	B_MODE_PALETTE,
@@ -114,6 +127,42 @@ enum b_mode {
 	B_MODE_RED_GREEN_BLUE_RESERVED,
 	B_MODE_BLUE_GREEN_RED_RESERVED
 };
+
+struct b_mem {
+	uint32_t type;
+	uint32_t flags;
+	phys_addr_t base;
+#if defined(DANCY_64)
+	uint8_t reserved[16];
+#else
+	uint8_t reserved[20];
+#endif
+};
+
+struct b_mem_raw {
+	uint32_t type;
+	uint32_t flags;
+	uint32_t base_low;
+	uint32_t base_high;
+	uint8_t other[16];
+};
+
+#define B_MEM_NORMAL            (0x00000007)
+#define B_MEM_RESERVED          (0x00000008)
+#define B_MEM_ACPI_RECLAIMABLE  (0x00000009)
+#define B_MEM_ACPI_NVS          (0x0000000A)
+#define B_MEM_INIT_EXECUTABLE   (0x80860000)
+#define B_MEM_DATABASE_MIN      (0xDB000000)
+#define B_MEM_DATABASE_MAX      (0xDB00FFFF)
+#define B_MEM_NOT_REPORTED      (0xFFFFFFFF)
+
+#define B_FLAG_VALID_ENTRY      (1u << 0)
+#define B_FLAG_VALID_LEGACY     (1u << 1)
+
+#define B_A20_INT15H            (0x01)
+#define B_A20_KEYBOARD          (0x02)
+#define B_A20_FAST              (0x03)
+#define B_A20_AUTOMATIC         (0x80)
 
 enum dancy_key {
 	DANCY_KEY_NULL,
