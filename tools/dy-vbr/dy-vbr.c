@@ -37,16 +37,144 @@ struct options {
 	const char *error;
 	const char *arg_o;
 	const char *arg_t;
+	long blocks;
+	int sector_size;
 	int verbose;
 };
+
+struct image_type {
+	int blocks;
+	int sectors;
+	int sector_size;
+	int fat_type;
+	unsigned char data[16];
+	unsigned char data_fat[4];
+};
+
+static struct image_type image_types[] = {
+	{ 720, 1440, 512, 12,
+		/* data[16] */
+		{
+			0x00, 0x02, 0x02, 0x01, 0x00, 0x02, 0x70, 0x00,
+			0xA0, 0x05, 0xF9, 0x03, 0x00, 0x09, 0x00, 0x02
+		},
+		/* data_fat[4] */
+		{
+			0xF9, 0xFF, 0xFF, 0x00
+		}
+	},
+	{ 1440, 2880, 512, 12,
+		/* data[16] */
+		{
+			0x00, 0x02, 0x01, 0x01, 0x00, 0x02, 0xE0, 0x00,
+			0x40, 0x0B, 0xF0, 0x09, 0x00, 0x12, 0x00, 0x02
+		},
+		/* data_fat[4] */
+		{
+			0xF0, 0xFF, 0xFF, 0x00
+		}
+	}
+};
+
+static int create(struct options *opt)
+{
+	static unsigned char buf[4096];
+	struct image_type *type = NULL;
+	int sectors_written = 0;
+	FILE *fp;
+	size_t size;
+	size_t i;
+
+	if (!opt->sector_size)
+		opt->sector_size = 512;
+
+	for (i = 0u; i < sizeof(image_types) / sizeof(image_types[0]); i++) {
+		if ((long)image_types[i].blocks != opt->blocks)
+			continue;
+		if (image_types[i].sector_size != opt->sector_size)
+			continue;
+		type = &image_types[i];
+		break;
+	}
+	if (!type) {
+		fputs("Error: unsupported image size\n", stderr);
+		return 1;
+	}
+
+	fp = (errno = 0, fopen(*opt->operands, "wb"));
+	if (!fp)
+		return perror("Error"), 1;
+
+	memset(&buf[0], 0, 4096u);
+	buf[0] = 0xEB, buf[1] = 0x3C, buf[2] = 0x90;
+	memcpy(&buf[3], "dancy.fs", 8u);
+	memcpy(&buf[11], &type->data[0], 16u);
+	if (opt->arg_t && strcmp(opt->arg_t, "floppy"))
+		buf[36] = 0x80;
+	buf[38] = 0x29;
+	memcpy(&buf[43], "NO NAME    ", 11u);
+	if (type->fat_type == 12)
+		memcpy(&buf[54], "FAT12   ", 8u);
+	else
+		memcpy(&buf[54], "FAT16   ", 8u);
+	buf[62] = 0xCD, buf[63] = 0x19;
+	buf[64] = 0xEB, buf[65] = 0xFE;
+	buf[510] = 0x55, buf[511] = 0xAA;
+
+	size = (size_t)opt->sector_size;
+	if ((errno = 0, fwrite(&buf[0], 1u, size, fp)) != size)
+		return perror("Error"), (void)fclose(fp), 1;
+	sectors_written++;
+
+	memset(&buf[0], 0, 4096u);
+	memcpy(&buf[0], &type->data_fat[0], 4u);
+	if ((errno = 0, fwrite(&buf[0], 1u, size, fp)) != size)
+		return perror("Error"), (void)fclose(fp), 1;
+	sectors_written++;
+
+	memset(&buf[0], 0, 4u);
+	for (i = 0u; i < (size_t)type->data[11] - 1u; i++) {
+		if ((errno = 0, fwrite(&buf[0], 1u, size, fp)) != size)
+			return perror("Error"), (void)fclose(fp), 1;
+		sectors_written++;
+	}
+
+	if (type->data[5] == 2u) {
+		memcpy(&buf[0], &type->data_fat[0], 4u);
+		if ((errno = 0, fwrite(&buf[0], 1u, size, fp)) != size)
+			return perror("Error"), (void)fclose(fp), 1;
+		sectors_written++;
+	}
+
+	memset(&buf[0], 0, 4u);
+	while (sectors_written < type->sectors) {
+		if ((errno = 0, fwrite(&buf[0], 1u, size, fp)) != size)
+			return perror("Error"), (void)fclose(fp), 1;
+		sectors_written++;
+	}
+
+	if ((errno = 0, fclose(fp)))
+		return perror("Error"), 1;
+	return 0;
+}
 
 int program(struct options *opt)
 {
 	const unsigned char *vbr = &vbrchs_bin[0];
 	unsigned char buf[512];
 
-	if (!opt->arg_o && (!*opt->operands || *(opt->operands + 1)))
+	if (!opt->arg_o && !*opt->operands)
 		return opt->error = "missing/unsupported arguments", 1;
+
+	if (*(opt->operands + 1)) {
+		opt->blocks = strtol(*(opt->operands + 1), NULL, 0);
+		if (opt->blocks <= 0L || *(opt->operands + 2))
+			return opt->error = "unsupported arguments", 1;
+		if (create(opt))
+			return 1;
+	} else if (opt->sector_size) {
+		fputs("Warning: sector size argument ignored\n", stderr);
+	}
 
 	if (opt->arg_t) {
 		if (!strcmp(opt->arg_t, "floppy"))
@@ -120,11 +248,15 @@ int program(struct options *opt)
 
 static const char *help_str =
 	"Usage: " PROGRAM_CMDNAME
-	" [-o file] [-t type] file-system-image\n"
+	" [-o file] [-t type] file-system-image [1024-byte-blocks]\n"
 	"\nOptions:\n"
 	"  -o file       write loader.512 file\n"
 	"  -t type       volume boot record type\n"
 	"                floppy, chs (default), or lba\n"
+	"  --512         512-byte sectors (default)\n"
+	"  --1024        1024-byte sectors\n"
+	"  --2048        2048-byte sectors\n"
+	"  --4096        4096-byte sectors\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -176,6 +308,22 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "512")) {
+				opts.sector_size = 512;
+				continue;
+			}
+			if (!strcmp(arg + 2, "1024")) {
+				opts.sector_size = 1024;
+				continue;
+			}
+			if (!strcmp(arg + 2, "2048")) {
+				opts.sector_size = 2048;
+				continue;
+			}
+			if (!strcmp(arg + 2, "4096")) {
+				opts.sector_size = 4096;
 				continue;
 			}
 			help("unknown long option \"%s\"", arg);
