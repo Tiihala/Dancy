@@ -16,7 +16,9 @@ DANCY_CC=PATH=$(DANCY_PATH) ./external/bin/x86_64-w64-mingw32-gcc
 DANCY_OBJECT_32=$(DANCY_CC) $(DANCY_CPPFLAGS_32) $(DANCY_CFLAGS_32) -c -m32 -o
 DANCY_OBJECT_64=$(DANCY_CC) $(DANCY_CPPFLAGS_64) $(DANCY_CFLAGS_64) -c -m64 -o
 
-all: all-system all-tools
+all: all-release all-system all-tools
+
+all-release: $(DANCY_TARGET_RELEASE)
 
 all-system: $(DANCY_TARGET_SYSTEM)
 
@@ -29,6 +31,7 @@ clean:
 	@rm -rf bin
 	@rm -rf o32
 	@rm -rf o64
+	@rm -rf release
 	@rm -rf system
 	@rm -fv LOADER.*
 	@rm -fv `find -name "*.obj"`
@@ -41,6 +44,9 @@ external:
 
 path: ./bin/dy-path$(DANCY_EXE)
 	@PATH=$(DANCY_PATH) ./bin/dy-path$(DANCY_EXE)
+
+release:
+	@mkdir release
 
 include ./scripts/system.mk
 

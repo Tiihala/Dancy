@@ -16,7 +16,9 @@ DANCY_CC=CLANG.EXE
 DANCY_OBJECT_32=$(DANCY_CC) $(DANCY_CPPFLAGS_32) $(DANCY_CFLAGS_32) -c -m32 -o
 DANCY_OBJECT_64=$(DANCY_CC) $(DANCY_CPPFLAGS_64) $(DANCY_CFLAGS_64) -c -m64 -o
 
-all: all-system all-tools
+all: all-release all-system all-tools
+
+all-release: $(DANCY_TARGET_RELEASE)
 
 all-system: $(DANCY_TARGET_SYSTEM)
 
@@ -29,6 +31,7 @@ clean:
 	@if exist bin rmdir bin /S /Q
 	@if exist o32 rmdir o32 /S /Q
 	@if exist o64 rmdir o64 /S /Q
+	@if exist release rmdir release /S /Q
 	@if exist system rmdir system /S /Q
 	@for %i in (LOADER.*) do del "%i"
 	@for /R %i in (*.obj) do del "%i"
@@ -41,6 +44,9 @@ external:
 
 path: ./bin/dy-path$(DANCY_EXE)
 	@cmd /C "set PATH=$(DANCY_PATH) && bin\dy-path$(DANCY_EXE)"
+
+release:
+	@mkdir "release"
 
 !include .\scripts\system.mk
 

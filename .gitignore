@@ -2,6 +2,7 @@
 /external/
 /o32/
 /o64/
+/release/
 /system/
 LOADER.512
 LOADER.AT

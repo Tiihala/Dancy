@@ -26,6 +26,8 @@ DANCY_TARGET_SYSTEM= \
  ./LOADER.512 \
  ./LOADER.AT
 
+DANCY_TARGET_RELEASE=
+
 DANCY_HEADERS= \
  ./include/dancy/limits.h \
  ./include/dancy/types.h \
