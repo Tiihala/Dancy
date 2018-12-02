@@ -59,6 +59,17 @@ DY_MBR_OBJECTS= \
 
 ##############################################################################
 
+DY_MCOPY_OBJECTS= \
+ ./tools/dy-mcopy/main.obj \
+ ./tools/dy-mcopy/program.obj
+DY_MCOPY_HEADERS= \
+ ./tools/dy-mcopy/program.h
+
+./bin/dy-mcopy$(DANCY_EXE): bin $(DY_MCOPY_OBJECTS)
+	$(DANCY_HOST_BINARY)$@ $(DY_MCOPY_OBJECTS)
+
+##############################################################################
+
 DY_PATH_OBJECTS= \
  ./tools/dy-path/dy-path.obj
 
@@ -148,6 +159,12 @@ DY_VBR_OBJECTS= \
 
 ./tools/dy-mbr/dy-mbr.obj: ./tools/dy-mbr/dy-mbr.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-mbr/dy-mbr.c
+
+./tools/dy-mcopy/main.obj: ./tools/dy-mcopy/main.c $(DY_MCOPY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-mcopy/main.c
+
+./tools/dy-mcopy/program.obj: ./tools/dy-mcopy/program.c $(DY_MCOPY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-mcopy/program.c
 
 ./tools/dy-path/dy-path.obj: ./tools/dy-path/dy-path.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-path/dy-path.c

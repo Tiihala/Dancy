@@ -17,6 +17,7 @@ DANCY_TARGET_TOOLS= \
  ./bin/dy-init$(DANCY_EXE) \
  ./bin/dy-link$(DANCY_EXE) \
  ./bin/dy-mbr$(DANCY_EXE) \
+ ./bin/dy-mcopy$(DANCY_EXE) \
  ./bin/dy-path$(DANCY_EXE) \
  ./bin/dy-vbr$(DANCY_EXE)
 
