@@ -23,11 +23,12 @@ static size_t image_file_size;
 static size_t source_file_size;
 static unsigned char *image_file;
 static unsigned char *source_file;
-static int opt_verbose;
 
 struct param_block {
 	unsigned char *root;
 	unsigned char *data;
+	unsigned long data_size;
+	unsigned long table_size;
 	unsigned bytes_per_sector;
 	unsigned cluster_sectors;
 	unsigned reserved_sectors;
@@ -36,7 +37,14 @@ struct param_block {
 	unsigned directory_sectors;
 	unsigned total_sectors;
 	unsigned table_sectors;
+	unsigned data_sectors;
+	unsigned clusters;
 };
+
+static int is_fat16(struct param_block *pb)
+{
+	return (pb->clusters >= 4085u) ? 1 : 0;
+}
 
 static int read_file(const char *name, unsigned char **out, size_t *size)
 {
@@ -91,12 +99,6 @@ static int read_file(const char *name, unsigned char **out, size_t *size)
 
 static void free_files(void)
 {
-	if (opt_verbose) {
-		unsigned long s1 = (unsigned long)image_file_size;
-		unsigned long s2 = (unsigned long)source_file_size;
-		printf("Info: free image buffer, %lu bytes\n", s1);
-		printf("Info: free source file buffer, %lu bytes\n", s2);
-	}
 	if (image_file) {
 		free(image_file);
 		image_file_size = 0;
@@ -109,7 +111,7 @@ static void free_files(void)
 	}
 }
 
-static int get_param_block(struct param_block *pb)
+static int get_param_block(struct options *opt, struct param_block *pb)
 {
 	const size_t size = image_file_size;
 	const unsigned char *f = image_file;
@@ -134,7 +136,7 @@ static int get_param_block(struct param_block *pb)
 	pb->cluster_sectors = (unsigned)f[13];
 	if (pb->cluster_sectors == 1 || pb->cluster_sectors == 2)
 		; /* Accept */
-	else if (pb->cluster_sectors == 8 || pb->cluster_sectors == 8)
+	else if (pb->cluster_sectors == 4 || pb->cluster_sectors == 8)
 		; /* Accept */
 	else if (pb->cluster_sectors == 16 || pb->cluster_sectors == 32)
 		; /* Accept */
@@ -188,6 +190,7 @@ static int get_param_block(struct param_block *pb)
 		unsigned long t4 = (unsigned long)pb->directory_sectors;
 		unsigned long t5 = (unsigned long)pb->cluster_sectors;
 		unsigned long t6 = (unsigned long)pb->total_sectors;
+		unsigned long t7;
 
 		if ((t1 + (t2 * t3) + t4 + t5) > t6)
 			return fputs("Error: data area\n", stderr), 1;
@@ -195,9 +198,32 @@ static int get_param_block(struct param_block *pb)
 		pb->root = image_file;
 		pb->root += (unsigned)(t1 + (t2 * t3)) * pb->bytes_per_sector;
 		pb->data = pb->root + (unsigned)t4 * pb->bytes_per_sector;
+
+		pb->data_sectors = (unsigned)(t6 - (t1 + (t2 * t3) + t4));
+		pb->clusters = pb->data_sectors / pb->cluster_sectors;
+
+		pb->data_size = (unsigned long)pb->clusters * t5;
+		pb->data_size *= (unsigned long)pb->bytes_per_sector;
+
+		if (!is_fat16(pb)) {
+			t7 = (unsigned long)pb->clusters * 3ul + 1ul;
+			t7 &= ~(1ul);
+			t7 /= 2ul;
+			t7 += 3ul;
+		} else {
+			t7 = (unsigned long)pb->clusters * 2ul;
+			t7 += 4ul;
+		}
+		if (t7 > t2 * (unsigned long)pb->bytes_per_sector) {
+			const char *e = "Error: table size is %lu bytes\n";
+			fprintf(stderr, e, t7);
+			return 1;
+		}
+		pb->table_size = t7;
 	}
 
-	if (opt_verbose) {
+	if (opt->verbose) {
+		unsigned unused = pb->data_sectors % pb->cluster_sectors;
 		printf("Info: bytes_per_sector  %u\n", pb->bytes_per_sector);
 		printf("Info: cluster_sectors   %u\n", pb->cluster_sectors);
 		printf("Info: reserved_sectors  %u\n", pb->reserved_sectors);
@@ -206,7 +232,13 @@ static int get_param_block(struct param_block *pb)
 		printf("Info: directory_sectors %u\n", pb->directory_sectors);
 		printf("Info: total_sectors     %u\n", pb->total_sectors);
 		printf("Info: table_sectors     %u\n", pb->table_sectors);
+		printf("Info: data_sectors      %u",   pb->data_sectors);
+		if (unused)
+			printf(" (%u unused sectors at the end)", unused);
 		printf("\n");
+		printf("Info: clusters          %u\n\n",  pb->clusters);
+		printf("Info: data_size         %lu\n",   pb->data_size);
+		printf("Info: table_size        %lu\n\n", pb->table_size);
 	}
 	return 0;
 }
@@ -381,7 +413,6 @@ int program(struct options *opt)
 	if (!opt->operands[1] || strlen(opt->operands[1]) < 3)
 		return opt->error = "missing path/destination-file", 1;
 
-	opt_verbose = opt->verbose;
 	if ((errno = 0, atexit(free_files)))
 		return perror("atexit error"), 1;
 
@@ -390,7 +421,7 @@ int program(struct options *opt)
 	if (read_file(opt->operands[0], &source_file, &source_file_size))
 		return 1;
 
-	if (memset(&pb, 0, sizeof(pb)), get_param_block(&pb))
+	if (memset(&pb, 0, sizeof(pb)), get_param_block(opt, &pb))
 		return 1;
 	return mcopy(opt, &pb);
 }
