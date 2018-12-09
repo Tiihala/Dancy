@@ -43,6 +43,8 @@ struct param_block {
 	unsigned table_sectors;
 	unsigned data_sectors;
 	unsigned clusters;
+	unsigned c_date;
+	unsigned c_time;
 	unsigned m_date;
 	unsigned m_time;
 	unsigned read_only;
@@ -119,13 +121,98 @@ static void free_files(void)
 	}
 }
 
+static int parse_time(const char *time, struct tm *out)
+{
+	static const char *e = "Error: wrong timestamp format\n";
+	char buf[32];
+	int i;
+
+	/*
+	 * "YYYY-MM-DDThh:mm:ss"
+	 */
+	memset(out, 0, sizeof(struct tm));
+	if (strlen(time) != 19)
+		return fputs(e, stderr), 1;
+	memcpy(&buf[0], &time[0], 20);
+
+	if (buf[4] != '-' || buf[7] != '-' || buf[10] != 'T')
+		return fputs(e, stderr), 1;
+	if (buf[13] != ':' || buf[16] != ':')
+		return fputs(e, stderr), 1;
+	buf[4] = buf[7] = buf[10] = buf[13] = buf[16] = '\0';
+
+	for (i = 0; i < 19; i++) {
+		if (buf[i] != '\0' && !isdigit(buf[i]))
+			return fputs(e, stderr), 1;
+	}
+
+	out->tm_year = atoi(&buf[0]) - 1900;
+	out->tm_mon =  atoi(&buf[5]) - 1;
+	out->tm_mday = atoi(&buf[8]);
+	out->tm_hour = atoi(&buf[11]);
+	out->tm_min  = atoi(&buf[14]);
+	out->tm_sec  = atoi(&buf[17]);
+
+	i = (out->tm_year >= 80) ? 0 : 1;
+	i |= (out->tm_mon  >= 0 && out->tm_mon  <= 11) ? 0 : 1;
+	i |= (out->tm_mday >= 1 && out->tm_mday <= 31) ? 0 : 1;
+	i |= (out->tm_hour >= 0 && out->tm_hour <= 23) ? 0 : 1;
+	i |= (out->tm_min  >= 0 && out->tm_min  <= 59) ? 0 : 1;
+	i |= (out->tm_sec  >= 0 && out->tm_sec  <= 59) ? 0 : 1;
+
+	if (i)
+		return fputs(e, stderr), 1;
+	return 0;
+}
+
 static int get_modification_time(struct options *opt, struct param_block *pb)
 {
+	struct tm arg_tm;
+	struct tm *local;
+	unsigned u;
+
+	if (opt->arg_t) {
+		if (parse_time(opt->arg_t, &arg_tm))
+			return 1;
+		local = &arg_tm;
+	} else {
+		time_t t = time(NULL);
+		local= localtime(&t);
+	}
+	if (local->tm_year < 1980 || local->tm_year > 2107)
+		return 0;
+
+	u = (unsigned)local->tm_mday & 0x1Fu;
+	u |= (((unsigned)local->tm_mon + 1u) & 0x0Fu) << 5;
+	u |= (((unsigned)local->tm_year - 80u) & 0x7Fu) << 9;
+	pb->m_date = u;
+
+	u = ((unsigned)local->tm_sec >> 1) & 0x1Fu;
+	u |= ((unsigned)local->tm_min & 0x1Fu) << 5;
+	u |= ((unsigned)local->tm_hour & 0x1Fu) << 11;
+	pb->m_time = u;
+
+	if (opt->arg_t) {
+		pb->c_date = pb->m_date;
+		pb->c_time = pb->m_time;
+	}
 	return 0;
 }
 
 static void set_modification_time(struct param_block *pb, void *entry)
 {
+	unsigned char *e = entry;
+
+	if (pb->c_date) {
+		W_LE16(&e[14], pb->c_time);
+		W_LE16(&e[16], pb->c_date);
+	} else if (LE16(&e[16])) {
+		W_LE16(&e[14], pb->m_time);
+		W_LE16(&e[16], pb->m_date);
+	}
+	W_LE16(&e[18], pb->m_date);
+	W_LE16(&e[22], pb->m_time);
+	W_LE16(&e[24], pb->m_date);
 
 }
 
@@ -253,6 +340,9 @@ static int get_param_block(struct options *opt, struct param_block *pb)
 			}
 		}
 	}
+
+	pb->read_only = opt->read_only;
+	pb->random = opt->random;
 
 	if (opt->verbose) {
 		unsigned unused = pb->data_sectors % pb->cluster_sectors;
@@ -620,6 +710,107 @@ static int directory(struct param_block *pb, const char *name, void **current)
 
 static int file(struct param_block *pb, const char *name, void **current)
 {
+	static const char *e1 = "Error: no free space\n";
+	static const char *e2 = "Error: inconsistent file system\n";
+	static const char *e3 = "Error: file name already used\n";
+	static const char *e4 = "Error: no free root directory entries\n";
+	unsigned char *entry = NULL;
+	unsigned cluster;
+	unsigned i;
+	void *ptr;
+
+	/*
+	 * Root directory.
+	 */
+	if (*current == NULL) {
+		for (i = 0; i < pb->directory_entries; i++) {
+			entry = pb->root + (i * 32u);
+			if (!entry[0])
+				break;
+			if (!memcmp(&entry[0], &name[0], 11))
+				return fputs(e3, stderr), 1;
+			entry = NULL;
+		}
+		if (entry == NULL)
+			return fputs(e4, stderr), 1;
+	}
+
+	/*
+	 * Subdirectory.
+	 */
+	if (entry == NULL && (entry = *current) != NULL) {
+		cluster = (unsigned)LE16(&entry[26]);
+		ptr = get_pointer(pb, cluster);
+
+		if (memcmp(&entry[0], ".          ", 11))
+			return fputs(e2, stderr), 1;
+		if (memcmp(&entry[32], "..         ", 11))
+			return fputs(e2, stderr), 1;
+		if (entry != (unsigned char *)ptr)
+			return fputs(e2, stderr), 1;
+
+		set_modification_time(pb, &entry[0]);
+		set_modification_time(pb, &entry[32]);
+
+		for (i = 64; /* void */; i += 32) {
+			if (i >= pb->cluster_size) {
+				unsigned c = table(pb, cluster, NULL);
+				ptr = get_pointer(pb, c);
+				if (ptr == NULL) {
+					c = allocate_cluster(pb);
+					ptr = get_pointer(pb, c);
+					if (ptr == NULL)
+						return fputs(e1, stderr), 1;
+					(void)table(pb, cluster, &c);
+				}
+				*current = ptr;
+				i = 0;
+			}
+
+			entry = (unsigned char *)*current + i;
+			if (!entry[0])
+				break;
+			if (!memcmp(&entry[0], &name[0], 11))
+				return fputs(e3, stderr), 1;
+		}
+	}
+
+	if (entry != NULL) {
+		size_t written = 0;
+		size_t size;
+
+		memset(&entry[0], 0, 32);
+		memcpy(&entry[0], &name[0], 11);
+		if (pb->read_only)
+			entry[11] = 0x01;
+		set_modification_time(pb, &entry[0]);
+		if (!source_file_size)
+			return 0;
+
+		cluster = allocate_cluster(pb);
+		W_LE16(&entry[26], cluster);
+		W_LE32(&entry[28], source_file_size);
+
+		for (;;) {
+			ptr = get_pointer(pb, cluster);
+			if (ptr == NULL)
+				return fputs(e1, stderr), 1;
+
+			size = source_file_size - written;
+			if (size <= (size_t)pb->cluster_size) {
+				memset(ptr, 0, pb->cluster_size);
+				memcpy(ptr, &source_file[written], size);
+				return 0;
+			} else {
+				unsigned new_c = allocate_cluster(pb);
+				(void)table(pb, cluster, &new_c);
+				cluster = new_c;
+			}
+			size = pb->cluster_size;
+			memcpy(ptr, &source_file[written], size);
+			written += size;
+		}
+	}
 	return 1;
 }
 

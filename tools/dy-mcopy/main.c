@@ -24,7 +24,9 @@ static const char *help_str =
 	" -i image [-t timestamp] source-file ::path/destination-file\n"
 	"\nOptions:\n"
 	"  -i image      image file\n"
-	"  -t timestamp  YYYY-MM-DDThh:mm\n"
+	"  -t timestamp  YYYY-MM-DDThh:mm:ss\n"
+	"  --random      allocate clusters randomly\n"
+	"  --read-only   set read only flag\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -76,6 +78,14 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "--random")) {
+				opts.random = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "--read-only")) {
+				opts.read_only = 1;
 				continue;
 			}
 			help("unknown long option \"%s\"", arg);
