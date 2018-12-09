@@ -25,10 +25,14 @@ static unsigned char *image_file;
 static unsigned char *source_file;
 
 struct param_block {
+	unsigned char *table0;
+	unsigned char *table1;
 	unsigned char *root;
 	unsigned char *data;
 	unsigned long data_size;
 	unsigned long table_size;
+	unsigned long cluster_size;
+	unsigned long total_size;
 	unsigned bytes_per_sector;
 	unsigned cluster_sectors;
 	unsigned reserved_sectors;
@@ -39,6 +43,10 @@ struct param_block {
 	unsigned table_sectors;
 	unsigned data_sectors;
 	unsigned clusters;
+	unsigned m_date;
+	unsigned m_time;
+	unsigned read_only;
+	unsigned random;
 };
 
 static int is_fat16(struct param_block *pb)
@@ -109,6 +117,16 @@ static void free_files(void)
 		source_file_size = 0;
 		source_file = NULL;
 	}
+}
+
+static int get_modification_time(struct options *opt, struct param_block *pb)
+{
+	return 0;
+}
+
+static void set_modification_time(struct param_block *pb, void *entry)
+{
+
 }
 
 static int get_param_block(struct options *opt, struct param_block *pb)
@@ -220,6 +238,20 @@ static int get_param_block(struct options *opt, struct param_block *pb)
 			return 1;
 		}
 		pb->table_size = t7;
+		pb->cluster_size = t5 * (unsigned long)pb->bytes_per_sector;
+		pb->total_size = t6 * (unsigned long)pb->bytes_per_sector;
+		t7 = (unsigned long)pb->bytes_per_sector;
+
+		pb->table0 = image_file + (t1 * t7);
+		pb->table1 = NULL;
+		if (pb->tables == 2) {
+			size_t num = (size_t)(t2 * t7);
+			pb->table1 = image_file + ((t1 + t2) * t7);
+			if (memcmp(pb->table0, pb->table1, num)) {
+				fputs("Error: table differences\n", stderr);
+				return 1;
+			}
+		}
 	}
 
 	if (opt->verbose) {
@@ -238,9 +270,11 @@ static int get_param_block(struct options *opt, struct param_block *pb)
 		printf("\n");
 		printf("Info: clusters          %u\n\n",  pb->clusters);
 		printf("Info: data_size         %lu\n",   pb->data_size);
-		printf("Info: table_size        %lu\n\n", pb->table_size);
+		printf("Info: table_size        %lu\n",   pb->table_size);
+		printf("Info: cluster_size      %lu\n",   pb->cluster_size);
+		printf("Info: total_size        %lu\n\n", pb->total_size);
 	}
-	return 0;
+	return get_modification_time(opt, pb);
 }
 
 static int is_reserved(const char *name)
@@ -381,23 +415,254 @@ static int get_name(struct options *opt, size_t *off, char *out)
 	return r;
 }
 
+static unsigned char *get_pointer(struct param_block *pb, unsigned cluster)
+{
+	if (cluster < 2 || cluster - 2 >= pb->clusters)
+		return NULL;
+	return pb->data + (pb->cluster_size * (unsigned long)(cluster - 2));
+}
+
+static unsigned table(struct param_block *pb, unsigned off, unsigned *val)
+{
+	unsigned long loff = (unsigned long)off;
+	unsigned new_val = (val != NULL) ? *val : 0u;
+	unsigned old_val;
+	unsigned ret_val;
+
+	if (!is_fat16(pb)) {
+		loff += (unsigned long)off / 2ul;
+		ret_val = old_val = (unsigned)LE16(&pb->table0[loff]);
+		if (off & 1u) {
+			ret_val = ret_val >> 4;
+			new_val = new_val << 4;
+			new_val = (new_val & 0xFFF0u) | (old_val & 0x000Fu);
+		} else {
+			new_val = (new_val & 0x0FFFu) | (old_val & 0xF000u);
+		}
+		ret_val &= 0x0FFFu;
+	} else {
+		loff += (unsigned long)off;
+		ret_val = (unsigned)LE16(&pb->table0[loff]);
+	}
+
+	if (val != NULL) {
+		W_LE16(&pb->table0[loff], new_val);
+		if (pb->table1)
+			W_LE16(&pb->table1[loff], new_val);
+	}
+	return ret_val;
+}
+
+static unsigned allocate_cluster(struct param_block *pb)
+{
+	static int random = 0;
+	unsigned val = 0xFFFFu;
+	unsigned i;
+
+	if (pb->random) {
+		unsigned retry = 32;
+		random = (!random) ? (srand((unsigned)time(NULL)), 1) : 1;
+		while (retry--) {
+			i = ((unsigned)rand % pb->clusters) + 2u;
+			if (!table(pb, i, NULL))
+				return (void)table(pb, i, &val), i;
+		}
+	}
+	for (i = 2; i < pb->clusters + 2u; i++) {
+		if (!table(pb, i, NULL))
+			return (void)table(pb, i, &val), i;
+	}
+	return 0;
+}
+
+static int directory(struct param_block *pb, const char *name, void **current)
+{
+	static const char *e1 = "Error: no free space\n";
+	static const char *e2 = "Error: inconsistent file system\n";
+	static const char *e3 = "Error: directory name already used\n";
+	static const char *e4 = "Error: no free root directory entries\n";
+	unsigned char *entry;
+	unsigned cluster;
+	unsigned i;
+	void *ptr;
+
+	/*
+	 * Root directory.
+	 */
+	if (*current == NULL) {
+		unsigned owner = 0;
+		for (i = 0; i < pb->directory_entries; i++) {
+			entry = pb->root + (i * 32u);
+			if (!entry[0]) {
+				cluster = allocate_cluster(pb);
+				ptr = get_pointer(pb, cluster);
+
+				if (ptr == NULL)
+					return fputs(e1, stderr), 1;
+
+				memset(&entry[0], 0, 32);
+				memcpy(&entry[0], &name[0], 11);
+				entry[11] = 16;
+				W_LE16(&entry[26], cluster);
+				set_modification_time(pb, &entry[0]);
+
+				entry = ptr;
+				memset(&entry[0], 0, pb->cluster_size);
+				memcpy(&entry[0], ".          ", 11);
+				entry[11] = 16;
+				W_LE16(&entry[26], cluster);
+
+				entry += 32;
+				memset(&entry[0], 0, pb->cluster_size);
+				memcpy(&entry[0], "..         ", 11);
+				entry[11] = 16;
+				W_LE16(&entry[26], owner);
+
+				*current = ptr;
+				return 0;
+			}
+			if (!memcmp(&entry[0], &name[0], 11)) {
+				cluster = (unsigned)LE16(&entry[26]);
+				ptr = get_pointer(pb, cluster);
+
+				if (ptr == NULL)
+					return fputs(e2, stderr), 1;
+				if (!((unsigned)entry[11] & 16u))
+					return fputs(e3, stderr), 1;
+				set_modification_time(pb, &entry[0]);
+
+				*current = ptr;
+				return 0;
+			}
+		}
+		return fputs(e4, stderr), 1;
+	}
+
+	/*
+	 * Subdirectory.
+	 */
+	if ((entry = *current) != NULL) {
+		unsigned owner = (unsigned)LE16(&entry[26]);
+
+		cluster = owner;
+		ptr = get_pointer(pb, cluster);
+		if (memcmp(&entry[0], ".          ", 11))
+			return fputs(e2, stderr), 1;
+		if (memcmp(&entry[32], "..         ", 11))
+			return fputs(e2, stderr), 1;
+		if (entry != (unsigned char *)ptr)
+			return fputs(e2, stderr), 1;
+
+		set_modification_time(pb, &entry[0]);
+		set_modification_time(pb, &entry[32]);
+
+		for (i = 64; /* void */; i += 32) {
+			if (i >= pb->cluster_size) {
+				unsigned c = table(pb, cluster, NULL);
+				ptr = get_pointer(pb, c);
+				if (ptr == NULL) {
+					c = allocate_cluster(pb);
+					ptr = get_pointer(pb, c);
+					if (ptr == NULL)
+						return fputs(e1, stderr), 1;
+					(void)table(pb, cluster, &c);
+				}
+				*current = ptr;
+				i = 0;
+			}
+
+			entry = (unsigned char *)*current + i;
+			if (!entry[0]) {
+				cluster = allocate_cluster(pb);
+				ptr = get_pointer(pb, cluster);
+
+				if (ptr == NULL)
+					return fputs(e1, stderr), 1;
+
+				memset(&entry[0], 0, 32);
+				memcpy(&entry[0], &name[0], 11);
+				entry[11] = 16;
+				W_LE16(&entry[26], cluster);
+				set_modification_time(pb, &entry[0]);
+
+				entry = ptr;
+				memset(&entry[0], 0, pb->cluster_size);
+				memcpy(&entry[0], ".          ", 11);
+				entry[11] = 16;
+				W_LE16(&entry[26], cluster);
+
+				entry += 32;
+				memset(&entry[0], 0, pb->cluster_size);
+				memcpy(&entry[0], "..         ", 11);
+				entry[11] = 16;
+				W_LE16(&entry[26], owner);
+
+				*current = ptr;
+				return 0;
+			}
+			if (!memcmp(&entry[0], &name[0], 11)) {
+				cluster = (unsigned)LE16(&entry[26]);
+				ptr = get_pointer(pb, cluster);
+
+				if (ptr == NULL)
+					return fputs(e2, stderr), 1;
+				if (!((unsigned)entry[11] & 16u))
+					return fputs(e3, stderr), 1;
+				set_modification_time(pb, &entry[0]);
+
+				*current = ptr;
+				return 0;
+			}
+		}
+	}
+	return fputs(e2, stderr), 1;
+}
+
+static int file(struct param_block *pb, const char *name, void **current)
+{
+	return 1;
+}
+
 static int mcopy(struct options *opt, struct param_block *pb)
 {
-	size_t off = 0;
+	void *current = NULL;
+	size_t size = image_file_size;
+	size_t name_offset = 0;
 	char name[12];
+	FILE *fp;
 
 	for (;;) {
-		int r = get_name(opt, &off, &name[0]);
-		if (!r)
-			break;
-		if (r < 0) {
-			fputs("Error: incorrect path/destination\n", stderr);
-			return 1;
+		int r = get_name(opt, &name_offset, &name[0]);
+
+		if (r == 1) {
+			if (directory(pb, &name[0], &current))
+				return 1;
+			continue;
 		}
-		if (r == 1)
-			printf("D: \"%s\"\n", &name[0]);
-		if (r == 2)
-			printf("F: \"%s\"\n", &name[0]);
+		if (r == 2) {
+			if (file(pb, &name[0], &current))
+				return 1;
+			break;
+		}
+		fputs("Error: incorrect path/destination\n", stderr);
+		return 1;
+	}
+
+	fp = (errno = 0, fopen(opt->arg_i, "wb"));
+	if (!fp) {
+		const char *fmt = "Error: opening file \"%s\" (%s)\n";
+		fprintf(stderr, fmt, opt->arg_i, strerror(errno));
+		return 1;
+	}
+	if ((errno = 0, fwrite(image_file, 1u, size, fp)) != size) {
+		const char *fmt = "Error: writing file \"%s\" (%s)\n";
+		fprintf(stderr, fmt, opt->arg_i, strerror(errno));
+		return 1;
+	}
+	if ((errno = 0, fclose(fp))) {
+		const char *fmt = "Error: closing file \"%s\" (%s)\n";
+		fprintf(stderr, fmt, opt->arg_i, strerror(errno));
+		return 1;
 	}
 	return 0;
 }
@@ -412,6 +677,8 @@ int program(struct options *opt)
 		return opt->error = "missing source-file", 1;
 	if (!opt->operands[1] || strlen(opt->operands[1]) < 3)
 		return opt->error = "missing path/destination-file", 1;
+	if (opt->operands[2])
+		return opt->error = "too many operands", 1;
 
 	if ((errno = 0, atexit(free_files)))
 		return perror("atexit error"), 1;

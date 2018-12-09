@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #if !defined(SIZE_MAX)
 #define SIZE_MAX ((unsigned long)(INT_MAX))
