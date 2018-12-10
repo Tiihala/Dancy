@@ -27,7 +27,9 @@ DANCY_TARGET_SYSTEM= \
  ./LOADER.512 \
  ./LOADER.AT
 
-DANCY_TARGET_RELEASE=
+DANCY_TARGET_RELEASE= \
+ ./release/fdd720.img \
+ ./release/fdd1440.img
 
 DANCY_HEADERS= \
  ./include/dancy/limits.h \

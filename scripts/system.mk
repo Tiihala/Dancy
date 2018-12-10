@@ -24,12 +24,20 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/a32/start.o \
  ./o32/init/init.o
 
+./system/IN_IA32.AT: $(DANCY_INIT_OBJECTS_32)
+	$(DY_LINK) -o$@ -finit $(DANCY_INIT_OBJECTS_32)
+	$(DY_INIT) -tia32 --set-header $@
+
 ##############################################################################
 
 DANCY_INIT_OBJECTS_64= \
  ./o64/init/a64/bsyscall.o \
  ./o64/init/a64/start.o \
  ./o64/init/init.o
+
+./system/IN_X64.AT: $(DANCY_INIT_OBJECTS_64)
+	$(DY_LINK) -o$@ -finit $(DANCY_INIT_OBJECTS_64)
+	$(DY_INIT) -tx64 --set-header $@
 
 ##############################################################################
 

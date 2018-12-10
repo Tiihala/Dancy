@@ -16,7 +16,12 @@ DANCY_CC=PATH=$(DANCY_PATH) ./external/bin/x86_64-w64-mingw32-gcc
 DANCY_OBJECT_32=$(DANCY_CC) $(DANCY_CPPFLAGS_32) $(DANCY_CFLAGS_32) -c -m32 -o
 DANCY_OBJECT_64=$(DANCY_CC) $(DANCY_CPPFLAGS_64) $(DANCY_CFLAGS_64) -c -m64 -o
 
-all: all-release all-system all-tools
+DY_INIT=.bin/dy-init$(DANCY_EXE)
+DY_LINK=.bin/dy-link$(DANCY_EXE)
+DY_MCOPY=.bin/dy-mcopy$(DANCY_EXE)
+DY_VBR=.bin/dy-vbr$(DANCY_EXE)
+
+all: all-release
 
 all-release: $(DANCY_TARGET_RELEASE)
 
@@ -45,18 +50,8 @@ external:
 path: ./bin/dy-path$(DANCY_EXE)
 	@PATH=$(DANCY_PATH) ./bin/dy-path$(DANCY_EXE)
 
-release:
-	@mkdir release
-
+include ./scripts/release.mk
 include ./scripts/system.mk
-
-./system/IN_IA32.AT: $(DANCY_INIT_OBJECTS_32)
-	./bin/dy-link$(DANCY_EXE) -o$@ -finit $(DANCY_INIT_OBJECTS_32)
-	./bin/dy-init$(DANCY_EXE) -tia32 --set-header $@
-
-./system/IN_X64.AT: $(DANCY_INIT_OBJECTS_64)
-	./bin/dy-link$(DANCY_EXE) -o$@ -finit $(DANCY_INIT_OBJECTS_64)
-	./bin/dy-init$(DANCY_EXE) -tx64 --set-header $@
 
 ./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
 	./bin/dy-blob$(DANCY_EXE) -t ldr512 $@
