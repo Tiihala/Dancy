@@ -16,10 +16,10 @@ DANCY_CC=PATH=$(DANCY_PATH) ./external/bin/x86_64-w64-mingw32-gcc
 DANCY_OBJECT_32=$(DANCY_CC) $(DANCY_CPPFLAGS_32) $(DANCY_CFLAGS_32) -c -m32 -o
 DANCY_OBJECT_64=$(DANCY_CC) $(DANCY_CPPFLAGS_64) $(DANCY_CFLAGS_64) -c -m64 -o
 
-DY_INIT=.bin/dy-init$(DANCY_EXE)
-DY_LINK=.bin/dy-link$(DANCY_EXE)
-DY_MCOPY=.bin/dy-mcopy$(DANCY_EXE)
-DY_VBR=.bin/dy-vbr$(DANCY_EXE)
+DY_INIT=./bin/dy-init$(DANCY_EXE)
+DY_LINK=./bin/dy-link$(DANCY_EXE)
+DY_MCOPY=./bin/dy-mcopy$(DANCY_EXE)
+DY_VBR=./bin/dy-vbr$(DANCY_EXE)
 
 all: all-release
 
