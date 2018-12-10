@@ -31,5 +31,6 @@ DANCY_TARGET_RELEASE=
 
 DANCY_HEADERS= \
  ./include/dancy/limits.h \
+ ./include/dancy/stdarg.h \
  ./include/dancy/types.h \
  ./include/dancy.h
