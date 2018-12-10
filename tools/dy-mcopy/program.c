@@ -43,8 +43,6 @@ struct param_block {
 	unsigned table_sectors;
 	unsigned data_sectors;
 	unsigned clusters;
-	unsigned c_date;
-	unsigned c_time;
 	unsigned m_date;
 	unsigned m_time;
 	unsigned read_only;
@@ -153,7 +151,7 @@ static int parse_time(const char *time, struct tm *out)
 	out->tm_min  = atoi(&buf[14]);
 	out->tm_sec  = atoi(&buf[17]);
 
-	i = (out->tm_year >= 80) ? 0 : 1;
+	i =  (out->tm_year >= 0) ? 0 : 1;
 	i |= (out->tm_mon  >= 0 && out->tm_mon  <= 11) ? 0 : 1;
 	i |= (out->tm_mday >= 1 && out->tm_mday <= 31) ? 0 : 1;
 	i |= (out->tm_hour >= 0 && out->tm_hour <= 23) ? 0 : 1;
@@ -179,8 +177,10 @@ static int get_modification_time(struct options *opt, struct param_block *pb)
 		time_t t = time(NULL);
 		local= localtime(&t);
 	}
-	if (local->tm_year < 1980 || local->tm_year > 2107)
+	if (local->tm_year < 80 || local->tm_year > 207) {
+		fputs("Warning: timestamp ignored\n", stderr);
 		return 0;
+	}
 
 	u = (unsigned)local->tm_mday & 0x1Fu;
 	u |= (((unsigned)local->tm_mon + 1u) & 0x0Fu) << 5;
@@ -192,10 +192,6 @@ static int get_modification_time(struct options *opt, struct param_block *pb)
 	u |= ((unsigned)local->tm_hour & 0x1Fu) << 11;
 	pb->m_time = u;
 
-	if (opt->arg_t) {
-		pb->c_date = pb->m_date;
-		pb->c_time = pb->m_time;
-	}
 	return 0;
 }
 
@@ -203,17 +199,13 @@ static void set_modification_time(struct param_block *pb, void *entry)
 {
 	unsigned char *e = entry;
 
-	if (pb->c_date) {
-		W_LE16(&e[14], pb->c_time);
-		W_LE16(&e[16], pb->c_date);
-	} else if (LE16(&e[16])) {
+	if (!LE16(&e[16])) {
 		W_LE16(&e[14], pb->m_time);
 		W_LE16(&e[16], pb->m_date);
 	}
 	W_LE16(&e[18], pb->m_date);
 	W_LE16(&e[22], pb->m_time);
 	W_LE16(&e[24], pb->m_date);
-
 }
 
 static int get_param_block(struct options *opt, struct param_block *pb)
