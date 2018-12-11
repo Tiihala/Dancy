@@ -19,6 +19,14 @@ system:
 
 ##############################################################################
 
+./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
+	$(DY_BLOB) -t ldr512 $@
+
+./LOADER.AT: ./bin/dy-blob$(DANCY_EXE)
+	$(DY_BLOB) -t loader $@
+
+##############################################################################
+
 DANCY_INIT_OBJECTS_32= \
  ./o32/init/a32/bsyscall.o \
  ./o32/init/a32/start.o \
