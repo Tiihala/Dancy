@@ -80,11 +80,11 @@ int main(int argc, char *argv[])
 				opts.verbose = 1;
 				continue;
 			}
-			if (!strcmp(arg + 2, "--random")) {
+			if (!strcmp(arg + 2, "random")) {
 				opts.random = 1;
 				continue;
 			}
-			if (!strcmp(arg + 2, "--read-only")) {
+			if (!strcmp(arg + 2, "read-only")) {
 				opts.read_only = 1;
 				continue;
 			}
