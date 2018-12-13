@@ -3,6 +3,7 @@
 /o32/
 /o64/
 /release/
+/scripts/dancy.mk
 /system/
 LOADER.512
 LOADER.AT
