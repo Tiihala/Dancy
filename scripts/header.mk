@@ -21,14 +21,14 @@ DY_PATH=$(DANCY_DY)-path$(DANCY_EXE)
 DY_VBR=$(DANCY_DY)-vbr$(DANCY_EXE)
 
 DANCY_TARGET_TOOLS= \
- $(DY_BLOB) \
- $(DY_GPT) \
- $(DY_INIT) \
- $(DY_LINK) \
- $(DY_MBR) \
- $(DY_MCOPY) \
- $(DY_PATH) \
- $(DY_VBR)
+ ./bin/dy-blob$(DANCY_EXE) \
+ ./bin/dy-gpt$(DANCY_EXE) \
+ ./bin/dy-init$(DANCY_EXE) \
+ ./bin/dy-link$(DANCY_EXE) \
+ ./bin/dy-mbr$(DANCY_EXE) \
+ ./bin/dy-mcopy$(DANCY_EXE) \
+ ./bin/dy-path$(DANCY_EXE) \
+ ./bin/dy-vbr$(DANCY_EXE)
 
 DANCY_TARGET_SYSTEM= \
  ./system/IN_IA32.AT \
@@ -45,3 +45,5 @@ DANCY_HEADERS= \
  ./include/dancy/stdarg.h \
  ./include/dancy/types.h \
  ./include/dancy.h
+
+DANCY_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(DANCY_TARGET_TOOLS)

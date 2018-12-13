@@ -8,7 +8,7 @@ DY_BLOB_OBJECTS= \
  ./boot/fat/ldr512.obj \
  ./loader/loader.obj
 
-./bin/dy-blob$(DANCY_EXE): bin $(DY_BLOB_OBJECTS)
+./bin/dy-blob$(DANCY_EXE): $(DY_BLOB_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_BLOB_OBJECTS)
 
 ##############################################################################
@@ -18,7 +18,7 @@ DY_GPT_OBJECTS= \
  ./boot/gpt/gpt.obj \
  ./common/crc32/crc32c.obj
 
-./bin/dy-gpt$(DANCY_EXE): bin $(DY_GPT_OBJECTS)
+./bin/dy-gpt$(DANCY_EXE): $(DY_GPT_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_GPT_OBJECTS)
 
 ##############################################################################
@@ -28,7 +28,7 @@ DY_INIT_OBJECTS= \
  ./tools/dy-init/ia32.obj \
  ./tools/dy-init/x64.obj
 
-./bin/dy-init$(DANCY_EXE): bin $(DY_INIT_OBJECTS)
+./bin/dy-init$(DANCY_EXE): $(DY_INIT_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_INIT_OBJECTS)
 
 ##############################################################################
@@ -44,7 +44,7 @@ DY_LINK_OBJECTS= \
 DY_LINK_HEADERS= \
  ./tools/dy-link/program.h
 
-./bin/dy-link$(DANCY_EXE): bin $(DY_LINK_OBJECTS)
+./bin/dy-link$(DANCY_EXE): $(DY_LINK_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_LINK_OBJECTS)
 
 ##############################################################################
@@ -54,7 +54,7 @@ DY_MBR_OBJECTS= \
  ./boot/mbr/mbr.obj \
  ./common/crc32/crc32c.obj
 
-./bin/dy-mbr$(DANCY_EXE): bin $(DY_MBR_OBJECTS)
+./bin/dy-mbr$(DANCY_EXE): $(DY_MBR_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_MBR_OBJECTS)
 
 ##############################################################################
@@ -65,7 +65,7 @@ DY_MCOPY_OBJECTS= \
 DY_MCOPY_HEADERS= \
  ./tools/dy-mcopy/program.h
 
-./bin/dy-mcopy$(DANCY_EXE): bin $(DY_MCOPY_OBJECTS)
+./bin/dy-mcopy$(DANCY_EXE): $(DY_MCOPY_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_MCOPY_OBJECTS)
 
 ##############################################################################
@@ -73,7 +73,7 @@ DY_MCOPY_HEADERS= \
 DY_PATH_OBJECTS= \
  ./tools/dy-path/dy-path.obj
 
-./bin/dy-path$(DANCY_EXE): bin $(DY_PATH_OBJECTS)
+./bin/dy-path$(DANCY_EXE): $(DY_PATH_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_PATH_OBJECTS)
 
 ##############################################################################
@@ -86,7 +86,7 @@ DY_VBR_OBJECTS= \
  ./boot/fat/vbrlba.obj \
  ./common/crc32/crc32c.obj
 
-./bin/dy-vbr$(DANCY_EXE): bin $(DY_VBR_OBJECTS)
+./bin/dy-vbr$(DANCY_EXE): $(DY_VBR_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_VBR_OBJECTS)
 
 ##############################################################################

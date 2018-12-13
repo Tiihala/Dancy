@@ -86,5 +86,6 @@ pushd external/src/gcc-build
 popd
 
 rm -rf external/src
+touch external/external.sh
 echo -e "scripts/external.sh: \e[32mREADY\e[0m"
 echo ""

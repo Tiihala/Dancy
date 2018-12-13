@@ -2,20 +2,25 @@
 
 DANCY_DY=./bin/dy
 DANCY_EXE=
-DANCY_PATH=`./scripts/path.sh`
+DANCY_EXT=./external/external.sh
 
 include ./VERSION
 include ./scripts/header.mk
+
+DANCY_MK=touch ./scripts/dancy.mk
+DANCY_PATH=`./scripts/path.sh`
 
 HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
 HOST_CFLAGS=-O2 -std=c89 -Wall -Wextra -Wshadow -Wwrite-strings -pedantic
 DANCY_HOST_BINARY=$(CC) -o
 DANCY_HOST_OBJECT=$(CC) -c $(HOST_CPPFLAGS) $(HOST_CFLAGS) -o
 
-DANCY_AS=nasm
+DANCY_A32=nasm -fwin32 -o
+DANCY_A64=nasm -fwin64 -o
+
 DANCY_CC=PATH=$(DANCY_PATH) ./external/bin/x86_64-w64-mingw32-gcc
-DANCY_OBJECT_32=$(DANCY_CC) $(DANCY_CPPFLAGS_32) $(DANCY_CFLAGS_32) -c -m32 -o
-DANCY_OBJECT_64=$(DANCY_CC) $(DANCY_CPPFLAGS_64) $(DANCY_CFLAGS_64) -c -m64 -o
+DANCY_O32=$(DANCY_CC) $(DANCY_CPPFLAGS_32) $(DANCY_CFLAGS_32) -c -m32 -o
+DANCY_O64=$(DANCY_CC) $(DANCY_CPPFLAGS_64) $(DANCY_CFLAGS_64) -c -m64 -o
 
 all: all-release
 
@@ -25,9 +30,6 @@ all-system: $(DANCY_TARGET_SYSTEM)
 
 all-tools: $(DANCY_TARGET_TOOLS)
 
-bin:
-	@mkdir bin
-
 clean:
 	@rm -rf bin
 	@rm -rf o32
@@ -36,16 +38,16 @@ clean:
 	@rm -rf system
 	@rm -fv LOADER.*
 	@rm -fv `find -name "*.obj"`
+	@rm -fv ./scripts/dancy.mk
 
 distclean: clean
 	@rm -rf external
 
-external:
-	@bash ./scripts/external.sh
-
 path: ./bin/dy-path$(DANCY_EXE)
 	@PATH=$(DANCY_PATH) ./bin/dy-path$(DANCY_EXE)
 
+include ./scripts/dirs.mk
+include ./scripts/objects.mk
 include ./scripts/release.mk
 include ./scripts/system.mk
 include ./scripts/tools.mk
