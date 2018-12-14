@@ -34,6 +34,7 @@
 
 #include <dancy/limits.h>
 #include <dancy/stdarg.h>
+#include <dancy/string.h>
 #include <dancy/types.h>
 
 unsigned long b_a0(const char *, unsigned int);
