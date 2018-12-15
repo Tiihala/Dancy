@@ -21,16 +21,79 @@
 
 section .text
 
+        global memcmp
+        global memcpy
+        global memmove
         global memset
+
+align 16
+        ; int memcmp(const void *s1, const void *s2, size_t n)
+memcmp:
+        push rsi                        ; save register rsi
+        push rdi                        ; save register rdi
+        mov rdi, rcx                    ; rdi = s1
+        mov rsi, rdx                    ; rsi = s2
+        mov rcx, r8                     ; rcx = n
+        xor eax, eax                    ; rax = 0 (return equal)
+        test rcx, rcx                   ; test zero
+        jz short .L1
+        cld                             ; (extra safety)
+        rep cmpsb                       ; compare bytes
+        je short .L1
+        mov eax, 0xFFFFFFFF             ; "below zero"
+        ja short .L1
+        mov eax, 0x00000001             ; "above zero"
+.L1:    pop rdi                         ; restore register rdi
+        pop rsi                         ; restore register rsi
+        ret
+
+align 16
+        ; void *memcpy(void *s1, const void *s2, size_t n)
+memcpy:
+        push rsi                        ; save register rsi
+        push rdi                        ; save register rdi
+        mov rdi, rcx                    ; rdi = s1
+        mov rsi, rdx                    ; rsi = s2
+        mov rdx, rcx                    ; rdx = s1 (return value)
+        mov rcx, r8                     ; rcx = n
+        cld                             ; (extra safety)
+        rep movsb                       ; copy bytes
+        mov rax, rdx                    ; rax = s1
+        pop rdi                         ; restore register rdi
+        pop rsi                         ; restore register rsi
+        ret
+
+align 16
+        ; void *memmove(void *s1, const void *s2, size_t n)
+memmove:
+        push rsi                        ; save register rsi
+        push rdi                        ; save register rdi
+        cld                             ; (extra safety)
+        mov rdi, rcx                    ; rdi = s1
+        mov rsi, rdx                    ; rsi = s2
+        mov rdx, rcx                    ; rdx = s1 (return value)
+        mov rcx, r8                     ; rcx = n
+        cmp rdi, rsi                    ; compare s1 and s2
+        jbe short .L1
+        lea rdi, [rdi+rcx-1]            ; rdi = s1 + n - 1
+        lea rsi, [rsi+rcx-1]            ; rsi = s2 + n - 1
+        std                             ; set direction flag
+.L1:    rep movsb                       ; copy bytes
+        mov rax, rdx                    ; rax = s1
+        cld                             ; clear direction flag
+        pop rdi                         ; restore register rdi
+        pop rsi                         ; restore register rsi
+        ret
 
 align 16
         ; void *memset(void *s, int c, size_t n)
 memset:
         push rdi                        ; save register rdi
-        mov rdx, rcx                    ; rdx = s (return value)
         mov rdi, rcx                    ; rdi = s
         mov eax, edx                    ; eax = c (low byte)
+        mov rdx, rcx                    ; rdx = s (return value)
         mov rcx, r8                     ; rcx = n
+        cld                             ; (extra safety)
         rep stosb                       ; copy the low byte
         mov rax, rdx                    ; rax = s
         pop rdi                         ; restore register rdi
