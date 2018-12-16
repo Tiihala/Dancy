@@ -25,6 +25,7 @@ section .text
         global _memcpy
         global _memmove
         global _memset
+        global _strlen
 
 align 16
         ; int memcmp(const void *s1, const void *s2, size_t n)
@@ -93,5 +94,19 @@ _memset:
         cld                             ; (extra safety)
         rep stosb                       ; copy the low byte
         mov eax, [esp+8]                ; eax = s
+        pop edi                         ; restore register edi
+        ret
+
+align 16
+        ; size_t strlen(const char *s)
+_strlen:
+        push edi                        ; save register edi
+        mov edi, [esp+8]                ; edi = s
+        xor eax, eax                    ; eax = 0
+        lea ecx, [eax-1]                ; ecx = SIZE_MAX
+        cld                             ; (extra safety)
+        repne scasb                     ; find the zero byte
+        not ecx                         ; reverse each bit of ecx
+        lea eax, [ecx-1]                ; eax = length of the string
         pop edi                         ; restore register edi
         ret

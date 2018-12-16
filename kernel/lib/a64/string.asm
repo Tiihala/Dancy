@@ -25,6 +25,7 @@ section .text
         global memcpy
         global memmove
         global memset
+        global strlen
 
 align 16
         ; int memcmp(const void *s1, const void *s2, size_t n)
@@ -96,5 +97,19 @@ memset:
         cld                             ; (extra safety)
         rep stosb                       ; copy the low byte
         mov rax, rdx                    ; rax = s
+        pop rdi                         ; restore register rdi
+        ret
+
+align 16
+        ; size_t strlen(const char *s)
+strlen:
+        push rdi                        ; save register rdi
+        mov rdi, rcx                    ; rdi = s
+        xor eax, eax                    ; rax = 0
+        lea rcx, [rax-1]                ; rcx = SIZE_MAX
+        cld                             ; (extra safety)
+        repne scasb                     ; find the zero byte
+        not rcx                         ; reverse each bit of rcx
+        lea rax, [rcx-1]                ; rax = length of the string
         pop rdi                         ; restore register rdi
         ret
