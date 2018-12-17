@@ -11,7 +11,7 @@ DANCY_MK=copy NUL scripts\dancy.mk
 DANCY_PATH=$(MAKEDIR)\bin;$(PATH)
 
 HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
-HOST_CFLAGS=/O2 /Wall /wd4711 /wd4996 /nologo
+HOST_CFLAGS=/O2 /nologo
 DANCY_HOST_BINARY=cl.exe /Fe
 DANCY_HOST_OBJECT=cl.exe /c $(HOST_CPPFLAGS) $(HOST_CFLAGS) /Fo
 
