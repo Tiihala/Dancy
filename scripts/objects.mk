@@ -14,6 +14,9 @@
 ./o32/lib/a32/string.o: ./kernel/lib/a32/string.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/string.asm
 
+./o32/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/lib/string.c
+
 ./o64/init/a64/bsyscall.o: ./kernel/init/a64/bsyscall.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/bsyscall.asm
 
@@ -25,3 +28,6 @@
 
 ./o64/lib/a64/string.o: ./kernel/lib/a64/string.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/string.asm
+
+./o64/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/lib/string.c

@@ -13,21 +13,46 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy/string.h
- *      Header of Dancy Operating System
+ * lib/string.c
+ *      C standard library functions
  */
 
-#ifndef DANCY_STRING_H
-#define DANCY_STRING_H
+#include <dancy.h>
 
-#include <stddef.h>
+int strcmp(const char *s1, const char *s2)
+{
+	unsigned char c1, c2;
 
-int memcmp(const void *s1, const void *s2, size_t n);
-void *memcpy(void *s1, const void *s2, size_t n);
-void *memmove(void *s1, const void *s2, size_t n);
-void *memset(void *s, int c, size_t n);
-int strcmp(const char *s1, const char *s2);
-size_t strlen(const char *s);
-int strncmp(const char *s1, const char *s2, size_t n);
+	for (;;) {
+		c1 = *((const unsigned char *)s1++);
+		c2 = *((const unsigned char *)s2++);
+		if (!c1 || c1 != c2) {
+			if (!c1 && !c2)
+				break;
+			if (c1 < c2)
+				return -1;
+			if (c1 > c2)
+				return 1;
+		}
+	}
+	return 0;
+}
 
-#endif
+int strncmp(const char *s1, const char *s2, size_t n)
+{
+	unsigned char c1, c2;
+
+	while (n != 0) {
+		c1 = *((const unsigned char *)s1++);
+		c2 = *((const unsigned char *)s2++);
+		if (!--n || !c1 || c1 != c2) {
+			if (!c1 && !c2)
+				break;
+			if (c1 < c2)
+				return -1;
+			if (c1 > c2)
+				return 1;
+		}
+	}
+	return 0;
+}
