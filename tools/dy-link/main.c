@@ -174,7 +174,6 @@ int main(int argc, char *argv[])
 		}
 		do {
 			const char **optarg = NULL;
-			int (*optfnc)(struct options *, const char *) = NULL;
 
 			switch (*++arg) {
 			case '\0':
@@ -182,6 +181,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'f':
 				optarg = &opts.arg_f;
+				break;
+			case 'h':
+				help(NULL);
 				break;
 			case 'o':
 				optarg = &opts.arg_o;
@@ -196,15 +198,12 @@ int main(int argc, char *argv[])
 				help("unknown option \"-%c\"", *arg);
 				break;
 			}
-			if (optarg || optfnc) {
+			if (optarg) {
 				const char *next;
 				next = (arg[1]) ? &arg[1] : *++argv_i;
 				if (next) {
 					if (optarg)
 						*optarg = next;
-					if (optfnc)
-						if ((*optfnc)(&opts, next))
-							help(opts.error);
 					arg = *argv_i = NULL;
 					break;
 				}
