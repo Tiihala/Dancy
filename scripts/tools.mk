@@ -33,6 +33,15 @@ DY_INIT_OBJECTS= \
 
 ##############################################################################
 
+DY_ISO_OBJECTS= \
+ ./tools/dy-iso/dy-iso.obj \
+ ./boot/cd/eltorito.obj
+
+./bin/dy-iso$(DANCY_EXE): $(DY_ISO_OBJECTS) ./scripts/dancy.mk
+	$(DANCY_HOST_BINARY)$@ $(DY_ISO_OBJECTS)
+
+##############################################################################
+
 DY_LINK_OBJECTS= \
  ./tools/dy-link/main.obj \
  ./tools/dy-link/dump.obj \
@@ -135,6 +144,9 @@ DY_VBR_OBJECTS= \
 
 ./tools/dy-init/x64.obj: ./tools/dy-init/x64.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/x64.c
+
+./tools/dy-iso/dy-iso.obj: ./tools/dy-iso/dy-iso.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-iso/dy-iso.c
 
 ./tools/dy-link/dump.obj: ./tools/dy-link/dump.c $(DY_LINK_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/dump.c

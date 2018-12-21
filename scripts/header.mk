@@ -14,6 +14,7 @@ DANCY_CFLAGS_64=$(DANCY_CFLAGS) $(DANCY_WARNINGS)
 DY_BLOB=$(DANCY_DY)-blob$(DANCY_EXE)
 DY_GPT=$(DANCY_DY)-gpt$(DANCY_EXE)
 DY_INIT=$(DANCY_DY)-init$(DANCY_EXE)
+DY_ISO=$(DANCY_DY)-iso$(DANCY_EXE)
 DY_LINK=$(DANCY_DY)-link$(DANCY_EXE)
 DY_MBR=$(DANCY_DY)-mbr$(DANCY_EXE)
 DY_MCOPY=$(DANCY_DY)-mcopy$(DANCY_EXE)
@@ -24,6 +25,7 @@ DANCY_TARGET_TOOLS= \
  ./bin/dy-blob$(DANCY_EXE) \
  ./bin/dy-gpt$(DANCY_EXE) \
  ./bin/dy-init$(DANCY_EXE) \
+ ./bin/dy-iso$(DANCY_EXE) \
  ./bin/dy-link$(DANCY_EXE) \
  ./bin/dy-mbr$(DANCY_EXE) \
  ./bin/dy-mcopy$(DANCY_EXE) \
@@ -37,6 +39,7 @@ DANCY_TARGET_SYSTEM= \
  ./LOADER.AT
 
 DANCY_TARGET_RELEASE= \
+ ./release/dancy.iso \
  ./release/fdd720.img \
  ./release/fdd1440.img
 
