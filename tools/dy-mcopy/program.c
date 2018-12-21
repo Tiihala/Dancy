@@ -56,7 +56,7 @@ static int is_fat16(struct param_block *pb)
 
 static int read_file(const char *name, unsigned char **out, size_t *size)
 {
-	const size_t chunk = 16384;
+	const size_t chunk = 0x100000;
 	unsigned char *ptr;
 	FILE *fp;
 

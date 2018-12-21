@@ -31,6 +31,10 @@
 #include <string.h>
 #include <time.h>
 
+#if INT_MAX <= 0x7FFF
+#error Definition of INT_MAX is not compatible
+#endif
+
 #if !defined(SIZE_MAX)
 #define SIZE_MAX ((unsigned long)(INT_MAX))
 #endif
