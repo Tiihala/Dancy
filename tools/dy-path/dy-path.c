@@ -46,7 +46,8 @@ int program(struct options *opt)
 		if ((errno = 0, printf("%s\n", path)) < 0)
 			return perror("Error"), 1;
 	} else {
-		if ((errno = 0, printf("%s\n\nLength: %u\n", path, len)) < 0)
+		unsigned ulen = (unsigned)len;
+		if ((errno = 0, printf("%s\n\nLength: %u\n", path, ulen)) < 0)
 			return perror("Error"), 1;
 	}
 	return 0;
