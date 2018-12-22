@@ -61,7 +61,7 @@ static void native_obj(unsigned char *data, int size)
 		if (LE32(&data[AT_HEADER_SIZE + 16]) != 0ul)
 			return;
 		memcpy(&header[0], &data[AT_HEADER_SIZE], sizeof(header));
-		memset(&data[0], 0, at_size);
+		memset(&data[0], 0, (size_t)at_size);
 		memcpy(&data[0], &header[0], sizeof(header));
 		return;
 	}
@@ -74,7 +74,7 @@ static void native_obj(unsigned char *data, int size)
 		if (LE32(&data[IN_HEADER_SIZE + 16]) != 0ul)
 			return;
 		memcpy(&header[0], &data[IN_HEADER_SIZE], sizeof(header));
-		memset(&data[0], 0, in_size);
+		memset(&data[0], 0, (size_t)in_size);
 		memcpy(&data[0], &header[0], sizeof(header));
 		return;
 	}
@@ -92,7 +92,7 @@ static void native_obj(unsigned char *data, int size)
 		if (LE32(&data[IN_HEADER_SIZE + 16]) != 0ul)
 			return;
 		memcpy(&header[0], &data[IN_HEADER_SIZE], sizeof(header));
-		memset(&data[0], 0, in_size);
+		memset(&data[0], 0, (size_t)in_size);
 		memcpy(&data[0], &header[0], sizeof(header));
 		return;
 	}

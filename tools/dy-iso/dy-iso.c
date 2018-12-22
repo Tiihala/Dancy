@@ -97,7 +97,7 @@ static void write_timestamp(int version, unsigned char *out)
 			*(out + 0) = (unsigned char)iso_tm->tm_year;
 		else
 			*(out + 0) = 0xFF;
-		*(out + 1) = (unsigned char)iso_tm->tm_mon + 1;
+		*(out + 1) = (unsigned char)(iso_tm->tm_mon + 1);
 		*(out + 2) = (unsigned char)iso_tm->tm_mday;
 		*(out + 3) = (unsigned char)iso_tm->tm_hour;
 		*(out + 4) = (unsigned char)iso_tm->tm_min;

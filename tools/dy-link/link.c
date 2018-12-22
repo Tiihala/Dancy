@@ -282,7 +282,7 @@ static void set_at_header(unsigned char *buf, int size)
 	memcpy(&buf[0], &file_header[0], sizeof(file_header));
 	W_LE32(&buf[16], size);
 
-	crc = crc32c(buf, size);
+	crc = crc32c(buf, (size_t)size);
 	W_LE32(&buf[24], crc);
 }
 
@@ -506,7 +506,7 @@ int link_main(struct options *opt)
 			free(out);
 			return 1;
 		}
-		off += LE32(out + 12) * 18ul;
+		off += (int)LE32(out + 12) * 18;
 	}
 
 	/*
@@ -584,7 +584,7 @@ int link_main(struct options *opt)
 				unsigned char *t7 = t5 + LE32(&t6[4]);
 				int t8 = (int)strlen((char *)t7) + 1;
 
-				memcpy(&str[strs], t7, t8);
+				memcpy(&str[strs], t7, (size_t)t8);
 				W_LE32(&sym[4], strs);
 				strs += t8;
 			}

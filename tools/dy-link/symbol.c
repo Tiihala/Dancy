@@ -50,7 +50,7 @@ int symbol_copy_table(struct options *opt, unsigned char *out)
 				int s = (int)sec;
 				s = section_reloc(opt, i, s, &addr);
 				skip = s ? 0 : 1;
-				sec = s;
+				sec = (unsigned long)s;
 			}
 
 			if (LE32(&sym[0])) {
@@ -256,7 +256,7 @@ static void reloc_update1(unsigned char *obj, const void *arr, int n)
 		unsigned long r_num = LE16(&sec[32]);
 
 		while (r_num--) {
-			unsigned long s = (int)LE32(&r_off[4]);
+			unsigned long s = LE32(&r_off[4]);
 			for (j = 0; j < n; j++) {
 				if (s == table[j].i) {
 					W_LE32(&r_off[4], j);
@@ -553,7 +553,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			sym += 1;
 		}
 		memcpy(obj + symtab, buf, (syms * 18u));
-		reloc_update1(obj, arr, syms);
+		reloc_update1(obj, arr, (int)syms);
 		free(buf), free(arr);
 	}
 
@@ -689,7 +689,7 @@ int symbol_table_size(struct options *opt)
 		unsigned long add = LE32(&buf[12]) * 18ul;
 
 		if (total_size < INT_MAX - (int)add)
-			total_size += add;
+			total_size += (int)add;
 		else
 			return INT_MAX;
 	}

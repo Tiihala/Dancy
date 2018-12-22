@@ -47,7 +47,7 @@ static unsigned char *iterate_next(struct iterate *it)
 	do {
 		for (i = it->obj; i < (unsigned)it->opt->nr_mfiles; i++) {
 			unsigned char *dat = it->opt->mfiles[i].data;
-			unsigned secs = LE16(&dat[2]);
+			unsigned secs = (unsigned)LE16(&dat[2]);
 
 			/*
 			 * Do not rely on grp variable if it->name is NULL.

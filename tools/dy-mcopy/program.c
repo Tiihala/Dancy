@@ -333,8 +333,8 @@ static int get_param_block(struct options *opt, struct param_block *pb)
 		}
 	}
 
-	pb->read_only = opt->read_only;
-	pb->random = opt->random;
+	pb->read_only = (unsigned)opt->read_only;
+	pb->random = (unsigned)opt->random;
 
 	if (opt->verbose) {
 		unsigned unused = pb->data_sectors % pb->cluster_sectors;

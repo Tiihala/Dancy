@@ -98,16 +98,16 @@ static int set_header(unsigned char type, unsigned char *buf, size_t size)
 
 	memcpy(&buf[0], &file_header[0], sizeof(file_header));
 	memcpy(&buf[16], &zero_bytes[0], sizeof(zero_bytes));
-	buf[16] = (size) & 0xFFu;
-	buf[17] = (size >> 8) & 0xFFu;
-	buf[28] = type & 0x7Fu;
-	buf[30] = (type & 0x80u) ? 0x01u : 0x00u;
+	buf[16] = (unsigned char)((size) & 0xFFu);
+	buf[17] = (unsigned char)((size >> 8) & 0xFFu);
+	buf[28] = (unsigned char)(type & 0x7Fu);
+	buf[30] = (unsigned char)((type & 0x80u) ? 0x01u : 0x00u);
 
 	crc = crc32c(buf, size);
-	buf[24] = (crc) & 0xFFu;
-	buf[25] = (crc >> 8) & 0xFFu;
-	buf[26] = (crc >> 16) & 0xFFu;
-	buf[27] = (crc >> 24) & 0xFFu;
+	buf[24] = (unsigned char)((crc) & 0xFFu);
+	buf[25] = (unsigned char)((crc >> 8) & 0xFFu);
+	buf[26] = (unsigned char)((crc >> 16) & 0xFFu);
+	buf[27] = (unsigned char)((crc >> 24) & 0xFFu);
 	return 0;
 }
 
