@@ -11,7 +11,7 @@ DANCY_MK=touch ./scripts/dancy.mk
 DANCY_PATH=`./scripts/path.sh`
 
 HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
-HOST_CFLAGS=-O2 -std=c89 -Wall -Wextra -Wshadow -Wwrite-strings -pedantic
+HOST_CFLAGS=-O2 -std=c89 $(DANCY_WARNINGS)
 DANCY_HOST_BINARY=$(CC) -o
 DANCY_HOST_OBJECT=$(CC) -c $(HOST_CPPFLAGS) $(HOST_CFLAGS) -o
 
