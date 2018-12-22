@@ -19,6 +19,15 @@ then
     exit 1
 fi
 
+export DANCY_EXTERNAL=`pwd`/external
+
+if [ -f "/usr/bin/x86_64-pc-msys-gcc.exe" ]
+then
+    mkdir -p $DANCY_EXTERNAL/bin
+    touch external/external.sh
+    exit 0
+fi
+
 echo ""
 echo -e "\e[33mBuilding a cross compiler:\e[0m"
 echo -e "\e[33m    binutils-$BIN_VERSION\e[0m"
@@ -31,7 +40,6 @@ which make
 which tar
 which wget
 
-export DANCY_EXTERNAL=`pwd`/external
 mkdir -p $DANCY_EXTERNAL/bin
 mkdir -p $DANCY_EXTERNAL/mingw/include
 mkdir -p $DANCY_EXTERNAL/src
