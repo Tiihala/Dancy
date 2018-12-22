@@ -545,7 +545,7 @@ static unsigned allocate_cluster(struct param_block *pb)
 		unsigned retry = 32;
 		random = (!random) ? (srand((unsigned)time(NULL)), 1) : 1;
 		while (retry--) {
-			i = ((unsigned)rand % pb->clusters) + 2u;
+			i = ((unsigned)rand() % pb->clusters) + 2u;
 			if (!table(pb, i, NULL))
 				return (void)table(pb, i, &val), i;
 		}
