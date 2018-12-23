@@ -15,6 +15,7 @@ HOST_CFLAGS=-O2 -std=c89 $(DANCY_WARNINGS)
 DANCY_HOST_BINARY=$(CC) -o
 DANCY_HOST_OBJECT=$(CC) -c $(HOST_CPPFLAGS) $(HOST_CFLAGS) -o
 
+DANCY_AS=nasm
 DANCY_A32=nasm -fwin32 -o
 DANCY_A64=nasm -fwin64 -o
 
@@ -47,6 +48,7 @@ path: ./bin/dy-path$(DANCY_EXE)
 	@PATH=$(DANCY_PATH) ./bin/dy-path$(DANCY_EXE)
 
 include ./scripts/dirs.mk
+include ./scripts/legacy.mk
 include ./scripts/objects.mk
 include ./scripts/release.mk
 include ./scripts/system.mk

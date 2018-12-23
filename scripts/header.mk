@@ -33,6 +33,7 @@ DANCY_TARGET_TOOLS= \
  ./bin/dy-vbr$(DANCY_EXE)
 
 DANCY_TARGET_SYSTEM= \
+ ./system/IN_IA16.AT \
  ./system/IN_IA32.AT \
  ./system/IN_X64.AT \
  ./LOADER.512 \
@@ -40,6 +41,7 @@ DANCY_TARGET_SYSTEM= \
 
 DANCY_TARGET_RELEASE= \
  ./release/dancy.iso \
+ ./release/fdd160.img \
  ./release/fdd720.img \
  ./release/fdd1440.img
 

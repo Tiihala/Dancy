@@ -15,6 +15,7 @@ HOST_CFLAGS=/O2 /nologo
 DANCY_HOST_BINARY=cl.exe /Fe
 DANCY_HOST_OBJECT=cl.exe /c $(HOST_CPPFLAGS) $(HOST_CFLAGS) /Fo
 
+DANCY_AS=nasm.exe
 DANCY_A32=nasm.exe -fwin32 -o
 DANCY_A64=nasm.exe -fwin64 -o
 
@@ -47,6 +48,7 @@ path: ./bin/dy-path$(DANCY_EXE)
 	@cmd /C "set PATH=$(DANCY_PATH) && bin\dy-path$(DANCY_EXE)"
 
 !include .\scripts\dirs.mk
+!include .\scripts\legacy.mk
 !include .\scripts\objects.mk
 !include .\scripts\release.mk
 !include .\scripts\system.mk
