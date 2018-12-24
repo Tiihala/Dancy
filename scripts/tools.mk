@@ -100,6 +100,17 @@ DY_VBR_OBJECTS= \
 
 ##############################################################################
 
+DY_ZIP_OBJECTS= \
+ ./tools/dy-zip/main.obj \
+ ./tools/dy-zip/deflate.obj \
+ ./tools/dy-zip/program.obj \
+ ./common/crc32/crc32.obj
+
+./bin/dy-zip$(DANCY_EXE): $(DY_ZIP_OBJECTS) ./scripts/dancy.mk
+	$(DANCY_HOST_BINARY)$@ $(DY_ZIP_OBJECTS)
+
+##############################################################################
+
 ./boot/cd/eltorito.obj: ./boot/cd/eltorito.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/cd/eltorito.c
 
@@ -183,3 +194,12 @@ DY_VBR_OBJECTS= \
 
 ./tools/dy-vbr/dy-vbr.obj: ./tools/dy-vbr/dy-vbr.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-vbr/dy-vbr.c
+
+./tools/dy-zip/deflate.obj: ./tools/dy-zip/deflate.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-zip/deflate.c
+
+./tools/dy-zip/main.obj: ./tools/dy-zip/main.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-zip/main.c
+
+./tools/dy-zip/program.obj: ./tools/dy-zip/program.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-zip/program.c
