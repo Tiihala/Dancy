@@ -31,19 +31,31 @@
 #include <string.h>
 #include <time.h>
 
-#if INT_MAX <= 0x7FFF
+#if INT_MAX < 0x7FFFFFFF
 #error Definition of INT_MAX is not compatible
 #endif
 
 #if !defined(SIZE_MAX)
-#define SIZE_MAX ((unsigned long)(INT_MAX))
+#define SIZE_MAX (0x7FFFFFFFul)
 #endif
 
 struct options {
 	char **operands;
 	const char *error;
 	const char *arg_o;
+	const char *arg_t;
 	int verbose;
+};
+
+struct state {
+	unsigned char *output;
+	unsigned char **fdata;
+	size_t *fsize;
+	size_t size;
+	size_t fnum;
+	unsigned m_date;
+	unsigned m_time;
+	int split;
 };
 
 #define B8(a,b,c) (((unsigned long)((a)[(b)]) & 0xFFul) << (c))
@@ -59,6 +71,8 @@ struct options {
 	*((a) + 1) = (unsigned char)(((unsigned long)(d) >>  8) & 0xFFul), \
 	*((a) + 2) = (unsigned char)(((unsigned long)(d) >> 16) & 0xFFul), \
 	*((a) + 3) = (unsigned char)(((unsigned long)(d) >> 24) & 0xFFul))
+
+unsigned long crc32(const void *obj, size_t len);
 
 /*
  * program.c

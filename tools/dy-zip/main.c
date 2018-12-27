@@ -21,9 +21,10 @@
 
 static const char *help_str =
 	"Usage: " PROGRAM_CMDNAME
-	" -o output source-file [source-file...]\n"
+	" -o output [-t timestamp] source-file [source-file...]\n"
 	"\nOptions:\n"
 	"  -o output     output\n"
+	"  -t timestamp  YYYY-MM-DDThh:mm:ss\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -91,6 +92,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'o':
 				optarg = &opts.arg_o;
+				break;
+			case 't':
+				optarg = &opts.arg_t;
 				break;
 			case 'v':
 				opts.verbose = 1;
