@@ -62,7 +62,7 @@ static int check_name(const char *name)
 static int create_output(struct options *opt, struct state *zip)
 {
 	unsigned char *out;
-	size_t size = (zip->split) ? 4 : 0;
+	size_t size = 0;
 	size_t off = 0;
 	size_t i;
 
@@ -75,6 +75,9 @@ static int create_output(struct options *opt, struct state *zip)
 		unsigned long ul;
 		size_t len;
 
+		/*
+		 * This limit is important if using database files.
+		 */
 		if (off > 0xF000) {
 			fputs("Error: too many input files\n", stderr);
 			return 1;
@@ -111,8 +114,27 @@ static int create_output(struct options *opt, struct state *zip)
 		 * Calculate total size (local file header + data).
 		 */
 		size += 30ul + len + ul;
-
+		if (zip->split) {
+			size += 0x0000000Fu;
+			size &= 0xFFFFFFF0u;
+		}
 		off += 46u + len;
+	}
+
+	/*
+	 * Use special alignment for database files. The output buffer
+	 * contains "number_of_dbs * 65504" blocks that are converted
+	 * to database files by adding a 32-byte header at the start,
+	 * and the size of one database file is 32 + 65504 == 0x10000.
+	 * It is guaranteed that the last "block" of the buffer is less
+	 * than 65504 bytes and that contains the central directory, so
+	 * ignoring the remainder, the "zip->size / 65504" gives a total
+	 * number of databases.
+	 */
+	if (zip->split) {
+		size_t remainder = size % 65504u;
+		if (remainder)
+			size += (65504u - remainder);
 	}
 
 	/*
@@ -136,9 +158,9 @@ static int create_output(struct options *opt, struct state *zip)
 	zip->size = size + off;
 
 	memmove(&out[size], &out[0], off);
-	memset(&out[0], 1, size);
+	memset(&out[0], 0, size);
 	off = size;
-	size = (zip->split) ? 4 : 0;
+	size = 0;
 
 	/*
 	 * Write the local headers and data.
@@ -156,6 +178,10 @@ static int create_output(struct options *opt, struct state *zip)
 		size += len + 30;
 		memcpy(&out[size], zip->fdata[i], zip->fsize[i]);
 		size += zip->fsize[i];
+		if (zip->split) {
+			size += 0x0000000Fu;
+			size &= 0xFFFFFFF0u;
+		}
 		off += len + 46;
 	}
 	return 0;
@@ -304,6 +330,80 @@ static void free_zip(struct state *zip)
 	memset(zip, 0, sizeof(*zip));
 }
 
+static int write_output_db(struct options *opt, struct state *zip)
+{
+	static const unsigned char file_header[16] = {
+		0x8Du, 0x41u, 0x54u, 0x0Du, 0x0Au, 0x73u, 0x74u, 0x64u,
+		0x0Cu, 0x44u, 0x0Cu, 0x42u, 0x0Cu, 0x0Au, 0x71u, 0xF8u
+	};
+	unsigned char *db = malloc(0x10000);
+	size_t len = strlen(opt->arg_o);
+	char name[256];
+	FILE *fp;
+	int i;
+
+	if (!db)
+		return fputs("Error: not enough memory\n", stderr), 1;
+	if (len < 9 || len >= sizeof(name)) {
+		fputs("Error: output file path format\n", stderr);
+		return free(db), 1;
+	}
+	strcpy(&name[0], &opt->arg_o[0]);
+
+	for (i = 0; i < 1000; i++) {
+		if ((unsigned long)i >= (zip->size / 65504u))
+			break;
+		/*
+		 * "db_000.at", change the number only.
+		 */
+		sprintf(&name[len - 6], "%03i%s", i, &opt->arg_o[len - 3]);
+		if (opt->verbose)
+			printf("Writing %s\n", name);
+
+		memcpy(&db[0], &file_header[0], 16);
+		W_LE32(&db[16], 0x10000);
+		W_LE32(&db[20], 0);
+		W_LE32(&db[24], 0);
+		W_LE32(&db[28], i);
+		memcpy(&db[32], &zip->output[i * 65504], 65504);
+
+		fp = (errno = 0, fopen(name, "wb"));
+		if (!fp) {
+			const char *fmt = "Error: opening file \"%s\" (%s)\n";
+			fprintf(stderr, fmt, name, strerror(errno));
+			return free(db), 1;
+		}
+		if ((errno = 0, fwrite(db, 1, 0x10000, fp)) != 0x10000) {
+			const char *fmt = "Error: writing file \"%s\" (%s)\n";
+			fprintf(stderr, fmt, name, strerror(errno));
+			return free(db), 1;
+		}
+		if ((errno = 0, fclose(fp))) {
+			const char *fmt = "Error: closing file \"%s\" (%s)\n";
+			fprintf(stderr, fmt, name, strerror(errno));
+			return free(db), 1;
+		}
+	}
+	/*
+	 * Try to remove other database files. This procedure is not meant
+	 * to be very robust but is useful when testing the program. The
+	 * other strategy should be used for deleting any existing database
+	 * files before this program is used.
+	 */
+	for (/* void */; i < 1000; i++) {
+		sprintf(&name[len - 6], "%03i%s", i, &opt->arg_o[len - 3]);
+		fp = fopen(name, "rb");
+		if (!fp)
+			break;
+		(void)fclose(fp);
+		if ((errno = 0, remove(name))) {
+			perror("Error");
+			return free(db), 1;
+		}
+	}
+	return free(db), 0;
+}
+
 static int write_output(struct options *opt, struct state *zip)
 {
 	FILE *fp;
@@ -346,6 +446,28 @@ int program(struct options *opt)
 	}
 	if (get_modification_time(opt, &zip))
 		return 1;
+	if (opt->arg_o) {
+		const char *o = opt->arg_o;
+		size_t len = strlen(o);
+		char buf[16];
+		/*
+		 * Handle "db_000.at" as a special case.
+		 */
+		if (len >= 9) {
+			o = &o[len - 9];
+			memcpy(&buf[0], &o[0], 10);
+			buf[0] = (char)tolower((int)o[0]);
+			buf[1] = (char)tolower((int)o[1]);
+			buf[7] = (char)tolower((int)o[7]);
+			buf[8] = (char)tolower((int)o[8]);
+			if (!strcmp(&buf[0], "db_000.at"))
+				zip.split = 1;
+		}
+		if (opt->verbose && zip.split)
+			fputs("Using split mode\n", stdout);
+	} else {
+		return opt->error = "missing output", 1;
+	}
 
 	zip.fdata = calloc(zip.fnum, sizeof(void *));
 	zip.fsize = calloc(zip.fnum, sizeof(size_t));
@@ -374,7 +496,7 @@ int program(struct options *opt)
 
 	if (create_output(opt, &zip))
 		return free_zip(&zip), 1;
-	if (write_output(opt, &zip))
+	if (zip.split ? write_output_db(opt, &zip) : write_output(opt, &zip))
 		return free_zip(&zip), 1;
 	return free_zip(&zip), 0;
 }
