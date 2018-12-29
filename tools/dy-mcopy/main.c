@@ -25,6 +25,7 @@ static const char *help_str =
 	"\nOptions:\n"
 	"  -i image      image file\n"
 	"  -t timestamp  YYYY-MM-DDThh:mm:ss\n"
+	"  --db          special mode for Dancy databases\n"
 	"  --random      allocate clusters randomly\n"
 	"  --read-only   set read only flag\n"
 	"\nGeneral:\n"
@@ -78,6 +79,10 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "db")) {
+				opts.db_mode = 1;
 				continue;
 			}
 			if (!strcmp(arg + 2, "random")) {

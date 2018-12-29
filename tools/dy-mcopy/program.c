@@ -850,28 +850,90 @@ static int mcopy(struct options *opt, struct param_block *pb)
 	return 0;
 }
 
+static int db_files(struct options *opt, struct param_block *pb)
+{
+	static char src[32];
+	static char dst[32];
+	size_t len = strlen(opt->operands[0]);
+	unsigned i = 0;
+	unsigned long limit;
+	FILE *fp;
+
+	limit = strtoul(opt->operands[1], NULL, 0);
+	if (limit < 1 || limit > 1000)
+		return opt->error = "db mode operands", 1;
+
+	/*
+	 * Handle "db_???.at" (or e.g. "system/db_???.at") as a special case.
+	 */
+	if (len < 9 || len > 31)
+		return opt->error = "db mode operands", 1;
+	strcpy(&src[0], opt->operands[0]);
+	src[len - 9] = (char)tolower((int)src[len - 9]);
+	src[len - 8] = (char)tolower((int)src[len - 8]);
+	src[len - 6] = isdigit((int)src[len - 6]) ? '0' : '-';
+	src[len - 5] = isdigit((int)src[len - 5]) ? '0' : '-';
+	src[len - 4] = isdigit((int)src[len - 4]) ? '0' : '-';
+	src[len - 2] = (char)tolower((int)src[len - 2]);
+	src[len - 1] = (char)tolower((int)src[len - 1]);
+	if (strcmp(&src[len - 9], "db_000.at"))
+		return opt->error = "db mode operands", 1;
+	strcpy(&src[0], opt->operands[0]);
+
+	i += (unsigned)(((src[len - 6]) - '0') * 100);
+	i += (unsigned)(((src[len - 5]) - '0') * 10);
+	i += (unsigned)(((src[len - 4]) - '0') * 1);
+
+	for (/* void */; i < 1000; i++) {
+		sprintf(&src[len - 6], "%03u", i), src[len - 3] = '.';
+		sprintf(&dst[0], "::SYSTEM/DB_%03u.AT", i);
+
+		if ((fp = fopen(&src[0], "rb")) == NULL)
+			break;
+		(void)fclose(fp);
+
+		if (source_file) {
+			free(source_file);
+			source_file_size = 0;
+			source_file = NULL;
+		}
+		if (read_file(&src[0], &source_file, &source_file_size))
+			return 1;
+		opt->operands[1] = &dst[0];
+		if (mcopy(opt, pb))
+			return 1;
+		if (limit-- == 0)
+			break;
+	}
+	return 0;
+}
+
 int program(struct options *opt)
 {
 	struct param_block pb;
 
-	if (!opt->arg_i)
-		return opt->error = "missing image file", 1;
-	if (!opt->operands[0])
-		return opt->error = "missing source-file", 1;
-	if (!opt->operands[1] || strlen(opt->operands[1]) < 3)
-		return opt->error = "missing path/destination-file", 1;
-	if (opt->operands[2])
-		return opt->error = "too many operands", 1;
-
 	if ((errno = 0, atexit(free_files)))
 		return perror("atexit error"), 1;
 
+	if (!opt->arg_i)
+		return opt->error = "missing image file", 1;
 	if (read_file(opt->arg_i, &image_file, &image_file_size))
 		return 1;
-	if (read_file(opt->operands[0], &source_file, &source_file_size))
+	if (memset(&pb, 0, sizeof(pb)), get_param_block(opt, &pb))
 		return 1;
 
-	if (memset(&pb, 0, sizeof(pb)), get_param_block(opt, &pb))
+	if (!opt->operands[0])
+		return opt->error = "missing source-file", 1;
+	if (!opt->operands[1])
+		return opt->error = "missing path/destination-file", 1;
+	if (opt->db_mode)
+		return db_files(opt, &pb);
+
+	if (strlen(opt->operands[1]) < 3)
+		return opt->error = "missing path/destination-file", 1;
+	if (opt->operands[2])
+		return opt->error = "too many operands", 1;
+	if (read_file(opt->operands[0], &source_file, &source_file_size))
 		return 1;
 	return mcopy(opt, &pb);
 }

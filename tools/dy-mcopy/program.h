@@ -44,6 +44,7 @@ struct options {
 	const char *error;
 	const char *arg_i;
 	const char *arg_t;
+	int db_mode;
 	int read_only;
 	int random;
 	int verbose;
