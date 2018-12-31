@@ -75,6 +75,11 @@ struct state {
 unsigned long crc32(const void *obj, size_t len);
 
 /*
+ * deflate.c
+ */
+int deflate_compress(unsigned char *data, size_t *size);
+
+/*
  * program.c
  */
 int program(struct options *opt);

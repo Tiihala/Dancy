@@ -18,3 +18,10 @@
  */
 
 #include "program.h"
+
+int deflate_compress(unsigned char *data, size_t *size)
+{
+	(void)data;
+	(void)size;
+	return 1;
+}

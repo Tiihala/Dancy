@@ -26,8 +26,8 @@ static void put_name(const char *name, char *out)
 	if (name[0] == '.' && (name[1] == '\\' || name[1] == '/'))
 		i = 2;
 	while (name[i] != '\0') {
-		int c = tolower((int)name[i]);
-		out[j] = (c == '\\') ? '/' : (char)c;
+		char c = name[i];
+		out[j] = (c == '\\') ? '/' : c;
 		i++, j++;
 	}
 	out[j] = '\0';
@@ -108,6 +108,8 @@ static int create_output(struct options *opt, struct state *zip)
 		/*
 		 * Compressed size.
 		 */
+		if (!deflate_compress(zip->fdata[i], &zip->fsize[i]))
+			out[off + 10] = 8;
 		ul = zip->fsize[i];
 		W_LE32(&out[off + 20], ul);
 		/*
