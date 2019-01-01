@@ -309,7 +309,7 @@ static int get_modification_time(struct options *opt, struct state *zip)
 	zip->m_date = u;
 
 	u = ((unsigned)local->tm_sec >> 1) & 0x1Fu;
-	u |= ((unsigned)local->tm_min & 0x1Fu) << 5;
+	u |= ((unsigned)local->tm_min & 0x3Fu) << 5;
 	u |= ((unsigned)local->tm_hour & 0x1Fu) << 11;
 	zip->m_time = u;
 
