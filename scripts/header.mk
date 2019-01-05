@@ -48,8 +48,10 @@ DANCY_TARGET_RELEASE= \
  ./release/fdd1440.img
 
 DANCY_HEADERS= \
+ ./include/dancy/bitarray.h \
  ./include/dancy/limits.h \
  ./include/dancy/stdarg.h \
+ ./include/dancy/string.h \
  ./include/dancy/types.h \
  ./include/dancy.h
 

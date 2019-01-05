@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2018 Antti Tiihala
+ * Copyright (c) 2017, 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,6 +32,7 @@
 
 #if defined(DANCY_32) || defined(DANCY_64)
 
+#include <dancy/bitarray.h>
 #include <dancy/limits.h>
 #include <dancy/stdarg.h>
 #include <dancy/string.h>
