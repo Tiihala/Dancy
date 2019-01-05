@@ -3,7 +3,7 @@
 DANCY_VERSION=-DDANCY_MAJOR=$(DANCY_MAJOR) -DDANCY_MINOR=$(DANCY_MINOR)
 
 DANCY_CPPFLAGS=-I./include $(DANCY_VERSION)
-DANCY_CFLAGS=-ffreestanding -O2
+DANCY_CFLAGS=-ffreestanding -O2 -mno-mmx -mno-sse -mno-sse2
 DANCY_WARNINGS=-Wall -Wconversion -Wextra -Wshadow -Wwrite-strings -pedantic
 
 DANCY_CPPFLAGS_32=$(DANCY_CPPFLAGS) -DDANCY_32
