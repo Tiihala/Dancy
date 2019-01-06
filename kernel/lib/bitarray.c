@@ -62,8 +62,8 @@ int bitarray_shove(struct bitarray *b, unsigned bits, unsigned val)
 {
 	unsigned bit = 0;
 
-	while (bit < bits) {
-		b->state[1] |= (val & 1u) << (bit++ % CHAR_BIT), val >>= 1;
+	while (bit++ < bits) {
+		b->state[1] |= (val & 1u) << b->state[0], val >>= 1;
 		if (++b->state[0] < CHAR_BIT)
 			continue;
 		if (b->size--) {
@@ -83,6 +83,7 @@ int bitarray_written(struct bitarray *b, size_t *written)
 	unsigned bits = b->state[0] ? CHAR_BIT - b->state[0] : 0;
 	int ret = bitarray_shove(b, bits, 0);
 
-	*written = b->written;
+	if (written != NULL)
+		*written = b->written;
 	return ret;
 }
