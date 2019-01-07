@@ -53,8 +53,8 @@ void dump_ext(const char *name, const unsigned char *buf)
 			printf("-> %.8s", &sym[0]);
 		} else {
 			const unsigned char *str;
-			str = &buf[(int)(symtab_offset + symtab_count * 18u)];
-			str = str + (int)LE32(&sym[4]);
+			str = &buf[symtab_offset + symtab_count * 18ul];
+			str = str + LE32(&sym[4]);
 			printf("-> %s", str);
 		}
 		printf("\n");
@@ -199,8 +199,8 @@ void dump_obj(const char *name, const unsigned char *buf)
 			printf("-> %.8s", &sym[0]);
 		} else {
 			const unsigned char *str;
-			str = &buf[(int)(symtab_offset + symtab_count * 18u)];
-			str = str + (int)LE32(&sym[4]);
+			str = &buf[symtab_offset + symtab_count * 18ul];
+			str = str + LE32(&sym[4]);
 			printf("-> %s", str);
 		}
 		printf("\n");

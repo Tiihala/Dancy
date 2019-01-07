@@ -171,8 +171,8 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 		if (offset > ULONG_MAX - 4ul) {
 			err = 1;
 		} else {
-			strtab_off = &buf[(int)offset];
-			strtab_size = LE32(&buf[(int)offset]);
+			strtab_off = &buf[offset];
+			strtab_size = LE32(&buf[offset]);
 		}
 
 		if (strtab_size < 4ul)
@@ -181,7 +181,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			err = 1;
 		if (offset + strtab_size > (unsigned long)size)
 			err = 1;
-		if (!err && buf[(int)(offset + strtab_size - 1ul)])
+		if (!err && buf[offset + strtab_size - 1ul])
 			err = 1;
 		if (err) {
 			fprintf(stderr, "%s: string table error\n", name);
@@ -200,7 +200,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			unsigned long section_number;
 
 			while (!err && i < symbols) {
-				sym = &buf[(int)(offset + i * 18ul)];
+				sym = &buf[offset + i * 18ul];
 				if (!LE32(&sym[0])) {
 					if (LE32(&sym[4]) < 4ul)
 						err = 1;
@@ -379,7 +379,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			 */
 			if ((relo_size % 10ul) != 0ul)
 				err = 1;
-			relo_ptr = &buf[(int)relo_offset];
+			relo_ptr = &buf[relo_offset];
 			while (!err && relo_size) {
 				unsigned long r_off = LE32(relo_ptr+0);
 				unsigned long r_idx = LE32(relo_ptr+4);
