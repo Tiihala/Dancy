@@ -2,7 +2,7 @@
 
 DANCY_VERSION=-DDANCY_MAJOR=$(DANCY_MAJOR) -DDANCY_MINOR=$(DANCY_MINOR)
 
-DANCY_CPPFLAGS=-I./include $(DANCY_VERSION)
+DANCY_CPPFLAGS=-I./common -I./include $(DANCY_VERSION)
 DANCY_CFLAGS=-ffreestanding -O2 -mno-mmx -mno-sse -mno-sse2
 DANCY_WARNINGS=-Wall -Wconversion -Wextra -Wshadow -Wwrite-strings -pedantic
 
@@ -48,7 +48,7 @@ DANCY_TARGET_RELEASE= \
  ./release/fdd1440.img
 
 DANCY_HEADERS= \
- ./include/dancy/bitarray.h \
+ ./common/bitarray/bitarray.h \
  ./include/dancy/limits.h \
  ./include/dancy/stdarg.h \
  ./include/dancy/string.h \

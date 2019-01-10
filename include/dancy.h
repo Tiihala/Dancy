@@ -32,11 +32,12 @@
 
 #if defined(DANCY_32) || defined(DANCY_64)
 
-#include <dancy/bitarray.h>
 #include <dancy/limits.h>
 #include <dancy/stdarg.h>
 #include <dancy/string.h>
 #include <dancy/types.h>
+
+#include <bitarray/bitarray.h>
 
 unsigned long b_a0(const char *, unsigned int);
 unsigned long b_a1(const char *, unsigned int);
