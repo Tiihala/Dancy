@@ -49,6 +49,7 @@ DANCY_TARGET_RELEASE= \
 
 DANCY_HEADERS= \
  ./common/bitarray/bitarray.h \
+ ./common/huffman/huffman.h \
  ./include/dancy/limits.h \
  ./include/dancy/stdarg.h \
  ./include/dancy/string.h \

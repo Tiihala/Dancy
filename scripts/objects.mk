@@ -5,6 +5,9 @@
 ./o32/common/bitarray.o: ./common/bitarray/bitarray.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/bitarray/bitarray.c
 
+./o32/common/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./common/huffman/huffman.c
+
 ./o32/init/a32/bsyscall.o: ./kernel/init/a32/bsyscall.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/bsyscall.asm
 
@@ -22,6 +25,9 @@
 
 ./o64/common/bitarray.o: ./common/bitarray/bitarray.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/bitarray/bitarray.c
+
+./o64/common/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./common/huffman/huffman.c
 
 ./o64/init/a64/bsyscall.o: ./kernel/init/a64/bsyscall.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/bsyscall.asm
