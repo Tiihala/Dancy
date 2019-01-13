@@ -116,7 +116,9 @@ int huffman_fetch(struct huffman *h, struct bitarray *b)
 			b->state[0] = CHAR_BIT;
 			b->state[1] = (unsigned)*b->data++;
 		} else {
-			return bitarray_init(b, NULL, 0), -1;
+			bitarray_clear(b);
+			if (b->callback(b) || !b->size)
+				return -1;
 		}
 	}
 	return -2;
