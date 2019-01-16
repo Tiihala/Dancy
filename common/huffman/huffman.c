@@ -123,3 +123,45 @@ int huffman_fetch(struct huffman *h, struct bitarray *b)
 	}
 	return -2;
 }
+
+int huffman_table(struct huffman *h, unsigned *table, int n)
+{
+	unsigned sum = 0;
+	unsigned off = 0;
+	unsigned val = 0;
+	unsigned i;
+
+	if (table == h->symbols || n < 0)
+		return -1;
+	for (i = 0; i < (unsigned)n; i++)
+		table[i] = 0;
+
+	for (i = 1; i < 16; i++)
+		sum += h->lengths[i];
+	if (sum * 2u != (unsigned)n)
+		return -1;
+
+	for (i = 1; i < 16; i++) {
+		unsigned len = h->lengths[i];
+		unsigned j;
+
+		for (j = 0; j < len; j++) {
+			unsigned sym = h->symbols[off + j] * 2u;
+			unsigned rev = 0;
+			unsigned k;
+
+			if (sym >= (unsigned)n)
+				return -2;
+			for (k = 0; k < i; k++) {
+				rev <<= 1;
+				rev |= (val & (1u << k)) ? 1 : 0;
+			}
+			table[sym + 0] = i;
+			table[sym + 1] = rev;
+			val += 1;
+		}
+		val <<= 1;
+		off += len;
+	}
+	return 0;
+}

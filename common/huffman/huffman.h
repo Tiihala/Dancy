@@ -32,5 +32,6 @@ struct huffman {
 
 int huffman_init(struct huffman *h, unsigned *symbols, int n);
 int huffman_fetch(struct huffman *h, struct bitarray *b);
+int huffman_table(struct huffman *h, unsigned *table, int n);
 
 #endif
