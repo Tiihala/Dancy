@@ -41,11 +41,14 @@ DANCY_TARGET_SYSTEM= \
  ./LOADER.512 \
  ./LOADER.AT
 
-DANCY_TARGET_RELEASE= \
+DANCY_TARGET_IMAGES= \
  ./release/dancy.iso \
  ./release/fdd160.img \
  ./release/fdd720.img \
  ./release/fdd1440.img
+
+DANCY_TARGET_RELEASE= \
+ ./release/dancy.zip
 
 DANCY_HEADERS= \
  ./common/bitarray/bitarray.h \

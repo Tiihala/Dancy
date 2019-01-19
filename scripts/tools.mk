@@ -104,7 +104,9 @@ DY_ZIP_OBJECTS= \
  ./tools/dy-zip/main.obj \
  ./tools/dy-zip/deflate.obj \
  ./tools/dy-zip/program.obj \
- ./common/crc32/crc32.obj
+ ./common/bitarray/bitarray.obj \
+ ./common/crc32/crc32.obj \
+ ./common/huffman/huffman.obj
 
 ./bin/dy-zip$(DANCY_EXE): $(DY_ZIP_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_ZIP_OBJECTS)
@@ -132,11 +134,17 @@ DY_ZIP_OBJECTS= \
 ./boot/mbr/mbr.obj: ./boot/mbr/mbr.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/mbr/mbr.c
 
+./common/bitarray/bitarray.obj: ./common/bitarray/bitarray.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./common/bitarray/bitarray.c
+
 ./common/crc32/crc32.obj: ./common/crc32/crc32.c
 	$(DANCY_HOST_OBJECT)$@ ./common/crc32/crc32.c
 
 ./common/crc32/crc32c.obj: ./common/crc32/crc32c.c
 	$(DANCY_HOST_OBJECT)$@ ./common/crc32/crc32c.c
+
+./common/huffman/huffman.obj: ./common/huffman/huffman.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./common/huffman/huffman.c
 
 ./loader/loader.obj: ./loader/loader.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./loader/loader.c

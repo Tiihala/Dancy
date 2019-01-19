@@ -31,6 +31,9 @@
 #include <string.h>
 #include <time.h>
 
+#include <bitarray/bitarray.h>
+#include <huffman/huffman.h>
+
 #if INT_MAX < 0x7FFFFFFF
 #error Definition of INT_MAX is not compatible
 #endif

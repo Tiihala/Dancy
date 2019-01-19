@@ -31,3 +31,6 @@
 	$(DY_MCOPY) -i $@ ./system/IN_X64.AT ::system/IN_X64.AT
 	$(DY_MCOPY) -i $@ ./LOADER.512 ::LOADER.512
 	$(DY_MCOPY) -i $@ ./LOADER.AT ::LOADER.AT
+
+./release/dancy.zip: $(DANCY_TARGET_IMAGES) README VERSION
+	$(DY_ZIP) -o $@ $(DANCY_TARGET_IMAGES) ./README ./VERSION
