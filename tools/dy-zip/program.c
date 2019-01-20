@@ -193,7 +193,7 @@ static int create_output(struct options *opt, struct state *zip)
 
 static int read_file(const char *name, unsigned char **out, size_t *size)
 {
-	const size_t chunk = 0x10000;
+	size_t chunk = 0x1000;
 	unsigned char *ptr;
 	FILE *fp;
 
@@ -232,6 +232,8 @@ static int read_file(const char *name, unsigned char **out, size_t *size)
 		if (stop)
 			break;
 
+		if (chunk < 0x00200000)
+			chunk <<= 1;
 		if (!(*size < SIZE_MAX - chunk)) {
 			const char *fmt = "Error: reading file \"%s\" (%s)\n";
 			fprintf(stderr, fmt, name, "size_t overflow");
