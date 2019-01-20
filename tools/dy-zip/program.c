@@ -193,7 +193,7 @@ static int create_output(struct options *opt, struct state *zip)
 
 static int read_file(const char *name, unsigned char **out, size_t *size)
 {
-	const size_t chunk = 0x100000;
+	const size_t chunk = 0x10000;
 	unsigned char *ptr;
 	FILE *fp;
 
