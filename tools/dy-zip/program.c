@@ -93,6 +93,8 @@ static int create_output(struct options *opt, struct state *zip)
 		 * Signature and modification timestamp.
 		 */
 		W_LE32(&out[off +  0], 0x02014B50);
+		W_LE16(&out[off +  4], 0x0014);
+		W_LE16(&out[off +  6], 0x0014);
 		W_LE16(&out[off + 12], zip->m_time);
 		W_LE16(&out[off + 14], zip->m_date);
 		/*
