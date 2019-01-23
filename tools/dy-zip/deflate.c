@@ -126,6 +126,7 @@ static int put_lendist(struct bitarray *b, unsigned len, unsigned dist)
 
 			if (bitarray_shove(b, t1, t2))
 				return -1;
+
 			t1 = distance_codes[i].extra;
 			t2 = dist - val;
 
@@ -147,33 +148,37 @@ static int put_literal(struct bitarray *b, unsigned c)
 
 static int lz77_compress(struct bitarray *b, unsigned char *data, size_t size)
 {
-	size_t window_size = 8192;
+	size_t window_size = (size <= 262144) ? 32768 : 1024;
 	size_t i, j;
 
 	if (put_literal(b, (unsigned)data[0]))
 		return -1;
 
 	for (i = 1; i < size; /* void */) {
+		unsigned char c1, c2;
 		size_t limit = (size - i < 258) ? size - i : 258;
 		unsigned found_len = 2;
 		unsigned found_dist = 0;
-		size_t dist = 1;
+		size_t dist;
 
-		while (dist <= i && dist <= window_size) {
-			unsigned char *s = &data[i];
-			unsigned char *d = s - dist;
+		c1 = data[i];
+		c2 = (limit > 2) ? data[i + 1] : 0;
 
-			for (j = 0; j < limit; j++) {
-				if (s[j] != d[j])
-					break;
+		for (dist = 1; dist <= i && dist <= window_size; dist++) {
+			const unsigned char *d = &data[i] - dist;
+
+			if (d[0] == c1 && d[1] == c2) {
+				for (j = 2; j < limit; j++) {
+					if (d[j] != data[i + j])
+						break;
+				}
+				if (found_len < (unsigned)j) {
+					found_len = (unsigned)j;
+					found_dist = (unsigned)dist;
+					if (found_len >= 64)
+						break;
+				}
 			}
-			if (found_len < (unsigned)j) {
-				found_len = (unsigned)j;
-				found_dist = (unsigned)dist;
-			}
-			if (found_len >= 64)
-				break;
-			dist += 1;
 		}
 
 		if (found_dist) {
