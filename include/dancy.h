@@ -20,15 +20,7 @@
 #ifndef DANCY_H
 #define DANCY_H
 
-#define DANCY_BLOB(a,b,c,d,e,f,g,h) \
-(unsigned)(a) >> 8 & 0xFFu, (unsigned)(a) & 0xFFu, \
-(unsigned)(b) >> 8 & 0xFFu, (unsigned)(b) & 0xFFu, \
-(unsigned)(c) >> 8 & 0xFFu, (unsigned)(c) & 0xFFu, \
-(unsigned)(d) >> 8 & 0xFFu, (unsigned)(d) & 0xFFu, \
-(unsigned)(e) >> 8 & 0xFFu, (unsigned)(e) & 0xFFu, \
-(unsigned)(f) >> 8 & 0xFFu, (unsigned)(f) & 0xFFu, \
-(unsigned)(g) >> 8 & 0xFFu, (unsigned)(g) & 0xFFu, \
-(unsigned)(h) >> 8 & 0xFFu, (unsigned)(h) & 0xFFu
+#include <dancy/blob.h>
 
 #if defined(DANCY_32) || defined(DANCY_64)
 
