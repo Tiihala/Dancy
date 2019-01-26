@@ -392,7 +392,7 @@ int link_main(struct options *opt)
 	out = calloc((size_t)size, sizeof(unsigned char));
 	if (!out)
 		return fputs("Error: not enough memory\n", stderr), 1;
-	add_with_align((off = 0, &off), get_pre_size(opt), 0);
+	add_with_align((off = 0, &off), get_pre_size(opt), init);
 
 	/*
 	 * Set the header values.
@@ -533,12 +533,12 @@ int link_main(struct options *opt)
 		}
 		if (!strcmp(opt->arg_f, "init")) {
 			/*
-			 * section .text  align 16
+			 * section .text  align 64
 			 * section .data  align 64
 			 * section .rdata align 64
 			 * section .bss   align 64
 			 */
-			if (opt->alignbits_t > 0x00500000ul) {
+			if (opt->alignbits_t > 0x00700000ul) {
 				fputs("Warning: init .text align\n", stderr);
 			}
 			if (opt->alignbits_r > 0x00700000ul) {
