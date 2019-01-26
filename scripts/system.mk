@@ -12,6 +12,7 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/common/huffman.o \
  ./o32/init/a32/bsyscall.o \
  ./o32/init/a32/start.o \
+ ./o32/init/inflate.o \
  ./o32/init/init.o \
  ./o32/lib/a32/string.o \
  ./o32/lib/string.o
@@ -21,6 +22,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/common/huffman.o \
  ./o64/init/a64/bsyscall.o \
  ./o64/init/a64/start.o \
+ ./o64/init/inflate.o \
  ./o64/init/init.o \
  ./o64/lib/a64/string.o \
  ./o64/lib/string.o

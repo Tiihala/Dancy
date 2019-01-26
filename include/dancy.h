@@ -38,6 +38,9 @@
 #include <dancy/types.h>
 
 #include <bitarray/bitarray.h>
+#include <huffman/huffman.h>
+
+#include <kernel/init.h>
 
 unsigned long b_a0(const char *, unsigned int);
 unsigned long b_a1(const char *, unsigned int);

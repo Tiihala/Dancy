@@ -57,6 +57,7 @@ DANCY_HEADERS= \
  ./include/dancy/stdarg.h \
  ./include/dancy/string.h \
  ./include/dancy/types.h \
+ ./include/kernel/init.h \
  ./include/dancy.h
 
 DANCY_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(DANCY_TARGET_TOOLS)
