@@ -39,8 +39,8 @@ in_ia32:
         jnz short .halt1                ; simple validity test
 
         mov eax, [ebx+16]               ; eax = file size
-        add eax, 0x0000000F             ; add 15
-        and eax, 0xFFFFFFF0             ; align 16, bss offset
+        add eax, 0x0000003F             ; add 63
+        and eax, 0xFFFFFFC0             ; align 64, bss offset
         mov [esi+(20+(3*40)+20)], eax   ; set bss offset
 
         lea edi, [esp-16]               ; edi = array of four stack variables
@@ -157,24 +157,24 @@ relocation_entry:
 .t6:    cmp ecx, 6                      ; test type 6
         jne short .t7
         add [edi], eax                  ; relocate
-        jc short .dbg                   ; should not happen
         jmp short .end
 
 .t7:    cmp ecx, 7                      ; test type 7
         jne short .t20
-        sub eax, [ebx+4]                ; subtract section base
+        lea ebx, [ebx+4]                ; ebx = ebx + 4
+        sub eax, [ebx]                  ; subtract section base
         add [edi], eax                  ; relocate
-        jc short .dbg                   ; should not happen
         jmp short .end
 
 .t20:   cmp ecx, 20                     ; test type 20
-        jnz short .dbg
+        jne short .dbg
         lea ecx, [edi+4]                ; ecx = target + 4
         sub eax, ecx                    ; eax = "relative"
         add [edi], eax                  ; relocate
         jmp short .end
 
-.dbg:   mov ebx, [ebx+8]                ; ebx = relocation entry
+.dbg:   xor ebp, ebp                    ; ebp = 0
+        mov ebx, [ebx+8]                ; ebx = relocation entry
         mov eax, [ebx+0]                ; eax = target offset
         mov edx, [ebx+4]                ; edx = index
         xor ebx, ebx                    ; ebx = 0
