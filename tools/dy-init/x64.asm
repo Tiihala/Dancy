@@ -39,8 +39,8 @@ in_x64:
         jnz short .halt1                ; simple validity test
 
         mov eax, [rbx+16]               ; eax = file size
-        add eax, 0x0000000F             ; add 15
-        and eax, 0xFFFFFFF0             ; align 16, bss offset
+        add eax, 0x0000003F             ; add 63
+        and eax, 0xFFFFFFC0             ; align 64, bss offset
         mov [rsi+(20+(3*40)+20)], eax   ; set bss offset
 
         lea edi, [rsp-16]               ; edi = array of four stack variables
@@ -155,16 +155,16 @@ relocation_entry:
         mov eax, [rsi+8]                ; eax = symbol value
 
 .t1:    cmp ecx, 2                      ; test types 1 and 2
+        je short .t2
         ja short .t3
-        add [rdi], eax                  ; relocate
-        jc short .dbg                   ; should not happen
+        db 0x48                         ; type 1 is "add [rdi], rax"
+.t2:    add [byte rdi], eax             ; relocate
         jmp short .end
 
 .t3:    cmp ecx, 3                      ; test type 3
         jne short .t4
         sub eax, [rbx+4]                ; subtract section base
         add [rdi], eax                  ; relocate
-        jc short .dbg                   ; should not happen
         jmp short .end
 
 .t4:    cmp ecx, 9                      ; test types 4-9
