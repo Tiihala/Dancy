@@ -536,7 +536,7 @@ int link_main(struct options *opt)
 			 * section .text  align 16
 			 * section .data  align 64
 			 * section .rdata align 64
-			 * section .bss   align 16
+			 * section .bss   align 64
 			 */
 			if (opt->alignbits_t > 0x00500000ul) {
 				fputs("Warning: init .text align\n", stderr);
@@ -549,7 +549,7 @@ int link_main(struct options *opt)
 				fputs("Error: init .data align\n", stderr);
 				return free(out), 1;
 			}
-			if (opt->alignbits_b > 0x00500000ul) {
+			if (opt->alignbits_b > 0x00700000ul) {
 				fputs("Error: init .bss align\n", stderr);
 				return free(out), 1;
 			}
