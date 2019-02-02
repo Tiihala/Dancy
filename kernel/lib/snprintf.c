@@ -67,7 +67,7 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 			length_modifier_ellell,
 			length_modifier_j,
 			length_modifier_z,
-			length_modifier_t,
+			length_modifier_tee,
 			length_modifier_bell
 		} length;
 
@@ -172,7 +172,7 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 		} else if (c == 'z') {
 			length = length_modifier_z;
 		} else if (c == 't') {
-			length = length_modifier_t;
+			length = length_modifier_tee;
 		} else if (c == 'L') {
 			length = length_modifier_bell;
 		}
@@ -540,5 +540,5 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 	}
 
 	s[out] = '\0';
-	return (out <= (size_t)INT_MAX) ? (int)out : INT_MAX;;
+	return (out <= (size_t)INT_MAX) ? (int)out : INT_MAX;
 }
