@@ -527,8 +527,10 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 				} else {
 					*((long *)p) = LONG_MAX;
 				}
+			} else if (out < LONG_MAX) {
+				*((local_intmax *)p) = (local_intmax)out;
 			} else {
-				*((local_intmax *)p) = INT_MAX;
+				*((local_intmax *)p) = LONG_MAX;
 			}
 			continue;
 		}
@@ -540,5 +542,5 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 	}
 
 	s[out] = '\0';
-	return (out <= (size_t)INT_MAX) ? (int)out : INT_MAX;
+	return (out < INT_MAX) ? (int)out : INT_MAX;
 }
