@@ -20,7 +20,7 @@
 #ifndef DANCY_STRING_H
 #define DANCY_STRING_H
 
-#include <stddef.h>
+#include <dancy/types.h>
 
 int memcmp(const void *s1, const void *s2, size_t n);
 void *memcpy(void *s1, const void *s2, size_t n);
