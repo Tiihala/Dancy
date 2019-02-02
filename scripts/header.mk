@@ -55,6 +55,7 @@ DANCY_HEADERS= \
  ./common/huffman/huffman.h \
  ./include/dancy/limits.h \
  ./include/dancy/stdarg.h \
+ ./include/dancy/stdio.h \
  ./include/dancy/string.h \
  ./include/dancy/types.h \
  ./include/kernel/init.h \
