@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,6 +19,45 @@
 
 #include <dancy.h>
 
+static void print_memory_map(struct b_mem *mem)
+{
+	phys_addr_t total = 0;
+	char buf[128];
+	size_t i;
+
+	b_output_string("Memory Map\r\n", 0);
+
+	for (i = 0; i == 0 || mem[i].base; i++) {
+		uint32_t t = mem[i].type;
+		phys_addr_t b = mem[i].base;
+		phys_addr_t s = mem[i + 1].base - b;
+
+		snprintf(buf, 128, "  %p %p  ", b, mem[i + 1].base - 1);
+		b_output_string(buf, 0);
+
+		if (t == B_MEM_NORMAL)
+			b_output_string("Free", 0), total += s;
+		else if (t== B_MEM_RESERVED)
+			b_output_string("Reserved", 0);
+		else if (t == B_MEM_ACPI_RECLAIMABLE)
+			b_output_string("Acpi Reclaimable", 0);
+		else if (t == B_MEM_ACPI_NVS)
+			b_output_string("Acpi NVS", 0);
+		else if (t == B_MEM_BOOT_LOADER)
+			b_output_string("Loader Runtime (Reclaimable)", 0);
+		else if (t == B_MEM_INIT_EXECUTABLE)
+			b_output_string("Executable (Init)", 0);
+		else if (t >= B_MEM_DATABASE_MIN && t <= B_MEM_DATABASE_MAX)
+			b_output_string("Database", 0);
+		else
+			b_output_string("Not Reported", 0);
+		b_output_string("\r\n", 2);
+	}
+
+	snprintf(buf, 128, "\r\n  Total free: %zd KiB\r\n\n", total / 1024);
+	b_output_string(buf, 0);
+}
+
 static void sleep(int seconds)
 {
 	int i;
@@ -33,9 +72,7 @@ static void sleep(int seconds)
 
 void init(void *map)
 {
-	(void)map;
-
-	b_output_string("hello, world\r\n", 0);
+	print_memory_map(map);
 
 	for (;;) {
 		const char *cursor = "\r ";
