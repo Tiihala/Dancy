@@ -22,40 +22,37 @@
 static void print_memory_map(struct b_mem *mem)
 {
 	phys_addr_t total = 0;
-	char buf[128];
 	size_t i;
 
-	b_output_string("Memory Map\r\n", 0);
+	b_print("Memory Map\n");
 
 	for (i = 0; i == 0 || mem[i].base; i++) {
 		uint32_t t = mem[i].type;
 		phys_addr_t b = mem[i].base;
-		phys_addr_t s = mem[i + 1].base - b;
-
-		snprintf(buf, 128, "  %p %p  ", b, mem[i + 1].base - 1);
-		b_output_string(buf, 0);
+		phys_addr_t e = mem[i + 1].base - 1;
+		const char *desc = "Not Reported";
 
 		if (t == B_MEM_NORMAL)
-			b_output_string("Free", 0), total += s;
-		else if (t== B_MEM_RESERVED)
-			b_output_string("Reserved", 0);
+			desc = "Free", total += mem[i + 1].base - b;
+		else if (t == B_MEM_RESERVED)
+			desc = "Reserved";
 		else if (t == B_MEM_ACPI_RECLAIMABLE)
-			b_output_string("Acpi Reclaimable", 0);
+			desc = "Acpi Reclaimable";
 		else if (t == B_MEM_ACPI_NVS)
-			b_output_string("Acpi NVS", 0);
+			desc = "Acpi NVS";
 		else if (t == B_MEM_BOOT_LOADER)
-			b_output_string("Loader Runtime (Reclaimable)", 0);
+			desc = "Loader Runtime (Reclaimable)";
 		else if (t == B_MEM_INIT_EXECUTABLE)
-			b_output_string("Executable (Init)", 0);
-		else if (t >= B_MEM_DATABASE_MIN && t <= B_MEM_DATABASE_MAX)
-			b_output_string("Database", 0);
-		else
-			b_output_string("Not Reported", 0);
-		b_output_string("\r\n", 2);
-	}
+			desc = "Executable (Init)";
 
-	snprintf(buf, 128, "\r\n  Total free: %zd KiB\r\n\n", total / 1024);
-	b_output_string(buf, 0);
+		if (t >= B_MEM_DATABASE_MIN && t <= B_MEM_DATABASE_MAX) {
+			unsigned db = (unsigned)t & 0x0000FFFFu;
+			b_print("  %p %p  Database (#%u)\n", b, e, db);
+		} else {
+			b_print("  %p %p  %s\n", b, e, desc);
+		}
+	}
+	b_print("\n  Total free: %zd KiB\n\n", total / 1024);
 }
 
 static void sleep(int seconds)
