@@ -13,17 +13,44 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * kernel/init.h
- *      Header of Dancy Operating System
+ * init/bprint.c
+ *      Use boot loader services to display text on screen
  */
 
-#ifndef KERNEL_INIT_H
-#define KERNEL_INIT_H
+#include <dancy.h>
 
-#include <bitarray/bitarray.h>
+int b_print(const char *format, ...)
+{
+	char buf[2048];
+	char *ptr = &buf[0];
+	unsigned size = 0;
+	int ret, i;
 
-int b_print(const char *format, ...);
-void init(void *map);
-int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);
+	va_list va;
+	va_start(va, format);
+	ret = vsnprintf(buf, 2048, format, va);
+	va_end(va);
 
-#endif
+	for (i = 0; i < ret; i++) {
+		if (buf[i] == '\n') {
+			if (i == ret - 1) {
+				buf[i + 0] = '\r';
+				buf[i + 1] = '\n';
+				b_output_string(ptr, size + 2);
+				return (ret > 0) ? 0 : 1;
+			}
+			if (size) {
+				b_output_string(ptr, size);
+				ptr += size;
+				size = 0;
+			}
+			ptr += 1;
+			b_output_string("\r\n", 2);
+		} else {
+			size += 1;
+		}
+	}
+	if (size)
+		b_output_string(ptr, size);
+	return (ret > 0) ? 0 : 1;
+}
