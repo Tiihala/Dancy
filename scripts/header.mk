@@ -45,7 +45,9 @@ DANCY_TARGET_IMAGES= \
  ./release/dancy.iso \
  ./release/fdd160.img \
  ./release/fdd720.img \
- ./release/fdd1440.img
+ ./release/fdd1440.img \
+ ./release/usbhuge.img \
+ ./release/usbtiny.img
 
 DANCY_TARGET_RELEASE= \
  ./release/dancy.zip
