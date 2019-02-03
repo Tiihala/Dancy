@@ -55,6 +55,46 @@ static void print_memory_map(struct b_mem *mem)
 	b_print("\n  Total free: %zd KiB\n\n", total / 1024);
 }
 
+static void print_boot_information(void)
+{
+	struct b_video_edid edid;
+	struct b_video_info vi;
+	unsigned long val;
+
+	b_print("Boot Information\n");
+
+	val = b_get_parameter(B_A20_STATE);
+	if (val == B_A20_INT15H)
+		b_print("  A20 : enabled by int 0x15 method\n");
+	else if (val == B_A20_KEYBOARD)
+		b_print("  A20 : enabled by keyboard method\n");
+	else if (val == B_A20_FAST)
+		b_print("  A20 : enabled by \"fast\" method\n");
+	else if (val == B_A20_AUTOMATIC)
+		b_print("  A20 : was enabled automatically\n");
+
+	val = b_get_parameter(B_ACPI_POINTER);
+	if (val)
+		b_print("  Acpi: structure at %08lX (RSDP)\n", val);
+
+	if (b_get_structure(&vi, B_VIDEO_INFO))
+		b_print("  Vbe : framebuffer at %08lX\n", vi.framebuffer);
+
+	if (b_get_structure(&edid, B_VIDEO_EDID)) {
+		unsigned t1, t2;
+
+		t1 = (unsigned)edid.edid[0x12];
+		t2 = (unsigned)edid.edid[0x13];
+		b_print("  Edid: version %u (revision %u)\n", t1, t2);
+
+		t1 = (unsigned)edid.edid[0x15];
+		t2 = (unsigned)edid.edid[0x16];
+		b_print("  Edid: max hsize %u (cm)\n", t1);
+		b_print("  Edid: max vsize %u (cm)\n", t2);
+	}
+	b_print("\n");
+}
+
 static void sleep(int seconds)
 {
 	int i;
@@ -70,6 +110,7 @@ static void sleep(int seconds)
 void init(void *map)
 {
 	print_memory_map(map);
+	print_boot_information();
 
 	for (;;) {
 		const char *cursor = "\r ";
