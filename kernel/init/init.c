@@ -112,11 +112,41 @@ void init(void *map)
 	print_memory_map(map);
 	print_boot_information();
 
+	{
+		uint32_t eax, ecx, edx, ebx;
+		const char *fmt;
+
+		cpu_id((eax = 0, &eax), &ecx, &edx, &ebx);
+		fmt = "CPU Manufacturer\n  %.4s%.4s%.4s\n  ";
+		b_print(fmt, (char *)&ebx, (char *)&edx, (char *)&ecx);
+
+		cpu_id((eax = 1, &eax), &ecx, &edx, &ebx);
+		if (edx & (1 << 0))
+			b_print("FPU ");
+		if (edx & (1 << 1))
+			b_print("VME ");
+		if (edx & (1 << 2))
+			b_print("DE ");
+		if (edx & (1 << 3))
+			b_print("PSE ");
+		if (edx & (1 << 4))
+			b_print("TSC ");
+
+		b_print("...\n\n");
+	}
+
 	for (;;) {
-		const char *cursor = "\r ";
-		b_output_string_hl(cursor, 0);
+		uint32_t low, high;
+
+		cpu_rdtsc(&low, &high);
+		b_get_parameter(B_ACPI_POINTER);
+		cpu_rdtsc_diff(&low, &high);
+
+		b_print("cpu_rdtsc_diff: %08X%08X\r", high, low);
+
+		cpu_rdtsc(&low, &high);
 		sleep(1);
-		b_output_string(cursor, 0);
-		sleep(1);
+		cpu_rdtsc_diff(&low, &high);
+		cpu_rdtsc_delay(low, high);
 	}
 }

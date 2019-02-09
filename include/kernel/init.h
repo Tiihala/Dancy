@@ -21,9 +21,24 @@
 #define KERNEL_INIT_H
 
 #include <bitarray/bitarray.h>
+#include <dancy/types.h>
+
+void init(void *map);
 
 int b_print(const char *format, ...);
-void init(void *map);
 int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);
+
+void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b);
+void cpu_rdtsc(uint32_t *a, uint32_t *d);
+void cpu_rdtsc_delay(uint32_t a, uint32_t d);
+void cpu_rdtsc_diff(uint32_t *a, uint32_t *d);
+
+uint8_t cpu_in8(uint16_t port);
+uint16_t cpu_in16(uint16_t port);
+uint32_t cpu_in32(uint16_t port);
+
+void cpu_out8(uint16_t port, uint8_t value);
+void cpu_out16(uint16_t port, uint16_t value);
+void cpu_out32(uint16_t port, uint32_t value);
 
 #endif

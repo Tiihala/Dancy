@@ -11,6 +11,9 @@
 ./o32/init/a32/bsyscall.o: ./kernel/init/a32/bsyscall.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/bsyscall.asm
 
+./o32/init/a32/cpu.o: ./kernel/init/a32/cpu.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/init/a32/cpu.asm
+
 ./o32/init/a32/start.o: ./kernel/init/a32/start.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/start.asm
 
@@ -40,6 +43,9 @@
 
 ./o64/init/a64/bsyscall.o: ./kernel/init/a64/bsyscall.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/bsyscall.asm
+
+./o64/init/a64/cpu.o: ./kernel/init/a64/cpu.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/init/a64/cpu.asm
 
 ./o64/init/a64/start.o: ./kernel/init/a64/start.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/start.asm
