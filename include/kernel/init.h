@@ -41,4 +41,25 @@ void cpu_out8(uint16_t port, uint8_t value);
 void cpu_out16(uint16_t port, uint16_t value);
 void cpu_out32(uint16_t port, uint32_t value);
 
+#define INIT_ARCH_LEGACY_DEVICES        (1u << 0)
+#define INIT_ARCH_8042                  (1u << 1)
+#define INIT_ARCH_VGA_NOT_PRESENT       (1u << 2)
+#define INIT_ARCH_MSI_NOT_SUPPORTED     (1u << 3)
+#define INIT_ARCH_PCIE_ASPM_CONTROLS    (1u << 4)
+#define INIT_ARCH_CMOS_RTC_NOT_PRESENT  (1u << 5)
+
+struct acpi_information {
+	phys_addr_t rsdp_addr;
+	phys_addr_t rsdt_addr;
+	phys_addr_t xsdt_addr;
+	phys_addr_t fadt_addr;
+	phys_addr_t madt_addr;
+
+	unsigned rtc_century_idx;
+	unsigned iapc_boot_arch;
+	unsigned errors;
+};
+
+struct acpi_information *acpi_get_information(void);
+
 #endif
