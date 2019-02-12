@@ -24,6 +24,11 @@
 
 #if defined(DANCY_32) || defined(DANCY_64)
 
+#define BOOT_LOADER_TYPE_BIOS   (0x00000000)
+#define BOOT_LOADER_TYPE_UEFI   (0x00000001)
+
+extern uint32_t boot_loader_type;
+
 unsigned long b_a0(const char *, unsigned int);
 unsigned long b_a1(const char *, unsigned int);
 unsigned long b_a2(unsigned int, unsigned int);

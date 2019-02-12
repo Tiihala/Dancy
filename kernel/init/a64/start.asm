@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2018 Antti Tiihala
+;; Copyright (c) 2018, 2019 Antti Tiihala
 ;;
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -26,9 +26,25 @@ section .text
 
 align 16
 start:
-        add ebx, 0x00010000             ; rbx = "address of memory map"
+        mov ah, 0xE0                    ; get boot loader type
+        int 0x20                        ; boot loader syscall
+        jc short .map                   ; type 0 if syscall was not supported
+        mov [boot_loader_type], eax     ; save boot loader type
+
+.map:   add ebx, 0x00010000             ; rbx = "address of memory map"
         mov ecx, ebx                    ; "void init(void *)"
         xor ebx, ebx                    ; rbx = 0
         call init                       ; call init
-.halt:  hlt                             ; hlt instruction
-        jmp short .halt                 ; (should not happen)
+align 16
+.halt:  mov ah, 0xAE                    ; b_pause
+        int 0x20                        ; boot loader syscall
+        jmp short .halt
+
+
+section .data
+
+        global boot_loader_type
+
+align 4
+boot_loader_type:
+        dd 0x00000000
