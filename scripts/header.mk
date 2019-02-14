@@ -13,6 +13,7 @@ DANCY_CFLAGS_64=$(DANCY_CFLAGS) $(DANCY_WARNINGS)
 
 DY_BLOB=$(DANCY_DY)-blob$(DANCY_EXE)
 DY_GPT=$(DANCY_DY)-gpt$(DANCY_EXE)
+DY_HACK=$(DANCY_DY)-hack$(DANCY_EXE)
 DY_INIT=$(DANCY_DY)-init$(DANCY_EXE)
 DY_ISO=$(DANCY_DY)-iso$(DANCY_EXE)
 DY_LINK=$(DANCY_DY)-link$(DANCY_EXE)
@@ -25,6 +26,7 @@ DY_ZIP=$(DANCY_DY)-zip$(DANCY_EXE)
 DANCY_TARGET_TOOLS= \
  ./bin/dy-blob$(DANCY_EXE) \
  ./bin/dy-gpt$(DANCY_EXE) \
+ ./bin/dy-hack$(DANCY_EXE) \
  ./bin/dy-init$(DANCY_EXE) \
  ./bin/dy-iso$(DANCY_EXE) \
  ./bin/dy-link$(DANCY_EXE) \

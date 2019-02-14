@@ -23,6 +23,18 @@ DY_GPT_OBJECTS= \
 
 ##############################################################################
 
+DY_HACK_OBJECTS= \
+ ./tools/dy-hack/main.obj \
+ ./tools/dy-hack/command.obj \
+ ./tools/dy-hack/program.obj
+DY_HACK_HEADERS= \
+ ./tools/dy-hack/program.h
+
+./bin/dy-hack$(DANCY_EXE): $(DY_HACK_OBJECTS) ./scripts/dancy.mk
+	$(DANCY_HOST_BINARY)$@ $(DY_HACK_OBJECTS)
+
+##############################################################################
+
 DY_INIT_OBJECTS= \
  ./tools/dy-init/dy-init.obj \
  ./tools/dy-init/ia32.obj \
@@ -154,6 +166,15 @@ DY_ZIP_OBJECTS= \
 
 ./tools/dy-gpt/dy-gpt.obj: ./tools/dy-gpt/dy-gpt.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-gpt/dy-gpt.c
+
+./tools/dy-hack/command.obj: ./tools/dy-hack/command.c $(DY_HACK_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-hack/command.c
+
+./tools/dy-hack/main.obj: ./tools/dy-hack/main.c $(DY_HACK_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-hack/main.c
+
+./tools/dy-hack/program.obj: ./tools/dy-hack/program.c $(DY_HACK_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-hack/program.c
 
 ./tools/dy-init/dy-init.obj: ./tools/dy-init/dy-init.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-init/dy-init.c
