@@ -2,10 +2,10 @@
 
 ##############################################################################
 
-./o32/common/bitarray.o: ./common/bitarray/bitarray.c $(DANCY_DEPS)
+./o32/bitarray/bitarray.o: ./common/bitarray/bitarray.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/bitarray/bitarray.c
 
-./o32/common/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
+./o32/huffman/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/huffman/huffman.c
 
 ./o32/init/a32/bsyscall.o: ./kernel/init/a32/bsyscall.asm $(DANCY_DEPS)
@@ -38,10 +38,10 @@
 ./o32/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/string.c
 
-./o64/common/bitarray.o: ./common/bitarray/bitarray.c $(DANCY_DEPS)
+./o64/bitarray/bitarray.o: ./common/bitarray/bitarray.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/bitarray/bitarray.c
 
-./o64/common/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
+./o64/huffman/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/huffman/huffman.c
 
 ./o64/init/a64/bsyscall.o: ./kernel/init/a64/bsyscall.asm $(DANCY_DEPS)
