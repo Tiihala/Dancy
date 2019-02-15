@@ -26,6 +26,12 @@ section .text
 
 align 16
 _start:
+        push eax                        ; esp -= 4
+        push edx                        ; esp -= 4
+        mov eax, esp                    ; eax = esp
+        sub al, 0xE8                    ; stack check
+        jnz short .halt
+
         mov ah, 0xE0                    ; get boot loader type
         int 0x20                        ; boot loader syscall
         jc short .map                   ; type 0 if syscall was not supported
@@ -36,7 +42,7 @@ _start:
         push ebx                        ; "void init(void *)"
         xor ebx, ebx                    ; ebx = 0
         call _init                      ; call init
-align 16
+
 .halt:  mov ah, 0xAE                    ; b_pause
         int 0x20                        ; boot loader syscall
         jmp short .halt
