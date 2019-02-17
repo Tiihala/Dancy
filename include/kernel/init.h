@@ -25,7 +25,13 @@
 
 void init(void *map);
 
+void *b_aligned_alloc(size_t alignment, size_t size);
+void *b_malloc(size_t size);
+void b_free(void *ptr);
 int b_print(const char *format, ...);
+
+int memory_init(struct b_mem *mem, uint32_t required_mem);
+void memory_print_map(int log);
 int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);
 
 void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b);

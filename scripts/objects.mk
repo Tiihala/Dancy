@@ -29,6 +29,9 @@
 ./o32/init/init.o: ./kernel/init/init.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/init.c
 
+./o32/init/memory.o: ./kernel/init/memory.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/memory.c
+
 ./o32/lib/a32/string.o: ./kernel/lib/a32/string.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/string.asm
 
@@ -64,6 +67,9 @@
 
 ./o64/init/init.o: ./kernel/init/init.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/init.c
+
+./o64/init/memory.o: ./kernel/init/memory.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/memory.c
 
 ./o64/lib/a64/string.o: ./kernel/lib/a64/string.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/string.asm

@@ -146,6 +146,8 @@ struct b_mem_raw {
 #define B_MEM_ACPI_NVS          (0x0000000A)
 #define B_MEM_BOOT_LOADER       (0x80000004)
 #define B_MEM_INIT_EXECUTABLE   (0x80860000)
+#define B_MEM_INIT_ALLOC_MIN    (0x80860001)
+#define B_MEM_INIT_ALLOC_MAX    (0x8086FFFF)
 #define B_MEM_DATABASE_MIN      (0xDB000000)
 #define B_MEM_DATABASE_MAX      (0xDB00FFFF)
 #define B_MEM_NOT_REPORTED      (0xFFFFFFFF)
