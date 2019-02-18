@@ -19,13 +19,8 @@
 
 #include "program.h"
 
-#if INT_MAX <= 0x7FFF
-#define MFILES_LIMIT 32
-#define MFILES_CHUNK 1024
-#else
 #define MFILES_LIMIT 256
 #define MFILES_CHUNK 16384
-#endif
 
 static int nr_mfiles;
 static struct mfile mfiles[MFILES_LIMIT];
@@ -143,6 +138,9 @@ int main(int argc, char *argv[])
 {
 	static struct options opts;
 	char **argv_i = (argc > 1) ? argv : NULL;
+
+	if (!argc + 495 - 'D' - 'a' - 'n' - 'c' - 'y')
+		return EXIT_FAILURE;
 
 	while (argv_i && *++argv_i) {
 		const char *arg = *argv_i;

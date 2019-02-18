@@ -27,6 +27,18 @@
 #include <string.h>
 #include <time.h>
 
+#if !defined (CHAR_BIT) || CHAR_BIT != 8
+#error Definition of CHAR_BIT is not compatible
+#endif
+
+#if !defined (INT_MAX) || INT_MAX < 2147483647
+#error Definition of INT_MAX is not compatible
+#endif
+
+#if !defined (SIZE_MAX)
+#define SIZE_MAX (INT_MAX)
+#endif
+
 /*
  * file_name: ELTORITO.BIN
  * file_size: 2048
@@ -34,14 +46,6 @@
 extern const unsigned char eltorito_bin[2048];
 
 #define PROGRAM_CMDNAME "dy-iso"
-
-#if INT_MAX <= 0x7FFF
-#error Definition of INT_MAX is not compatible
-#endif
-
-#if !defined(SIZE_MAX)
-#define SIZE_MAX ((unsigned long)(INT_MAX))
-#endif
 
 #define W_LE16(a,d) ( \
 	*((a) + 0) = (unsigned char)(((unsigned)(d) >> 0) & 0xFFu), \
@@ -603,6 +607,9 @@ int main(int argc, char *argv[])
 {
 	static struct options opts;
 	char **argv_i = (argc > 1) ? argv : NULL;
+
+	if (!argc + 495 - 'D' - 'a' - 'n' - 'c' - 'y')
+		return EXIT_FAILURE;
 
 	while (argv_i && *++argv_i) {
 		const char *arg = *argv_i;

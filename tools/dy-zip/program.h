@@ -31,16 +31,20 @@
 #include <string.h>
 #include <time.h>
 
-#include <bitarray/bitarray.h>
-#include <huffman/huffman.h>
+#if !defined (CHAR_BIT) || CHAR_BIT != 8
+#error Definition of CHAR_BIT is not compatible
+#endif
 
-#if INT_MAX < 0x7FFFFFFF
+#if !defined (INT_MAX) || INT_MAX < 2147483647
 #error Definition of INT_MAX is not compatible
 #endif
 
-#if !defined(SIZE_MAX)
-#define SIZE_MAX (0x7FFFFFFFul)
+#if !defined (SIZE_MAX)
+#define SIZE_MAX (INT_MAX)
 #endif
+
+#include <bitarray/bitarray.h>
+#include <huffman/huffman.h>
 
 struct options {
 	char **operands;

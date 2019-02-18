@@ -30,6 +30,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if !defined (CHAR_BIT) || CHAR_BIT != 8
+#error Definition of CHAR_BIT is not compatible
+#endif
+
+#if !defined (INT_MAX) || INT_MAX < 2147483647
+#error Definition of INT_MAX is not compatible
+#endif
+
+#if !defined (SIZE_MAX)
+#define SIZE_MAX (INT_MAX)
+#endif
+
 struct options {
 	char **operands;
 	const char *error;

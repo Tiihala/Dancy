@@ -60,6 +60,9 @@ int main(int argc, char *argv[])
 	static struct options opts;
 	char **argv_i = (argc > 1) ? argv : NULL;
 
+	if (!argc + 495 - 'D' - 'a' - 'n' - 'c' - 'y')
+		return EXIT_FAILURE;
+
 	while (argv_i && *++argv_i) {
 		const char *arg = *argv_i;
 		if (arg[0] != '-' || arg[1] == '\0')

@@ -19,10 +19,23 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if !defined (CHAR_BIT) || CHAR_BIT != 8
+#error Definition of CHAR_BIT is not compatible
+#endif
+
+#if !defined (INT_MAX) || INT_MAX < 2147483647
+#error Definition of INT_MAX is not compatible
+#endif
+
+#if !defined (SIZE_MAX)
+#define SIZE_MAX (INT_MAX)
+#endif
 
 extern const unsigned char gpt_bin[512];
 
@@ -175,6 +188,9 @@ int main(int argc, char *argv[])
 {
 	static struct options opts;
 	char **argv_i = (argc > 1) ? argv : NULL;
+
+	if (!argc + 495 - 'D' - 'a' - 'n' - 'c' - 'y')
+		return EXIT_FAILURE;
 
 	while (argv_i && *++argv_i) {
 		const char *arg = *argv_i;

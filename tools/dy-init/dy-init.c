@@ -25,6 +25,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if !defined (CHAR_BIT) || CHAR_BIT != 8
+#error Definition of CHAR_BIT is not compatible
+#endif
+
+#if !defined (INT_MAX) || INT_MAX < 2147483647
+#error Definition of INT_MAX is not compatible
+#endif
+
+#if !defined (SIZE_MAX)
+#define SIZE_MAX (INT_MAX)
+#endif
+
 extern const unsigned char ia32[416];
 extern const unsigned char x64[416];
 
@@ -132,11 +144,8 @@ int program(struct options *opt)
 	}
 
 	if (opt->set_header) {
-#if INT_MAX <= 0x7FFF
-		static unsigned char buf[32767];
-#else
 		static unsigned char buf[65536];
-#endif
+
 		size_t nbytes;
 		FILE *fp;
 		if (!type)
@@ -217,6 +226,9 @@ int main(int argc, char *argv[])
 {
 	static struct options opts;
 	char **argv_i = (argc > 1) ? argv : NULL;
+
+	if (!argc + 495 - 'D' - 'a' - 'n' - 'c' - 'y')
+		return EXIT_FAILURE;
 
 	while (argv_i && *++argv_i) {
 		const char *arg = *argv_i;
