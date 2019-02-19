@@ -26,7 +26,9 @@
 void init(void *map);
 
 void *b_aligned_alloc(size_t alignment, size_t size);
+void *b_calloc(size_t nmemb, size_t size);
 void *b_malloc(size_t size);
+void *b_realloc(void *ptr, size_t size);
 void b_free(void *ptr);
 int b_print(const char *format, ...);
 

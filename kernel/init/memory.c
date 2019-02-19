@@ -237,9 +237,87 @@ void *b_aligned_alloc(size_t alignment, size_t size)
 	return (void *)addr;
 }
 
+void *b_calloc(size_t nmemb, size_t size)
+{
+	size_t total = nmemb * size;
+	void *ptr;
+
+	if (!total || total / nmemb != size)
+		return NULL;
+	if ((ptr = b_malloc(total)) != NULL)
+		memset(ptr, 0, total);
+	return ptr;
+}
+
 void *b_malloc(size_t size)
 {
 	return b_aligned_alloc(16, size);
+}
+
+void *b_realloc(void *ptr, size_t size)
+{
+	phys_addr_t addr = (phys_addr_t)ptr;
+	int found = 0;
+	size_t aligned_size;
+	size_t old_size, i;
+
+	if (ptr == NULL)
+		return b_malloc(size);
+
+	for (i = 1; i < memory_free_end; i++) {
+		uint32_t t = memory[i].type;
+		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
+			if (memory[i].base == addr) {
+				found = 1;
+				break;
+			}
+		}
+	}
+
+	if (!found || size >= 0x7FFFFFFFul)
+		return NULL;
+	if (!size)
+		size = 1;
+
+	aligned_size = (size + 15ul) & 0xFFFFFFF0ul;
+	old_size = (size_t)(memory[i + 1].base - memory[i].base);
+
+	if (old_size < size) {
+		void *new_ptr = b_malloc(size);
+		if (new_ptr == NULL)
+			return NULL;
+		memcpy(new_ptr, ptr, old_size);
+		return b_free(ptr), new_ptr;
+	}
+
+	if (old_size - size < 64)
+		return ptr;
+	if (memory_entries <= i || memory_entries >= 2040)
+		return ptr;
+
+	size = sizeof(struct b_mem) * (memory_entries - i);
+	memmove(&memory[i + 1], &memory[i], size);
+	memory_free_end += 1, memory_entries += 1;
+
+	memory[i + 1].type = B_MEM_NORMAL;
+	memory[i + 1].base += (phys_addr_t)aligned_size;
+
+	for (i = 1; i < memory_free_end; /* void */) {
+		struct b_mem_raw *m1 = (struct b_mem_raw *)&memory[i - 1];
+		struct b_mem_raw *m2 = (struct b_mem_raw *)&memory[i];
+		size_t other = sizeof(m1->other);
+
+		if (m1->type == m2->type && m1->flags == m2->flags) {
+			size = sizeof(struct b_mem) * (memory_entries - i);
+			if (size && !memcmp(&m1->other, &m2->other, other)) {
+				memmove(&memory[i], &memory[i + 1], size);
+				memory_free_end -= 1, memory_entries -= 1;
+				continue;
+			}
+		}
+		i += 1;
+	}
+	return ptr;
 }
 
 void b_free(void *ptr)
