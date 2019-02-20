@@ -41,7 +41,7 @@ int memory_init(void *map, uint32_t required_mem)
 	/*
 	 * This function should be called with "map == NULL" when the init
 	 * procedures have been finished. It will be an extra check to make
-	 * sure that any memory map modifications (see b_malloc and b_free)
+	 * sure that any memory map modifications (see malloc and others)
 	 * do not make the map corrupted. In theory, this could detect some
 	 * physical memory errors (but it is very unlikely).
 	 *
@@ -209,7 +209,7 @@ static void fix_memory_map(void)
 	}
 }
 
-void *b_aligned_alloc(size_t alignment, size_t size)
+void *aligned_alloc(size_t alignment, size_t size)
 {
 	struct b_mem *memory = memory_map;
 	phys_addr_t addr = 0;
@@ -253,26 +253,26 @@ void *b_aligned_alloc(size_t alignment, size_t size)
 	return (void *)addr;
 }
 
-void *b_calloc(size_t nmemb, size_t size)
+void *calloc(size_t nmemb, size_t size)
 {
 	size_t total = nmemb * size;
 	void *ptr;
 
 	if (!total || total / nmemb != size)
 		return NULL;
-	if ((ptr = b_malloc(total)) != NULL)
+	if ((ptr = malloc(total)) != NULL)
 		memset(ptr, 0, total);
 	return ptr;
 }
 
-void *b_malloc(size_t size)
+void *malloc(size_t size)
 {
 	if (size >= 0x7FFFFFFFul)
 		return NULL;
-	return b_aligned_alloc(16, (size + 15ul) & 0xFFFFFFF0ul);
+	return aligned_alloc(16, (size + 15ul) & 0xFFFFFFF0ul);
 }
 
-void *b_realloc(void *ptr, size_t size)
+void *realloc(void *ptr, size_t size)
 {
 	struct b_mem *memory = memory_map;
 	phys_addr_t addr = (phys_addr_t)ptr;
@@ -281,7 +281,7 @@ void *b_realloc(void *ptr, size_t size)
 	size_t old_size, i;
 
 	if (ptr == NULL)
-		return b_malloc(size);
+		return malloc(size);
 
 	for (i = 1; i < memory_free_end; i++) {
 		uint32_t t = memory[i].type;
@@ -302,11 +302,11 @@ void *b_realloc(void *ptr, size_t size)
 	old_size = (size_t)(memory[i + 1].base - memory[i].base);
 
 	if (old_size < size) {
-		void *new_ptr = b_malloc(size);
+		void *new_ptr = malloc(size);
 		if (new_ptr == NULL)
 			return NULL;
 		memcpy(new_ptr, ptr, old_size);
-		return b_free(ptr), new_ptr;
+		return free(ptr), new_ptr;
 	}
 
 	if (old_size - size < 64)
@@ -325,7 +325,7 @@ void *b_realloc(void *ptr, size_t size)
 	return ptr;
 }
 
-void b_free(void *ptr)
+void free(void *ptr)
 {
 	struct b_mem *memory = memory_map;
 	phys_addr_t addr = (phys_addr_t)ptr;
