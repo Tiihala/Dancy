@@ -32,7 +32,7 @@ void *b_realloc(void *ptr, size_t size);
 void b_free(void *ptr);
 int b_print(const char *format, ...);
 
-int memory_init(struct b_mem *mem, uint32_t required_mem);
+int memory_init(void *map, uint32_t required_mem);
 void memory_print_map(int log);
 int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);
 

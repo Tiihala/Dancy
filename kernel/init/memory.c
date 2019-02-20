@@ -21,17 +21,17 @@
 
 static size_t memory_free_end;
 static size_t memory_entries;
-static struct b_mem *memory;
+static void *memory_map;
 
 #define TYPE_BOOT       (0x01u)
 #define TYPE_INIT       (0x02u)
 #define TYPE_LOW_END    (0x04u)
 #define TYPE_ALL        (0x07u)
 
-int memory_init(struct b_mem *mem, uint32_t required_mem)
+int memory_init(void *map, uint32_t required_mem)
 {
 	const char *err = "Error: boot loader gave a corrupted memory map";
-	struct b_mem_raw *mem_raw = (struct b_mem_raw *)mem;
+	const struct b_mem *memory = map;
 	const size_t max = (2048 - 512);
 	uint32_t continuous_normal = 0;
 	unsigned memory_types = 0;
@@ -39,7 +39,7 @@ int memory_init(struct b_mem *mem, uint32_t required_mem)
 	size_t i;
 
 	/*
-	 * This function should be called with "mem == NULL" when the init
+	 * This function should be called with "map == NULL" when the init
 	 * procedures have been finished. It will be an extra check to make
 	 * sure that any memory map modifications (see b_malloc and b_free)
 	 * do not make the map corrupted. In theory, this could detect some
@@ -48,14 +48,13 @@ int memory_init(struct b_mem *mem, uint32_t required_mem)
 	 * This can also be used for checking that there are still enough
 	 * continuous free memory areas available for the kernel.
 	 */
-	if (mem == NULL) {
+	if (map == NULL) {
 		err = "Error: the memory map is corrupted";
-		mem = memory;
-		mem_raw = (struct b_mem_raw *)memory;
+		memory = map = memory_map;
 		check_run = 1;
 	} else {
 		memory_free_end = 0, memory_entries = 0;
-		memory = NULL;
+		memory_map = NULL;
 	}
 
 	/*
@@ -66,26 +65,16 @@ int memory_init(struct b_mem *mem, uint32_t required_mem)
 	 * The firmware (BIOS or UEFI) gave the original memory map but the
 	 * boot loader has processed it, e.g. sorting, merging, etc.
 	 */
-	if (mem_raw[0].base_low || mem_raw[0].base_high)
+	if (memory[0].base)
 		return b_print("%s\n", err), 1;
 
-	for (i = 0; (i == 0 || mem[i].base); i++) {
-		struct b_mem_raw *m1 = (struct b_mem_raw *)&mem[i];
-		struct b_mem_raw *m2 = (struct b_mem_raw *)&mem[i + 1];
-		phys_addr_t b = mem[i].base;
-		phys_addr_t e = mem[i + 1].base;
-		uint32_t t = mem[i].type;
+	for (i = 0; (i == 0 || memory[i].base); i++) {
+		phys_addr_t b = memory[i].base;
+		phys_addr_t e = memory[i + 1].base;
+		uint32_t t = memory[i].type;
 
 		if (b > e - 1 || i == max)
 			return b_print("%s\n", err), 1;
-
-		if (m1->type == m2->type && m1->flags == m2->flags) {
-			size_t other = sizeof(m1->other);
-			if (m2->base_low != 0 || m2->base_high != 1) {
-				if (!memcmp(&m1->other, &m2->other, other))
-					return b_print("%s\n", err), 1;
-			}
-		}
 
 		if (t == B_MEM_NORMAL && e <= 0xFFFFFFFFul) {
 			uint32_t size = (uint32_t)(e - b);
@@ -99,7 +88,7 @@ int memory_init(struct b_mem *mem, uint32_t required_mem)
 			memory_types |= TYPE_BOOT;
 
 		} else if (t == B_MEM_INIT_EXECUTABLE) {
-			phys_addr_t init_b = (phys_addr_t)mem - 0x10000ul;
+			phys_addr_t init_b = (phys_addr_t)memory - 0x10000ul;
 			phys_addr_t size = e - b;
 
 			if (init_b != b || b & 0xFFFFul || size != 0x20000ul)
@@ -114,12 +103,12 @@ int memory_init(struct b_mem *mem, uint32_t required_mem)
 	if (memory_types != TYPE_ALL)
 		return b_print("%s\n", err), 1;
 
-	for (/* void */; mem[i].flags; i++) {
+	for (/* void */; memory[i].flags; i++) {
 		if (i == max)
 			return b_print("%s\n", err), 1;
 	}
 
-	if (mem_raw[i].base_low || mem_raw[i].base_high)
+	if (memory[i].base)
 		return b_print("%s\n", err), 1;
 
 	if (check_run && memory_entries != i)
@@ -136,11 +125,12 @@ int memory_init(struct b_mem *mem, uint32_t required_mem)
 		b_print(fmt, s1, s2);
 		return 1;
 	}
-	return (memory = mem), 0;
+	return (memory_map = map), 0;
 }
 
 void memory_print_map(int log)
 {
+	const struct b_mem *memory = memory_map;
 	int (*print)(const char *format, ...) = b_print;
 	phys_addr_t total = 0;
 	size_t i;
@@ -187,10 +177,42 @@ void memory_print_map(int log)
 	(*print)("\n  Total free: %zd KiB\n\n", total / 1024);
 }
 
+static void fix_memory_map(void)
+{
+	struct b_mem_raw *memory = memory_map;
+	uint32_t a = 0;
+	size_t i;
+
+	for (i = 1; i < memory_entries; i++) {
+		uint32_t t = memory[i].type;
+		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
+			memory[i].type = B_MEM_INIT_ALLOC_MIN + a;
+			a += 1;
+		}
+	}
+
+	for (i = 1; i < memory_free_end; /* void */) {
+		struct b_mem_raw *m1 = &memory[i - 1];
+		struct b_mem_raw *m2 = &memory[i];
+
+		if (m1->type == m2->type && m1->flags == m2->flags) {
+			size_t size, other = sizeof(m1->other);
+			size = sizeof(struct b_mem) * (memory_entries - i);
+			if (size && !memcmp(&m1->other, &m2->other, other)) {
+				memmove(&memory[i], &memory[i + 1], size);
+				memory_free_end -= 1;
+				memory_entries -= 1;
+				continue;
+			}
+		}
+		i += 1;
+	}
+}
+
 void *b_aligned_alloc(size_t alignment, size_t size)
 {
+	struct b_mem *memory = memory_map;
 	phys_addr_t addr = 0;
-	uint32_t a = 0;
 	size_t b, e;
 	size_t i;
 
@@ -227,13 +249,7 @@ void *b_aligned_alloc(size_t alignment, size_t size)
 	memory[i].type = B_MEM_INIT_ALLOC_MIN;
 	memory[i].base = addr;
 
-	for (i = 1; i < memory_entries; i++) {
-		uint32_t t = memory[i].type;
-		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
-			memory[i].type = B_MEM_INIT_ALLOC_MIN + a;
-			a += 1;
-		}
-	}
+	fix_memory_map();
 	return (void *)addr;
 }
 
@@ -251,11 +267,14 @@ void *b_calloc(size_t nmemb, size_t size)
 
 void *b_malloc(size_t size)
 {
-	return b_aligned_alloc(16, size);
+	if (size >= 0x7FFFFFFFul)
+		return NULL;
+	return b_aligned_alloc(16, (size + 15ul) & 0xFFFFFFF0ul);
 }
 
 void *b_realloc(void *ptr, size_t size)
 {
+	struct b_mem *memory = memory_map;
 	phys_addr_t addr = (phys_addr_t)ptr;
 	int found = 0;
 	size_t aligned_size;
@@ -302,67 +321,24 @@ void *b_realloc(void *ptr, size_t size)
 	memory[i + 1].type = B_MEM_NORMAL;
 	memory[i + 1].base += (phys_addr_t)aligned_size;
 
-	for (i = 1; i < memory_free_end; /* void */) {
-		struct b_mem_raw *m1 = (struct b_mem_raw *)&memory[i - 1];
-		struct b_mem_raw *m2 = (struct b_mem_raw *)&memory[i];
-		size_t other = sizeof(m1->other);
-
-		if (m1->type == m2->type && m1->flags == m2->flags) {
-			size = sizeof(struct b_mem) * (memory_entries - i);
-			if (size && !memcmp(&m1->other, &m2->other, other)) {
-				memmove(&memory[i], &memory[i + 1], size);
-				memory_free_end -= 1, memory_entries -= 1;
-				continue;
-			}
-		}
-		i += 1;
-	}
+	fix_memory_map();
 	return ptr;
 }
 
 void b_free(void *ptr)
 {
+	struct b_mem *memory = memory_map;
 	phys_addr_t addr = (phys_addr_t)ptr;
-	uint32_t a = 0;
-	int found = 0;
-	size_t size, i;
+	size_t i;
 
 	for (i = 1; i < memory_free_end; i++) {
 		uint32_t t = memory[i].type;
-		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
-			if (memory[i].base == addr) {
-				found = 1;
-				break;
-			}
-		}
-	}
-
-	if (!found)
-		return;
-
-	memory[i].type = B_MEM_NORMAL;
-
-	for (i = 1; i < memory_free_end; /* void */) {
-		struct b_mem_raw *m1 = (struct b_mem_raw *)&memory[i - 1];
-		struct b_mem_raw *m2 = (struct b_mem_raw *)&memory[i];
-		size_t other = sizeof(m1->other);
-
-		if (m1->type == m2->type && m1->flags == m2->flags) {
-			size = sizeof(struct b_mem) * (memory_entries - i);
-			if (size && !memcmp(&m1->other, &m2->other, other)) {
-				memmove(&memory[i], &memory[i + 1], size);
-				memory_free_end -= 1, memory_entries -= 1;
-				continue;
-			}
-		}
-		i += 1;
-	}
-
-	for (i = 1; i < memory_entries; i++) {
-		uint32_t t = memory[i].type;
-		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
-			memory[i].type = B_MEM_INIT_ALLOC_MIN + a;
-			a += 1;
+		if (t < B_MEM_INIT_ALLOC_MIN && t > B_MEM_INIT_ALLOC_MAX)
+			continue;
+		if (memory[i].base == addr) {
+			memory[i].type = B_MEM_NORMAL;
+			fix_memory_map();
+			return;
 		}
 	}
 }
