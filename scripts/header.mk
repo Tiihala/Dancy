@@ -57,11 +57,15 @@ DANCY_TARGET_RELEASE= \
 DANCY_HEADERS= \
  ./common/bitarray/bitarray.h \
  ./common/huffman/huffman.h \
+ ./include/dancy/blob.h \
+ ./include/dancy/keys.h \
  ./include/dancy/limits.h \
  ./include/dancy/stdarg.h \
  ./include/dancy/stdio.h \
+ ./include/dancy/stdlib.h \
  ./include/dancy/string.h \
  ./include/dancy/types.h \
+ ./include/kernel/boot.h \
  ./include/kernel/init.h \
  ./include/dancy.h
 

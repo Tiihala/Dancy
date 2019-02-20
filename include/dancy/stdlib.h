@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2018, 2019 Antti Tiihala
+ * Copyright (c) 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,30 +13,18 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy.h
+ * dancy/stdlib.h
  *      Header of Dancy Operating System
  */
 
-#ifndef DANCY_H
-#define DANCY_H
+#ifndef DANCY_STDLIB_H
+#define DANCY_STDLIB_H
 
-#include <dancy/blob.h>
-
-#if defined(DANCY_32) || defined(DANCY_64)
-
-#include <dancy/keys.h>
-#include <dancy/limits.h>
-#include <dancy/stdarg.h>
-#include <dancy/stdio.h>
-#include <dancy/stdlib.h>
-#include <dancy/string.h>
 #include <dancy/types.h>
 
-#include <bitarray/bitarray.h>
-#include <huffman/huffman.h>
+void *aligned_alloc(size_t alignment, size_t size);
+void *calloc(size_t nmemb, size_t size);
+void *malloc(size_t size);
+void free(void *ptr);
 
-#include <kernel/boot.h>
-#include <kernel/init.h>
-
-#endif
 #endif
