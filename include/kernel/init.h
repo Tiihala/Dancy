@@ -26,7 +26,7 @@
 void init(void *map);
 
 int memory_init(void *map, uint32_t required_mem);
-void memory_print_map(int log);
+void memory_print_map(int (*print)(const char *, ...));
 
 int b_print(const char *format, ...);
 int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);

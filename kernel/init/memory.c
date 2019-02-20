@@ -128,15 +128,14 @@ int memory_init(void *map, uint32_t required_mem)
 	return (memory_map = map), 0;
 }
 
-void memory_print_map(int log)
+void memory_print_map(int (*print)(const char *, ...))
 {
 	const struct b_mem *memory = memory_map;
-	int (*print)(const char *format, ...) = b_print;
 	phys_addr_t total = 0;
 	size_t i;
 
-	if (log)
-		return;
+	if (!print)
+		print = b_print;
 
 	(*print)("Memory Map\n");
 
