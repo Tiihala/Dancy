@@ -195,7 +195,10 @@ static int read_file(const char *name, unsigned char **out, size_t *size)
 {
 	size_t chunk = 0x1000;
 	unsigned char *ptr;
+	size_t size_max;
 	FILE *fp;
+
+	size_max = 0, size_max--;
 
 	fp = (errno = 0, fopen(name, "rb"));
 	if (!fp) {
@@ -234,7 +237,7 @@ static int read_file(const char *name, unsigned char **out, size_t *size)
 
 		if (chunk < 0x00200000)
 			chunk <<= 1;
-		if (!(*size < SIZE_MAX - chunk)) {
+		if (!(*size < size_max - chunk)) {
 			const char *fmt = "Error: reading file \"%s\" (%s)\n";
 			fprintf(stderr, fmt, name, "size_t overflow");
 			return (void)fclose(fp), 1;
@@ -440,7 +443,10 @@ int program(struct options *opt)
 {
 	struct state zip;
 	size_t total_size = 0;
+	size_t size_max;
 	int i;
+
+	size_max = 0, size_max--;
 
 	memset(&zip, 0, sizeof(zip));
 	if (opt->operands[0] == NULL)
@@ -485,12 +491,12 @@ int program(struct options *opt)
 	for (i = 0; opt->operands[i] != NULL; i++) {
 		if (read_file(opt->operands[i], &zip.fdata[i], &zip.fsize[i]))
 			return free_zip(&zip), 1;
-		if (total_size < SIZE_MAX - zip.fsize[i])
+		if (total_size < size_max - zip.fsize[i])
 			total_size += zip.fsize[i];
 		else
-			total_size = SIZE_MAX;
+			total_size = size_max;
 
-		if (total_size > 0x7F000000ul || total_size == SIZE_MAX) {
+		if (total_size > 0x7F000000ul || total_size == size_max) {
 			fputs("Error: total size of input files\n", stderr);
 			return free_zip(&zip), 1;
 		}

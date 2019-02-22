@@ -38,6 +38,9 @@ int read_file(const char *name, unsigned char **out, size_t *size)
 	FILE *fp = stdin;
 	int is_stdin = 1;
 	unsigned char *ptr;
+	size_t size_max;
+
+	size_max = 0, size_max--;
 
 	if (strcmp(name, "-")) {
 		fp = (errno = 0, fopen(name, "rb"));
@@ -77,7 +80,7 @@ int read_file(const char *name, unsigned char **out, size_t *size)
 		if (stop)
 			break;
 
-		if (!(*size < SIZE_MAX - chunk)) {
+		if (!(*size < size_max - chunk)) {
 			const char *fmt = "Error: reading file \"%s\" (%s)\n";
 			fprintf(stderr, fmt, name, "size_t overflow");
 			return !is_stdin ? ((void)fclose(fp), 1) : 1;

@@ -39,10 +39,6 @@
 #error Definition of INT_MAX is not compatible
 #endif
 
-#if !defined (SIZE_MAX)
-#define SIZE_MAX (INT_MAX)
-#endif
-
 #include <bitarray/bitarray.h>
 #include <huffman/huffman.h>
 
