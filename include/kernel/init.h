@@ -65,4 +65,10 @@ struct acpi_information {
 
 struct acpi_information *acpi_get_information(void);
 
+int log_init(size_t max_size);
+void log_close(void);
+const char *log_get_data(void);
+size_t log_get_size(void);
+int log(const char *format, ...);
+
 #endif
