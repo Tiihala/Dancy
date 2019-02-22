@@ -32,10 +32,6 @@
 #error Definition of INT_MAX is not compatible
 #endif
 
-#if !defined (SIZE_MAX)
-#define SIZE_MAX (INT_MAX)
-#endif
-
 /*
  * file_name: ELTORITO.BIN
  * file_size: 2048

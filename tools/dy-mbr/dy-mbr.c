@@ -32,10 +32,6 @@
 #error Definition of INT_MAX is not compatible
 #endif
 
-#if !defined (SIZE_MAX)
-#define SIZE_MAX (INT_MAX)
-#endif
-
 extern const unsigned char mbr_bin[512];
 
 unsigned long crc32c(const void *, size_t);

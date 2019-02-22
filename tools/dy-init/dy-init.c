@@ -33,10 +33,6 @@
 #error Definition of INT_MAX is not compatible
 #endif
 
-#if !defined (SIZE_MAX)
-#define SIZE_MAX (INT_MAX)
-#endif
-
 extern const unsigned char ia32[416];
 extern const unsigned char x64[416];
 

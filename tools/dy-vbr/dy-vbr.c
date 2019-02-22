@@ -32,10 +32,6 @@
 #error Definition of INT_MAX is not compatible
 #endif
 
-#if !defined (SIZE_MAX)
-#define SIZE_MAX (INT_MAX)
-#endif
-
 extern const unsigned char floppy_bin[512];
 extern const unsigned char ldr512_bin[512];
 extern const unsigned char vbrchs_bin[512];
