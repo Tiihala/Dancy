@@ -103,8 +103,8 @@ static int put_lendist(struct bitarray *b, unsigned len, unsigned dist)
 	for (i = 0; /* void */; i++) {
 		unsigned val = length_codes[i].value;
 		if (len == val || len < length_codes[i + 1].value) {
-			unsigned t1 = code_table[((257u + i) << 1) + 0u];
-			unsigned t2 = code_table[((257u + i) << 1) + 1u];
+			unsigned t1 = code_table[((257 + i) << 1) + 0];
+			unsigned t2 = code_table[((257 + i) << 1) + 1];
 
 			if (bitarray_shove(b, t1, t2))
 				return -1;
@@ -121,8 +121,8 @@ static int put_lendist(struct bitarray *b, unsigned len, unsigned dist)
 	for (i = 0; /* void */; i++) {
 		unsigned val = distance_codes[i].value;
 		if (dist == val || dist < distance_codes[i + 1].value) {
-			unsigned t1 = dist_table[(i << 1) + 0u];
-			unsigned t2 = dist_table[(i << 1) + 1u];
+			unsigned t1 = dist_table[(i << 1) + 0];
+			unsigned t2 = dist_table[(i << 1) + 1];
 
 			if (bitarray_shove(b, t1, t2))
 				return -1;
@@ -140,8 +140,8 @@ static int put_lendist(struct bitarray *b, unsigned len, unsigned dist)
 
 static int put_literal(struct bitarray *b, unsigned c)
 {
-	unsigned t1 = code_table[((c & 0xFFu) << 1) + 0u];
-	unsigned t2 = code_table[((c & 0xFFu) << 1) + 1u];
+	unsigned t1 = code_table[((c & 0xFFu) << 1) + 0];
+	unsigned t2 = code_table[((c & 0xFFu) << 1) + 1];
 
 	return bitarray_shove(b, t1, t2);
 }

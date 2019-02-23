@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -117,7 +117,7 @@ static int create_output(struct options *opt, struct state *zip)
 		/*
 		 * Calculate total size (local file header + data).
 		 */
-		size += 30ul + len + ul;
+		size += 30 + len + ul;
 		if (zip->split) {
 			size += 0x0000000Fu;
 			size &= 0xFFFFFFF0u;
@@ -221,7 +221,7 @@ static int read_file(const char *name, unsigned char **out, size_t *size)
 		*out = ptr;
 		ptr += *size;
 
-		bytes_read = (errno = 0, fread(ptr, 1u, chunk, fp));
+		bytes_read = (errno = 0, fread(ptr, 1, chunk, fp));
 		my_errno = errno;
 		stop = feof(fp);
 
@@ -342,8 +342,8 @@ static void free_zip(struct state *zip)
 static int write_output_db(struct options *opt, struct state *zip)
 {
 	static const unsigned char file_header[16] = {
-		0x8Du, 0x41u, 0x54u, 0x0Du, 0x0Au, 0x73u, 0x74u, 0x64u,
-		0x0Cu, 0x44u, 0x0Cu, 0x42u, 0x0Cu, 0x0Au, 0x71u, 0xF8u
+		0x8D, 0x41, 0x54, 0x0D, 0x0A, 0x73, 0x74, 0x64,
+		0x0C, 0x44, 0x0C, 0x42, 0x0C, 0x0A, 0x71, 0xF8
 	};
 	unsigned char *db = malloc(0x10000);
 	size_t len = strlen(opt->arg_o);
@@ -496,7 +496,7 @@ int program(struct options *opt)
 		else
 			total_size = size_max;
 
-		if (total_size > 0x7F000000ul || total_size == size_max) {
+		if (total_size > 0x7F000000) {
 			fputs("Error: total size of input files\n", stderr);
 			return free_zip(&zip), 1;
 		}
