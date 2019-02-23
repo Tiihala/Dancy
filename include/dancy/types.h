@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,13 +27,21 @@ typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 
-#if defined(DANCY_64)
-	typedef unsigned long long addr_t;
-	typedef unsigned long long phys_addr_t;
-	typedef unsigned long long uint64_t;
+#if defined (DANCY_32)
+typedef unsigned int addr_t;
+typedef unsigned int phys_addr_t;
+#define SIZE_MAX (4294967295ul)
+
+#elif defined (DANCY_64)
+typedef unsigned long long addr_t;
+typedef unsigned long long phys_addr_t;
+#define SIZE_MAX (18446744073709551615ull)
+
 #else
-	typedef unsigned int addr_t;
-	typedef unsigned int phys_addr_t;
+#error types.h is not compatible
 #endif
+
+typedef size_t rsize_t;
+#define RSIZE_MAX (SIZE_MAX >> 1)
 
 #endif

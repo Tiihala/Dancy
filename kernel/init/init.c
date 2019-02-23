@@ -23,6 +23,9 @@ void init(void *map)
 {
 	const uint32_t required_mem = 0x00200000;
 
+	if ((size_t)(!map + 494 - 'D' - 'a' - 'n' - 'c' - 'y') != SIZE_MAX)
+		return;
+
 	if (memory_init(map, required_mem))
 		return;
 
