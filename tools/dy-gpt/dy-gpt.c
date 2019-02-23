@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -48,12 +48,12 @@ struct options {
 
 static int hex_string_to_byte(const char *in, unsigned char *out)
 {
-	unsigned tmp = 0u;
+	unsigned tmp = 0;
 	if (isxdigit((int)in[0]) && isxdigit((int)in[1])) {
 		if (sscanf(&in[0], "%2x", &tmp) == 1)
 			return (out[0] = (unsigned char)tmp), 0;
 	}
-	return (out[0] = 0x00u), 1;
+	return (out[0] = 0), 1;
 }
 
 int program(struct options *opt)
@@ -72,7 +72,7 @@ int program(struct options *opt)
 	 */
 	if (opt->guid) {
 		int err = 0;
-		if (strlen(opt->guid) != 36u)
+		if (strlen(opt->guid) != 36)
 			return fputs("Error: guid length\n", stderr), 1;
 
 		err |= hex_string_to_byte(&opt->guid[0], &guid[3]);
@@ -107,7 +107,7 @@ int program(struct options *opt)
 	fp = (errno = 0, fopen(*opt->operands, "r+b"));
 	if (!fp)
 		return perror("Error"), 1;
-	if (fread(&buf[0], 1u, 512u, fp) != 512u) {
+	if (fread(&buf[0], 1, 512, fp) != 512) {
 		fputs("Error: can not read 512 bytes\n", stderr);
 		return (void)fclose(fp), 1;
 	}
@@ -119,26 +119,26 @@ int program(struct options *opt)
 	/*
 	 * Simple detection for master boot records.
 	 */
-	if (buf[0x0000] == 0xEBu && buf[0x0001] == 0x3Cu) {
+	if (buf[0x0000] == 0xEB && buf[0x0001] == 0x3C) {
 		fputs("Error: file system detected\n", stderr);
 		return (void)fclose(fp), 1;
 	}
-	if (buf[0x01FE] != 0x55u || buf[0x01FF] != 0xAAu) {
+	if (buf[0x01FE] != 0x55 || buf[0x01FF] != 0xAA) {
 		fputs("Error: missing boot signature\n", stderr);
 		return (void)fclose(fp), 1;
 	}
 
-	memcpy(&buf[0], &gpt_bin[0], 440u);
+	memcpy(&buf[0], &gpt_bin[0], 440);
 	if (opt->guid)
-		memcpy(&buf[16], &guid[0], 16u);
+		memcpy(&buf[16], &guid[0], 16);
 
-	if ((errno = 0, fwrite(&buf[0], 1u, 512u, fp)) != 512u)
+	if ((errno = 0, fwrite(&buf[0], 1, 512, fp)) != 512)
 		return perror("Error"), (void)fclose(fp), 1;
 	if ((errno = 0, fclose(fp)))
 		return perror("Error"), 1;
 
 	if (opt->verbose) {
-		unsigned long crc = crc32c(&gpt_bin[0], 512u);
+		unsigned long crc = crc32c(&gpt_bin[0], 512);
 		printf("gpt_bin (crc32c): 0x%08lX\n", crc);
 	}
 	return 0;
