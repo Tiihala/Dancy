@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -51,7 +51,7 @@ struct param_block {
 
 static int is_fat16(struct param_block *pb)
 {
-	return (pb->clusters >= 4085u) ? 1 : 0;
+	return (pb->clusters >= 4085) ? 1 : 0;
 }
 
 static int read_file(const char *name, unsigned char **out, size_t *size)
@@ -84,7 +84,7 @@ static int read_file(const char *name, unsigned char **out, size_t *size)
 		*out = ptr;
 		ptr += *size;
 
-		bytes_read = (errno = 0, fread(ptr, 1u, chunk, fp));
+		bytes_read = (errno = 0, fread(ptr, 1, chunk, fp));
 		my_errno = errno;
 		stop = feof(fp);
 
@@ -220,7 +220,7 @@ static int get_param_block(struct options *opt, struct param_block *pb)
 		fputs("Error: image is not typical FAT12/FAT16\n", stderr);
 		return 1;
 	}
-	if (LE16(&f[510]) != 0xAA55ul) {
+	if (LE16(&f[510]) != 0xAA55) {
 		fputs("Error: missing boot signature (0xAA55)\n", stderr);
 		return 1;
 	}
@@ -256,10 +256,10 @@ static int get_param_block(struct options *opt, struct param_block *pb)
 	pb->directory_entries = (unsigned)LE16(&f[17]);
 	pb->directory_sectors = 0;
 	if (pb->directory_entries) {
-		unsigned long t1 = LE16(&f[17]) * 32ul;
+		unsigned long t1 = LE16(&f[17]) * 32;
 		unsigned long t2 = t1 / (unsigned long)pb->bytes_per_sector;
 		unsigned long t3 = t1 % (unsigned long)pb->bytes_per_sector;
-		if (t2 < 65536ul && t3 == 0ul)
+		if (t2 < 65536 && t3 == 0)
 			pb->directory_sectors = (unsigned)t2;
 	}
 	if (!pb->directory_sectors)
@@ -306,12 +306,12 @@ static int get_param_block(struct options *opt, struct param_block *pb)
 		pb->data_size *= (unsigned long)pb->bytes_per_sector;
 
 		if (!is_fat16(pb)) {
-			t7 = (unsigned long)pb->clusters * 3ul + 1ul;
+			t7 = (unsigned long)pb->clusters * 3 + 1;
 			t7 &= ~(1ul);
 			t7 /= 2ul;
 			t7 += 3ul;
 		} else {
-			t7 = (unsigned long)pb->clusters * 2ul;
+			t7 = (unsigned long)pb->clusters * 2;
 			t7 += 4ul;
 		}
 		if (t7 > t2 * (unsigned long)pb->bytes_per_sector) {
@@ -510,19 +510,19 @@ static unsigned char *get_pointer(struct param_block *pb, unsigned cluster)
 static unsigned table(struct param_block *pb, unsigned off, unsigned *val)
 {
 	unsigned long loff = (unsigned long)off;
-	unsigned new_val = (val != NULL) ? *val : 0u;
+	unsigned new_val = (val != NULL) ? *val : 0;
 	unsigned old_val;
 	unsigned ret_val;
 
 	if (!is_fat16(pb)) {
-		loff += (unsigned long)off / 2ul;
+		loff += (unsigned long)off / 2;
 		ret_val = old_val = (unsigned)LE16(&pb->table0[loff]);
 		if (off & 1u) {
 			ret_val = ret_val >> 4;
 			new_val = new_val << 4;
-			new_val = (new_val & 0xFFF0u) | (old_val & 0x000Fu);
+			new_val = (new_val & 0xFFF0) | (old_val & 0x000F);
 		} else {
-			new_val = (new_val & 0x0FFFu) | (old_val & 0xF000u);
+			new_val = (new_val & 0x0FFF) | (old_val & 0xF000);
 		}
 		ret_val &= 0x0FFFu;
 	} else {
@@ -541,19 +541,19 @@ static unsigned table(struct param_block *pb, unsigned off, unsigned *val)
 static unsigned allocate_cluster(struct param_block *pb)
 {
 	static int random = 0;
-	unsigned val = 0xFFFFu;
+	unsigned val = 0xFFFF;
 	unsigned i;
 
 	if (pb->random) {
 		unsigned retry = 32;
 		random = (!random) ? (srand((unsigned)time(NULL)), 1) : 1;
 		while (retry--) {
-			i = ((unsigned)rand() % pb->clusters) + 2u;
+			i = ((unsigned)rand() % pb->clusters) + 2;
 			if (!table(pb, i, NULL))
 				return (void)table(pb, i, &val), i;
 		}
 	}
-	for (i = 2; i < pb->clusters + 2u; i++) {
+	for (i = 2; i < pb->clusters + 2; i++) {
 		if (!table(pb, i, NULL))
 			return (void)table(pb, i, &val), i;
 	}
@@ -577,7 +577,7 @@ static int directory(struct param_block *pb, const char *name, void **current)
 	if (*current == NULL) {
 		unsigned owner = 0;
 		for (i = 0; i < pb->directory_entries; i++) {
-			entry = pb->root + (i * 32u);
+			entry = pb->root + (i * 32);
 			if (!entry[0]) {
 				cluster = allocate_cluster(pb);
 				ptr = get_pointer(pb, cluster);
@@ -719,7 +719,7 @@ static int file(struct param_block *pb, const char *name, void **current)
 	 */
 	if (*current == NULL) {
 		for (i = 0; i < pb->directory_entries; i++) {
-			entry = pb->root + (i * 32u);
+			entry = pb->root + (i * 32);
 			if (!entry[0])
 				break;
 			if (!memcmp(&entry[0], &name[0], 11))
