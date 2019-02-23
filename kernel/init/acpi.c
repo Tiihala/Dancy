@@ -53,18 +53,18 @@ struct acpi_information *acpi_get_information(void)
 		return NULL;
 
 	revision = *(ptr + 15);
-	information.rsdt_addr = *((const uint32_t *)(ptr + 16));
+	information.rsdt_addr = LE32(ptr + 16);
 
 	if (revision != 0) {
-		length = *((const uint32_t *)(ptr + 20));
+		length = LE32(ptr + 20);
 		/*
 		 * Currently there are no page mappings for physical
 		 * address above 0xFFFFFFFF. The XsdtAddress field is
 		 * ignored (RsdtAddress used) if the value is too big.
 		 */
 		if (length >= 33 && !checksum(ptr, (size_t)length)) {
-			uint32_t addr_l = *((const uint32_t *)(ptr + 24));
-			uint32_t addr_h = *((const uint32_t *)(ptr + 28));
+			uint32_t addr_l = LE32(ptr + 24);
+			uint32_t addr_h = LE32(ptr + 28);
 
 			if (!addr_h) {
 				information.xsdt_addr = addr_l;
@@ -98,7 +98,7 @@ struct acpi_information *acpi_get_information(void)
 		addr_size = 8;
 	}
 
-	length = *((const uint32_t *)(ptr + 4));
+	length = LE32(ptr + 4);
 
 	/*
 	 * The error here does not stop the process.
@@ -113,18 +113,18 @@ struct acpi_information *acpi_get_information(void)
 	 * Find physical addresses that point to other tables.
 	 */
 	for (i = 36; i < length; i += addr_size) {
-		phys_addr_t addr = *((const uint32_t *)(ptr + i));
+		phys_addr_t addr = LE32(ptr + i);
 		const uint8_t *table;
 		uint32_t table_length;
 
-		if (addr_size == 8 && *((const uint32_t *)(ptr + i + 4))) {
+		if (addr_size == 8 && LE32(ptr + i + 4)) {
 			b_print("Acpi: skipping table (64-bit address)\n");
 			information.errors += 1;
 			continue;
 		}
 
 		table = (const uint8_t *)addr;
-		table_length = *((const uint32_t *)(table + 4));
+		table_length = LE32(table + 4);
 
 		if (checksum(table, (size_t)table_length)) {
 			const char *table_name = (const char *)table;
@@ -150,7 +150,7 @@ struct acpi_information *acpi_get_information(void)
 	 */
 	if (information.fadt_addr) {
 		const uint8_t *fadt = (const uint8_t *)information.fadt_addr;
-		length = *((const uint32_t *)(fadt + 4));
+		length = LE32(fadt + 4);
 
 		if (length >= 108 + 1)
 			information.rtc_century_idx = (unsigned)fadt[108];
