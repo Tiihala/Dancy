@@ -66,7 +66,7 @@ int read_file(const char *name, unsigned char **out, size_t *size)
 		*out = ptr;
 		ptr += *size;
 
-		bytes_read = (errno = 0, fread(ptr, 1u, chunk, fp));
+		bytes_read = (errno = 0, fread(ptr, 1, chunk, fp));
 		my_errno = errno;
 		stop = feof(fp);
 
