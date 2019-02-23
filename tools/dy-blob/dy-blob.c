@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -79,7 +79,7 @@ int program(struct options *opt)
 			fp = stdout;
 			is_stdout = 1;
 		}
-		if ((errno = 0, fwrite(blob, 1u, 2048u, fp)) != 2048u)
+		if ((errno = 0, fwrite(blob, 1, 2048, fp)) != 2048)
 			return perror("Error"), (void)fclose(fp), 1;
 		if (!is_stdout && (errno = 0, fclose(fp)))
 			return perror("Error"), 1;
@@ -95,7 +95,7 @@ int program(struct options *opt)
 			fp = stdout;
 			is_stdout = 1;
 		}
-		if ((errno = 0, fwrite(blob, 1u, 512u, fp)) != 512u)
+		if ((errno = 0, fwrite(blob, 1, 512, fp)) != 512)
 			return perror("Error"), (void)fclose(fp), 1;
 		if (!is_stdout && (errno = 0, fclose(fp)))
 			return perror("Error"), 1;
@@ -112,9 +112,9 @@ int program(struct options *opt)
 			fp = stdout;
 			is_stdout = 1;
 		}
-		if ((errno = 0, fwrite(blob, 1u, 32752u, fp)) != 32752u)
+		if ((errno = 0, fwrite(blob, 1, 32752, fp)) != 32752)
 			return perror("Error"), (void)fclose(fp), 1;
-		if ((errno = 0, fwrite(&zero_bytes[0], 1u, 16u, fp)) != 16u)
+		if ((errno = 0, fwrite(&zero_bytes[0], 1, 16, fp)) != 16)
 			return perror("Error"), (void)fclose(fp), 1;
 		if (!is_stdout && (errno = 0, fclose(fp)))
 			return perror("Error"), 1;
