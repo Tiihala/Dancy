@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -163,7 +163,7 @@ static int create(struct options *opt)
 	if (!opt->sector_size)
 		opt->sector_size = 512;
 
-	for (i = 0u; i < sizeof(image_types) / sizeof(image_types[0]); i++) {
+	for (i = 0; i < sizeof(image_types) / sizeof(image_types[0]); i++) {
 		if ((long)image_types[i].blocks != opt->blocks)
 			continue;
 		if (image_types[i].sector_size != opt->sector_size)
@@ -180,50 +180,50 @@ static int create(struct options *opt)
 	if (!fp)
 		return perror("Error"), 1;
 
-	memset(&buf[0], 0, 4096u);
+	memset(&buf[0], 0, 4096);
 	buf[0] = 0xEB, buf[1] = 0x3C, buf[2] = 0x90;
-	memcpy(&buf[3], "dancy.fs", 8u);
-	memcpy(&buf[11], &type->data[0], 16u);
+	memcpy(&buf[3], "dancy.fs", 8);
+	memcpy(&buf[11], &type->data[0], 16);
 	if (opt->arg_t && strcmp(opt->arg_t, "floppy"))
 		buf[36] = 0x80;
 	buf[38] = 0x29;
-	memcpy(&buf[43], "NO NAME    ", 11u);
+	memcpy(&buf[43], "NO NAME    ", 11);
 	if (type->fat_type == 12)
-		memcpy(&buf[54], "FAT12   ", 8u);
+		memcpy(&buf[54], "FAT12   ", 8);
 	else
-		memcpy(&buf[54], "FAT16   ", 8u);
+		memcpy(&buf[54], "FAT16   ", 8);
 	buf[62] = 0xCD, buf[63] = 0x19;
 	buf[64] = 0xEB, buf[65] = 0xFE;
 	buf[510] = 0x55, buf[511] = 0xAA;
 
 	size = (size_t)opt->sector_size;
-	if ((errno = 0, fwrite(&buf[0], 1u, size, fp)) != size)
+	if ((errno = 0, fwrite(&buf[0], 1, size, fp)) != size)
 		return perror("Error"), (void)fclose(fp), 1;
 	sectors_written++;
 
-	memset(&buf[0], 0, 4096u);
-	memcpy(&buf[0], &type->data_fat[0], 4u);
-	if ((errno = 0, fwrite(&buf[0], 1u, size, fp)) != size)
+	memset(&buf[0], 0, 4096);
+	memcpy(&buf[0], &type->data_fat[0], 4);
+	if ((errno = 0, fwrite(&buf[0], 1, size, fp)) != size)
 		return perror("Error"), (void)fclose(fp), 1;
 	sectors_written++;
 
-	memset(&buf[0], 0, 4u);
-	for (i = 0u; i < (size_t)type->data[11] - 1u; i++) {
-		if ((errno = 0, fwrite(&buf[0], 1u, size, fp)) != size)
+	memset(&buf[0], 0, 4);
+	for (i = 0u; i < (size_t)type->data[11] - 1; i++) {
+		if ((errno = 0, fwrite(&buf[0], 1, size, fp)) != size)
 			return perror("Error"), (void)fclose(fp), 1;
 		sectors_written++;
 	}
 
-	if (type->data[5] == 2u) {
-		memcpy(&buf[0], &type->data_fat[0], 4u);
-		if ((errno = 0, fwrite(&buf[0], 1u, size, fp)) != size)
+	if (type->data[5] == 2) {
+		memcpy(&buf[0], &type->data_fat[0], 4);
+		if ((errno = 0, fwrite(&buf[0], 1, size, fp)) != size)
 			return perror("Error"), (void)fclose(fp), 1;
 		sectors_written++;
 	}
 
-	memset(&buf[0], 0, 4u);
+	memset(&buf[0], 0, 4);
 	while (sectors_written < type->sectors) {
-		if ((errno = 0, fwrite(&buf[0], 1u, size, fp)) != size)
+		if ((errno = 0, fwrite(&buf[0], 1, size, fp)) != size)
 			return perror("Error"), (void)fclose(fp), 1;
 		sectors_written++;
 	}
@@ -243,7 +243,7 @@ int program(struct options *opt)
 
 	if (*(opt->operands + 1)) {
 		opt->blocks = strtol(*(opt->operands + 1), NULL, 0);
-		if (opt->blocks <= 0L || *(opt->operands + 2))
+		if (opt->blocks <= 0 || *(opt->operands + 2))
 			return opt->error = "unsupported arguments", 1;
 		if (create(opt))
 			return 1;
@@ -266,12 +266,12 @@ int program(struct options *opt)
 		FILE *fp = (errno = 0, fopen(opt->arg_o, "wb"));
 		if (!fp)
 			return perror("Error"), 1;
-		if ((errno = 0, fwrite(&ldr512_bin[0], 1u, 512u, fp)) != 512u)
+		if ((errno = 0, fwrite(&ldr512_bin[0], 1, 512, fp)) != 512)
 			return perror("Error"), (void)fclose(fp), 1;
 		if ((errno = 0, fclose(fp)))
 			return perror("Error"), 1;
 		if (opt->verbose) {
-			unsigned long crc = crc32c(&ldr512_bin[0], 512u);
+			unsigned long crc = crc32c(&ldr512_bin[0], 512);
 			printf("ldr512_bin (crc32c): 0x%08lX\n", crc);
 		}
 	}
@@ -280,7 +280,7 @@ int program(struct options *opt)
 		FILE *fp = (errno = 0, fopen(*opt->operands, "r+b"));
 		if (!fp)
 			return perror("Error"), 1;
-		if (fread(&buf[0], 1u, 512u, fp) != 512u) {
+		if (fread(&buf[0], 1u, 512, fp) != 512) {
 			fputs("Error: can not read 512 bytes\n", stderr);
 			return (void)fclose(fp), 1;
 		}
@@ -292,29 +292,29 @@ int program(struct options *opt)
 		/*
 		 * Simple detection for "standard" FAT12 / FAT16 file systems.
 		 */
-		if (buf[0x0000] != 0xEBu || buf[0x0001] != 0x3Cu) {
+		if (buf[0x0000] != 0xEB || buf[0x0001] != 0x3C) {
 			fputs("Error: unknown file system\n", stderr);
 			return (void)fclose(fp), 1;
 		}
-		if (buf[0x0022] != 0x00u || buf[0x0023] != 0x00u) {
+		if (buf[0x0022] != 0x00 || buf[0x0023] != 0x00) {
 			fputs("Error: unsupported partition size\n", stderr);
 			return (void)fclose(fp), 1;
 		}
-		if (buf[0x01FE] != 0x55u || buf[0x01FF] != 0xAAu) {
+		if (buf[0x01FE] != 0x55 || buf[0x01FF] != 0xAA) {
 			fputs("Error: missing boot signature\n", stderr);
 			return (void)fclose(fp), 1;
 		}
 
-		memcpy(&buf[0x0000], &vbr[0x0000], 3u);
-		memcpy(&buf[0x003E], &vbr[0x003E], 450u);
+		memcpy(&buf[0x0000], &vbr[0x0000], 3);
+		memcpy(&buf[0x003E], &vbr[0x003E], 450);
 
-		if ((errno = 0, fwrite(&buf[0], 1u, 512u, fp)) != 512u)
+		if ((errno = 0, fwrite(&buf[0], 1, 512, fp)) != 512)
 			return perror("Error"), (void)fclose(fp), 1;
 		if ((errno = 0, fclose(fp)))
 			return perror("Error"), 1;
 
 		if (opt->verbose) {
-			unsigned long crc = crc32c(&vbr[0], 512u);
+			unsigned long crc = crc32c(&vbr[0], 512);
 			printf("vbr (crc32c): 0x%08lX\n", crc);
 		}
 	}
