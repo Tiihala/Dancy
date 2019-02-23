@@ -56,15 +56,15 @@ struct acpi_information *acpi_get_information(void)
 	information.rsdt_addr = LE32(ptr + 16);
 
 	if (revision != 0) {
-		length = LE32(ptr + 20);
+		length = (uint32_t)LE32(ptr + 20);
 		/*
 		 * Currently there are no page mappings for physical
 		 * address above 0xFFFFFFFF. The XsdtAddress field is
 		 * ignored (RsdtAddress used) if the value is too big.
 		 */
 		if (length >= 33 && !checksum(ptr, (size_t)length)) {
-			uint32_t addr_l = LE32(ptr + 24);
-			uint32_t addr_h = LE32(ptr + 28);
+			uint32_t addr_l = (uint32_t)LE32(ptr + 24);
+			uint32_t addr_h = (uint32_t)LE32(ptr + 28);
 
 			if (!addr_h) {
 				information.xsdt_addr = addr_l;
@@ -98,7 +98,7 @@ struct acpi_information *acpi_get_information(void)
 		addr_size = 8;
 	}
 
-	length = LE32(ptr + 4);
+	length = (uint32_t)LE32(ptr + 4);
 
 	/*
 	 * The error here does not stop the process.
@@ -124,7 +124,7 @@ struct acpi_information *acpi_get_information(void)
 		}
 
 		table = (const uint8_t *)addr;
-		table_length = LE32(table + 4);
+		table_length = (uint32_t)LE32(table + 4);
 
 		if (checksum(table, (size_t)table_length)) {
 			const char *table_name = (const char *)table;
@@ -150,7 +150,7 @@ struct acpi_information *acpi_get_information(void)
 	 */
 	if (information.fadt_addr) {
 		const uint8_t *fadt = (const uint8_t *)information.fadt_addr;
-		length = LE32(fadt + 4);
+		length = (uint32_t)LE32(fadt + 4);
 
 		if (length >= 108 + 1)
 			information.rtc_century_idx = (unsigned)fadt[108];
