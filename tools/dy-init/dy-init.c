@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -68,8 +68,8 @@ struct options {
 static int set_header(unsigned char type, unsigned char *buf, size_t size)
 {
 	static const unsigned char file_header[16] = {
-		0x8Du, 0x41u, 0x54u, 0x0Du, 0x0Au, 0x73u, 0x74u, 0x64u,
-		0x0Cu, 0x49u, 0x0Cu, 0x4Eu, 0x0Cu, 0x0Au, 0x71u, 0xF8u
+		0x8D, 0x41, 0x54, 0x0D, 0x0A, 0x73, 0x74, 0x64,
+		0x0C, 0x49, 0x0C, 0x4E, 0x0C, 0x0A, 0x71, 0xF8
 	};
 	static unsigned char zero_bytes[16];
 	unsigned long crc;
@@ -81,22 +81,22 @@ static int set_header(unsigned char type, unsigned char *buf, size_t size)
 	else
 		return 1;
 
-	if (type == 0x32u) {
+	if (type == 0x32) {
 		size_t code_size = sizeof(ia32);
 		size_t i;
 
-		for (i = 0u; i < code_size; i++) {
+		for (i = 0; i < code_size; i++) {
 			if ((unsigned)buf[i])
 				break;
 		}
 		if (i == code_size)
 			memcpy(&buf[0], &ia32[0], code_size);
 	}
-	if (type == 0x64u) {
+	if (type == 0x64) {
 		size_t code_size = sizeof(x64);
 		size_t i;
 
-		for (i = 0u; i < code_size; i++) {
+		for (i = 0; i < code_size; i++) {
 			if ((unsigned)buf[i])
 				break;
 		}
@@ -109,7 +109,7 @@ static int set_header(unsigned char type, unsigned char *buf, size_t size)
 	buf[16] = (unsigned char)((size) & 0xFFu);
 	buf[17] = (unsigned char)((size >> 8) & 0xFFu);
 	buf[28] = (unsigned char)(type & 0x7Fu);
-	buf[30] = (unsigned char)((type & 0x80u) ? 0x01u : 0x00u);
+	buf[30] = (unsigned char)((type & 0x80u) ? 0x01 : 0x00);
 
 	crc = crc32c(buf, size);
 	buf[24] = (unsigned char)((crc) & 0xFFu);
@@ -121,22 +121,22 @@ static int set_header(unsigned char type, unsigned char *buf, size_t size)
 
 int program(struct options *opt)
 {
-	unsigned char type = 0x00u;
+	unsigned char type = 0x00;
 
 	if (!*opt->operands || *(opt->operands + 1))
 		return opt->error = "missing/unsupported arguments", 1;
 
 	if (opt->arg_t) {
 		if (!strcmp(opt->arg_t, "ia16"))
-			type = 0x16u;
+			type = 0x16;
 		else if (!strcmp(opt->arg_t, "ia32"))
-			type = 0x32u;
+			type = 0x32;
 		else if (!strcmp(opt->arg_t, "x64"))
-			type = 0x64u;
+			type = 0x64;
 		else
 			return fputs("Error: unknown type", stderr), 1;
 		if (opt->legacy)
-			type |= 0x80u;
+			type |= 0x80;
 	}
 
 	if (opt->set_header) {
@@ -149,8 +149,8 @@ int program(struct options *opt)
 		fp = (errno = 0, fopen(*opt->operands, "rb"));
 		if (!fp)
 			return perror("Error"), 1;
-		nbytes = fread(&buf[0], 1u, sizeof(buf), fp);
-		if (nbytes < 32u || !feof(fp) || ferror(fp)) {
+		nbytes = fread(&buf[0], 1, sizeof(buf), fp);
+		if (nbytes < 32 || !feof(fp) || ferror(fp)) {
 			fputs("Error: can not read input\n", stderr);
 			return (void)fclose(fp), 1;
 		}
@@ -167,7 +167,7 @@ int program(struct options *opt)
 		fp = (errno = 0, fopen(*opt->operands, "wb"));
 		if (!fp)
 			return perror("Error"), 1;
-		if (fwrite(&buf[0], 1u, nbytes, fp) != nbytes) {
+		if (fwrite(&buf[0], 1, nbytes, fp) != nbytes) {
 			fputs("Error: can not write output\n", stderr);
 			return (void)fclose(fp), 1;
 		}
