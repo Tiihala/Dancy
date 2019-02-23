@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -443,7 +443,7 @@ static int read_file(const char *name, unsigned char **out, size_t *size)
 		*out = ptr;
 		ptr += *size;
 
-		bytes_read = (errno = 0, fread(ptr, 1u, chunk, fp));
+		bytes_read = (errno = 0, fread(ptr, 1, chunk, fp));
 		my_errno = errno;
 		stop = feof(fp);
 
@@ -483,7 +483,7 @@ static int end(const char *name, unsigned char *out, size_t size)
 		}
 		is_stdout = 0;
 	}
-	if ((errno = 0, fwrite(out, 1u, size, fp)) != size) {
+	if ((errno = 0, fwrite(out, 1, size, fp)) != size) {
 		perror("Error");
 		if (!is_stdout)
 			(void)fclose(fp);
