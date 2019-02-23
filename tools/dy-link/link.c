@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -38,7 +38,7 @@ static int end(struct options *opt, unsigned char *out, size_t size)
 		}
 		is_stdout = 0;
 	}
-	if ((errno = 0, fwrite(out, 1u, size, fp)) != size) {
+	if ((errno = 0, fwrite(out, 1, size, fp)) != size) {
 		perror("Error");
 		if (!is_stdout)
 			(void)fclose(fp);
@@ -98,8 +98,8 @@ static int duplicate(unsigned char *obj, unsigned char *sym, int type)
 		}
 		if (record) {
 			unsigned char *sec;
-			sec = obj + 20ul + ((LE16(&sym[12]) - 1ul) * 40ul);
-			memcpy(&sec[0], "____SKIP", 8u);
+			sec = obj + 20 + ((LE16(&sym[12]) - 1) * 40);
+			memcpy(&sec[0], "____SKIP", 8);
 			return 0;
 		}
 		if ((type2_num % chunk) == 0) {
@@ -158,7 +158,7 @@ static int get_pre_size(struct options *opt)
 
 static void add_with_align(int *off, int add, int init)
 {
-	unsigned u = (init) ? 63u : 15u;
+	unsigned u = (init) ? 63 : 15;
 	int t = *off;
 
 	t = t + add;
@@ -247,7 +247,7 @@ static int set_max_size(struct options *opt, int *size)
 	 * the simplest way to make sure that all values fit into
 	 * the variables.
 	 */
-	if ((unsigned long)(*size) < 0x7FFFFFFFul)
+	if ((unsigned long)(*size) < 0x7FFFFFFF)
 		return 0;
 	return fputs("Error: overflow (file size)\n", stderr), 1;
 }
@@ -273,8 +273,8 @@ static unsigned long crc32c(const void *obj, size_t len)
 static void set_at_header(unsigned char *buf, int size)
 {
 	static const unsigned char file_header[16] = {
-		0x8Du, 0x41u, 0x54u, 0x0Du, 0x0Au, 0x73u, 0x74u, 0x64u,
-		0x0Cu, 0x43u, 0x0Cu, 0x45u, 0x0Cu, 0x0Au, 0x71u, 0xF8u
+		0x8D, 0x41, 0x54, 0x0D, 0x0A, 0x73, 0x74, 0x64,
+		0x0C, 0x43, 0x0C, 0x45, 0x0C, 0x0A, 0x71, 0xF8
 	};
 	unsigned long crc;
 
@@ -304,7 +304,7 @@ int link_main(struct options *opt)
 		for (i = 0; i < opt->nr_mfiles; i++) {
 			unsigned char *dat = opt->mfiles[i].data;
 			unsigned char *sym = dat + LE32(&dat[8]);
-			unsigned char *str = sym + (LE32(&dat[12]) * 18ul);
+			unsigned char *str = sym + (LE32(&dat[12]) * 18);
 			int syms = (int)LE32(&dat[12]);
 			int state = 0;
 
@@ -318,10 +318,10 @@ int link_main(struct options *opt)
 				 * type 0xFF is replaced with type 6. The
 				 * value of 0xFF is used internally.
 				 */
-				if (type == 0xFFu)
-					sym[16] = (unsigned char)(type = 6u);
-				if (type == 105u)
-					sym[16] = (unsigned char)(type = 2u);
+				if (type == 0xFF)
+					sym[16] = (unsigned char)(type = 6);
+				if (type == 105)
+					sym[16] = (unsigned char)(type = 2);
 
 				if (!state && type == 3u && !LE32(&sym[8])) {
 					const char *n = (const char *)&sym[0];
@@ -338,7 +338,7 @@ int link_main(struct options *opt)
 					if (state) {
 						unsigned char *t1 = dat + 20;
 						t1 += ((int)sec - 1) * 40;
-						if (memcmp(t1, n, 8u))
+						if (memcmp(t1, n, 8))
 							state = 0;
 						if (!(t1[37] & 0x10u))
 							state = 0;
@@ -362,15 +362,15 @@ int link_main(struct options *opt)
 				 * The special type 0xFF means that the symbol
 				 * is external but the name will be discarded.
 				 */
-				if (sec && type == 2u) {
+				if (sec && type == 2) {
 					unsigned char *name = sym;
 					unsigned char b;
 
 					if (!*sym)
 						name = str + LE32(&sym[4]);
-					b = sym[8], sym[8] = 0u;
+					b = sym[8], sym[8] = 0;
 					if (mangled((const char *)name))
-						sym[16] = 0xFFu;
+						sym[16] = 0xFF;
 					sym[8] = b;
 				}
 
@@ -418,7 +418,7 @@ int link_main(struct options *opt)
 		W_LE32(section + 20, nbytes ? off : 0);
 		add_with_align(&off, nbytes, 0);
 		nbytes = section_copy_r(opt, name, out + off);
-		if ((unsigned)nbytes / 10u > 0xFFFEu) {
+		if ((unsigned)nbytes / 10u > 0xFFFE) {
 			fputs("Error: too many .text relocations\n", stderr);
 			return free(out), 1;
 		}
@@ -443,7 +443,7 @@ int link_main(struct options *opt)
 		W_LE32(section + 20, nbytes ? off : 0);
 		add_with_align(&off, nbytes, 0);
 		nbytes = section_copy_r(opt, name, out + off);
-		if ((unsigned)nbytes / 10u > 0xFFFEu) {
+		if ((unsigned)nbytes / 10u > 0xFFFE) {
 			fputs("Error: too many .rdata relocations\n", stderr);
 			return free(out), 1;
 		}
@@ -468,7 +468,7 @@ int link_main(struct options *opt)
 		W_LE32(section + 20, nbytes ? off : 0);
 		add_with_align(&off, nbytes, 0);
 		nbytes = section_copy_r(opt, name, out + off);
-		if ((unsigned)nbytes / 10u > 0xFFFEu) {
+		if ((unsigned)nbytes / 10u > 0xFFFE) {
 			fputs("Error: too many .data relocations\n", stderr);
 			return free(out), 1;
 		}
@@ -514,7 +514,7 @@ int link_main(struct options *opt)
 	 */
 	{
 		unsigned char *section = out + 20;
-		unsigned long total_size = 0ul;
+		unsigned long total_size = 0;
 		int err = 0;
 		int i;
 
@@ -538,25 +538,25 @@ int link_main(struct options *opt)
 			 * section .rdata align 64
 			 * section .bss   align 64
 			 */
-			if (opt->alignbits_t > 0x00700000ul) {
+			if (opt->alignbits_t > 0x00700000) {
 				fputs("Warning: init .text align\n", stderr);
 			}
-			if (opt->alignbits_r > 0x00700000ul) {
+			if (opt->alignbits_r > 0x00700000) {
 				fputs("Error: init .rdata align\n", stderr);
 				return free(out), 1;
 			}
-			if (opt->alignbits_d > 0x00700000ul) {
+			if (opt->alignbits_d > 0x00700000) {
 				fputs("Error: init .data align\n", stderr);
 				return free(out), 1;
 			}
-			if (opt->alignbits_b > 0x00700000ul) {
+			if (opt->alignbits_b > 0x00700000) {
 				fputs("Error: init .bss align\n", stderr);
 				return free(out), 1;
 			}
 			if (!(total_size < 0x0000E000))
 				err = 1;
 		}
-		if (err || !(total_size < 0x7FFFFFFFul)) {
+		if (err || !(total_size < 0x7FFFFFFF)) {
 			const char *e = "Error: memory layout, %08lX bytes\n";
 			fprintf(stderr, e, total_size);
 			return free(out), 1;
@@ -579,7 +579,7 @@ int link_main(struct options *opt)
 				int t2 = (int)LE16(&sym[6]);
 				unsigned char *t3 = opt->mfiles[t1].data;
 				unsigned char *t4 = t3 + LE32(&t3[8]);
-				unsigned char *t5 = t4 + LE32(&t3[12]) * 18ul;
+				unsigned char *t5 = t4 + LE32(&t3[12]) * 18;
 				unsigned char *t6 = t4 + t2 * 18;
 				unsigned char *t7 = t5 + LE32(&t6[4]);
 				int t8 = (int)strlen((char *)t7) + 1;
@@ -615,13 +615,13 @@ int link_main(struct options *opt)
 	 */
 	if (!strcmp(opt->arg_f, "at")) {
 		size_t s = (size_t)AT_HEADER_SIZE;
-		memmove(&out[s], &out[0], (20u + 4u * 40u));
+		memmove(&out[s], &out[0], (20 + 4 * 40));
 		set_at_header(&out[0], size);
 	} else if (!strcmp(opt->arg_f, "init")) {
 		size_t s = (size_t)IN_HEADER_SIZE;
-		memmove(&out[s], &out[0], (20u + 4u * 40u));
+		memmove(&out[s], &out[0], (20 + 4 * 40));
 		memset(&out[0], 0, s);
-		if ((unsigned)size > 0xF000u) {
+		if ((unsigned)size > 0xF000) {
 			fputs("Error: init file overflow\n", stderr);
 			return free(out), 1;
 		}

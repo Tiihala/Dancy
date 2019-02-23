@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -41,12 +41,12 @@ int symbol_copy_table(struct options *opt, unsigned char *out)
 		int j;
 
 		for (j = 0; j < syms; j++) {
-			unsigned long addr = 0ul;
+			unsigned long addr = 0;
 			unsigned long sec = LE16(&sym[12]);
 			int skip = 0;
 			int add = 18;
 
-			if (sec > 0x0000ul && sec < 0xFFFEul) {
+			if (sec > 0x0000 && sec < 0xFFFE) {
 				int s = (int)sec;
 				s = section_reloc(opt, i, s, &addr);
 				skip = s ? 0 : 1;
@@ -126,15 +126,15 @@ static int qsort_compare(const void *s1, const void *s2)
 		int r;
 
 		if ((unsigned)t1 != (unsigned)t2) {
-			if ((unsigned)t1 == 2u)
+			if ((unsigned)t1 == 2)
 				return 1;
-			if ((unsigned)t2 == 2u)
+			if ((unsigned)t2 == 2)
 				return -1;
 		}
 		/*
 		 * Only externals are sorted by name.
 		 */
-		if ((unsigned)t1 == 2u) {
+		if ((unsigned)t1 == 2) {
 			if ((r = strcmp(str1, str2)) != 0)
 				return r;
 		}
@@ -295,7 +295,7 @@ static char *get_long_name(struct options *opt, unsigned char *sym)
 		int t2 = (int)LE16(&sym[6]);
 		unsigned char *t3 = opt->mfiles[t1].data;
 		unsigned char *t4 = t3 + LE32(&t3[8]);
-		unsigned char *t5 = t4 + LE32(&t3[12]) * 18ul;
+		unsigned char *t5 = t4 + LE32(&t3[12]) * 18;
 		unsigned char *t6 = t4 + t2 * 18;
 
 		return (char *)(t5 + LE32(&t6[4]));
@@ -310,18 +310,18 @@ static int match(struct options *opt, unsigned char *s1, unsigned char *s2)
 	char buf1[9];
 	char buf2[9];
 
-	if (!memcmp(s1, s2, 8u))
+	if (!memcmp(s1, s2, 8))
 		return 1;
 
 	if (*s1) {
-		memcpy(&buf1[0], s1, 8u);
+		memcpy(&buf1[0], s1, 8);
 		buf1[8] = '\0';
 		str1 = &buf1[0];
 	} else {
 		str1 = get_long_name(opt, s1);
 	}
 	if (*s2) {
-		memcpy(&buf2[0], s2, 8u);
+		memcpy(&buf2[0], s2, 8);
 		buf2[8] = '\0';
 		str2 = &buf2[0];
 	} else {
@@ -332,9 +332,9 @@ static int match(struct options *opt, unsigned char *s1, unsigned char *s2)
 
 static void reloc_error(unsigned sec)
 {
-	if (sec == 0xFFFEu)
+	if (sec == 0xFFFE)
 		fputs("Error: relocations to debug symbol\n", stderr);
-	else if (sec == 0xFFFFu)
+	else if (sec == 0xFFFF)
 		fputs("Error: relocations to absolute symbol\n", stderr);
 	else
 		fputs("Error: relocations to unknown symbol\n", stderr);
@@ -376,18 +376,18 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		unsigned sec = (unsigned)LE16(&sym[12]);
 
 		if (sec == 0 && (unsigned)sym[16] != 2u) {
-			if ((unsigned)sym[16] != 0xFFu) {
+			if ((unsigned)sym[16] != 0xFF) {
 				if (delete_record(obj, i))
 					return reloc_error(0), 1;
 				continue;
 			}
 		}
-		if (sec > 0x0004u) {
+		if (sec > 0x0004) {
 			if (delete_record(obj, i))
 				return reloc_error(sec), 1;
 			continue;
 		}
-		if (sec == 0 || (unsigned)sym[16] != 2u) {
+		if (sec == 0 || (unsigned)sym[16] != 2) {
 			if (!delete_record(obj, i))
 				continue;
 		}
@@ -426,21 +426,21 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			/*
 			 * Adjust the alignment of the symbol.
 			 */
-			if (add == 2ul || add == 4ul || add == 8ul) {
-				if (bss_size < UINT_MAX - (add - 1ul)) {
+			if (add == 2 || add == 4 || add == 8) {
+				if (bss_size < UINT_MAX - (add - 1)) {
 					bss_size += (add - 1ul);
 					bss_size &= ~(add - 1ul);
 				} else {
 					err = 1;
 				}
-			} else if (add > 1ul && add < 8ul) {
+			} else if (add > 1 && add < 8) {
 				if (bss_size < UINT_MAX - 7ul) {
 					bss_size += 7ul;
 					bss_size &= ~(7ul);
 				} else {
 					err = 1;
 				}
-			} else if (add != 1ul) {
+			} else if (add != 1) {
 				if (bss_size < UINT_MAX - 15ul) {
 					bss_size += 15ul;
 					bss_size &= ~(15ul);
@@ -450,7 +450,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			}
 
 			W_LE32(&s1[8], bss_size);
-			W_LE16(&s1[12], 4ul);
+			W_LE16(&s1[12], 4);
 
 			for (j = 0; j < syms; j++) {
 				s2 = obj + symtab + (j * 18);
@@ -459,7 +459,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				if (!match(opt, s1, s2))
 					continue;
 				W_LE32(&s2[8], bss_size);
-				W_LE16(&s2[12], 4ul);
+				W_LE16(&s2[12], 4);
 			}
 
 			if (bss_size < UINT_MAX - add)
@@ -467,7 +467,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			else
 				err = 1;
 
-			if (err || !(bss_size < 0x7FFFFFFFul)) {
+			if (err || !(bss_size < 0x7FFFFFFF)) {
 				fputs("Error: .bss overflow\n", stderr);
 				return 1;
 			}
@@ -489,7 +489,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 
 			if (LE32(&s1[8]) || LE16(&s1[12]))
 				continue;
-			if (type != 2u && type != 0xFFu)
+			if (type != 2u && type != 0xFF)
 				continue;
 
 			for (j = 0; j < syms; j++) {
@@ -500,9 +500,9 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				s2 = NULL;
 			}
 			if (s2 != NULL && s1 != s2)
-				memcpy(s1, s2, 18u);
+				memcpy(s1, s2, 18);
 			if (!LE16(&s1[12]))
-				s1[16] = 2u;
+				s1[16] = 2;
 		}
 	}
 
@@ -516,11 +516,11 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		/*
 		 * Use temporary names.
 		 */
-		memset(&sym[0], 0u, (4u * 18u));
-		sym[0] = 0x54u, sym[12] = 1u, sym[16] = 3u, sym += 18;
-		sym[0] = 0x54u, sym[12] = 2u, sym[16] = 3u, sym += 18;
-		sym[0] = 0x54u, sym[12] = 3u, sym[16] = 3u, sym += 18;
-		sym[0] = 0x54u, sym[12] = 4u, sym[16] = 3u, sym += 18;
+		memset(&sym[0], 0u, (4 * 18));
+		sym[0] = 0x54, sym[12] = 1, sym[16] = 3, sym += 18;
+		sym[0] = 0x54, sym[12] = 2, sym[16] = 3, sym += 18;
+		sym[0] = 0x54, sym[12] = 3, sym[16] = 3, sym += 18;
+		sym[0] = 0x54, sym[12] = 4, sym[16] = 3, sym += 18;
 
 		syms += 4;
 		W_LE32(&obj[12], syms);
@@ -533,7 +533,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		struct { unsigned long i; void *s; void *n; } *sym;
 		size_t syms = (size_t)LE32(&obj[12]);
 		void *arr = calloc(syms, sizeof(*sym));
-		void *buf = calloc(syms, 18u);
+		void *buf = calloc(syms, 18);
 
 		if (!arr || !buf) {
 			fputs("Error: not enough memory\n", stderr);
@@ -549,10 +549,10 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		}
 		qsort(arr, syms, sizeof(*sym), qsort_compare);
 		for (i = 0, sym = arr; i < (int)syms; i++) {
-			memcpy((unsigned char *)buf + (i * 18), sym->s, 18u);
+			memcpy((unsigned char *)buf + (i * 18), sym->s, 18);
 			sym += 1;
 		}
-		memcpy(obj + symtab, buf, (syms * 18u));
+		memcpy(obj + symtab, buf, (syms * 18));
 		reloc_update1(obj, arr, (int)syms);
 		free(buf), free(arr);
 	}
@@ -565,11 +565,11 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			unsigned char *s1 = obj + symtab + ((i + 0) * 18);
 			unsigned char *s2 = obj + symtab + ((i + 1) * 18);
 
-			if (memcmp(&s1[8], &s2[8], 6u)) {
+			if (memcmp(&s1[8], &s2[8], 6)) {
 				i += 1;
 				continue;
 			}
-			if ((unsigned)s1[16] == 2u && !match(opt, s1, s2)) {
+			if ((unsigned)s1[16] == 2 && !match(opt, s1, s2)) {
 				i += 1;
 				continue;
 			}
@@ -592,7 +592,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			unsigned char *s = obj + symtab + (i * 18);
 			unsigned s_num = (unsigned)LE16(&s[12]);
 
-			if ((unsigned)s[16] == 2u)
+			if ((unsigned)s[16] == 2)
 				break;
 			if (s_num < 1 || s_num > 4) {
 				fprintf(stderr, "Error: %u\n", s_num);
@@ -600,25 +600,25 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			}
 			memset(&s[0], 0u, 8u);
 			if (!LE32(&s[8])) {
-				if (s_num == 1u)
+				if (s_num == 1)
 					strcpy((char *)&s[0], ".text");
-				else if (s_num == 2u)
+				else if (s_num == 2)
 					strcpy((char *)&s[0], ".rdata");
-				else if (s_num == 3u)
+				else if (s_num == 3)
 					strcpy((char *)&s[0], ".data");
-				else if (s_num == 4u)
+				else if (s_num == 4)
 					strcpy((char *)&s[0], ".bss");
 			} else {
-				if (s_num == 1u)
+				if (s_num == 1)
 					sprintf((char *)&s[0], "_t%i", i_t++);
-				else if (s_num == 2u)
+				else if (s_num == 2)
 					sprintf((char *)&s[0], "_r%i", i_r++);
-				else if (s_num == 3u)
+				else if (s_num == 3)
 					sprintf((char *)&s[0], "_d%i", i_d++);
-				else if (s_num == 4u)
+				else if (s_num == 4)
 					sprintf((char *)&s[0], "_b%i", i_b++);
 			}
-			s[14] = 0u, s[15] = 0u, s[16] = 3u;
+			s[14] = 0, s[15] = 0, s[16] = 3;
 		}
 		while (i < syms - 1) {
 			unsigned char *s1 = obj + symtab + ((i + 0) * 18);
@@ -676,12 +676,12 @@ int symbol_string_size(struct options *opt)
 		if (!off || !syms)
 			continue;
 		buf += off;
-		buf += syms * 18ul;
+		buf += syms * 18;
 
 		add = LE32(&buf[0]);
-		if (add >= 4ul && add < (unsigned long)INT_MAX) {
+		if (add >= 4 && add < (unsigned long)INT_MAX) {
 			if (total_size < INT_MAX - (int)add) {
-				total_size += (int)(add - 4ul);
+				total_size += (int)(add - 4);
 				continue;
 			}
 		}
@@ -697,7 +697,7 @@ int symbol_table_size(struct options *opt)
 
 	for (i = 0; i < opt->nr_mfiles; i++) {
 		unsigned char *buf = opt->mfiles[i].data;
-		unsigned long add = LE32(&buf[12]) * 18ul;
+		unsigned long add = LE32(&buf[12]) * 18;
 
 		if (total_size < INT_MAX - (int)add)
 			total_size += (int)add;

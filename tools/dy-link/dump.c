@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -33,16 +33,16 @@ void dump_ext(const char *name, const unsigned char *buf)
 		/*
 		 * Dump only symbol table entries that are external.
 		 */
-		if (sym[16] != 0x02u || LE16(&sym[12]) || LE32(&sym[8])) {
+		if (sym[16] != 0x02 || LE16(&sym[12]) || LE32(&sym[8])) {
 			i = i + (int)sym[17];
 			continue;
 		}
 		printf("  [%08lX]    00000000  ", (unsigned long)i);
 		printf("%-8s", "extern");
 
-		if (LE16(&sym[14]) == 0x0000ul)
+		if (LE16(&sym[14]) == 0x0000)
 			printf("%-6s", "-");
-		else if (LE16(&sym[14]) == 0x0020ul)
+		else if (LE16(&sym[14]) == 0x0020)
 			printf("%-6s", "func");
 		else
 			printf("%-6s", "\?");
@@ -53,7 +53,7 @@ void dump_ext(const char *name, const unsigned char *buf)
 			printf("-> %.8s", &sym[0]);
 		} else {
 			const unsigned char *str;
-			str = &buf[symtab_offset + symtab_count * 18ul];
+			str = &buf[symtab_offset + symtab_count * 18];
 			str = str + LE32(&sym[4]);
 			printf("-> %s", str);
 		}
@@ -69,7 +69,7 @@ void dump_obj(const char *name, const unsigned char *buf)
 	unsigned long section_count = LE16(&buf[2]);
 	unsigned long symtab_offset = LE32(&buf[8]);
 	unsigned long symtab_count = LE32(&buf[12]);
-	const char *arch_name = (arch_type == 0x014Cu) ? "i386" : "x86-64";
+	const char *arch_name = (arch_type == 0x014C) ? "i386" : "x86-64";
 	int i;
 
 	printf("file_name:      %s\n", name);
@@ -148,7 +148,7 @@ void dump_obj(const char *name, const unsigned char *buf)
 		 * next symbol table entry ("the extended symbol entry").
 		 */
 		if (!LE32(&sym[8]) && sym[16] == 0x03u && sym[17]) {
-			if (LE16(&sym[12]) && LE16(&sym[12]) < 0x8000ul)
+			if (LE16(&sym[12]) && LE16(&sym[12]) < 0x8000)
 				is_section = 1;
 		}
 		printf("  [%08lX]", (unsigned long)i);
@@ -158,29 +158,29 @@ void dump_obj(const char *name, const unsigned char *buf)
 			printf("%-4s", " ");
 		printf("%08lX  ", LE32(&sym[8]));
 
-		if (sym[16] == 0x02u)
+		if (sym[16] == 0x02)
 			printf("%-8s", "extern");
-		else if (sym[16] == 0x03u)
+		else if (sym[16] == 0x03)
 			printf("%-8s", "static");
-		else if (sym[16] == 0x06u)
+		else if (sym[16] == 0x06)
 			printf("%-8s", "label");
-		else if (sym[16] == 0x67u)
+		else if (sym[16] == 0x67)
 			printf("%-8s", "file");
 		else
 			printf("type%-3u ", (unsigned)sym[16]);
 
-		if (LE16(&sym[14]) == 0x0000ul)
+		if (LE16(&sym[14]) == 0x0000)
 			printf("%-6s", "-");
-		else if (LE16(&sym[14]) == 0x0020ul)
+		else if (LE16(&sym[14]) == 0x0020)
 			printf("%-6s", "func");
 		else
 			printf("%-6s", "\?");
 
-		if (LE16(&sym[12]) == 0x0000ul)
+		if (LE16(&sym[12]) == 0x0000)
 			printf("%-6s", "-");
-		else if (LE16(&sym[12]) == 0xFFFFul)
+		else if (LE16(&sym[12]) == 0xFFFF)
 			printf("%-6s", "abs");
-		else if (LE16(&sym[12]) == 0xFFFEul)
+		else if (LE16(&sym[12]) == 0xFFFE)
 			printf("%-6s", "dbg");
 		else if (LE16(&sym[12]) <= section_count)
 			printf("#%-5lu", LE16(&sym[12]));
@@ -199,7 +199,7 @@ void dump_obj(const char *name, const unsigned char *buf)
 			printf("-> %.8s", &sym[0]);
 		} else {
 			const unsigned char *str;
-			str = &buf[symtab_offset + symtab_count * 18ul];
+			str = &buf[symtab_offset + symtab_count * 18];
 			str = str + LE32(&sym[4]);
 			printf("-> %s", str);
 		}

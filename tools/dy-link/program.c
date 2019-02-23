@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
 
 static int default_obj(struct options *opt, unsigned magic)
 {
-	size_t size = 20u;
+	size_t size = 20;
 	unsigned char *m;
 
 	if (opt->nr_mfiles) {
@@ -50,15 +50,15 @@ static void native_obj(unsigned char *data, int size)
 
 	if (size < 32)
 		return;
-	if (LE32(&data[0]) != 0x00000000ul && LE32(&data[0]) != 0x0D54418Dul)
+	if (LE32(&data[0]) != 0x00000000 && LE32(&data[0]) != 0x0D54418D)
 		return;
 	/*
 	 * Normal executables.
 	 */
-	if (LE32(&data[8]) == 0x450C430Cul && size >= at_size) {
-		if (LE16(&data[AT_HEADER_SIZE + 2]) != 4ul)
+	if (LE32(&data[8]) == 0x450C430C && size >= at_size) {
+		if (LE16(&data[AT_HEADER_SIZE + 2]) != 4)
 			return;
-		if (LE32(&data[AT_HEADER_SIZE + 16]) != 0ul)
+		if (LE32(&data[AT_HEADER_SIZE + 16]) != 0)
 			return;
 		memcpy(&header[0], &data[AT_HEADER_SIZE], sizeof(header));
 		memset(&data[0], 0, (size_t)at_size);
@@ -68,10 +68,10 @@ static void native_obj(unsigned char *data, int size)
 	/*
 	 * Init executables (with header).
 	 */
-	if (LE32(&data[8]) == 0x4E0C490Cul && size >= in_size) {
-		if (LE16(&data[IN_HEADER_SIZE + 2]) != 4ul)
+	if (LE32(&data[8]) == 0x4E0C490C && size >= in_size) {
+		if (LE16(&data[IN_HEADER_SIZE + 2]) != 4)
 			return;
-		if (LE32(&data[IN_HEADER_SIZE + 16]) != 0ul)
+		if (LE32(&data[IN_HEADER_SIZE + 16]) != 0)
 			return;
 		memcpy(&header[0], &data[IN_HEADER_SIZE], sizeof(header));
 		memset(&data[0], 0, (size_t)in_size);
@@ -81,15 +81,15 @@ static void native_obj(unsigned char *data, int size)
 	/*
 	 * Init executables (without header).
 	 */
-	if (LE32(&data[0]) == 0x00000000ul && size >= in_size) {
+	if (LE32(&data[0]) == 0x00000000 && size >= in_size) {
 		int i;
 		for (i = 4; i < IN_HEADER_SIZE; i++) {
 			if (data[i])
 				return;
 		}
-		if (LE16(&data[IN_HEADER_SIZE + 2]) != 4ul)
+		if (LE16(&data[IN_HEADER_SIZE + 2]) != 4)
 			return;
-		if (LE32(&data[IN_HEADER_SIZE + 16]) != 0ul)
+		if (LE32(&data[IN_HEADER_SIZE + 16]) != 0)
 			return;
 		memcpy(&header[0], &data[IN_HEADER_SIZE], sizeof(header));
 		memset(&data[0], 0, (size_t)in_size);
@@ -108,10 +108,10 @@ int program(struct options *opt)
 		} else if (!strcmp(opt->arg_f, "init")) {
 			; /* Accept */
 		} else if (!strcmp(opt->arg_f, "32")) {
-			if (default_obj(opt, 0x014Cu))
+			if (default_obj(opt, 0x014C))
 				return 1;
 		} else if (!strcmp(opt->arg_f, "64")) {
-			if (default_obj(opt, 0x8664u))
+			if (default_obj(opt, 0x8664))
 				return 1;
 		} else {
 			fputs("Error: unknown output format\n", stderr);
@@ -144,10 +144,10 @@ int program(struct options *opt)
 	/*
 	 * Set default alignment bits for sections.
 	 */
-	opt->alignbits_t = 0x00500000ul;
-	opt->alignbits_r = 0x00300000ul;
-	opt->alignbits_d = 0x00300000ul;
-	opt->alignbits_b = 0x00500000ul;
+	opt->alignbits_t = 0x00500000;
+	opt->alignbits_r = 0x00300000;
+	opt->alignbits_d = 0x00300000;
+	opt->alignbits_b = 0x00500000;
 	/*
 	 * Handle grouped sections first and then check
 	 * the total size of all relevant sections.

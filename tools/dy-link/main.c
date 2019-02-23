@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -57,7 +57,7 @@ static int read_mfile(const char *name, int i)
 		ptr = mfiles[i].data + mfiles[i].size;
 
 		errno = 0;
-		size = (int)fread(ptr, 1u, (size_t)MFILES_CHUNK, fp);
+		size = (int)fread(ptr, 1, (size_t)MFILES_CHUNK, fp);
 		my_errno = errno;
 		if (ferror(fp)) {
 			fprintf(stderr, "Error: %s\n", strerror(my_errno));

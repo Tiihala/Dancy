@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,10 +32,10 @@ static void iterate_init(struct iterate *it, void *opt, const void *name)
 {
 	it->opt = opt;
 	it->name = name;
-	it->grp = 0u;
-	it->obj = 0u;
-	it->sec = 0u;
-	it->i = 0u;
+	it->grp = 0;
+	it->obj = 0;
+	it->sec = 0;
+	it->i = 0;
 }
 
 static unsigned char *iterate_next(struct iterate *it)
@@ -58,7 +58,7 @@ static unsigned char *iterate_next(struct iterate *it)
 
 				if (it->name) {
 					const char *s = (const char *)sec;
-					if (strncmp(s, it->name, 8u))
+					if (strncmp(s, it->name, 8))
 						continue;
 					if (grp > it->grp)
 						next_group = 1;
@@ -69,9 +69,9 @@ static unsigned char *iterate_next(struct iterate *it)
 				it->sec = ++j;
 				return sec;
 			}
-			it->sec = 0u;
+			it->sec = 0;
 		}
-		it->obj = 0u;
+		it->obj = 0;
 		it->grp++;
 	} while (next_group-- > 0);
 
@@ -89,12 +89,12 @@ static int qsort_compare(const void *s1, const void *s2)
 	char buf2[9];
 
 	if (t1->l == 8u) {
-		memcpy(&buf1[0], str1, 8u);
+		memcpy(&buf1[0], str1, 8);
 		buf1[8] = '\0';
 		str1 = &buf1[0];
 	}
 	if (t2->l == 8u) {
-		memcpy(&buf2[0], str2, 8u);
+		memcpy(&buf2[0], str2, 8);
 		buf2[8] = '\0';
 		str2 = &buf2[0];
 	}
@@ -158,7 +158,7 @@ int section_reloc_size(struct options *opt, const char *name)
 	iterate_init(&it, opt, name);
 	while ((buf = iterate_next(&it)) != NULL) {
 		unsigned long nr_rel = LE16(&buf[32]);
-		unsigned long add = nr_rel * 10ul;
+		unsigned long add = nr_rel * 10;
 
 		if (add < (unsigned long)INT_MAX) {
 			if (total_size < INT_MAX - (int)add)
@@ -200,22 +200,22 @@ int section_group(struct options *opt)
 		size_t len = 8u;
 		size_t i;
 
-		if ((unsigned)buf[0] == 0x2Fu) {
+		if ((unsigned)buf[0] == 0x2F) {
 			unsigned char *dat = opt->mfiles[it.obj].data;
-			unsigned long offset = 0ul;
+			unsigned long offset = 0;
 
-			for (i = 1u; i < 8u && buf[i]; i++) {
+			for (i = 1; i < 8 && buf[i]; i++) {
 				unsigned long a;
-				a = (unsigned long)buf[i] - 0x30ul;
-				offset *= 10ul;
+				a = (unsigned long)buf[i] - 0x30;
+				offset *= 10;
 				offset += a;
 			}
-			dat = dat + LE32(&dat[8]) + (LE32(&dat[12]) * 18u);
+			dat = dat + LE32(&dat[8]) + (LE32(&dat[12]) * 18);
 			str = (char *)(dat + offset);
 			len = strlen(str);
 		}
 		for (i = 0u; i < len; i++) {
-			if ((unsigned)str[i] == 0x24u) {
+			if ((unsigned)str[i] == 0x24) {
 				sec = buf_sort;
 				sec += it.i++;
 				sec->s = &buf[0];
@@ -231,30 +231,30 @@ int section_group(struct options *opt)
 	 * Assign group numbers to the sections.
 	 */
 	if (it.i) {
-		unsigned long grp = 1ul;
+		unsigned long grp = 1;
 		unsigned char name[8];
 		unsigned i;
 		unsigned j;
 
-		for (i = 0u; i < it.i; i++) {
+		for (i = 0; i < it.i; i++) {
 			sec = buf_sort;
 			sec += i;
-			if (i > 0u && qsort_compare(sec, sec - 1)) {
-				if (grp < 0x7FFFul)
+			if (i > 0 && qsort_compare(sec, sec - 1)) {
+				if (grp < 0x7FFF)
 					grp++;
 			}
 			W_LE32(&sec->s[28], grp);
 		}
-		for (i = 0u; i < it.i; i++) {
+		for (i = 0; i < it.i; i++) {
 			sec = buf_sort;
 			sec += i;
 			memset(&name[0], 0, 8u);
-			for (j = 0u; j < 8u; j++) {
-				if ((unsigned)sec->n[j] == 0x24u)
+			for (j = 0; j < 8; j++) {
+				if ((unsigned)sec->n[j] == 0x24)
 					break;
 				name[j] = (unsigned char)sec->n[j];
 			}
-			memcpy(&sec->s[0], &name[0], 8u);
+			memcpy(&sec->s[0], &name[0], 8);
 		}
 	}
 	return free(buf_sort), 0;
@@ -285,7 +285,7 @@ int section_check_sizes(struct options *opt)
 		total_size = INT_MAX;
 		break;
 	}
-	if (total_size < INT_MAX && (unsigned long)total_size < 0x7FFFFFFFul)
+	if (total_size < INT_MAX && (unsigned long)total_size < 0x7FFFFFFF)
 		return total_size;
 	return fputs("Error: total size of sections\n", stderr), INT_MAX;
 }
@@ -344,7 +344,7 @@ int section_copy_r(struct options *opt, const char *name, unsigned char *out)
 	iterate_init(&it, opt, name);
 	while ((buf = iterate_next(&it)) != NULL) {
 		unsigned char *dat = opt->mfiles[it.obj].data;
-		unsigned long t_off = 0ul;
+		unsigned long t_off = 0;
 		unsigned long s_off = LE32(&buf[12]);
 		unsigned long r_off = LE32(&buf[24]);
 		unsigned long r_num = LE16(&buf[32]);

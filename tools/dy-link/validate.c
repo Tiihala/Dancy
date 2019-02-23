@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,7 +28,7 @@ static int validate_reloc_type(unsigned arch_type, unsigned reloc_type)
 	 */
 	int bytes_to_access = 0;
 
-	if (arch_type == 0x014Cu && reloc_type < 0x8000u) {
+	if (arch_type == 0x014C && reloc_type < 0x8000) {
 		switch ((int)reloc_type) {
 		case 0x06: bytes_to_access = 0x04; break;
 		case 0x07: bytes_to_access = 0x04; break;
@@ -36,7 +36,7 @@ static int validate_reloc_type(unsigned arch_type, unsigned reloc_type)
 		default: break;
 		}
 	}
-	if (arch_type == 0x8664u && reloc_type < 0x8000u) {
+	if (arch_type == 0x8664 && reloc_type < 0x8000) {
 		switch ((int)reloc_type) {
 		case 0x01: bytes_to_access = 0x08; break;
 		case 0x02: bytes_to_access = 0x04; break;
@@ -62,25 +62,25 @@ static int validate_name(const char *name, unsigned long flags)
 	/*
 	 * Check the (de facto) standard section names.
 	 */
-	if (!strncmp(name, ".text", 5u)) {
+	if (!strncmp(name, ".text", 5)) {
 		if ((flags & 0xF0ul) != 0x20ul) {
 			fputs("Error: .text flags\n", stderr);
 			err = 1;
 		}
 	}
-	if (!strncmp(name, ".rdata", 6u)) {
+	if (!strncmp(name, ".rdata", 6)) {
 		if ((flags & 0xF0ul) != 0x40ul) {
 			fputs("Error: .rdata flags\n", stderr);
 			err = 1;
 		}
 	}
-	if (!strncmp(name, ".data", 5u)) {
+	if (!strncmp(name, ".data", 5)) {
 		if ((flags & 0xF0ul) != 0x40ul) {
 			fputs("Error: .data flags\n", stderr);
 			err = 1;
 		}
 	}
-	if (!strncmp(name, ".bss", 4u)) {
+	if (!strncmp(name, ".bss", 4)) {
 		if ((flags & 0xF0ul) != 0x80ul) {
 			fputs("Error: .bss flags\n", stderr);
 			err = 1;
@@ -92,7 +92,7 @@ static int validate_name(const char *name, unsigned long flags)
 int validate_obj(const char *name, const unsigned char *buf, int size)
 {
 	static unsigned type;
-	unsigned long strtab_size = 0ul;
+	unsigned long strtab_size = 0;
 	const unsigned char *strtab_off = NULL;
 	int total_size = 0;
 
@@ -111,7 +111,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 	 * Detect the type of instructions. Types 80386 and AMD64
 	 * are currently supported by this linker implementation.
 	 */
-	if (type != 0x014Cu && type != 0x8664u) {
+	if (type != 0x014C && type != 0x8664) {
 		const char *fmt = "%s: unknown magic word (0x%04X)\n";
 		fprintf(stderr, fmt, name, type);
 		return 1;
@@ -129,11 +129,11 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 	 * Check that there is enough space for the section table. The
 	 * limit of section table entries is artificial.
 	 */
-	if (LE16(&buf[2]) * 40ul + 20ul > (unsigned long)size) {
+	if (LE16(&buf[2]) * 40ul + 20 > (unsigned long)size) {
 		fprintf(stderr, "%s: section table error\n", name);
 		return 1;
 	}
-	if (LE16(&buf[2]) > 16384ul) {
+	if (LE16(&buf[2]) > 16384) {
 		fprintf(stderr, "%s: too many sections\n", name);
 		return 1;
 	}
@@ -150,8 +150,8 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 		 * The limit of symbol table entries is artificial but
 		 * it prevents overflow when doing the multiplication.
 		 */
-		if (symbols < 0x00FFFFFFul)
-			err = 0, symbols = symbols * 18ul;
+		if (symbols < 0x00FFFFFF)
+			err = 0, symbols = symbols * 18;
 		if (offset > ULONG_MAX - symbols)
 			err = 1;
 		if (offset + symbols > (unsigned long)size)
@@ -175,13 +175,13 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			strtab_size = LE32(&buf[offset]);
 		}
 
-		if (strtab_size < 4ul)
+		if (strtab_size < 4)
 			err = 1;
 		if (offset > ULONG_MAX - strtab_size)
 			err = 1;
 		if (offset + strtab_size > (unsigned long)size)
 			err = 1;
-		if (!err && buf[offset + strtab_size - 1ul])
+		if (!err && buf[offset + strtab_size - 1])
 			err = 1;
 		if (err) {
 			fprintf(stderr, "%s: string table error\n", name);
@@ -195,26 +195,26 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 		offset = LE32(&buf[8]);
 		symbols = LE32(&buf[12]);
 		if (symbols) {
-			unsigned long i = 0ul;
+			unsigned long i = 0;
 			const unsigned char *sym;
 			unsigned long section_number;
 
 			while (!err && i < symbols) {
-				sym = &buf[offset + i * 18ul];
+				sym = &buf[offset + i * 18];
 				if (!LE32(&sym[0])) {
-					if (LE32(&sym[4]) < 4ul)
+					if (LE32(&sym[4]) < 4)
 						err = 1;
 					if (LE32(&sym[4]) >= strtab_size)
 						err = 1;
 				}
 				section_number = LE16(&sym[12]);
-				if (section_number < 0xFFFEul) {
+				if (section_number < 0xFFFE) {
 					if (section_number > LE16(&buf[2]))
 						err = 1;
 				}
 				if (!section_number && !LE32(&sym[8])) {
-					if ((unsigned)sym[16] != 2u)
-						if ((unsigned)sym[16] != 105u)
+					if ((unsigned)sym[16] != 2)
+						if ((unsigned)sym[16] != 105)
 							err = 1;
 				}
 				/*
@@ -242,11 +242,11 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 				 * file names only. Other structures should
 				 * not need more than one. Change if needed.
 				 */
-				if ((unsigned)sym[17] > 0x01u) {
-					if ((unsigned)sym[16] != 0x67u)
+				if ((unsigned)sym[17] > 0x01) {
+					if ((unsigned)sym[16] != 0x67)
 						err = 1;
 				}
-				i = i + (unsigned long)sym[17] + 1ul;
+				i = i + (unsigned long)sym[17] + 1;
 			}
 			if (i != symbols)
 				err = 1;
@@ -273,7 +273,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			unsigned long data_size = LE32(&sect[16]);
 			unsigned long data_offset = LE32(&sect[20]);
 			unsigned long relo_offset = LE32(&sect[24]);
-			unsigned long relo_size = LE16(&sect[32]) * 10ul;
+			unsigned long relo_size = LE16(&sect[32]) * 10;
 			unsigned long flags = LE32(&sect[36]);
 			const unsigned char *relo_ptr;
 
@@ -284,20 +284,20 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			 * hold it without overflows. Check that there are no
 			 * trailing zeros (no "octal numbers" supported).
 			 */
-			if ((unsigned)sect[0] == 0x2Fu) {
+			if ((unsigned)sect[0] == 0x2F) {
 				int j;
-				unsigned long offset = 0ul;
+				unsigned long offset = 0;
 
-				if ((unsigned)sect[1] < 0x31u)
+				if ((unsigned)sect[1] < 0x31)
 					err = 1;
 				for (j = 1; j < 8 && sect[j]; j++) {
 					unsigned long a;
-					if ((unsigned)sect[j] < 0x30u)
+					if ((unsigned)sect[j] < 0x30)
 						err = 1;
-					if ((unsigned)sect[j] > 0x39u)
+					if ((unsigned)sect[j] > 0x39)
 						err = 1;
-					a = (unsigned long)sect[j] - 0x30ul;
-					offset *= 10ul;
+					a = (unsigned long)sect[j] - 0x30;
+					offset *= 10;
 					offset += a;
 				}
 				if (offset < strtab_size) {
@@ -326,7 +326,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 					err = 1;
 				}
 			} else {
-				if (data_size && data_offset < 0x14ul)
+				if (data_size && data_offset < 0x14)
 					err = 1;
 			}
 			/*
@@ -337,7 +337,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			 */
 			if (flags & 0x01000000ul)
 				err = 1;
-			if ((flags & 0x00F00000ul) > 0x00D00000ul)
+			if ((flags & 0x00F00000ul) > 0x00D00000)
 				err = 1;
 			if (flags & 0x20000000ul) {
 				if (!(flags & 0x20ul))
@@ -377,7 +377,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			 * and make sure reloc offsets, symbol table indices,
 			 * and relocation types are safe to use.
 			 */
-			if ((relo_size % 10ul) != 0ul)
+			if ((relo_size % 10ul) != 0)
 				err = 1;
 			relo_ptr = &buf[relo_offset];
 			while (!err && relo_size) {
@@ -397,7 +397,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 					err = 1;
 
 				relo_ptr += 10;
-				relo_size -= 10ul;
+				relo_size -= 10;
 			}
 			/*
 			 * Check the total size of all sections and add 40
@@ -409,7 +409,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 			if (data_size > ULONG_MAX - 40ul)
 				err = 1;
 			if (!err) {
-				unsigned long add = data_size + 40ul;
+				unsigned long add = data_size + 40;
 				if (add < (unsigned long)INT_MAX) {
 					if (total_size < INT_MAX - (int)add)
 						total_size += (int)add;
