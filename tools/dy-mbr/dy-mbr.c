@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -55,7 +55,7 @@ int program(struct options *opt)
 	fp = (errno = 0, fopen(*opt->operands, "r+b"));
 	if (!fp)
 		return perror("Error"), 1;
-	if (fread(&buf[0], 1u, 512u, fp) != 512u) {
+	if (fread(&buf[0], 1, 512, fp) != 512) {
 		fputs("Error: can not read 512 bytes\n", stderr);
 		return (void)fclose(fp), 1;
 	}
@@ -67,24 +67,24 @@ int program(struct options *opt)
 	/*
 	 * Simple detection for master boot records.
 	 */
-	if (buf[0x0000] == 0xEBu && buf[0x0001] == 0x3Cu) {
+	if (buf[0x0000] == 0xEB && buf[0x0001] == 0x3C) {
 		fputs("Error: file system detected\n", stderr);
 		return (void)fclose(fp), 1;
 	}
-	if (buf[0x01FE] != 0x55u || buf[0x01FF] != 0xAAu) {
+	if (buf[0x01FE] != 0x55 || buf[0x01FF] != 0xAA) {
 		fputs("Error: missing boot signature\n", stderr);
 		return (void)fclose(fp), 1;
 	}
 
-	memcpy(&buf[0], &mbr_bin[0], 440u);
+	memcpy(&buf[0], &mbr_bin[0], 440);
 
-	if ((errno = 0, fwrite(&buf[0], 1u, 512u, fp)) != 512u)
+	if ((errno = 0, fwrite(&buf[0], 1, 512, fp)) != 512)
 		return perror("Error"), (void)fclose(fp), 1;
 	if ((errno = 0, fclose(fp)))
 		return perror("Error"), 1;
 
 	if (opt->verbose) {
-		unsigned long crc = crc32c(&mbr_bin[0], 512u);
+		unsigned long crc = crc32c(&mbr_bin[0], 512);
 		printf("mbr_bin (crc32c): 0x%08lX\n", crc);
 	}
 	return 0;
