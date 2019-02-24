@@ -332,7 +332,7 @@ void free(void *ptr)
 
 	for (i = 1; i < memory_free_end; i++) {
 		uint32_t t = memory[i].type;
-		if (t < B_MEM_INIT_ALLOC_MIN && t > B_MEM_INIT_ALLOC_MAX)
+		if (t < B_MEM_INIT_ALLOC_MIN || t > B_MEM_INIT_ALLOC_MAX)
 			continue;
 		if (memory[i].base == addr) {
 			memory[i].type = B_MEM_NORMAL;
