@@ -60,7 +60,6 @@ struct acpi_information {
 
 	unsigned rtc_century_idx;
 	unsigned iapc_boot_arch;
-	unsigned errors;
 };
 
 struct acpi_information *acpi_get_information(void);
