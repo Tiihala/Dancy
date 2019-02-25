@@ -25,7 +25,7 @@ int cpu_test_features(void)
 	int ret = 0;
 
 	/*
-	 * The boot loeader guarantees that cpuid is available and
+	 * The boot loader guarantees that cpuid is available and
 	 * a floating point unit is "on-chip".
 	 */
 	cpu_id((eax = 0, &eax), &ecx, &edx, &ebx);
