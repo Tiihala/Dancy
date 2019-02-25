@@ -23,6 +23,9 @@
 ./o32/init/bprint.o: ./kernel/init/bprint.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/bprint.c
 
+./o32/init/cpu.o: ./kernel/init/cpu.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/cpu.c
+
 ./o32/init/inflate.o: ./kernel/init/inflate.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/inflate.c
 
@@ -64,6 +67,9 @@
 
 ./o64/init/bprint.o: ./kernel/init/bprint.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/bprint.c
+
+./o64/init/cpu.o: ./kernel/init/cpu.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/cpu.c
 
 ./o64/init/inflate.o: ./kernel/init/inflate.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/inflate.c

@@ -15,6 +15,7 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/a32/start.o \
  ./o32/init/acpi.o \
  ./o32/init/bprint.o \
+ ./o32/init/cpu.o \
  ./o32/init/inflate.o \
  ./o32/init/init.o \
  ./o32/init/log.o \
@@ -31,6 +32,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/a64/start.o \
  ./o64/init/acpi.o \
  ./o64/init/bprint.o \
+ ./o64/init/cpu.o \
  ./o64/init/inflate.o \
  ./o64/init/init.o \
  ./o64/init/log.o \
