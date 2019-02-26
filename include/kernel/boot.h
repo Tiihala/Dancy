@@ -69,6 +69,8 @@ unsigned long b_e1(void *);
 #define b_get_loader_type       (b_e0)
 #define b_get_time              (b_e1)
 
+#define B_RET_ERROR             (0xFFFFFFFFul)
+
 enum b_ctl {
 	B_CLEAR_CONSOLE,
 	B_GET_CURSOR,

@@ -27,7 +27,9 @@ global _b_a%1
 _b_a%1:
         mov ah, 0xA%1                   ; ah = syscall number
         int 0x20                        ; boot loader syscall
-        ret
+        jnc short .end
+        mov eax, 0xFFFFFFFF             ; eax = B_RET_ERROR
+.end:   ret
 %endmacro
 
 %macro boot_loader_1 1
@@ -39,7 +41,9 @@ _b_a%1:
         mov ecx, [esp+8]                ; ecx = argument 2
         mov ah, 0xA%1                   ; ah = syscall number
         int 0x20                        ; boot loader syscall
-        pop ebx                         ; restore register ebx
+        jnc short .end
+        mov eax, 0xFFFFFFFF             ; eax = B_RET_ERROR
+.end:   pop ebx                         ; restore register ebx
         ret
 %endmacro
 
@@ -52,7 +56,9 @@ _b_a%1:
         mov ecx, [esp+12]               ; ecx = argument 2
         mov ah, 0xA%1                   ; ah = syscall number
         int 0x20                        ; boot loader syscall
-        pop ebx                         ; restore register ebx
+        jnc short .end
+        mov eax, 0xFFFFFFFF             ; eax = B_RET_ERROR
+.end:   pop ebx                         ; restore register ebx
         ret
 %endmacro
 
