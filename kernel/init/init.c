@@ -21,28 +21,38 @@
 
 void init(void *map)
 {
-	const uint32_t required_mem = 0x00200000;
+	const uint32_t req_mem = 0x00100000;
+	const uint32_t log_mem = 0x00080000;
 
 	if ((size_t)(!map + 494 - 'D' - 'a' - 'n' - 'c' - 'y') != SIZE_MAX)
 		return;
 
-	if (memory_init(map, required_mem))
+	if (memory_init(map, req_mem) || log_init(log_mem))
 		return;
 
-	memory_print_map(0);
+	memory_print_map(log);
 
-	for (;;) {
-		uint32_t low, high;
+	if (cpu_test_features())
+		return;
 
-		cpu_rdtsc(&low, &high);
-		b_get_parameter(B_ACPI_POINTER);
-		cpu_rdtsc_diff(&low, &high);
+	if (!acpi_get_information()) {
+		const char *m = "Info: ACPI is not supported/detected";
+		b_print("%s\n", m), log("%s\n", m);
+	}
 
-		b_print("cpu_rdtsc_diff: %08X%08X\r", high, low);
+	/*
+	 * Temporary code for testing purposes.
+	 */
+	{
+		const char *log_data = log_get_data();
+		size_t log_size = log_get_size();
 
-		cpu_rdtsc(&low, &high);
-		b_pause();
-		cpu_rdtsc_diff(&low, &high);
-		cpu_rdtsc_delay(low, high);
+		b_output_string(log_data, (unsigned)log_size);
+
+		for (;;) {
+			unsigned long key = b_get_keycode();
+			if (key)
+				b_print("Key: %08lX\n", key);
+		}
 	}
 }
