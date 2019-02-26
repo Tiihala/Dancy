@@ -46,13 +46,17 @@ void init(void *map)
 	{
 		const char *log_data = log_get_data();
 		size_t log_size = log_get_size();
+		size_t i;
+
+		for (i = 0; i < log_size + 1; i++) {
+			if (b_put_byte_com1((unsigned char)log_data[i]))
+				break;
+		}
+		for (i = 0; i < log_size + 1; i++) {
+			if (b_put_byte_com2((unsigned char)log_data[i]))
+				break;
+		}
 
 		b_output_string(log_data, (unsigned)log_size);
-
-		for (;;) {
-			unsigned long key = b_get_keycode();
-			if (key)
-				b_print("Key: %08lX\n", key);
-		}
 	}
 }
