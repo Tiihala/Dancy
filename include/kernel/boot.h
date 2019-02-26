@@ -63,6 +63,12 @@ unsigned long b_af(void);
 #define b_pause                 (b_ae)
 #define b_exit                  (b_af)
 
+unsigned long b_e0(void);
+unsigned long b_e1(void *);
+
+#define b_get_loader_type       (b_e0)
+#define b_get_time              (b_e1)
+
 enum b_ctl {
 	B_CLEAR_CONSOLE,
 	B_GET_CURSOR,
@@ -159,6 +165,16 @@ struct b_mem_raw {
 #define B_A20_KEYBOARD          (0x02)
 #define B_A20_FAST              (0x03)
 #define B_A20_AUTOMATIC         (0x80)
+
+struct b_time {
+	uint16_t year;
+	uint8_t month;
+	uint8_t day;
+	uint8_t hour;
+	uint8_t minute;
+	uint8_t second;
+	uint8_t reserved[9];
+};
 
 #endif
 #endif

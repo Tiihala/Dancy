@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2018 Antti Tiihala
+;; Copyright (c) 2018, 2019 Antti Tiihala
 ;;
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -106,3 +106,35 @@ boot_loader_2 c
 boot_loader_2 d
 boot_loader_0 e
 boot_loader_0 f
+
+;       unsigned long b_e0(void);
+;       unsigned long b_e1(void *);
+;
+;       b_get_loader_type       (b_e0)
+;       b_get_time              (b_e1)
+
+align 16
+global b_e0
+b_e0:
+        mov ah, 0xE0                    ; ah = syscall number
+        int 0x20                        ; boot loader syscall
+        jnc short .end
+        xor eax, eax                    ; eax = 0
+        xor edx, edx                    ; edx = 0
+.end:   ret
+
+align 16
+global b_e1
+b_e1:
+        push rbx                        ; save register rbx
+        xor ebx, ebx                    ; rbx = argument 1 (zero)
+                                        ; rcx = argument 2
+        mov ah, 0xE1                    ; ah = syscall number
+        int 0x20                        ; boot loader syscall
+        jnc short .end
+        xor eax, eax                    ; eax = 0
+        xor edx, edx                    ; edx = 0
+        mov [rcx+0x00], rax             ; struct b_time ecx = { 0 }
+        mov [rcx+0x08], rdx
+.end:   pop rbx                         ; restore register rbx
+        ret
