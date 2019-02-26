@@ -162,18 +162,18 @@ void memory_print_map(int (*print)(const char *, ...))
 
 		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
 			unsigned a = (unsigned)t & 0x0000FFFFu;
-			(*print)("  %p %p  Allocated (Init, #%u)\n", b, e, a);
+			(*print)("    %p %p  Allocated (#%u)\n", b, e, a);
 			continue;
 		}
 
 		if (t >= B_MEM_DATABASE_MIN && t <= B_MEM_DATABASE_MAX) {
 			unsigned db = (unsigned)t & 0x0000FFFFu;
-			(*print)("  %p %p  Database (#%u)\n", b, e, db);
+			(*print)("    %p %p  Database (#%u)\n", b, e, db);
 		} else {
-			(*print)("  %p %p  %s\n", b, e, desc);
+			(*print)("    %p %p  %s\n", b, e, desc);
 		}
 	}
-	(*print)("\n  Total free: %zd KiB\n\n", total / 1024);
+	(*print)("\n    Total free: %zd KiB\n\n", total / 1024);
 }
 
 static void fix_memory_map(void)

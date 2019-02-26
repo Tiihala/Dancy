@@ -30,7 +30,7 @@ int cpu_test_features(void)
 	 */
 	cpu_id((eax = 0, &eax), &ecx, &edx, &ebx);
 	log("CPU Features\n");
-	log("  %.4s%.4s%.4s\n", (char *)&ebx, (char *)&edx, (char *)&ecx);
+	log("\t%.4s%.4s%.4s\n", (char *)&ebx, (char *)&edx, (char *)&ecx);
 
 	if (eax >= 1)
 		cpu_id((eax = 1, &eax), &ecx, &edx, &ebx);
@@ -38,16 +38,16 @@ int cpu_test_features(void)
 		eax = 0, ecx = 0, edx = 0, ebx = 0, ret = 1;
 
 	if (edx & (1u << 4)) {
-		log("  Time Stamp Counter (TSC)\n");
+		log("\tTime Stamp Counter (TSC)\n");
 	} else {
 		b_print("Error: Time Stamp Counter (TSC) is required.\n");
 		ret = 1;
 	}
 
 	if (edx & (1u << 9))
-		log("  APIC On-Chip\n");
+		log("\tAPIC On-Chip\n");
 	if (edx & (1u << 13))
-		log("  Page Global Bit\n");
+		log("\tPage Global Bit\n");
 
 	log("\n");
 	return ret;
