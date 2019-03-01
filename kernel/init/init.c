@@ -35,11 +35,6 @@ void init(void *map)
 	if (cpu_test_features())
 		return;
 
-	if (!acpi_get_information()) {
-		const char *m = "Info: ACPI is not supported/detected";
-		b_print("%s\n", m), log("%s\n", m);
-	}
-
 	/*
 	 * Temporary code for testing purposes.
 	 */
