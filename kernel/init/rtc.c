@@ -95,9 +95,9 @@ static int compare_regs(struct rtc_regs *regs1, struct rtc_regs *regs2)
 
 static unsigned cmos(uint8_t reg, uint32_t delay_low, uint32_t delay_high)
 {
-	uint8_t reg_with_nmi = reg | 0x80u;
+	uint8_t reg_with_nmi_enabled = (uint8_t)(reg & 0x7Fu);
 
-	cpu_out8(0x70, reg_with_nmi);
+	cpu_out8(0x70, reg_with_nmi_enabled);
 	cpu_rdtsc_delay(delay_low, delay_high);
 	return (unsigned)cpu_in8(0x71);
 }
