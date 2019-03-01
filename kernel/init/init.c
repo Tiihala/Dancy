@@ -23,6 +23,7 @@ void init(void *map)
 {
 	const uint32_t req_mem = 0x00100000;
 	const uint32_t log_mem = 0x00080000;
+	struct b_time bt;
 
 	if ((size_t)(!map + 494 - 'D' - 'a' - 'n' - 'c' - 'y') != SIZE_MAX)
 		return;
@@ -34,6 +35,17 @@ void init(void *map)
 
 	if (cpu_test_features())
 		return;
+
+	if (rtc_read(&bt)) {
+		/*
+		 * This should not be likely. However, the operating system
+		 * does not stop because it must handle wrong time and date
+		 * values anyway. If nothing is returned, it is just treated
+		 * like other obviously wrong values. Print a warning.
+		 */
+		b_print("Warning: reading Real Time Clock (RTC) failed\n");
+		b_pause();
+	}
 
 	/*
 	 * Temporary code for testing purposes.

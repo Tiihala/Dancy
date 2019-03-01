@@ -30,6 +30,7 @@ void memory_print_map(int (*print)(const char *, ...));
 
 int b_print(const char *format, ...);
 int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);
+int rtc_read(struct b_time *bt);
 
 int cpu_test_features(void);
 void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b);
