@@ -59,6 +59,7 @@ DANCY_HEADERS= \
  ./common/bitarray/bitarray.h \
  ./common/huffman/huffman.h \
  ./include/dancy/blob.h \
+ ./include/dancy/crc.h \
  ./include/dancy/keys.h \
  ./include/dancy/limits.h \
  ./include/dancy/stdarg.h \

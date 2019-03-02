@@ -9,6 +9,8 @@
 
 DANCY_INIT_OBJECTS_32= \
  ./o32/bitarray/bitarray.o \
+ ./o32/crc32/crc32.o \
+ ./o32/crc32/crc32c.o \
  ./o32/huffman/huffman.o \
  ./o32/init/a32/bsyscall.o \
  ./o32/init/a32/cpu.o \
@@ -27,6 +29,8 @@ DANCY_INIT_OBJECTS_32= \
 
 DANCY_INIT_OBJECTS_64= \
  ./o64/bitarray/bitarray.o \
+ ./o64/crc32/crc32.o \
+ ./o64/crc32/crc32c.o \
  ./o64/huffman/huffman.o \
  ./o64/init/a64/bsyscall.o \
  ./o64/init/a64/cpu.o \
