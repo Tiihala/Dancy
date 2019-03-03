@@ -47,6 +47,9 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/lib/snprintf.o \
  ./o64/lib/string.o
 
+./system/CONFIG.AT: ./bin/dy-conf$(DANCY_EXE)
+	$(DY_CONF) -o$@
+
 ./system/IN_IA32.AT: $(DANCY_INIT_OBJECTS_32)
 	$(DY_LINK) -o$@ -finit $(DANCY_INIT_OBJECTS_32)
 	$(DY_INIT) -tia32 --set-header $@

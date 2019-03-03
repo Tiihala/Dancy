@@ -13,6 +13,15 @@ DY_BLOB_OBJECTS= \
 
 ##############################################################################
 
+DY_CONF_OBJECTS= \
+ ./tools/dy-conf/dy-conf.obj \
+ ./common/crc32/crc32c.obj
+
+./bin/dy-conf$(DANCY_EXE): $(DY_CONF_OBJECTS) ./scripts/dancy.mk
+	$(DANCY_HOST_BINARY)$@ $(DY_CONF_OBJECTS)
+
+##############################################################################
+
 DY_GPT_OBJECTS= \
  ./tools/dy-gpt/dy-gpt.obj \
  ./boot/gpt/gpt.obj \
@@ -163,6 +172,9 @@ DY_ZIP_OBJECTS= \
 
 ./tools/dy-blob/dy-blob.obj: ./tools/dy-blob/dy-blob.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-blob/dy-blob.c
+
+./tools/dy-conf/dy-conf.obj: ./tools/dy-conf/dy-conf.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-conf/dy-conf.c
 
 ./tools/dy-gpt/dy-gpt.obj: ./tools/dy-gpt/dy-gpt.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-gpt/dy-gpt.c
