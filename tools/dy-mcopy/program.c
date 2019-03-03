@@ -365,13 +365,13 @@ static int get_param_block(struct options *opt, struct param_block *pb)
 static int is_reserved(const char *name)
 {
 	const char *prefixes[] = {
-		"AUX", "COM", "CON", "LPT", "NUL", "PRN"
+		"AUX ", "COM", "CON ", "LPT", "NUL ", "PRN "
 	};
 	size_t i;
 
 	/*
-	 * Do not allow the reserved name even as a prefix. This
-	 * is stricter than what is necessary.
+	 * Do not allow the reserved name even as a prefix for COM and LPT.
+	 * This is stricter than what is necessary.
 	 */
 	for (i = 0; i < sizeof(prefixes) / sizeof(prefixes[0]); i++) {
 		if (!strncmp(name, prefixes[i], strlen(prefixes[i]))) {
