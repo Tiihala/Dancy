@@ -29,47 +29,25 @@
 
 extern uint32_t boot_loader_type;
 
-unsigned long b_a0(const char *, unsigned int);
-unsigned long b_a1(const char *, unsigned int);
-unsigned long b_a2(unsigned int, unsigned int);
-unsigned long b_a3(void);
-unsigned long b_a4(void);
-unsigned long b_a5(unsigned char);
-unsigned long b_a6(void);
-unsigned long b_a7(unsigned char);
-unsigned long b_a8(unsigned int);
-unsigned long b_a9(void *, unsigned int);
-unsigned long b_aa(void *, unsigned int);
-unsigned long b_ab(unsigned int, unsigned int);
-unsigned long b_ac(void *, unsigned int);
-unsigned long b_ad(unsigned int, unsigned int);
-unsigned long b_ae(void);
-unsigned long b_af(void);
+unsigned long b_output_string(const char *, unsigned int);
+unsigned long b_output_string_hl(const char *, unsigned int);
+unsigned long b_output_control(unsigned int, unsigned int);
+unsigned long b_get_keycode(void);
+unsigned long b_get_byte_com1(void);
+unsigned long b_put_byte_com1(unsigned char);
+unsigned long b_get_byte_com2(void);
+unsigned long b_put_byte_com2(unsigned char);
+unsigned long b_get_parameter(unsigned int);
+unsigned long b_get_structure(void *, unsigned int);
+unsigned long b_set_read_buffer(void *, unsigned int);
+unsigned long b_read_blocks(unsigned int, unsigned int);
+unsigned long b_set_write_buffer(void *, unsigned int);
+unsigned long b_write_blocks(unsigned int, unsigned int);
+unsigned long b_pause(void);
+unsigned long b_exit(void);
 
-#define b_output_string         (b_a0)
-#define b_output_string_hl      (b_a1)
-#define b_output_control        (b_a2)
-#define b_get_keycode           (b_a3)
-#define b_get_byte_com1         (b_a4)
-#define b_put_byte_com1         (b_a5)
-#define b_get_byte_com2         (b_a6)
-#define b_put_byte_com2         (b_a7)
-#define b_get_parameter         (b_a8)
-#define b_get_structure         (b_a9)
-#define b_set_read_buffer       (b_aa)
-#define b_read_blocks           (b_ab)
-#define b_set_write_buffer      (b_ac)
-#define b_write_blocks          (b_ad)
-#define b_pause                 (b_ae)
-#define b_exit                  (b_af)
-
-unsigned long b_e0(void);
-unsigned long b_e1(void *);
-
-#define b_get_loader_type       (b_e0)
-#define b_get_time              (b_e1)
-
-#define B_RET_ERROR             (0xFFFFFFFFul)
+unsigned long b_get_loader_type(void);
+unsigned long b_get_time(void *);
 
 enum b_ctl {
 	B_CLEAR_CONSOLE,

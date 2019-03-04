@@ -56,11 +56,11 @@ void init(void *map)
 		size_t i;
 
 		for (i = 0; i < log_size + 1; i++) {
-			if (b_put_byte_com1((unsigned char)log_data[i]))
+			if (!b_put_byte_com1((unsigned char)log_data[i]))
 				break;
 		}
 		for (i = 0; i < log_size + 1; i++) {
-			if (b_put_byte_com2((unsigned char)log_data[i]))
+			if (!b_put_byte_com2((unsigned char)log_data[i]))
 				break;
 		}
 

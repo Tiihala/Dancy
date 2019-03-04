@@ -14,11 +14,11 @@
 ./o32/huffman/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/huffman/huffman.c
 
-./o32/init/a32/bsyscall.o: ./kernel/init/a32/bsyscall.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/init/a32/bsyscall.asm
-
 ./o32/init/a32/cpu.o: ./kernel/init/a32/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/cpu.asm
+
+./o32/init/a32/int20h.o: ./kernel/init/a32/int20h.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/init/a32/int20h.asm
 
 ./o32/init/a32/start.o: ./kernel/init/a32/start.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/start.asm
@@ -68,11 +68,11 @@
 ./o64/huffman/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/huffman/huffman.c
 
-./o64/init/a64/bsyscall.o: ./kernel/init/a64/bsyscall.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/init/a64/bsyscall.asm
-
 ./o64/init/a64/cpu.o: ./kernel/init/a64/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/cpu.asm
+
+./o64/init/a64/int20h.o: ./kernel/init/a64/int20h.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/init/a64/int20h.asm
 
 ./o64/init/a64/start.o: ./kernel/init/a64/start.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/start.asm
