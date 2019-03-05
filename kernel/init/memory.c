@@ -28,7 +28,7 @@ static void *memory_map;
 #define TYPE_LOW_END    (0x04u)
 #define TYPE_ALL        (0x07u)
 
-int memory_init(void *map, uint32_t required_mem)
+int memory_init(void *map)
 {
 	const char *err = "Error: boot loader gave a corrupted memory map";
 	const struct b_mem *memory = map;
@@ -96,8 +96,13 @@ int memory_init(void *map, uint32_t required_mem)
 			memory_types |= TYPE_INIT;
 		}
 
-		if (e - 1 == 0xFFFFFFFFul)
+		if (e - 1 == 0xFFFFFFFFul) {
 			memory_types |= TYPE_LOW_END;
+			if ((memory[i + 1].flags & B_FLAG_VALID_LEGACY) == 0)
+				return b_print("%s\n", err), 1;
+			if ((memory[i + 2].flags & B_FLAG_VALID_LEGACY) != 0)
+				return b_print("%s\n", err), 1;
+		}
 	}
 
 	if (memory_types != TYPE_ALL)
@@ -115,16 +120,6 @@ int memory_init(void *map, uint32_t required_mem)
 		return b_print("%s\n", err), 1;
 
 	memory_entries = i;
-
-	if (required_mem > continuous_normal) {
-		uint32_t s1 = required_mem / 1024;
-		uint32_t s2 = continuous_normal / 1024;
-		const char *fmt = "Error: "
-			"%u KiB continuous free memory required below 4 GiB\n"
-			"       (%u KiB available)\n";
-		b_print(fmt, s1, s2);
-		return 1;
-	}
 	return (memory_map = map), 0;
 }
 
@@ -190,7 +185,7 @@ static void fix_memory_map(void)
 		}
 	}
 
-	for (i = 1; i < memory_free_end; /* void */) {
+	for (i = 1; i < memory_entries; /* void */) {
 		struct b_mem_raw *m1 = &memory[i - 1];
 		struct b_mem_raw *m2 = &memory[i];
 
@@ -199,7 +194,8 @@ static void fix_memory_map(void)
 			size = sizeof(struct b_mem) * (memory_entries - i);
 			if (size && !memcmp(&m1->other, &m2->other, other)) {
 				memmove(&memory[i], &memory[i + 1], size);
-				memory_free_end -= 1;
+				if (i < memory_free_end)
+					memory_free_end -= 1;
 				memory_entries -= 1;
 				continue;
 			}
@@ -225,6 +221,8 @@ void *aligned_alloc(size_t alignment, size_t size)
 		e = (size_t)memory[i].base;
 
 		if (memory[i - 1].type != B_MEM_NORMAL || size > e - b)
+			continue;
+		if (memory[i - 1].flags & B_FLAG_NO_INIT_ALLOC)
 			continue;
 		if (!(memory[i - 1].flags & B_FLAG_VALID_LEGACY))
 			continue;
@@ -328,16 +326,25 @@ void free(void *ptr)
 {
 	struct b_mem *memory = memory_map;
 	phys_addr_t addr = (phys_addr_t)ptr;
+	uint32_t t;
 	size_t i;
 
-	for (i = 1; i < memory_free_end; i++) {
-		uint32_t t = memory[i].type;
-		if (t < B_MEM_INIT_ALLOC_MIN || t > B_MEM_INIT_ALLOC_MAX)
+	if (ptr == NULL)
+		return;
+
+	for (i = 1; (memory[i].flags & B_FLAG_VALID_LEGACY); i++) {
+		if (memory[i].base != addr)
 			continue;
-		if (memory[i].base == addr) {
+		t = memory[i].type;
+
+		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
 			memory[i].type = B_MEM_NORMAL;
-			fix_memory_map();
-			return;
+			break;
+		}
+		if (t >= B_MEM_DATABASE_MIN && t <= B_MEM_DATABASE_MAX) {
+			memory[i].type = B_MEM_NORMAL;
+			break;
 		}
 	}
+	fix_memory_map();
 }
