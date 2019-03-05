@@ -21,14 +21,13 @@
 
 void init(void *map)
 {
-	const uint32_t req_mem = 0x00100000;
 	const uint32_t log_mem = 0x00080000;
 	struct b_time bt;
 
 	if ((size_t)(!map + 494 - 'D' - 'a' - 'n' - 'c' - 'y') != SIZE_MAX)
 		return;
 
-	if (memory_init(map, req_mem) || log_init(log_mem))
+	if (memory_init(map) || log_init(log_mem))
 		return;
 
 	memory_print_map(log);

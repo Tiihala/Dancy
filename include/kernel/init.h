@@ -25,7 +25,7 @@
 
 void init(void *map);
 
-int memory_init(void *map, uint32_t required_mem);
+int memory_init(void *map);
 void memory_print_map(int (*print)(const char *, ...));
 
 int b_print(const char *format, ...);
