@@ -140,6 +140,7 @@ struct b_mem_raw {
 
 #define B_FLAG_VALID_ENTRY      (1u << 0)
 #define B_FLAG_VALID_LEGACY     (1u << 1)
+#define B_FLAG_NO_INIT_ALLOC    (1u << 16)
 
 #define B_A20_INT15H            (0x01)
 #define B_A20_KEYBOARD          (0x02)
