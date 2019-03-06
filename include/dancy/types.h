@@ -35,13 +35,11 @@ typedef unsigned int phys_addr_t;
 #elif defined (DANCY_64)
 typedef unsigned long long addr_t;
 typedef unsigned long long phys_addr_t;
+typedef unsigned long long uint64_t;
 #define SIZE_MAX (18446744073709551615ull)
 
 #else
 #error types.h is not compatible
 #endif
-
-typedef size_t rsize_t;
-#define RSIZE_MAX (SIZE_MAX >> 1)
 
 #endif
