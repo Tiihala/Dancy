@@ -100,6 +100,18 @@ DY_MCOPY_HEADERS= \
 
 ##############################################################################
 
+DY_PATCH_OBJECTS= \
+ ./tools/dy-patch/main.obj \
+ ./tools/dy-patch/patch.obj \
+ ./tools/dy-patch/program.obj
+DY_PATCH_HEADERS= \
+ ./tools/dy-patch/program.h
+
+./bin/dy-patch$(DANCY_EXE): $(DY_PATCH_OBJECTS) ./scripts/dancy.mk
+	$(DANCY_HOST_BINARY)$@ $(DY_PATCH_OBJECTS)
+
+##############################################################################
+
 DY_PATH_OBJECTS= \
  ./tools/dy-path/dy-path.obj
 
@@ -229,6 +241,15 @@ DY_ZIP_OBJECTS= \
 
 ./tools/dy-mcopy/program.obj: ./tools/dy-mcopy/program.c $(DY_MCOPY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-mcopy/program.c
+
+./tools/dy-patch/main.obj: ./tools/dy-patch/main.c $(DY_PATCH_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-patch/main.c
+
+./tools/dy-patch/patch.obj: ./tools/dy-patch/patch.c $(DY_PATCH_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-patch/patch.c
+
+./tools/dy-patch/program.obj: ./tools/dy-patch/program.c $(DY_PATCH_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-patch/program.c
 
 ./tools/dy-path/dy-path.obj: ./tools/dy-path/dy-path.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-path/dy-path.c

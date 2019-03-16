@@ -21,6 +21,7 @@ DY_ISO=$(DANCY_DY)-iso$(DANCY_EXE)
 DY_LINK=$(DANCY_DY)-link$(DANCY_EXE)
 DY_MBR=$(DANCY_DY)-mbr$(DANCY_EXE)
 DY_MCOPY=$(DANCY_DY)-mcopy$(DANCY_EXE)
+DY_PATCH=$(DANCY_DY)-patch$(DANCY_EXE)
 DY_PATH=$(DANCY_DY)-path$(DANCY_EXE)
 DY_VBR=$(DANCY_DY)-vbr$(DANCY_EXE)
 DY_ZIP=$(DANCY_DY)-zip$(DANCY_EXE)
@@ -35,6 +36,7 @@ DANCY_TARGET_TOOLS= \
  ./bin/dy-link$(DANCY_EXE) \
  ./bin/dy-mbr$(DANCY_EXE) \
  ./bin/dy-mcopy$(DANCY_EXE) \
+ ./bin/dy-patch$(DANCY_EXE) \
  ./bin/dy-path$(DANCY_EXE) \
  ./bin/dy-vbr$(DANCY_EXE) \
  ./bin/dy-zip$(DANCY_EXE)
