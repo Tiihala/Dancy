@@ -1,5 +1,7 @@
 /bin/
 /external/
+/include/acpica/
+/kernel/acpica/
 /o32/
 /o64/
 /release/
