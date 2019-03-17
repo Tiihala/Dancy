@@ -99,7 +99,7 @@ int command_objects_mk(struct options *opt)
 		if (is_acpica && !strncmp(name + (len - 2), ".c", 2)) {
 			int l = (int)len;
 			fprintf(output, "\n./o32%.*so: ", l - 7, name + 6);
-			fprintf(output, "$(ACPICA_DEPS)\n");
+			fprintf(output, "./%s $(ACPICA_DEPS)\n", name);
 			fprintf(output, "\t$(ACPICA_O32)$@ ./%s\n", name);
 		}
 	}
@@ -145,7 +145,7 @@ int command_objects_mk(struct options *opt)
 		if (is_acpica && !strncmp(name + (len - 2), ".c", 2)) {
 			int l = (int)len;
 			fprintf(output, "\n./o64%.*so: ", l - 7, name + 6);
-			fprintf(output, "$(ACPICA_DEPS)\n");
+			fprintf(output, "./%s $(ACPICA_DEPS)\n", name);
 			fprintf(output, "\t$(ACPICA_O64)$@ ./%s\n", name);
 		}
 	}
