@@ -24,6 +24,7 @@ int command_objects_mk(struct options *opt)
 	unsigned char *input = NULL;
 	size_t size = 0;
 	FILE *output = stdout;
+	int is_acpica = 0;
 	int is_stdout = 1;
 	size_t i, j;
 
@@ -74,19 +75,34 @@ int command_objects_mk(struct options *opt)
 		if ((len = strlen(name)) > 64)
 			continue;
 
+		if (strstr(name, "/acpica/"))
+			is_acpica = 1;
+		else
+			is_acpica = 0;
+
 		if (!strncmp(name + (len - 4), ".asm", 4)) {
 			int l = (int)len;
 			if (strstr(name, "/a32/") == NULL)
 				continue;
 			fprintf(output, "\n./o32%.*so: ", l - 9, name + 6);
-			fprintf(output, "./%s $(DANCY_DEPS)\n", name);
+
+			if (is_acpica)
+				fprintf(output, "$(ACPICA_DEPS)\n", name);
+			else
+				fprintf(output, "./%s $(DANCY_DEPS)\n", name);
+
 			fprintf(output, "\t$(DANCY_A32)$@ ./%s\n", name);
 		}
 
 		if (!strncmp(name + (len - 2), ".c", 2)) {
 			int l = (int)len;
 			fprintf(output, "\n./o32%.*so: ", l - 7, name + 6);
-			fprintf(output, "./%s $(DANCY_DEPS)\n", name);
+
+			if (is_acpica)
+				fprintf(output, "$(ACPICA_DEPS)\n", name);
+			else
+				fprintf(output, "./%s $(DANCY_DEPS)\n", name);
+
 			fprintf(output, "\t$(DANCY_O32)$@ ./%s\n", name);
 		}
 	}
@@ -108,19 +124,34 @@ int command_objects_mk(struct options *opt)
 		if ((len = strlen(name)) > 64)
 			continue;
 
+		if (strstr(name, "/acpica/"))
+			is_acpica = 1;
+		else
+			is_acpica = 0;
+
 		if (!strncmp(name + (len - 4), ".asm", 4)) {
 			int l = (int)len;
 			if (strstr(name, "/a64/") == NULL)
 				continue;
 			fprintf(output, "\n./o64%.*so: ", l - 9, name + 6);
-			fprintf(output, "./%s $(DANCY_DEPS)\n", name);
+
+			if (is_acpica)
+				fprintf(output, "$(ACPICA_DEPS)\n", name);
+			else
+				fprintf(output, "./%s $(DANCY_DEPS)\n", name);
+
 			fprintf(output, "\t$(DANCY_A64)$@ ./%s\n", name);
 		}
 
 		if (!strncmp(name + (len - 2), ".c", 2)) {
 			int l = (int)len;
 			fprintf(output, "\n./o64%.*so: ", l - 7, name + 6);
-			fprintf(output, "./%s $(DANCY_DEPS)\n", name);
+
+			if (is_acpica)
+				fprintf(output, "$(ACPICA_DEPS)\n", name);
+			else
+				fprintf(output, "./%s $(DANCY_DEPS)\n", name);
+
 			fprintf(output, "\t$(DANCY_O64)$@ ./%s\n", name);
 		}
 	}

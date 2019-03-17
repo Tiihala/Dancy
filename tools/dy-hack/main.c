@@ -26,7 +26,7 @@ static const char *help_str =
 	"  -c command    execute a command (listed below)\n"
 	"  -o output     output file\n"
 	"\nCommands:\n"
-	"  objects-mk    generate Dancy-specific Makefile for objects\n"
+	"  objects       generate Dancy-specific Makefile for objects\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"

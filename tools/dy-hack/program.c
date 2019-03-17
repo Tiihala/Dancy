@@ -26,7 +26,7 @@ int program(struct options *opt)
 	if ((cmd = opt->arg_c) == NULL)
 		return opt->error = "no command specified", 1;
 
-	if (!strcmp(cmd, "objects-mk"))
+	if (!strcmp(cmd, "objects"))
 		return command_objects_mk(opt);
 
 	return opt->error = "unknown command", 1;
