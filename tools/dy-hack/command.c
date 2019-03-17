@@ -80,30 +80,27 @@ int command_objects_mk(struct options *opt)
 		else
 			is_acpica = 0;
 
-		if (!strncmp(name + (len - 4), ".asm", 4)) {
+		if (!is_acpica && !strncmp(name + (len - 4), ".asm", 4)) {
 			int l = (int)len;
 			if (strstr(name, "/a32/") == NULL)
 				continue;
 			fprintf(output, "\n./o32%.*so: ", l - 9, name + 6);
-
-			if (is_acpica)
-				fprintf(output, "$(ACPICA_DEPS)\n", name);
-			else
-				fprintf(output, "./%s $(DANCY_DEPS)\n", name);
-
+			fprintf(output, "./%s $(DANCY_DEPS)\n", name);
 			fprintf(output, "\t$(DANCY_A32)$@ ./%s\n", name);
 		}
 
-		if (!strncmp(name + (len - 2), ".c", 2)) {
+		if (!is_acpica && !strncmp(name + (len - 2), ".c", 2)) {
 			int l = (int)len;
 			fprintf(output, "\n./o32%.*so: ", l - 7, name + 6);
-
-			if (is_acpica)
-				fprintf(output, "$(ACPICA_DEPS)\n", name);
-			else
-				fprintf(output, "./%s $(DANCY_DEPS)\n", name);
-
+			fprintf(output, "./%s $(DANCY_DEPS)\n", name);
 			fprintf(output, "\t$(DANCY_O32)$@ ./%s\n", name);
+		}
+
+		if (is_acpica && !strncmp(name + (len - 2), ".c", 2)) {
+			int l = (int)len;
+			fprintf(output, "\n./o32%.*so: ", l - 7, name + 6);
+			fprintf(output, "$(ACPICA_DEPS)\n", name);
+			fprintf(output, "\t$(ACPICA_O32)$@ ./%s\n", name);
 		}
 	}
 
@@ -129,30 +126,27 @@ int command_objects_mk(struct options *opt)
 		else
 			is_acpica = 0;
 
-		if (!strncmp(name + (len - 4), ".asm", 4)) {
+		if (!is_acpica && !strncmp(name + (len - 4), ".asm", 4)) {
 			int l = (int)len;
 			if (strstr(name, "/a64/") == NULL)
 				continue;
 			fprintf(output, "\n./o64%.*so: ", l - 9, name + 6);
-
-			if (is_acpica)
-				fprintf(output, "$(ACPICA_DEPS)\n", name);
-			else
-				fprintf(output, "./%s $(DANCY_DEPS)\n", name);
-
+			fprintf(output, "./%s $(DANCY_DEPS)\n", name);
 			fprintf(output, "\t$(DANCY_A64)$@ ./%s\n", name);
 		}
 
-		if (!strncmp(name + (len - 2), ".c", 2)) {
+		if (!is_acpica && !strncmp(name + (len - 2), ".c", 2)) {
 			int l = (int)len;
 			fprintf(output, "\n./o64%.*so: ", l - 7, name + 6);
-
-			if (is_acpica)
-				fprintf(output, "$(ACPICA_DEPS)\n", name);
-			else
-				fprintf(output, "./%s $(DANCY_DEPS)\n", name);
-
+			fprintf(output, "./%s $(DANCY_DEPS)\n", name);
 			fprintf(output, "\t$(DANCY_O64)$@ ./%s\n", name);
+		}
+
+		if (is_acpica && !strncmp(name + (len - 2), ".c", 2)) {
+			int l = (int)len;
+			fprintf(output, "\n./o64%.*so: ", l - 7, name + 6);
+			fprintf(output, "$(ACPICA_DEPS)\n", name);
+			fprintf(output, "\t$(ACPICA_O64)$@ ./%s\n", name);
 		}
 	}
 
