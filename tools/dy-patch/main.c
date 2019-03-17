@@ -27,7 +27,7 @@ static const char *help_str =
 	"  -p0           use the full pathname\n"
 	"  -p1           strip first directory of the pathname\n"
 	"  --silent      do not print \"patching file...\"\n"
-	"  --quiet       (same as above)"
+	"  --quiet       (same as above)\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
