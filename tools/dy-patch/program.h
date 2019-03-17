@@ -45,6 +45,7 @@ struct options {
 	const char *arg_i;
 	int p0;
 	int p1;
+	int silent;
 	int verbose;
 };
 

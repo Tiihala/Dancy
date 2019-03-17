@@ -26,6 +26,8 @@ static const char *help_str =
 	"  -i input      patch file\n"
 	"  -p0           use the full pathname\n"
 	"  -p1           strip first directory of the pathname\n"
+	"  --silent      do not print \"patching file...\"\n"
+	"  --quiet       (same as above)"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -90,6 +92,14 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "silent")) {
+				opts.silent = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "quiet")) {
+				opts.silent = 1;
 				continue;
 			}
 			help("unknown long option \"%s\"", arg);

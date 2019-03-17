@@ -357,7 +357,8 @@ static int handle_line(struct options *opt, char *line)
 				return -1;
 			if (write_file(target_name, target_file, target_size))
 				return -1;
-			printf("patching file %s\n", target_name);
+			if (!opt->silent)
+				printf("patching file %s\n", target_name);
 			if (target_file)
 				free(target_file);
 			target_name[0] = '\0';
@@ -422,7 +423,7 @@ int patch(struct options *opt, char *patch_file, size_t patch_size)
 			}
 			if (i + 1 == patch_size) {
 				char last[2] = { '!', '\0' };
-				if (handle_line(opt, &last[0]))
+				if (handle_line(opt, &last[0]) < 0)
 					return free_files(), 1;
 				return free_files(), 0;
 			}
