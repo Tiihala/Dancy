@@ -32,14 +32,7 @@ all-system: $(DANCY_TARGET_SYSTEM)
 all-tools: $(DANCY_TARGET_TOOLS)
 
 clean:
-	@if exist bin rmdir bin /S /Q
-	@if exist o32 rmdir o32 /S /Q
-	@if exist o64 rmdir o64 /S /Q
-	@if exist release rmdir release /S /Q
-	@if exist system rmdir system /S /Q
-	@for %i in (LOADER.*) do del "%i"
-	@for /R %i in (*.obj) do del "%i"
-	@if exist scripts\dancy.mk del scripts\dancy.mk
+	@cmd /C call scripts\clean.cmd
 
 distclean: clean
 	@if exist external rmdir external /S /Q

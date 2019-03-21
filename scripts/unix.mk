@@ -32,14 +32,7 @@ all-system: $(DANCY_TARGET_SYSTEM)
 all-tools: $(DANCY_TARGET_TOOLS)
 
 clean:
-	@rm -rf bin
-	@rm -rf o32
-	@rm -rf o64
-	@rm -rf release
-	@rm -rf system
-	@rm -fv LOADER.*
-	@rm -fv `find -name "*.obj"`
-	@rm -fv ./scripts/dancy.mk
+	@bash scripts/clean.sh
 
 distclean: clean
 	@rm -rf external
