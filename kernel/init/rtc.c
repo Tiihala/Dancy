@@ -31,8 +31,8 @@ struct rtc_regs {
 	unsigned status_b;
 };
 
-#define BCD_1(a) ((uint8_t)((a & 0x0Fu) + (a >> 4) * 10u))
-#define BCD_2(a) ((uint16_t)((a & 0x0Fu) + (a >> 4) * 10u))
+#define BCD_1(a) ((uint8_t)(((a) & 0x0Fu) + ((a) >> 4) * 10u))
+#define BCD_2(a) ((uint16_t)(((a) & 0x0Fu) + ((a) >> 4) * 10u))
 #define BIN_1(a) ((uint8_t)(a))
 #define BIN_2(a) ((uint16_t)(a))
 
@@ -185,7 +185,7 @@ int rtc_read(struct b_time *bt)
 	cpu_out8(0xA1, pic2);
 
 	/*
-	 * Descipher the CMOS RTC data.
+	 * Decipher the CMOS RTC data.
 	 */
 	if (regs1.year == UINT_MAX || translate(&regs1, bt))
 		return memset(bt, 0, sizeof(*bt)), 1;
@@ -193,7 +193,6 @@ int rtc_read(struct b_time *bt)
 	if (first_run) {
 		log("Real Time Clock (RTC)\n");
 		log("\tTSC delay is %.0X%08X\n", delay_high, delay_low);
-		log("\tPIC masks are %02hhX and %02hhX\n", pic1, pic2);
 		log("\t%d-hour clock\n", (regs1.status_b & 4u) ? 12 : 24);
 		log("\t%s mode\n", (regs1.status_b & 2u) ? "BCD" : "Binary");
 		log("\t%04u-%02u-%02u %02u:%02u:%02u\n\n",
