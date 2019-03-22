@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ ! -f "scripts/clean.sh" ] then
+if [ ! -f "scripts/clean.sh" ]; then
     echo "Error: does not look like a root of Dancy source tree" 1>&2
     exit 1
 fi
