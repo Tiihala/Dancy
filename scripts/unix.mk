@@ -23,6 +23,10 @@ DANCY_CC=PATH=$(DANCY_PATH) `./scripts/gcc.sh`
 DANCY_O32=$(DANCY_CC) $(DANCY_CPPFLAGS_32) $(DANCY_CFLAGS_32) -c -m32 -o
 DANCY_O64=$(DANCY_CC) $(DANCY_CPPFLAGS_64) $(DANCY_CFLAGS_64) -c -m64 -o
 
+ACPICA_SOURCE=bash ./scripts/acpica.sh
+ACPICA_O32=$(DANCY_CC) $(ACPICA_CPPFLAGS_32) $(ACPICA_CFLAGS_32) -c -m32 -o
+ACPICA_O64=$(DANCY_CC) $(ACPICA_CPPFLAGS_64) $(ACPICA_CFLAGS_64) -c -m64 -o
+
 all: all-release
 
 all-release: $(DANCY_TARGET_RELEASE)
@@ -40,6 +44,7 @@ distclean: clean
 path: ./bin/dy-path$(DANCY_EXE)
 	@PATH=$(DANCY_PATH) ./bin/dy-path$(DANCY_EXE)
 
+include ./scripts/acpica.mk
 include ./scripts/dirs.mk
 include ./scripts/legacy.mk
 include ./scripts/objects.mk

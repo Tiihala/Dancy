@@ -1,0 +1,12 @@
+--- a/external/acpica/source/components/resources/rsdump.c
++++ b/external/acpica/source/components/resources/rsdump.c
+@@ -152,2 +152,4 @@
++#if ! defined (DANCY_32) &&  ! defined (DANCY_64)
++
+ #include "acpi.h"
+ #include "accommon.h"
+@@ -821,2 +823,4 @@
+     }
+ }
++
++#endif

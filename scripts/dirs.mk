@@ -5,6 +5,7 @@
 ./scripts/dancy.mk:
 	@mkdir "bin"
 	@mkdir "o32"
+	@mkdir "o32/acpica"
 	@mkdir "o32/bitarray"
 	@mkdir "o32/crc32"
 	@mkdir "o32/huffman"
@@ -13,6 +14,7 @@
 	@mkdir "o32/lib"
 	@mkdir "o32/lib/a32"
 	@mkdir "o64"
+	@mkdir "o64/acpica"
 	@mkdir "o64/bitarray"
 	@mkdir "o64/crc32"
 	@mkdir "o64/huffman"
