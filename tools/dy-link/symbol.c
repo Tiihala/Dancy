@@ -373,6 +373,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	 */
 	for (i = 0; i < (int)LE32(&obj[12]); /* void */) {
 		unsigned char *sym = obj + symtab + (i * 18);
+		unsigned long val = LE32(&sym[8]);
 		unsigned sec = (unsigned)LE16(&sym[12]);
 
 		if (sec == 0 && (unsigned)sym[16] != 2u) {
@@ -387,7 +388,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				return reloc_error(sec), 1;
 			continue;
 		}
-		if (sec == 0 || (unsigned)sym[16] != 2) {
+		if ((sec == 0 && val == 0) || (unsigned)sym[16] != 2) {
 			if (!delete_record(obj, i))
 				continue;
 		}
@@ -566,6 +567,10 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			unsigned char *s2 = obj + symtab + ((i + 1) * 18);
 
 			if (memcmp(&s1[8], &s2[8], 6)) {
+				i += 1;
+				continue;
+			}
+			if ((unsigned)s1[16] != (unsigned)s2[16]) {
 				i += 1;
 				continue;
 			}
