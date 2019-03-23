@@ -22,8 +22,8 @@ if [ ! -d "external/acpica" ]; then
     rm -rf external/acpica/tests
     rm -f external/acpica/.gitignore
     rm -f external/acpica/Makefile
-    bin/dy-patch.exe -p1 -i kernel/acpios/patches/acdancy
-    bin/dy-patch.exe -p1 -i kernel/acpios/patches/rsdump
+    bin/dy-patch -p1 -i kernel/acpios/patches/acdancy
+    bin/dy-patch -p1 -i kernel/acpios/patches/rsdump
 fi
 
 ACPICA_EXT=.${1##*.}
