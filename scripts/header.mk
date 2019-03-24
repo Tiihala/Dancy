@@ -68,6 +68,7 @@ DANCY_TARGET_RELEASE= \
 DANCY_HEADERS= \
  ./common/bitarray/bitarray.h \
  ./common/huffman/huffman.h \
+ ./include/acpios/acdancy.h \
  ./include/dancy/blob.h \
  ./include/dancy/crc.h \
  ./include/dancy/keys.h \

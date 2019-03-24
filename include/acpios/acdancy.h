@@ -20,6 +20,9 @@
 #ifndef ACPIOS_ACDANCY_H
 #define ACPIOS_ACDANCY_H
 
+#include <dancy/limits.h>
+#include <dancy/stdarg.h>
+
 #if defined (DANCY_32)
 #define ACPI_MACHINE_WIDTH 32
 
@@ -28,7 +31,10 @@
 
 #else
 #error Define DANCY_32 or DANCY_64
+#endif
 
+#if !defined (ULLONG_MAX)
+#error The platform does not support unsigned long long
 #endif
 
 #endif
