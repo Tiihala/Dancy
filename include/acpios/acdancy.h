@@ -20,8 +20,11 @@
 #ifndef ACPIOS_ACDANCY_H
 #define ACPIOS_ACDANCY_H
 
-#include <dancy/limits.h>
+#ifndef va_arg
 #include <dancy/stdarg.h>
+#endif
+#include <dancy/limits.h>
+#include <dancy/types.h>
 
 #if defined (DANCY_32)
 #define ACPI_MACHINE_WIDTH 32
@@ -36,5 +39,32 @@
 #if !defined (ULLONG_MAX)
 #error The platform does not support unsigned long long
 #endif
+
+#undef ACPI_DIV_64_BY_32
+#undef ACPI_SHIFT_RIGHT_64
+
+#define ACPI_USE_NATIVE_DIVIDE
+#define ACPI_USE_SYSTEM_CLIBRARY
+
+int isalpha(int c);
+int isdigit(int c);
+int isprint(int c);
+int isspace(int c);
+int isupper(int c);
+int isxdigit(int c);
+int memcmp(const void *s1, const void *s2, size_t n);
+void *memcpy(void *s1, const void *s2, size_t n);
+void *memset(void *s, int c, size_t n);
+char *strcat(char *s1, const char *s2);
+int strcmp(const char *s1, const char *s2);
+char *strcpy(char *s1, const char *s2);
+size_t strlen(const char *s);
+char *strncat(char *s1, const char *s2, size_t n);
+int strncmp(const char *s1, const char *s2, size_t n);
+char *strncpy(char *s1, const char *s2, size_t n);
+char *strstr(const char *s1, const char *s2);
+unsigned long int strtoul(const char *nptr, char **endptr, int base);
+int tolower(int c);
+int toupper(int c);
 
 #endif
