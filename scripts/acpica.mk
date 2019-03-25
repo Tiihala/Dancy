@@ -335,11 +335,6 @@ ACPICA_OBJECTS_64= \
 ACPICA_HEADERS= \
  ./include/acpica/platform/acenv.h \
  ./include/acpica/platform/acenvex.h \
- ./include/acpica/platform/acgcc.h \
- ./include/acpica/platform/acgccex.h \
- ./include/acpica/platform/acintel.h \
- ./include/acpica/platform/acmsvc.h \
- ./include/acpica/platform/acmsvcex.h \
  ./include/acpica/acapps.h \
  ./include/acpica/acbuffer.h \
  ./include/acpica/acclib.h \
@@ -1375,21 +1370,6 @@ ACPICA_DEPS=$(DANCY_DEPS) $(ACPICA_HEADERS)
 	$(ACPICA_SOURCE) "$@"
 
 ./include/acpica/platform/acenvex.h: $(DY_PATCH)
-	$(ACPICA_SOURCE) "$@"
-
-./include/acpica/platform/acgcc.h: $(DY_PATCH)
-	$(ACPICA_SOURCE) "$@"
-
-./include/acpica/platform/acgccex.h: $(DY_PATCH)
-	$(ACPICA_SOURCE) "$@"
-
-./include/acpica/platform/acintel.h: $(DY_PATCH)
-	$(ACPICA_SOURCE) "$@"
-
-./include/acpica/platform/acmsvc.h: $(DY_PATCH)
-	$(ACPICA_SOURCE) "$@"
-
-./include/acpica/platform/acmsvcex.h: $(DY_PATCH)
 	$(ACPICA_SOURCE) "$@"
 
 ./include/acpica/acapps.h: $(DY_PATCH)
