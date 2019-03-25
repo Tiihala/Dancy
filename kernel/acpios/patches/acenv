@@ -1,8 +1,17 @@
 --- a/external/acpica/source/include/platform/acenv.h
 +++ b/external/acpica/source/include/platform/acenv.h
-@@ -291,63 +291,5 @@
- #endif
-
+@@ -282,70 +282,1 @@
+-#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
+-#include "acgcc.h"
+-
+-#elif defined(_MSC_VER)
+-#include "acmsvc.h"
+-
+-#elif defined(__INTEL_COMPILER)
+-#include "acintel.h"
+-
+-#endif
+-
 -#if defined(_LINUX) || defined(__linux__)
 -#include "aclinux.h"
 -
@@ -63,5 +72,3 @@
 -#error Unknown target environment
 -#endif
 +#include <acpios/acdancy.h>
-
- /*! [End] no source code translation !*/

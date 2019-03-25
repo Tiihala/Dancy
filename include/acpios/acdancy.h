@@ -40,10 +40,9 @@
 #error The platform does not support unsigned long long
 #endif
 
-#undef ACPI_DIV_64_BY_32
-#undef ACPI_SHIFT_RIGHT_64
-
+#define ACPI_USE_NATIVE_MATH64
 #define ACPI_USE_NATIVE_DIVIDE
+
 #define ACPI_USE_SYSTEM_CLIBRARY
 
 int isalpha(int c);

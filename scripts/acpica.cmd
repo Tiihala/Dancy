@@ -22,7 +22,8 @@ IF NOT EXIST "external\acpica" (
     RMDIR /S /Q external\acpica\tests
     DEL external\acpica\.gitignore
     DEL external\acpica\Makefile
-    bin\dy-patch.exe -p1 -i kernel\acpios\patches\acdancy
+    bin\dy-patch.exe -p1 -i kernel\acpios\patches\acenv
+    bin\dy-patch.exe -p1 -i kernel\acpios\patches\acenvex
     bin\dy-patch.exe -p1 -i kernel\acpios\patches\rsdump
 )
 
