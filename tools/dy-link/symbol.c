@@ -570,7 +570,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				i += 1;
 				continue;
 			}
-			if ((unsigned)s1[16] != (unsigned)s2[16]) {
+			if ((unsigned)s1[16] != 2 && (unsigned)s2[16] == 2) {
 				i += 1;
 				continue;
 			}
