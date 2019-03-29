@@ -24,6 +24,7 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/log.o \
  ./o32/init/memory.o \
  ./o32/init/rtc.o \
+ ./o32/lib/a32/dark.o \
  ./o32/lib/a32/string.o \
  ./o32/lib/snprintf.o \
  ./o32/lib/string.o
@@ -45,6 +46,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/log.o \
  ./o64/init/memory.o \
  ./o64/init/rtc.o \
+ ./o64/lib/a64/dark.o \
  ./o64/lib/a64/string.o \
  ./o64/lib/snprintf.o \
  ./o64/lib/string.o

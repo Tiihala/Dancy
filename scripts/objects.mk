@@ -50,6 +50,9 @@
 ./o32/init/rtc.o: ./kernel/init/rtc.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/rtc.c
 
+./o32/lib/a32/dark.o: ./kernel/lib/a32/dark.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/lib/a32/dark.asm
+
 ./o32/lib/a32/string.o: ./kernel/lib/a32/string.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/string.asm
 
@@ -106,6 +109,9 @@
 
 ./o64/init/rtc.o: ./kernel/init/rtc.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/rtc.c
+
+./o64/lib/a64/dark.o: ./kernel/lib/a64/dark.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/lib/a64/dark.asm
 
 ./o64/lib/a64/string.o: ./kernel/lib/a64/string.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/string.asm
