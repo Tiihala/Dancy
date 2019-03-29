@@ -21,14 +21,14 @@
 
 int b_print(const char *format, ...)
 {
-	char buf[2048];
+	char buf[4096];
 	char *ptr = &buf[0];
 	unsigned size = 0;
 	int ret, i;
 
 	va_list va;
 	va_start(va, format);
-	ret = vsnprintf(buf, 2048, format, va);
+	ret = vsnprintf(buf, 4096, format, va);
 	va_end(va);
 
 	for (i = 0; i < ret; i++) {
