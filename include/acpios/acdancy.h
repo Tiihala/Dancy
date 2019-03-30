@@ -25,6 +25,7 @@
 #endif
 #include <dancy/ctype.h>
 #include <dancy/limits.h>
+#include <dancy/string.h>
 #include <dancy/types.h>
 
 #if defined (DANCY_32)
@@ -46,17 +47,8 @@
 
 #define ACPI_USE_SYSTEM_CLIBRARY
 
-int memcmp(const void *s1, const void *s2, size_t n);
-void *memcpy(void *s1, const void *s2, size_t n);
-void *memset(void *s, int c, size_t n);
 char *strcat(char *s1, const char *s2);
-int strcmp(const char *s1, const char *s2);
 char *strcpy(char *s1, const char *s2);
-size_t strlen(const char *s);
-char *strncat(char *s1, const char *s2, size_t n);
-int strncmp(const char *s1, const char *s2, size_t n);
 char *strncpy(char *s1, const char *s2, size_t n);
-char *strstr(const char *s1, const char *s2);
-unsigned long int strtoul(const char *nptr, char **endptr, int base);
 
 #endif
