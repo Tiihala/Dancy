@@ -63,12 +63,12 @@ size_t log_get_size(void)
 int log(const char *format, ...)
 {
 	char *out = (char *)boot_log;
-	char buf[2048];
+	char buf[4096];
 	int ret, i, j;
 
 	va_list va;
 	va_start(va, format);
-	ret = vsnprintf(buf, 2048, format, va);
+	ret = vsnprintf(buf, 4096, format, va);
 	va_end(va);
 
 	for (i = 0; i < ret; i++) {
