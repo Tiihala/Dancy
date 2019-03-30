@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Antti Tiihala
+ * Copyright (c) 2018, 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,6 +18,23 @@
  */
 
 #include <dancy.h>
+
+char *strcat(char *s1, const char *s2)
+{
+	char *r = s1;
+
+	for (;;) {
+		if (*s1 == '\0')
+			break;
+		s1++;
+	}
+	for (;;) {
+		if ((*s1 = *s2) == '\0')
+			break;
+		s1++, s2++;
+	}
+	return r;
+}
 
 int strcmp(const char *s1, const char *s2)
 {
@@ -38,6 +55,18 @@ int strcmp(const char *s1, const char *s2)
 	return 0;
 }
 
+char *strcpy(char *s1, const char *s2)
+{
+	char *r = s1;
+
+	for (;;) {
+		if ((*s1 = *s2) == '\0')
+			break;
+		s1++, s2++;
+	}
+	return r;
+}
+
 int strncmp(const char *s1, const char *s2, size_t n)
 {
 	unsigned char c1, c2;
@@ -55,4 +84,15 @@ int strncmp(const char *s1, const char *s2, size_t n)
 		}
 	}
 	return 0;
+}
+
+char *strncpy(char *s1, const char *s2, size_t n)
+{
+	size_t i;
+
+	for (i = 0; i < n; i++) {
+		if ((s1[i] = *s2) != '\0')
+			s2++;
+	}
+	return s1;
 }

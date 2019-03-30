@@ -44,11 +44,6 @@
 
 #define ACPI_USE_NATIVE_MATH64
 #define ACPI_USE_NATIVE_DIVIDE
-
 #define ACPI_USE_SYSTEM_CLIBRARY
-
-char *strcat(char *s1, const char *s2);
-char *strcpy(char *s1, const char *s2);
-char *strncpy(char *s1, const char *s2, size_t n);
 
 #endif
