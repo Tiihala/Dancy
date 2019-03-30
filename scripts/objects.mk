@@ -56,6 +56,9 @@
 ./o32/lib/a32/string.o: ./kernel/lib/a32/string.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/string.asm
 
+./o32/lib/ctype.o: ./kernel/lib/ctype.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/lib/ctype.c
+
 ./o32/lib/snprintf.o: ./kernel/lib/snprintf.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/snprintf.c
 
@@ -115,6 +118,9 @@
 
 ./o64/lib/a64/string.o: ./kernel/lib/a64/string.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/string.asm
+
+./o64/lib/ctype.o: ./kernel/lib/ctype.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/lib/ctype.c
 
 ./o64/lib/snprintf.o: ./kernel/lib/snprintf.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/snprintf.c

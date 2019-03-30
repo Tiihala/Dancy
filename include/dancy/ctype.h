@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2018, 2019 Antti Tiihala
+ * Copyright (c) 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,32 +13,28 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy.h
+ * dancy/ctype.h
  *      Header of Dancy Operating System
  */
 
-#ifndef DANCY_H
-#define DANCY_H
+#ifndef DANCY_CTYPE_H
+#define DANCY_CTYPE_H
 
-#include <dancy/blob.h>
-
-#if defined(DANCY_32) || defined(DANCY_64)
-
-#include <dancy/crc.h>
-#include <dancy/ctype.h>
-#include <dancy/keys.h>
-#include <dancy/limits.h>
-#include <dancy/stdarg.h>
-#include <dancy/stdio.h>
-#include <dancy/stdlib.h>
-#include <dancy/string.h>
 #include <dancy/types.h>
 
-#include <bitarray/bitarray.h>
-#include <huffman/huffman.h>
+int isalnum(int c);
+int isalpha(int c);
+int isblank(int c);
+int iscntrl(int c);
+int isdigit(int c);
+int isgraph(int c);
+int islower(int c);
+int isprint(int c);
+int ispunct(int c);
+int isspace(int c);
+int isupper(int c);
+int isxdigit(int c);
+int tolower(int c);
+int toupper(int c);
 
-#include <kernel/boot.h>
-#include <kernel/init.h>
-
-#endif
 #endif

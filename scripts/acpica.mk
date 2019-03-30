@@ -166,7 +166,8 @@ ACPICA_OBJECTS_32= \
  ./o32/acpica/utxferror.o \
  ./o32/acpica/utxfinit.o \
  ./o32/acpica/utxfmutex.o \
- ./o32/lib/a32/dark.o
+ ./o32/lib/a32/dark.o \
+ ./o32/lib/ctype.o
 
 ACPICA_OBJECTS_64= \
  ./o64/acpica/dsargs.o \
@@ -332,7 +333,8 @@ ACPICA_OBJECTS_64= \
  ./o64/acpica/utxferror.o \
  ./o64/acpica/utxfinit.o \
  ./o64/acpica/utxfmutex.o \
- ./o64/lib/a64/dark.o
+ ./o64/lib/a64/dark.o \
+ ./o64/lib/ctype.o
 
 ACPICA_HEADERS= \
  ./include/acpica/platform/acenv.h \

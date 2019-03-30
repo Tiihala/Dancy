@@ -71,6 +71,7 @@ DANCY_HEADERS= \
  ./include/acpios/acdancy.h \
  ./include/dancy/blob.h \
  ./include/dancy/crc.h \
+ ./include/dancy/ctype.h \
  ./include/dancy/keys.h \
  ./include/dancy/limits.h \
  ./include/dancy/stdarg.h \
