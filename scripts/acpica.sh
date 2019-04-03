@@ -16,7 +16,7 @@ mkdir -p kernel/acpica
 
 if [ ! -d "external/acpica" ]; then
     git clone $ACPICA_GIT external/acpica
-    git --git-dir=external/acpica/.git checkout $ACPICA_TAG > /dev/null 2>&1
+    git -C external/acpica checkout $ACPICA_TAG
     rm -rf external/acpica/.git
     rm -rf external/acpica/generate
     rm -rf external/acpica/tests

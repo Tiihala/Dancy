@@ -16,7 +16,7 @@ MKDIR kernel\acpica > NUL 2>&1
 
 IF NOT EXIST "external\acpica" (
     git.exe clone %ACPICA_GIT% external\acpica
-    git.exe --git-dir=external\acpica\.git checkout %ACPICA_TAG% > NUL 2>&1
+    git.exe -C external\acpica checkout %ACPICA_TAG%
     RMDIR /S /Q external\acpica\.git
     RMDIR /S /Q external\acpica\generate
     RMDIR /S /Q external\acpica\tests
