@@ -191,11 +191,12 @@ int rtc_read(struct b_time *bt)
 		return memset(bt, 0, sizeof(*bt)), 1;
 
 	if (first_run) {
-		log("Real Time Clock (RTC)\n");
-		log("\tTSC delay is %.0X%08X\n", delay_high, delay_low);
-		log("\t%d-hour clock\n", (regs1.status_b & 4u) ? 12 : 24);
-		log("\t%s mode\n", (regs1.status_b & 2u) ? "BCD" : "Binary");
-		log("\t%04u-%02u-%02u %02u:%02u:%02u\n\n",
+		b_log("Real Time Clock (RTC)\n");
+		b_log("\tTSC delay is %.0X%08X\n", delay_high, delay_low);
+		b_log("\t%d-hour clock\n", (regs1.status_b & 4u) ? 12 : 24);
+		b_log("\t%s mode\n",
+			(regs1.status_b & 2u) ? "BCD" : "Binary");
+		b_log("\t%04u-%02u-%02u %02u:%02u:%02u\n\n",
 			bt->year, bt->month, bt->day,
 			bt->hour, bt->minute, bt->second);
 		first_run = 0;

@@ -48,13 +48,13 @@ struct acpi_information *acpi_get_information(void)
 	if (!information.rsdp_addr)
 		return NULL;
 
-	log("Advanced Configuration and Power Interface (ACPI)\n");
-	log("\tRSDP found at %08X\n", (unsigned)information.rsdp_addr);
+	b_log("Advanced Configuration and Power Interface (ACPI)\n");
+	b_log("\tRSDP found at %08X\n", (unsigned)information.rsdp_addr);
 
 	ptr = (const uint8_t *)information.rsdp_addr;
 	if (checksum(ptr, 20)) {
 		const char *e = "RSDP checksum error\n";
-		b_print("Acpi: %s", e), log("\t%s", e);
+		b_print("Acpi: %s", e), b_log("\t%s", e);
 		b_pause();
 	}
 
@@ -77,7 +77,8 @@ struct acpi_information *acpi_get_information(void)
 			} else {
 				const char *e = "Acpi: XsdtAddress ignored";
 				b_print("%s %08X%08X\n", e, addr_h, addr_l);
-				log("\t%s %08X%08X\n", e + 6, addr_h, addr_l);
+				b_log("\t%s %08X%08X\n",
+					e + 6, addr_h, addr_l);
 				b_pause();
 			}
 		}
@@ -90,10 +91,10 @@ struct acpi_information *acpi_get_information(void)
 		ptr = (const uint8_t *)information.rsdt_addr;
 		if (memcmp(ptr, "RSDT", 4)) {
 			const char *e = "RSDT signature is not found\n";
-			b_print("Acpi: %s", e), log("\t%s", e);
+			b_print("Acpi: %s", e), b_log("\t%s", e);
 			return b_pause(), NULL;
 		}
-		log("\tRSDT found at %08X\n", (unsigned)(phys_addr_t)ptr);
+		b_log("\tRSDT found at %08X\n", (unsigned)(phys_addr_t)ptr);
 		addr_size = 4;
 	} else {
 		/*
@@ -102,10 +103,10 @@ struct acpi_information *acpi_get_information(void)
 		ptr = (const uint8_t *)information.xsdt_addr;
 		if (memcmp(ptr, "XSDT", 4)) {
 			const char *e = "XSDT signature is not found\n";
-			b_print("Acpi: %s", e), log("\t%s", e);
+			b_print("Acpi: %s", e), b_log("\t%s", e);
 			return b_pause(), NULL;
 		}
-		log("\tXSDT found at %08X\n", (unsigned)(phys_addr_t)ptr);
+		b_log("\tXSDT found at %08X\n", (unsigned)(phys_addr_t)ptr);
 		addr_size = 8;
 	}
 
@@ -117,7 +118,7 @@ struct acpi_information *acpi_get_information(void)
 	if (checksum(ptr, (size_t)length)) {
 		const char *table_name = (const char *)ptr;
 		b_print("Acpi: %.4s checksum error\n", table_name);
-		log("\t%.4s checksum error\n", table_name);
+		b_log("\t%.4s checksum error\n", table_name);
 	}
 
 	/*
@@ -130,7 +131,7 @@ struct acpi_information *acpi_get_information(void)
 
 		if (addr_size == 8 && LE32(ptr + i + 4)) {
 			const char *e = "skipping table (64-bit)\n";
-			b_print("Acpi: %s", e), log("\t%s", e);
+			b_print("Acpi: %s", e), b_log("\t%s", e);
 			continue;
 		}
 
@@ -140,7 +141,7 @@ struct acpi_information *acpi_get_information(void)
 		if (checksum(table, (size_t)table_length)) {
 			const char *table_name = (const char *)ptr;
 			b_print("Acpi: %.4s checksum error\n", table_name);
-			log("\t%.4s checksum error\n", table_name);
+			b_log("\t%.4s checksum error\n", table_name);
 		}
 
 		/*
@@ -157,7 +158,7 @@ struct acpi_information *acpi_get_information(void)
 
 		if ((char)table[0] >= 'A' && (char)table[0] <= 'Z') {
 			const char *m = "\t%.4s found at %08X\n";
-			log(m, (const char *)table, (unsigned)addr);
+			b_log(m, (const char *)table, (unsigned)addr);
 		}
 	}
 
@@ -183,13 +184,13 @@ struct acpi_information *acpi_get_information(void)
 			unsigned a = (unsigned)fadt[45];
 			const char *b = (a < 9) ? pm_prof[a] : pm_prof[0];
 
-			log("\tPreferred PM Profile is \"%s\"\n", b);
+			b_log("\tPreferred PM Profile is \"%s\"\n", b);
 		}
 		if (length >= 108 + 1) {
 			unsigned a = (unsigned)fadt[108];
 			information.rtc_century_idx = a;
 			if (a)
-				log("\tCMOS RTC century index is %u\n", a);
+				b_log("\tCMOS RTC century index is %u\n", a);
 		}
 		if (length >= 109 + 2) {
 			unsigned a = (unsigned)fadt[109];
@@ -197,19 +198,19 @@ struct acpi_information *acpi_get_information(void)
 			information.iapc_boot_arch = b;
 
 			if (b & INIT_ARCH_LEGACY_DEVICES)
-				log("\tLegacy Devices flag is set\n");
+				b_log("\tLegacy Devices flag is set\n");
 			if (b & INIT_ARCH_8042)
-				log("\t8042 is supported\n");
+				b_log("\t8042 is supported\n");
 			if (b & INIT_ARCH_VGA_NOT_PRESENT)
-				log("\tVGA is not present\n");
+				b_log("\tVGA is not present\n");
 			if (b & INIT_ARCH_MSI_NOT_SUPPORTED)
-				log("\tMSI is not supported\n");
+				b_log("\tMSI is not supported\n");
 			if (b & INIT_ARCH_PCIE_ASPM_CONTROLS)
-				log("\tPCIe ASPM Controls flag is set\n");
+				b_log("\tPCIe ASPM Controls flag is set\n");
 			if (b & INIT_ARCH_CMOS_RTC_NOT_PRESENT)
-				log("\tCMOS RTC is not present\n");
+				b_log("\tCMOS RTC is not present\n");
 		}
 	}
-	log("\n");
+	b_log("\n");
 	return (init = 1), &information;
 }

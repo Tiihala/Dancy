@@ -27,10 +27,10 @@ void init(void *map)
 	if ((size_t)(!map + 494 - 'D' - 'a' - 'n' - 'c' - 'y') != SIZE_MAX)
 		return;
 
-	if (memory_init(map) || log_init(log_mem))
+	if (memory_init(map) || b_log_init(log_mem))
 		return;
 
-	memory_print_map(log);
+	memory_print_map(b_log);
 
 	if (cpu_test_features())
 		return;
@@ -50,8 +50,8 @@ void init(void *map)
 	 * Temporary code for testing purposes.
 	 */
 	{
-		const char *log_data = log_get_data();
-		size_t log_size = log_get_size();
+		const char *log_data = b_log_get_data();
+		size_t log_size = b_log_get_size();
 		size_t i;
 
 		for (i = 0; i < log_size + 1; i++) {

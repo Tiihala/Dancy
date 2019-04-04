@@ -29,8 +29,8 @@ int cpu_test_features(void)
 	 * a floating point unit is "on-chip".
 	 */
 	cpu_id((eax = 0, &eax), &ecx, &edx, &ebx);
-	log("CPU Features\n");
-	log("\t%.4s%.4s%.4s\n", (char *)&ebx, (char *)&edx, (char *)&ecx);
+	b_log("CPU Features\n");
+	b_log("\t%.4s%.4s%.4s\n", (char *)&ebx, (char *)&edx, (char *)&ecx);
 
 	if (eax >= 1)
 		cpu_id((eax = 1, &eax), &ecx, &edx, &ebx);
@@ -38,17 +38,17 @@ int cpu_test_features(void)
 		eax = 0, ecx = 0, edx = 0, ebx = 0, ret = 1;
 
 	if (edx & (1u << 4)) {
-		log("\tTime Stamp Counter (TSC)\n");
+		b_log("\tTime Stamp Counter (TSC)\n");
 	} else {
 		b_print("Error: Time Stamp Counter (TSC) is required.\n");
 		ret = 1;
 	}
 
 	if (edx & (1u << 9))
-		log("\tAPIC On-Chip\n");
+		b_log("\tAPIC On-Chip\n");
 	if (edx & (1u << 13))
-		log("\tPage Global Bit\n");
+		b_log("\tPage Global Bit\n");
 
-	log("\n");
+	b_log("\n");
 	return ret;
 }

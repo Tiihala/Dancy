@@ -24,7 +24,7 @@ static size_t log_max_size;
 static size_t log_column;
 static void *boot_log;
 
-int log_init(size_t max_size)
+int b_log_init(size_t max_size)
 {
 	size_t aligned_size = (max_size + 0xFF) & 0x1FFFFF00;
 
@@ -38,7 +38,7 @@ int log_init(size_t max_size)
 	return 0;
 }
 
-void log_close(void)
+void b_log_close(void)
 {
 	void *new_ptr;
 
@@ -50,17 +50,17 @@ void log_close(void)
 		boot_log = new_ptr;
 }
 
-const char *log_get_data(void)
+const char *b_log_get_data(void)
 {
 	return (const char *)boot_log;
 }
 
-size_t log_get_size(void)
+size_t b_log_get_size(void)
 {
 	return log_size;
 }
 
-int log(const char *format, ...)
+int b_log(const char *format, ...)
 {
 	char *out = (char *)boot_log;
 	char buf[4096];
@@ -92,6 +92,6 @@ int log(const char *format, ...)
 	}
 
 	if (log_size >= log_max_size)
-		return log_close(), 1;
+		return b_log_close(), 1;
 	return (ret > 0) ? 0 : 1;
 }
