@@ -30,16 +30,24 @@ typedef unsigned int uint32_t;
 #if defined (DANCY_32)
 typedef unsigned int addr_t;
 typedef unsigned int phys_addr_t;
-#define SIZE_MAX (4294967295ul)
+#define DANCY_SIZE_MAX (4294967295ul)
 
 #elif defined (DANCY_64)
 typedef unsigned long long addr_t;
 typedef unsigned long long phys_addr_t;
 typedef unsigned long long uint64_t;
-#define SIZE_MAX (18446744073709551615ull)
+#define DANCY_SIZE_MAX (18446744073709551615ull)
 
 #else
 #error types.h is not compatible
+#endif
+
+#if !defined (SIZE_MAX)
+#define SIZE_MAX DANCY_SIZE_MAX
+#endif
+
+#if SIZE_MAX != DANCY_SIZE_MAX
+#error Definition of SIZE_MAX is not compatible
 #endif
 
 #endif
