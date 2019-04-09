@@ -48,6 +48,7 @@ DANCY_TARGET_TOOLS= \
 
 DANCY_TARGET_SYSTEM= \
  ./system/CONFIG.AT \
+ ./system/DB_000.AT \
  ./system/IN_IA16.AT \
  ./system/IN_IA32.AT \
  ./system/IN_X64.AT \

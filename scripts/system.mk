@@ -7,6 +7,10 @@
 
 ##############################################################################
 
+DANCY_DB_FILES= \
+ ./o32/acpica.o \
+ ./o64/acpica.o
+
 DANCY_INIT_OBJECTS_32= \
  ./o32/bitarray/bitarray.o \
  ./o32/crc32/crc32.o \
@@ -53,6 +57,9 @@ DANCY_INIT_OBJECTS_64= \
 
 ./system/CONFIG.AT: ./bin/dy-conf$(DANCY_EXE)
 	$(DY_CONF) -o$@
+
+./system/DB_000.AT: ./bin/dy-zip$(DANCY_EXE) $(DANCY_DB_FILES)
+	$(DY_ZIP) -o$@ $(DANCY_DB_FILES)
 
 ./system/IN_IA32.AT: $(DANCY_INIT_OBJECTS_32)
 	$(DY_LINK) -o$@ -finit $(DANCY_INIT_OBJECTS_32)
