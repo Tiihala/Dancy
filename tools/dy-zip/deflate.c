@@ -148,7 +148,7 @@ static int put_literal(struct bitarray *b, unsigned c)
 
 static int lz77_compress(struct bitarray *b, unsigned char *data, size_t size)
 {
-	size_t window_size = (size <= 262144) ? 32768 : 1024;
+	size_t window_size = (size <= 524288) ? 32768 : 1024;
 	size_t i, j;
 
 	if (put_literal(b, (unsigned)data[0]))
