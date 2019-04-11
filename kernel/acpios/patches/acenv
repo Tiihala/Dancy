@@ -1,5 +1,5 @@
---- a/external/acpica/source/include/platform/acenv.h
-+++ b/external/acpica/source/include/platform/acenv.h
+--- a/external/tmp/acpica/source/include/platform/acenv.h
++++ b/external/tmp/acpica/source/include/platform/acenv.h
 @@ -282,70 +282,1 @@
 -#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
 -#include "acgcc.h"

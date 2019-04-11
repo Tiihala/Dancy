@@ -1,5 +1,5 @@
---- a/external/acpica/source/include/platform/acenvex.h
-+++ b/external/acpica/source/include/platform/acenvex.h
+--- a/external/tmp/acpica/source/include/platform/acenvex.h
++++ b/external/tmp/acpica/source/include/platform/acenvex.h
 @@ -164,23 +163,0 @@
 -#if defined(_LINUX) || defined(__linux__)
 -#include "aclinuxex.h"
