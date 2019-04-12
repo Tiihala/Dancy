@@ -21,15 +21,63 @@
 
 section .text
 
+        global __alldiv
         global __allmul
+        global __allrem
         global __allshl
         global __aulldiv
         global __aullrem
         global __aullshr
         global ___chkstk_ms
         global __chkstk
+        global ___divdi3
+        global ___moddi3
         global ___udivdi3
         global ___umoddi3
+
+align 16
+__alldiv:
+        push ebx                        ; save register ebx
+        xor ebx, ebx                    ; ebx = 0
+        push dword [esp+20]             ; push "b" (high dword)
+        push dword [esp+20]             ; push "b" (low dword)
+        push dword [esp+20]             ; push "a" (high dword)
+        push dword [esp+20]             ; push "a" (low dword)
+
+        xor eax, eax                    ; eax = 0
+        cmp [esp+4], eax                ; test sign of "a"
+        jge short .L1
+        xor edx, edx                    ; edx = 0
+        sub eax, [esp+0]                ; subtract 0 - "a" (low dword)
+        sbb edx, [esp+4]                ; subtract 0 - "a" (high dword)
+        mov [esp+0], eax                ; save (low dword)
+        mov [esp+4], edx                ; save (high dword)
+        xor ebx, 1                      ; ebx = ebx ^ 1
+
+.L1:    xor eax, eax                    ; eax = 0
+        cmp [esp+12], eax               ; test sign of "b"
+        jge short .L2
+        xor edx, edx                    ; edx = 0
+        sub eax, [esp+8]                ; subtract 0 - "b" (low dword)
+        sbb edx, [esp+12]               ; subtract 0 - "b" (high dword)
+        mov [esp+8], eax                ; save (low dword)
+        mov [esp+12], edx               ; save (high dword)
+        xor ebx, 1                      ; ebx = ebx ^ 1
+
+.L2:    call __aulldiv                  ; (stack cleaned by callee)
+        test ebx, ebx                   ; test zero
+        jz short .L3
+
+        push edx                        ; push "quotient" (high dword)
+        push eax                        ; push "quotient" (low dword)
+        xor eax, eax                    ; eax = 0
+        xor edx, edx                    ; edx = 0
+        sub eax, [esp+0]                ; sub 0 - "quotient" (low dword)
+        sbb edx, [esp+4]                ; sub 0 - "quotient" (high dword)
+        add esp, 8                      ; restore stack
+
+.L3:    pop ebx                         ; restore register ebx
+        ret 16
 
 align 16
 __allmul:
@@ -47,6 +95,49 @@ __allmul:
         add edx, ebx                    ; edx:eax = return value
         pop ebx                         ; restore register ebx
         pop ecx                         ; restore register ecx
+        ret 16
+
+align 16
+__allrem:
+        push ebx                        ; save register ebx
+        xor ebx, ebx                    ; ebx = 0
+        push dword [esp+20]             ; push "b" (high dword)
+        push dword [esp+20]             ; push "b" (low dword)
+        push dword [esp+20]             ; push "a" (high dword)
+        push dword [esp+20]             ; push "a" (low dword)
+
+        xor eax, eax                    ; eax = 0
+        cmp [esp+4], eax                ; test sign of "a"
+        jge short .L1
+        xor edx, edx                    ; edx = 0
+        sub eax, [esp+0]                ; subtract 0 - "a" (low dword)
+        sbb edx, [esp+4]                ; subtract 0 - "a" (high dword)
+        mov [esp+0], eax                ; save (low dword)
+        mov [esp+4], edx                ; save (high dword)
+        xor ebx, 1                      ; ebx = ebx ^ 1
+
+.L1:    xor eax, eax                    ; eax = 0
+        cmp [esp+12], eax               ; test sign of "b"
+        jge short .L2
+        xor edx, edx                    ; edx = 0
+        sub eax, [esp+8]                ; subtract 0 - "b" (low dword)
+        sbb edx, [esp+12]               ; subtract 0 - "b" (high dword)
+        mov [esp+8], eax                ; save (low dword)
+        mov [esp+12], edx               ; save (high dword)
+
+.L2:    call __aullrem                  ; (stack cleaned by callee)
+        test ebx, ebx                   ; test zero
+        jz short .L3
+
+        push edx                        ; push "remainder" (high dword)
+        push eax                        ; push "remainder" (low dword)
+        xor eax, eax                    ; eax = 0
+        xor edx, edx                    ; edx = 0
+        sub eax, [esp+0]                ; sub 0 - "remainder" (low dword)
+        sbb edx, [esp+4]                ; sub 0 - "remainder" (high dword)
+        add esp, 8                      ; restore stack
+
+.L3:    pop ebx                         ; restore register ebx
         ret 16
 
 align 16
@@ -191,6 +282,24 @@ __chkstk:
         mov ecx, [esp+eax+4]            ; ecx = instruction pointer
         mov [esp+4], ecx                ; set return address
         pop ecx                         ; restore register ecx
+        ret
+
+align 16
+___divdi3:
+        push dword [esp+16]             ; push "b" (high dword)
+        push dword [esp+16]             ; push "b" (low dword)
+        push dword [esp+16]             ; push "a" (high dword)
+        push dword [esp+16]             ; push "a" (low dword)
+        call __alldiv                   ; (stack cleaned by callee)
+        ret
+
+align 16
+___moddi3:
+        push dword [esp+16]             ; push "b" (high dword)
+        push dword [esp+16]             ; push "b" (low dword)
+        push dword [esp+16]             ; push "a" (high dword)
+        push dword [esp+16]             ; push "a" (low dword)
+        call __allrem                   ; (stack cleaned by callee)
         ret
 
 align 16
