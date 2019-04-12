@@ -37,11 +37,11 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 	char buf[64];
 
 #if defined(DANCY_32)
-	typedef long local_intmax;
-	typedef unsigned long local_uintmax;
+	typedef long local_int;
+	typedef unsigned long local_uint;
 #elif defined(DANCY_64)
-	typedef long long local_intmax;
-	typedef unsigned long long local_uintmax;
+	typedef long long local_int;
+	typedef unsigned long long local_uint;
 #else
 #error vsnprintf types intmax_t, size_t, and ptrdiff_t must be checked
 #endif
@@ -56,8 +56,8 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 		int flag_space, flag_zero, flag_alt;
 		int negative, nochars;
 
-		local_intmax ival;
-		local_uintmax uval;
+		long long ival;
+		unsigned long long uval;
 
 		enum length_modifier {
 			length_modifier_none,
@@ -190,8 +190,10 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 				ival = va_arg(arg, int);
 			else if (length == length_modifier_ell)
 				ival = va_arg(arg, long);
+			else if (length == length_modifier_ellell)
+				ival = va_arg(arg, long long);
 			else
-				ival = va_arg(arg, local_intmax);
+				ival = va_arg(arg, local_int);
 
 			negative = 0;
 			if (ival < 0) {
@@ -268,8 +270,10 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 				uval = va_arg(arg, unsigned int);
 			else if (length == length_modifier_ell)
 				uval = va_arg(arg, unsigned long);
+			else if (length == length_modifier_ellell)
+				uval = va_arg(arg, unsigned long long);
 			else
-				uval = va_arg(arg, local_uintmax);
+				uval = va_arg(arg, local_uint);
 
 			nochars = 0;
 			if (precision_set) {
@@ -319,15 +323,17 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 			size_t i;
 
 			if (c == 'p') {
-				uval = va_arg(arg, local_uintmax);
+				uval = va_arg(arg, local_uint);
 				precision = (unsigned)(sizeof(void *) * 2);
 				precision_set = 1;
 			} else if (length < length_modifier_ell) {
 				uval = va_arg(arg, unsigned int);
 			} else if (length == length_modifier_ell) {
 				uval = va_arg(arg, unsigned long);
+			} else if (length == length_modifier_ellell) {
+				uval = va_arg(arg, unsigned long long);
 			} else {
-				uval = va_arg(arg, local_uintmax);
+				uval = va_arg(arg, local_uint);
 			}
 
 			nochars = 0;
@@ -388,8 +394,10 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 				uval = va_arg(arg, unsigned int);
 			else if (length == length_modifier_ell)
 				uval = va_arg(arg, unsigned long);
+			else if (length == length_modifier_ellell)
+				uval = va_arg(arg, unsigned long long);
 			else
-				uval = va_arg(arg, local_uintmax);
+				uval = va_arg(arg, local_uint);
 
 			nochars = 0;
 			if (precision_set) {
@@ -440,9 +448,9 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 			unsigned len = 0;
 
 			if (length == length_modifier_none)
-				uval = (local_uintmax)va_arg(arg, int);
+				uval = (local_uint)va_arg(arg, int);
 			else
-				uval = va_arg(arg, local_uintmax);
+				uval = va_arg(arg, local_uint);
 
 			buf[len++] = (char)((unsigned char)uval);
 
@@ -528,9 +536,9 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 					*((long *)p) = LONG_MAX;
 				}
 			} else if (out < LONG_MAX) {
-				*((local_intmax *)p) = (local_intmax)out;
+				*((local_int *)p) = (local_int)out;
 			} else {
-				*((local_intmax *)p) = LONG_MAX;
+				*((local_int *)p) = LONG_MAX;
 			}
 			continue;
 		}
