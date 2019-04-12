@@ -21,12 +21,45 @@
 
 section .text
 
+        global __allmul
+        global __allshl
         global __aulldiv
         global __aullrem
+        global __aullshr
         global ___chkstk_ms
         global __chkstk
         global ___udivdi3
         global ___umoddi3
+
+align 16
+__allmul:
+        push ecx                        ; save register ecx
+        push ebx                        ; save register ebx
+        mov ecx, [esp+20]               ; ecx = "b" (low dword)
+        imul ecx, [esp+16]              ; signed multiply ("a", high dword)
+
+        mov eax, [esp+20]               ; eax = "b" (low dword)
+        mov ebx, [esp+12]               ; ebx = "a" (low dword)
+        mul ebx                         ; unsigned multiply
+        imul ebx, [esp+24]              ; signed multiply ("b", high dword)
+
+        add edx, ecx                    ; prepare return value
+        add edx, ebx                    ; edx:eax = return value
+        pop ebx                         ; restore register ebx
+        pop ecx                         ; restore register ecx
+        ret 16
+
+align 16
+__allshl:
+        push ecx                        ; save register ecx
+        and ecx, 0x000000FF             ; use only register cl
+        jz short .L2
+.L1:    shl eax, 1                      ; shift left
+        rcl edx, 1                      ; "shift" left with carry
+        dec ecx                         ; decrement counter
+        jnz short .L1
+.L2:    pop ecx                         ; restore register ecx
+        ret
 
 align 16
 __aulldiv:
@@ -133,6 +166,18 @@ __aullrem:
         pop ebx                         ; restore register ebx
         pop ecx                         ; restore register ecx
         ret 16
+
+align 16
+__aullshr:
+        push ecx                        ; save register ecx
+        and ecx, 0x000000FF             ; use only register cl
+        jz short .L2
+.L1:    shr edx, 1                      ; shift right
+        rcr eax, 1                      ; "shift" right with carry
+        dec ecx                         ; decrement counter
+        jnz short .L1
+.L2:    pop ecx                         ; restore register ecx
+        ret
 
 align 16
 ___chkstk_ms:
