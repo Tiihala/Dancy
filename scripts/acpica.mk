@@ -382,14 +382,15 @@ ACPICA_HEADERS= \
  ./include/acpica/acutils.h \
  ./include/acpica/acuuid.h \
  ./include/acpica/amlcode.h \
- ./include/acpica/amlresrc.h
+ ./include/acpica/amlresrc.h \
+ ./include/acpios/acdancy.h
 
-ACPICA_DEPS=$(DANCY_DEPS) $(ACPICA_HEADERS)
+ACPICA_DEPS=$(DANCY_EXT) $(ACPICA_HEADERS)
 
-./o32/acpica.o: $(ACPICA_OBJECTS_32)
+./o32/acpica.o: $(ACPICA_OBJECTS_32) $(DY_LINK)
 	$(DY_LINK) -o$@ $(ACPICA_OBJECTS_32)
 
-./o64/acpica.o: $(ACPICA_OBJECTS_64)
+./o64/acpica.o: $(ACPICA_OBJECTS_64) $(DY_LINK)
 	$(DY_LINK) -o$@ $(ACPICA_OBJECTS_64)
 
 ##############################################################################
