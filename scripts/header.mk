@@ -60,7 +60,6 @@ DANCY_TARGET_IMAGES= \
  ./release/fdd160.img \
  ./release/fdd720.img \
  ./release/fdd1440.img \
- ./release/usbhuge.img \
  ./release/usbtiny.img
 
 DANCY_TARGET_RELEASE= \
@@ -69,7 +68,6 @@ DANCY_TARGET_RELEASE= \
 DANCY_HEADERS= \
  ./common/bitarray/bitarray.h \
  ./common/huffman/huffman.h \
- ./include/acpios/acdancy.h \
  ./include/dancy/blob.h \
  ./include/dancy/crc.h \
  ./include/dancy/ctype.h \
