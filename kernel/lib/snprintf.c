@@ -192,6 +192,8 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 				ival = va_arg(arg, long);
 			else if (length == length_modifier_ellell)
 				ival = va_arg(arg, long long);
+			else if (length == length_modifier_j)
+				ival = va_arg(arg, long long);
 			else
 				ival = va_arg(arg, local_int);
 
@@ -272,6 +274,8 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 				uval = va_arg(arg, unsigned long);
 			else if (length == length_modifier_ellell)
 				uval = va_arg(arg, unsigned long long);
+			else if (length == length_modifier_j)
+				uval = va_arg(arg, unsigned long long);
 			else
 				uval = va_arg(arg, local_uint);
 
@@ -331,6 +335,8 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 			} else if (length == length_modifier_ell) {
 				uval = va_arg(arg, unsigned long);
 			} else if (length == length_modifier_ellell) {
+				uval = va_arg(arg, unsigned long long);
+			} else if (length == length_modifier_j) {
 				uval = va_arg(arg, unsigned long long);
 			} else {
 				uval = va_arg(arg, local_uint);
@@ -395,6 +401,8 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 			else if (length == length_modifier_ell)
 				uval = va_arg(arg, unsigned long);
 			else if (length == length_modifier_ellell)
+				uval = va_arg(arg, unsigned long long);
+			else if (length == length_modifier_j)
 				uval = va_arg(arg, unsigned long long);
 			else
 				uval = va_arg(arg, local_uint);
