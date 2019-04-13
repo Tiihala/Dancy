@@ -19,5 +19,11 @@ then
     exit 0
 fi
 
+if [ -f "/usr/bin/yasm" ]
+then
+    echo "/usr/bin/yasm"
+    exit 0
+fi
+
 echo "Error: assembler is not found" 1>&2
 exit 1
