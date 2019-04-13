@@ -1,11 +1,16 @@
 #!/bin/bash
 set -e
 
+ASM_VERSION=2.14.02
 BIN_VERSION=2.30
 GCC_VERSION=7.3.0
 
-BIN_LINK=ftp://ftp.gnu.org/gnu/binutils/binutils-$BIN_VERSION.tar.xz
-GCC_LINK=ftp://ftp.gnu.org/gnu/gcc/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz
+ASM_ADDR=https://www.nasm.us/pub/nasm
+GNU_ADDR=ftp://ftp.gnu.org/gnu
+
+ASM_LINK=$ASM_ADDR/releasebuilds/$ASM_VERSION/nasm-$ASM_VERSION.tar.xz
+BIN_LINK=$GNU_ADDR/binutils/binutils-$BIN_VERSION.tar.xz
+GCC_LINK=$GNU_ADDR/gcc/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz
 
 if [ ! -f "scripts/external.sh" ]
 then
@@ -30,6 +35,7 @@ fi
 
 echo ""
 echo -e "\e[33mBuilding a cross compiler:\e[0m"
+echo -e "\e[33m    nasm-$ASM_VERSION\e[0m"
 echo -e "\e[33m    binutils-$BIN_VERSION\e[0m"
 echo -e "\e[33m    gcc-$GCC_VERSION\e[0m"
 echo ""
@@ -54,12 +60,21 @@ pushd external/mingw/include
 popd
 
 pushd external/src
+    wget $ASM_LINK
     wget $BIN_LINK
     wget $GCC_LINK
+    tar -xf nasm-$ASM_VERSION.tar.xz
     tar -xf binutils-$BIN_VERSION.tar.xz
     tar -xf gcc-$GCC_VERSION.tar.xz
+    rm nasm-$ASM_VERSION.tar.xz
     rm binutils-$BIN_VERSION.tar.xz
     rm gcc-$GCC_VERSION.tar.xz
+popd
+
+pushd external/src/nasm-$ASM_VERSION
+    ./configure --prefix=$PREFIX
+    make
+    make install
 popd
 
 pushd external/src/gcc-$GCC_VERSION
