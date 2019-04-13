@@ -186,6 +186,7 @@ int section_group(struct options *opt)
 	 */
 	iterate_init(&it, opt, NULL);
 	while ((buf = iterate_next(&it)) != NULL) {
+		W_LE32(&buf[8], 0);
 		W_LE32(&buf[28], 0);
 		W_LE16(&buf[34], 0);
 		buf_size += sizeof(*sec);

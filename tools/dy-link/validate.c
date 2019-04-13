@@ -311,7 +311,7 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 				err |= validate_name(t1, flags);
 			}
 
-			if (LE32(&sect[8]) || LE32(&sect[12]))
+			if (LE32(&sect[12]))
 				err = 1;
 			/*
 			 * The section cannot overlap with the header unless
