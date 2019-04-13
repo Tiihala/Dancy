@@ -13,7 +13,7 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
-;; legacy/inc/bsyscall.asm
+;; legacy/inc/int20h.asm
 ;;      Dancy operating system for legacy hardware
 ;;
 
