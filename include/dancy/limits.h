@@ -42,6 +42,14 @@
 #error Definition of UINT_MAX is not compatible
 #endif
 
+#if !defined (ULONG_MAX)
+#error Definition of ULONG_MAX is not available
+#endif
+
+#if defined (DANCY_32) && ULONG_MAX != 4294967295ul
+#error Definition of ULONG_MAX is not compatible
+#endif
+
 #if !defined (ULLONG_MAX)
 #error Definition of ULLONG_MAX is not available
 #endif
