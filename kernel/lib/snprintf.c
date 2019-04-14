@@ -518,35 +518,30 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 
 		if (c == 'n') {
 			void *p = va_arg(arg, void *);
+			int n_out = (out < INT_MAX) ? (int)out : INT_MAX;
 
 			if (length == length_modifier_none) {
-				if (out < INT_MAX) {
-					*((int *)p) = (int)out;
-				} else {
-					*((int *)p) = INT_MAX;
-				}
+				*((int *)p) = n_out;
 			} else if (length == length_modifier_hh) {
-				if (out < CHAR_MAX) {
-					*((char *)p) = (char)out;
+				if (n_out < CHAR_MAX) {
+					*((char *)p) = (char)n_out;
 				} else {
 					*((char *)p) = CHAR_MAX;
 				}
 			} else if (length == length_modifier_h) {
-				if (out < SHRT_MAX) {
-					*((short *)p) = (short)out;
+				if (n_out < SHRT_MAX) {
+					*((short *)p) = (short)n_out;
 				} else {
 					*((short *)p) = SHRT_MAX;
 				}
 			}  else if (length == length_modifier_ell) {
-				if (out < LONG_MAX) {
-					*((long *)p) = (long)out;
-				} else {
-					*((long *)p) = LONG_MAX;
-				}
-			} else if (out < LONG_MAX) {
-				*((local_int *)p) = (local_int)out;
+				*((long *)p) = (long)n_out;
+			}  else if (length == length_modifier_ellell) {
+				*((long long *)p) = (long long)n_out;
+			}  else if (length == length_modifier_j) {
+				*((long long *)p) = (long long)n_out;
 			} else {
-				*((local_int *)p) = LONG_MAX;
+				*((local_int *)p) = (local_int)n_out;
 			}
 			continue;
 		}
