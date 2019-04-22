@@ -23,29 +23,9 @@
 #include <bitarray/bitarray.h>
 #include <dancy/types.h>
 
-void init(void *map);
-
-int memory_init(void *map);
-void memory_print_map(int (*print)(const char *, ...));
-
-int b_print(const char *format, ...);
-int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);
-int rtc_read(struct b_time *bt);
-
-int cpu_test_features(void);
-void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b);
-void cpu_rdtsc(uint32_t *a, uint32_t *d);
-void cpu_rdtsc_delay(uint32_t a, uint32_t d);
-void cpu_rdtsc_diff(uint32_t *a, uint32_t *d);
-
-uint8_t cpu_in8(uint16_t port);
-uint16_t cpu_in16(uint16_t port);
-uint32_t cpu_in32(uint16_t port);
-
-void cpu_out8(uint16_t port, uint8_t value);
-void cpu_out16(uint16_t port, uint16_t value);
-void cpu_out32(uint16_t port, uint32_t value);
-
+/*
+ * Declarations of acpi.c
+ */
 #define INIT_ARCH_LEGACY_DEVICES        (1u << 0)
 #define INIT_ARCH_8042                  (1u << 1)
 #define INIT_ARCH_VGA_NOT_PRESENT       (1u << 2)
@@ -66,10 +46,63 @@ struct acpi_information {
 
 struct acpi_information *acpi_get_information(void);
 
+
+/*
+ * Declarations of bprint.c
+ */
+int b_print(const char *format, ...);
+
+
+/*
+ * Declarations of cpu.c
+ */
+int cpu_test_features(void);
+void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b);
+void cpu_rdtsc(uint32_t *a, uint32_t *d);
+void cpu_rdtsc_delay(uint32_t a, uint32_t d);
+void cpu_rdtsc_diff(uint32_t *a, uint32_t *d);
+
+uint8_t cpu_in8(uint16_t port);
+uint16_t cpu_in16(uint16_t port);
+uint32_t cpu_in32(uint16_t port);
+
+void cpu_out8(uint16_t port, uint8_t value);
+void cpu_out16(uint16_t port, uint16_t value);
+void cpu_out32(uint16_t port, uint32_t value);
+
+
+/*
+ * Declarations of inflate.c
+ */
+int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);
+
+
+/*
+ * Declarations of init.c
+ */
+void init(void *map);
+
+
+/*
+ * Declarations of log.c
+ */
 int b_log_init(size_t max_size);
 void b_log_close(void);
 const char *b_log_get_data(void);
 size_t b_log_get_size(void);
 int b_log(const char *format, ...);
+
+
+/*
+ * Declarations of memory.c
+ */
+int memory_init(void *map);
+void memory_print_map(int (*print)(const char *, ...));
+
+
+/*
+ * Declarations of rtc.c
+ */
+int rtc_read(struct b_time *bt);
 
 #endif
