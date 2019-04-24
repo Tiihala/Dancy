@@ -386,6 +386,7 @@ ACPICA_HEADERS= \
  ./include/acpios/acdancy.h
 
 ACPICA_DEPS=$(DANCY_EXT) $(ACPICA_HEADERS)
+ACPICA_TEMP=./external/tmp/acpica/source/include/acpi.h
 
 ./o32/acpica.o: $(ACPICA_OBJECTS_32) $(DY_LINK)
 	$(DY_LINK) -o$@ $(ACPICA_OBJECTS_32)
@@ -1375,619 +1376,624 @@ ACPICA_DEPS=$(DANCY_EXT) $(ACPICA_HEADERS)
 
 ##############################################################################
 
-./include/acpica/platform/acenv.h: $(DY_PATCH)
+./include/acpica/platform/acenv.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/platform/acenvex.h: $(DY_PATCH)
+./include/acpica/platform/acenvex.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acapps.h: $(DY_PATCH)
+./include/acpica/acapps.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acbuffer.h: $(DY_PATCH)
+./include/acpica/acbuffer.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acclib.h: $(DY_PATCH)
+./include/acpica/acclib.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/accommon.h: $(DY_PATCH)
+./include/acpica/accommon.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acconfig.h: $(DY_PATCH)
+./include/acpica/acconfig.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acconvert.h: $(DY_PATCH)
+./include/acpica/acconvert.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acdebug.h: $(DY_PATCH)
+./include/acpica/acdebug.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acdisasm.h: $(DY_PATCH)
+./include/acpica/acdisasm.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acdispat.h: $(DY_PATCH)
+./include/acpica/acdispat.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acevents.h: $(DY_PATCH)
+./include/acpica/acevents.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acexcep.h: $(DY_PATCH)
+./include/acpica/acexcep.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acglobal.h: $(DY_PATCH)
+./include/acpica/acglobal.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/achware.h: $(DY_PATCH)
+./include/acpica/achware.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acinterp.h: $(DY_PATCH)
+./include/acpica/acinterp.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/aclocal.h: $(DY_PATCH)
+./include/acpica/aclocal.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acmacros.h: $(DY_PATCH)
+./include/acpica/acmacros.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acnames.h: $(DY_PATCH)
+./include/acpica/acnames.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acnamesp.h: $(DY_PATCH)
+./include/acpica/acnamesp.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acobject.h: $(DY_PATCH)
+./include/acpica/acobject.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acopcode.h: $(DY_PATCH)
+./include/acpica/acopcode.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acoutput.h: $(DY_PATCH)
+./include/acpica/acoutput.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acparser.h: $(DY_PATCH)
+./include/acpica/acparser.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acpi.h: $(DY_PATCH)
+./include/acpica/acpi.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acpiosxf.h: $(DY_PATCH)
+./include/acpica/acpiosxf.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acpixf.h: $(DY_PATCH)
+./include/acpica/acpixf.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acpredef.h: $(DY_PATCH)
+./include/acpica/acpredef.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acresrc.h: $(DY_PATCH)
+./include/acpica/acresrc.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acrestyp.h: $(DY_PATCH)
+./include/acpica/acrestyp.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acstruct.h: $(DY_PATCH)
+./include/acpica/acstruct.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actables.h: $(DY_PATCH)
+./include/acpica/actables.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actbinfo.h: $(DY_PATCH)
+./include/acpica/actbinfo.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actbl.h: $(DY_PATCH)
+./include/acpica/actbl.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actbl1.h: $(DY_PATCH)
+./include/acpica/actbl1.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actbl2.h: $(DY_PATCH)
+./include/acpica/actbl2.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actbl3.h: $(DY_PATCH)
+./include/acpica/actbl3.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actypes.h: $(DY_PATCH)
+./include/acpica/actypes.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acutils.h: $(DY_PATCH)
+./include/acpica/acutils.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acuuid.h: $(DY_PATCH)
+./include/acpica/acuuid.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/amlcode.h: $(DY_PATCH)
+./include/acpica/amlcode.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/amlresrc.h: $(DY_PATCH)
+./include/acpica/amlresrc.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
 ##############################################################################
 
-./kernel/acpica/dsargs.c: $(DY_PATCH)
+./kernel/acpica/dsargs.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dscontrol.c: $(DY_PATCH)
+./kernel/acpica/dscontrol.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dsdebug.c: $(DY_PATCH)
+./kernel/acpica/dsdebug.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dsfield.c: $(DY_PATCH)
+./kernel/acpica/dsfield.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dsinit.c: $(DY_PATCH)
+./kernel/acpica/dsinit.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dsmethod.c: $(DY_PATCH)
+./kernel/acpica/dsmethod.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dsmthdat.c: $(DY_PATCH)
+./kernel/acpica/dsmthdat.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dsobject.c: $(DY_PATCH)
+./kernel/acpica/dsobject.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dsopcode.c: $(DY_PATCH)
+./kernel/acpica/dsopcode.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dspkginit.c: $(DY_PATCH)
+./kernel/acpica/dspkginit.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dsutils.c: $(DY_PATCH)
+./kernel/acpica/dsutils.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dswexec.c: $(DY_PATCH)
+./kernel/acpica/dswexec.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dswload.c: $(DY_PATCH)
+./kernel/acpica/dswload.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dswload2.c: $(DY_PATCH)
+./kernel/acpica/dswload2.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dswscope.c: $(DY_PATCH)
+./kernel/acpica/dswscope.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/dswstate.c: $(DY_PATCH)
+./kernel/acpica/dswstate.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evevent.c: $(DY_PATCH)
+./kernel/acpica/evevent.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evglock.c: $(DY_PATCH)
+./kernel/acpica/evglock.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evgpe.c: $(DY_PATCH)
+./kernel/acpica/evgpe.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evgpeblk.c: $(DY_PATCH)
+./kernel/acpica/evgpeblk.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evgpeinit.c: $(DY_PATCH)
+./kernel/acpica/evgpeinit.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evgpeutil.c: $(DY_PATCH)
+./kernel/acpica/evgpeutil.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evhandler.c: $(DY_PATCH)
+./kernel/acpica/evhandler.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evmisc.c: $(DY_PATCH)
+./kernel/acpica/evmisc.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evregion.c: $(DY_PATCH)
+./kernel/acpica/evregion.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evrgnini.c: $(DY_PATCH)
+./kernel/acpica/evrgnini.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evsci.c: $(DY_PATCH)
+./kernel/acpica/evsci.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evxface.c: $(DY_PATCH)
+./kernel/acpica/evxface.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evxfevnt.c: $(DY_PATCH)
+./kernel/acpica/evxfevnt.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evxfgpe.c: $(DY_PATCH)
+./kernel/acpica/evxfgpe.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/evxfregn.c: $(DY_PATCH)
+./kernel/acpica/evxfregn.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exconcat.c: $(DY_PATCH)
+./kernel/acpica/exconcat.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exconfig.c: $(DY_PATCH)
+./kernel/acpica/exconfig.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exconvrt.c: $(DY_PATCH)
+./kernel/acpica/exconvrt.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/excreate.c: $(DY_PATCH)
+./kernel/acpica/excreate.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exdebug.c: $(DY_PATCH)
+./kernel/acpica/exdebug.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exdump.c: $(DY_PATCH)
+./kernel/acpica/exdump.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exfield.c: $(DY_PATCH)
+./kernel/acpica/exfield.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exfldio.c: $(DY_PATCH)
+./kernel/acpica/exfldio.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exmisc.c: $(DY_PATCH)
+./kernel/acpica/exmisc.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exmutex.c: $(DY_PATCH)
+./kernel/acpica/exmutex.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exnames.c: $(DY_PATCH)
+./kernel/acpica/exnames.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exoparg1.c: $(DY_PATCH)
+./kernel/acpica/exoparg1.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exoparg2.c: $(DY_PATCH)
+./kernel/acpica/exoparg2.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exoparg3.c: $(DY_PATCH)
+./kernel/acpica/exoparg3.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exoparg6.c: $(DY_PATCH)
+./kernel/acpica/exoparg6.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exprep.c: $(DY_PATCH)
+./kernel/acpica/exprep.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exregion.c: $(DY_PATCH)
+./kernel/acpica/exregion.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exresnte.c: $(DY_PATCH)
+./kernel/acpica/exresnte.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exresolv.c: $(DY_PATCH)
+./kernel/acpica/exresolv.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exresop.c: $(DY_PATCH)
+./kernel/acpica/exresop.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exserial.c: $(DY_PATCH)
+./kernel/acpica/exserial.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exstore.c: $(DY_PATCH)
+./kernel/acpica/exstore.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exstoren.c: $(DY_PATCH)
+./kernel/acpica/exstoren.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exstorob.c: $(DY_PATCH)
+./kernel/acpica/exstorob.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exsystem.c: $(DY_PATCH)
+./kernel/acpica/exsystem.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/extrace.c: $(DY_PATCH)
+./kernel/acpica/extrace.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/exutils.c: $(DY_PATCH)
+./kernel/acpica/exutils.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/hwacpi.c: $(DY_PATCH)
+./kernel/acpica/hwacpi.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/hwesleep.c: $(DY_PATCH)
+./kernel/acpica/hwesleep.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/hwgpe.c: $(DY_PATCH)
+./kernel/acpica/hwgpe.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/hwpci.c: $(DY_PATCH)
+./kernel/acpica/hwpci.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/hwregs.c: $(DY_PATCH)
+./kernel/acpica/hwregs.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/hwsleep.c: $(DY_PATCH)
+./kernel/acpica/hwsleep.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/hwtimer.c: $(DY_PATCH)
+./kernel/acpica/hwtimer.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/hwvalid.c: $(DY_PATCH)
+./kernel/acpica/hwvalid.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/hwxface.c: $(DY_PATCH)
+./kernel/acpica/hwxface.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/hwxfsleep.c: $(DY_PATCH)
+./kernel/acpica/hwxfsleep.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsaccess.c: $(DY_PATCH)
+./kernel/acpica/nsaccess.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsalloc.c: $(DY_PATCH)
+./kernel/acpica/nsalloc.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsarguments.c: $(DY_PATCH)
+./kernel/acpica/nsarguments.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsconvert.c: $(DY_PATCH)
+./kernel/acpica/nsconvert.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsdump.c: $(DY_PATCH)
+./kernel/acpica/nsdump.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsdumpdv.c: $(DY_PATCH)
+./kernel/acpica/nsdumpdv.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nseval.c: $(DY_PATCH)
+./kernel/acpica/nseval.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsinit.c: $(DY_PATCH)
+./kernel/acpica/nsinit.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsload.c: $(DY_PATCH)
+./kernel/acpica/nsload.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsnames.c: $(DY_PATCH)
+./kernel/acpica/nsnames.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsobject.c: $(DY_PATCH)
+./kernel/acpica/nsobject.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsparse.c: $(DY_PATCH)
+./kernel/acpica/nsparse.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nspredef.c: $(DY_PATCH)
+./kernel/acpica/nspredef.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsprepkg.c: $(DY_PATCH)
+./kernel/acpica/nsprepkg.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsrepair.c: $(DY_PATCH)
+./kernel/acpica/nsrepair.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsrepair2.c: $(DY_PATCH)
+./kernel/acpica/nsrepair2.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nssearch.c: $(DY_PATCH)
+./kernel/acpica/nssearch.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsutils.c: $(DY_PATCH)
+./kernel/acpica/nsutils.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nswalk.c: $(DY_PATCH)
+./kernel/acpica/nswalk.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsxfeval.c: $(DY_PATCH)
+./kernel/acpica/nsxfeval.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsxfname.c: $(DY_PATCH)
+./kernel/acpica/nsxfname.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/nsxfobj.c: $(DY_PATCH)
+./kernel/acpica/nsxfobj.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/psargs.c: $(DY_PATCH)
+./kernel/acpica/psargs.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/psloop.c: $(DY_PATCH)
+./kernel/acpica/psloop.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/psobject.c: $(DY_PATCH)
+./kernel/acpica/psobject.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/psopcode.c: $(DY_PATCH)
+./kernel/acpica/psopcode.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/psopinfo.c: $(DY_PATCH)
+./kernel/acpica/psopinfo.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/psparse.c: $(DY_PATCH)
+./kernel/acpica/psparse.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/psscope.c: $(DY_PATCH)
+./kernel/acpica/psscope.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/pstree.c: $(DY_PATCH)
+./kernel/acpica/pstree.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/psutils.c: $(DY_PATCH)
+./kernel/acpica/psutils.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/pswalk.c: $(DY_PATCH)
+./kernel/acpica/pswalk.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/psxface.c: $(DY_PATCH)
+./kernel/acpica/psxface.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsaddr.c: $(DY_PATCH)
+./kernel/acpica/rsaddr.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rscalc.c: $(DY_PATCH)
+./kernel/acpica/rscalc.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rscreate.c: $(DY_PATCH)
+./kernel/acpica/rscreate.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsdump.c: $(DY_PATCH)
+./kernel/acpica/rsdump.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsdumpinfo.c: $(DY_PATCH)
+./kernel/acpica/rsdumpinfo.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsinfo.c: $(DY_PATCH)
+./kernel/acpica/rsinfo.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsio.c: $(DY_PATCH)
+./kernel/acpica/rsio.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsirq.c: $(DY_PATCH)
+./kernel/acpica/rsirq.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rslist.c: $(DY_PATCH)
+./kernel/acpica/rslist.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsmemory.c: $(DY_PATCH)
+./kernel/acpica/rsmemory.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsmisc.c: $(DY_PATCH)
+./kernel/acpica/rsmisc.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsserial.c: $(DY_PATCH)
+./kernel/acpica/rsserial.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsutils.c: $(DY_PATCH)
+./kernel/acpica/rsutils.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/rsxface.c: $(DY_PATCH)
+./kernel/acpica/rsxface.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/tbdata.c: $(DY_PATCH)
+./kernel/acpica/tbdata.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/tbfadt.c: $(DY_PATCH)
+./kernel/acpica/tbfadt.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/tbfind.c: $(DY_PATCH)
+./kernel/acpica/tbfind.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/tbinstal.c: $(DY_PATCH)
+./kernel/acpica/tbinstal.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/tbprint.c: $(DY_PATCH)
+./kernel/acpica/tbprint.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/tbutils.c: $(DY_PATCH)
+./kernel/acpica/tbutils.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/tbxface.c: $(DY_PATCH)
+./kernel/acpica/tbxface.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/tbxfload.c: $(DY_PATCH)
+./kernel/acpica/tbxfload.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/tbxfroot.c: $(DY_PATCH)
+./kernel/acpica/tbxfroot.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utaddress.c: $(DY_PATCH)
+./kernel/acpica/utaddress.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utalloc.c: $(DY_PATCH)
+./kernel/acpica/utalloc.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utascii.c: $(DY_PATCH)
+./kernel/acpica/utascii.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utbuffer.c: $(DY_PATCH)
+./kernel/acpica/utbuffer.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utcache.c: $(DY_PATCH)
+./kernel/acpica/utcache.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utclib.c: $(DY_PATCH)
+./kernel/acpica/utclib.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utcopy.c: $(DY_PATCH)
+./kernel/acpica/utcopy.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utdebug.c: $(DY_PATCH)
+./kernel/acpica/utdebug.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utdecode.c: $(DY_PATCH)
+./kernel/acpica/utdecode.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utdelete.c: $(DY_PATCH)
+./kernel/acpica/utdelete.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/uterror.c: $(DY_PATCH)
+./kernel/acpica/uterror.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/uteval.c: $(DY_PATCH)
+./kernel/acpica/uteval.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utexcep.c: $(DY_PATCH)
+./kernel/acpica/utexcep.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utglobal.c: $(DY_PATCH)
+./kernel/acpica/utglobal.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/uthex.c: $(DY_PATCH)
+./kernel/acpica/uthex.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utids.c: $(DY_PATCH)
+./kernel/acpica/utids.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utinit.c: $(DY_PATCH)
+./kernel/acpica/utinit.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utlock.c: $(DY_PATCH)
+./kernel/acpica/utlock.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utmath.c: $(DY_PATCH)
+./kernel/acpica/utmath.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utmisc.c: $(DY_PATCH)
+./kernel/acpica/utmisc.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utmutex.c: $(DY_PATCH)
+./kernel/acpica/utmutex.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utnonansi.c: $(DY_PATCH)
+./kernel/acpica/utnonansi.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utobject.c: $(DY_PATCH)
+./kernel/acpica/utobject.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utosi.c: $(DY_PATCH)
+./kernel/acpica/utosi.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utownerid.c: $(DY_PATCH)
+./kernel/acpica/utownerid.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utpredef.c: $(DY_PATCH)
+./kernel/acpica/utpredef.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utprint.c: $(DY_PATCH)
+./kernel/acpica/utprint.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utresdecode.c: $(DY_PATCH)
+./kernel/acpica/utresdecode.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utresrc.c: $(DY_PATCH)
+./kernel/acpica/utresrc.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utstate.c: $(DY_PATCH)
+./kernel/acpica/utstate.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utstring.c: $(DY_PATCH)
+./kernel/acpica/utstring.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utstrsuppt.c: $(DY_PATCH)
+./kernel/acpica/utstrsuppt.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utstrtoul64.c: $(DY_PATCH)
+./kernel/acpica/utstrtoul64.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/uttrack.c: $(DY_PATCH)
+./kernel/acpica/uttrack.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utuuid.c: $(DY_PATCH)
+./kernel/acpica/utuuid.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utxface.c: $(DY_PATCH)
+./kernel/acpica/utxface.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utxferror.c: $(DY_PATCH)
+./kernel/acpica/utxferror.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utxfinit.c: $(DY_PATCH)
+./kernel/acpica/utxfinit.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./kernel/acpica/utxfmutex.c: $(DY_PATCH)
+./kernel/acpica/utxfmutex.c: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
+
+##############################################################################
+
+$(ACPICA_TEMP): $(DY_PATCH)
+	$(ACPICA_SOURCE) "TEMP"
