@@ -365,7 +365,6 @@ ACPICA_HEADERS= \
  ./include/acpica/acopcode.h \
  ./include/acpica/acoutput.h \
  ./include/acpica/acparser.h \
- ./include/acpica/acpi.h \
  ./include/acpica/acpiosxf.h \
  ./include/acpica/acpixf.h \
  ./include/acpica/acpredef.h \
@@ -386,7 +385,7 @@ ACPICA_HEADERS= \
  ./include/acpios/acdancy.h
 
 ACPICA_DEPS=$(DANCY_EXT) $(ACPICA_HEADERS)
-ACPICA_TEMP=./external/tmp/acpica/source/include/acpi.h
+ACPICA_TEMP=./include/acpica/acpi.h
 
 ./o32/acpica.o: $(ACPICA_OBJECTS_32) $(DY_LINK)
 	$(DY_LINK) -o$@ $(ACPICA_OBJECTS_32)
@@ -1448,9 +1447,6 @@ ACPICA_TEMP=./external/tmp/acpica/source/include/acpi.h
 ./include/acpica/acparser.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acpi.h: $(ACPICA_TEMP)
-	$(ACPICA_SOURCE) "$@"
-
 ./include/acpica/acpiosxf.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
@@ -1996,4 +1992,4 @@ ACPICA_TEMP=./external/tmp/acpica/source/include/acpi.h
 ##############################################################################
 
 $(ACPICA_TEMP): $(DY_PATCH)
-	$(ACPICA_SOURCE) "TEMP"
+	$(ACPICA_SOURCE) "$@"
