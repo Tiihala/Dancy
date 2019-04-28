@@ -76,6 +76,7 @@ struct options {
 	const char *error;
 	const char *arg_o;
 	const char *arg_t;
+	int uefi;
 	int verbose;
 };
 
@@ -107,7 +108,7 @@ static void write_timestamp(int version, unsigned char *out)
 	}
 }
 
-static int create_iso(void)
+static int create_iso(int uefi)
 {
 	size_t size = dancy_file_size;
 	unsigned char *ptr;
@@ -394,6 +395,14 @@ static int create_iso(void)
 	ptr[0x26] = 0x04;
 	W_LE32(&ptr[0x28], 0x000000A0);
 
+	if (uefi) {
+		size_t efi_size = dancy_file_size / 512;
+		ptr[0x40] = 0x91, ptr[0x41] = 0xEF, ptr[0x42] = 0x01;
+		ptr[0x60] = 0x88;
+		W_LE16(&ptr[0x66], efi_size);
+		W_LE32(&ptr[0x68], 0x00000100);
+	}
+
 	/*
 	 * "ELTORITO.BIN" Data
 	 */
@@ -561,7 +570,7 @@ int program(struct options *opt)
 
 	if (read_file(opt->operands[0], &dancy_file, &dancy_file_size))
 		return 1;
-	if (create_iso())
+	if (create_iso(opt->uefi))
 		return free(dancy_file), 1;
 	return end(opt->arg_o, dancy_file, dancy_file_size);
 }
@@ -572,6 +581,7 @@ static const char *help_str =
 	"\nOptions:\n"
 	"  -o output     output file\n"
 	"  -t timestamp  YYYY-MM-DDThh:mm:ss\n"
+	"  --uefi        EFI System Partition\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -626,6 +636,10 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "uefi")) {
+				opts.uefi = 1;
 				continue;
 			}
 			help("unknown long option \"%s\"", arg);
