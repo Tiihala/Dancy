@@ -72,6 +72,14 @@ void cpu_out32(uint16_t port, uint32_t value);
 
 
 /*
+ * Declarations of db.c
+ */
+int db_init(struct b_mem *map);
+void db_free(void);
+int db_read(const char *name, unsigned char **buf, size_t *size);
+
+
+/*
  * Declarations of inflate.c
  */
 int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);

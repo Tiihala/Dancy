@@ -32,6 +32,9 @@ void init(void *map)
 
 	memory_print_map(b_log);
 
+	if (db_init(map))
+		return;
+
 	if (cpu_test_features())
 		return;
 
