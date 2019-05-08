@@ -92,6 +92,12 @@ void init(void *map);
 
 
 /*
+ * Declarations of ld.c
+ */
+int ld_validate(const char *name, const unsigned char *obj, size_t size);
+
+
+/*
  * Declarations of log.c
  */
 int b_log_init(size_t max_size);

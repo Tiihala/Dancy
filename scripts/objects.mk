@@ -41,6 +41,9 @@
 ./o32/init/init.o: ./kernel/init/init.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/init.c
 
+./o32/init/ld.o: ./kernel/init/ld.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/ld.c
+
 ./o32/init/log.o: ./kernel/init/log.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/log.c
 
@@ -103,6 +106,9 @@
 
 ./o64/init/init.o: ./kernel/init/init.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/init.c
+
+./o64/init/ld.o: ./kernel/init/ld.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/ld.c
 
 ./o64/init/log.o: ./kernel/init/log.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/log.c

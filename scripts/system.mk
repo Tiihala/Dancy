@@ -25,6 +25,7 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/db.o \
  ./o32/init/inflate.o \
  ./o32/init/init.o \
+ ./o32/init/ld.o \
  ./o32/init/log.o \
  ./o32/init/memory.o \
  ./o32/init/rtc.o \
@@ -47,6 +48,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/db.o \
  ./o64/init/inflate.o \
  ./o64/init/init.o \
+ ./o64/init/ld.o \
  ./o64/init/log.o \
  ./o64/init/memory.o \
  ./o64/init/rtc.o \
