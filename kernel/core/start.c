@@ -32,7 +32,7 @@ int core_start(struct core_information *info, uint32_t cpu)
 		memcpy(&core, info, sizeof(core));
 	if (memcmp(&core.magic[0], CORE_MAGIC, strlen(CORE_MAGIC)))
 		return core_error(ERROR_SIGNATURE);
-	if (core.cpu_max > cpu)
+	if (cpu > core.cpu_max)
 		return core_error(ERROR_INVALID_PARAMETER);
 
 	return 0;
