@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2018, 2019 Antti Tiihala
+ * Copyright (c) 2019 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,34 +13,15 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy.h
+ * kernel/error.h
  *      Header of Dancy Operating System
  */
 
-#ifndef DANCY_H
-#define DANCY_H
+#ifndef KERNEL_ERROR_H
+#define KERNEL_ERROR_H
 
-#include <dancy/blob.h>
+#define ERROR_INVALID_PARAMETER         (1000)
+#define ERROR_NO_MEMORY                 (1001)
+#define ERROR_SIGNATURE                 (1002)
 
-#if defined(DANCY_32) || defined(DANCY_64)
-
-#include <dancy/crc.h>
-#include <dancy/ctype.h>
-#include <dancy/keys.h>
-#include <dancy/limits.h>
-#include <dancy/stdarg.h>
-#include <dancy/stdio.h>
-#include <dancy/stdlib.h>
-#include <dancy/string.h>
-#include <dancy/types.h>
-
-#include <bitarray/bitarray.h>
-#include <huffman/huffman.h>
-
-#include <kernel/boot.h>
-#include <kernel/core.h>
-#include <kernel/error.h>
-#include <kernel/init.h>
-
-#endif
 #endif

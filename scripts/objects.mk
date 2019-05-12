@@ -14,6 +14,9 @@
 ./o32/huffman/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/huffman/huffman.c
 
+./o32/core/start.o: ./kernel/core/start.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/core/start.c
+
 ./o32/init/a32/cpu.o: ./kernel/init/a32/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/cpu.asm
 
@@ -79,6 +82,9 @@
 
 ./o64/huffman/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/huffman/huffman.c
+
+./o64/core/start.o: ./kernel/core/start.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/core/start.c
 
 ./o64/init/a64/cpu.o: ./kernel/init/a64/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/cpu.asm

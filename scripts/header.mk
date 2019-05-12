@@ -79,6 +79,8 @@ DANCY_HEADERS= \
  ./include/dancy/string.h \
  ./include/dancy/types.h \
  ./include/kernel/boot.h \
+ ./include/kernel/core.h \
+ ./include/kernel/error.h \
  ./include/kernel/init.h \
  ./include/dancy.h
 
