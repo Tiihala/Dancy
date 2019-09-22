@@ -1,4 +1,5 @@
 /bin/
+/efi/
 /external/
 /include/acpica/
 /kernel/acpica/
