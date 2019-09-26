@@ -51,3 +51,4 @@ include ./scripts/objects.mk
 include ./scripts/release.mk
 include ./scripts/system.mk
 include ./scripts/tools.mk
+include ./scripts/uefi.mk

@@ -6,6 +6,7 @@ IF NOT EXIST "scripts\clean.cmd" (
 )
 
 RMDIR /S /Q bin > NUL 2>&1
+RMDIR /S /Q efi > NUL 2>&1
 RMDIR /S /Q include\acpica > NUL 2>&1
 RMDIR /S /Q kernel\acpica > NUL 2>&1
 RMDIR /S /Q o32 > NUL 2>&1

@@ -6,6 +6,7 @@ if [ ! -f "scripts/clean.sh" ]; then
 fi
 
 rm -rf ./bin
+rm -rf ./efi
 rm -rf ./include/acpica
 rm -rf ./kernel/acpica
 rm -rf ./o32

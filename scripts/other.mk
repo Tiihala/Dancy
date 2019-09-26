@@ -51,3 +51,4 @@ path: ./bin/dy-path$(DANCY_EXE)
 !include .\scripts\release.mk
 !include .\scripts\system.mk
 !include .\scripts\tools.mk
+!include .\scripts\uefi.mk

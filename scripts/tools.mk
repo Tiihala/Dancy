@@ -120,6 +120,15 @@ DY_PATH_OBJECTS= \
 
 ##############################################################################
 
+DY_UEFI_OBJECTS= \
+ ./tools/dy-uefi/dy-uefi.obj \
+ ./tools/dy-uefi/x64.obj
+
+./bin/dy-uefi$(DANCY_EXE): $(DY_UEFI_OBJECTS) ./scripts/dancy.mk
+	$(DANCY_HOST_BINARY)$@ $(DY_UEFI_OBJECTS)
+
+##############################################################################
+
 DY_VBR_OBJECTS= \
  ./tools/dy-vbr/dy-vbr.obj \
  ./boot/fat/floppy.obj \
@@ -253,6 +262,12 @@ DY_ZIP_OBJECTS= \
 
 ./tools/dy-path/dy-path.obj: ./tools/dy-path/dy-path.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-path/dy-path.c
+
+./tools/dy-uefi/dy-uefi.obj: ./tools/dy-uefi/dy-uefi.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-uefi/dy-uefi.c
+
+./tools/dy-uefi/x64.obj: ./tools/dy-uefi/x64.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-uefi/x64.c
 
 ./tools/dy-vbr/dy-vbr.obj: ./tools/dy-vbr/dy-vbr.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-vbr/dy-vbr.c

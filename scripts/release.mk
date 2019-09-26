@@ -9,13 +9,14 @@ LOADER_FILE=-t 2019-03-03T08:58:39 --read-only
 
 ./release/dancy.iso: $(DANCY_TARGET_SYSTEM)
 	$(DY_VBR) -t lba --2048 $@ 8192
+	$(DY_MCOPY) -i $@ ./efi/boot/BOOTX64.EFI ::efi/boot/BOOTX64.EFI
 	$(DY_MCOPY) -i $@ ./system/CONFIG.AT ::system/CONFIG.AT
 	$(DY_MCOPY) -i $@ ./system/DB_000.AT 8 --db
 	$(DY_MCOPY) -i $@ ./system/IN_IA32.AT ::system/IN_IA32.AT
 	$(DY_MCOPY) -i $@ ./system/IN_X64.AT ::system/IN_X64.AT
 	$(DY_MCOPY) -i $@ ./LOADER.512 ::LOADER.512 $(LDR512_FILE)
 	$(DY_MCOPY) -i $@ ./LOADER.AT ::LOADER.AT $(LOADER_FILE)
-	$(DY_ISO) -o $@ $@
+	$(DY_ISO) --uefi -o $@ $@
 
 ./release/fdd160.img: $(DANCY_TARGET_SYSTEM)
 	$(DY_VBR) -t floppy $@ 160
@@ -44,6 +45,7 @@ LOADER_FILE=-t 2019-03-03T08:58:39 --read-only
 
 ./release/usbtiny.img: $(DANCY_TARGET_SYSTEM)
 	$(DY_VBR) -t chs $@ 4096
+	$(DY_MCOPY) -i $@ ./efi/boot/BOOTX64.EFI ::efi/boot/BOOTX64.EFI
 	$(DY_MCOPY) -i $@ ./system/CONFIG.AT ::system/CONFIG.AT
 	$(DY_MCOPY) -i $@ ./system/DB_000.AT 8 --db
 	$(DY_MCOPY) -i $@ ./system/IN_IA32.AT ::system/IN_IA32.AT
