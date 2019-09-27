@@ -62,13 +62,13 @@ times 0x0800 - ($ - $$) db 0
 pe_uefi_header:
         db 'PE', 0x00, 0x00             ; signature (Portable Executable)
 
-        dw 0x8664                       ; machine (amd64)
+        dw 0x8664                       ; machine (AMD64)
         dw 0x0002                       ; number of sections
-        dd 0x00000000                   ; time datestamp
+        dd 0x00000000                   ; time date stamp
         dd 0x00000000                   ; pointer to symbol table
         dd 0x00000000                   ; number of symbols
         dw 0x00F0                       ; size of optional header
-        dw 0x0E02                       ; characteristics
+        dw 0x0022                       ; characteristics
 
         dw 0x020B                       ; magic number (PE32+)
         db 0x00                         ; major linker version
@@ -79,7 +79,7 @@ patch1: dd 0x00001000                   ; size of initialized data
         dd 0x00001000                   ; address of entrypoint
         dd 0x00001000                   ; base of code
 
-        dq 0x0000000000000000           ; imagebase
+        dq 0x0000000180000000           ; imagebase
         dd 0x00001000                   ; section alignment
         dd 0x00001000                   ; file alignment
         dw 0x0000                       ; major operating system version
@@ -93,7 +93,7 @@ patch2: dd 0x00003000                   ; size of image
         dd 0x00001000                   ; size of headers
         dd 0x00000000                   ; checksum
         dw 0x000A                       ; subsystem
-        dw 0x0140                       ; dll characteristics
+        dw 0x0000                       ; dll characteristics
         dq 0x0000000000010000           ; size of stack reserve
         dq 0x0000000000001000           ; size of stack commit
         dq 0x0000000000010000           ; size of heap reserve
@@ -224,7 +224,6 @@ uefi_text_section:
         jmp short .L4
 
 uefi_in_x64:
-align 16
         mov ecx, [byte rsi+0]           ; first dword of object file
         mov ebp, [byte rsi+16]          ; check optional header and flags
         sub ecx, (0x8664+0x40000)       ; test magic word and sections
@@ -312,16 +311,15 @@ jump_to_start:
         call .func
 .halt:  hlt                             ; halt
         jmp short .halt                 ; should not happen
-.func:  xor eax, eax                    ; eax = 0
+.func:  lea rsp, [rsp+8]                ; remove return address
         mov rcx, r8                     ; rcx = "ImageHandle"
         mov rdx, r9                     ; rdx = "SystemTablePointer"
-        xor ebx, ebx                    ; ebx = 0
-        xor ebp, ebp                    ; ebp = 0
-        xor esi, esi                    ; esi = 0
-        xor edi, edi                    ; edi = 0
-        db 0x48, 0x81, 0xC4             ; "add rsp, strict qword 8"
-        dd 0x00000008
-        xor r8, r8                      ; r8 = 0
+        mov r8, rbx                     ; r8 = "ObjectFile"
+        xor eax, eax                    ; rax = 0
+        xor ebx, ebx                    ; rbx = 0
+        xor ebp, ebp                    ; rbp = 0
+        xor rsi, rsi                    ; rsi = 0
+        xor rdi, rdi                    ; rdi = 0
         xor r9, r9                      ; r9 = 0
         xor r10, r10                    ; r10 = 0
         xor r11, r11                    ; r11 = 0
@@ -334,7 +332,7 @@ jump_to_start:
 relocation_entry:
         push rbx                        ; save register rbx
         push rsi                        ; save register rsi
-        xor eax, eax                    ; eax = symbol size
+        xor eax, eax                    ; eax = 0
         xor ecx, ecx                    ; ecx = 0
         lea rbx, [rsp+24]               ; rbx = address of structure
 
