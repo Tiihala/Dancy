@@ -13,8 +13,24 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * uefi/uefi.c
- *      Boot Loader (UEFI)
+ * uefi.h
+ *      Header of Dancy Operating System
  */
 
-#include <uefi.h>
+#ifndef DANCY_UEFI_H
+#define DANCY_UEFI_H
+
+#if !defined(DANCY_64)
+#error Definition of DANCY_64 is not available
+#endif
+
+#include <dancy/ctype.h>
+#include <dancy/limits.h>
+#include <dancy/stdarg.h>
+#include <dancy/string.h>
+#include <dancy/types.h>
+
+int snprintf(char *s, size_t n, const char *format, ...);
+int vsnprintf(char *s, size_t n, const char *format, va_list arg);
+
+#endif

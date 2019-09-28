@@ -85,6 +85,7 @@ DANCY_HEADERS= \
  ./include/kernel/core.h \
  ./include/kernel/error.h \
  ./include/kernel/init.h \
- ./include/dancy.h
+ ./include/dancy.h \
+ ./include/uefi.h
 
 DANCY_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(DANCY_TARGET_TOOLS)
