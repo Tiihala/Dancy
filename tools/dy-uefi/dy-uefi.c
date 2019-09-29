@@ -55,6 +55,8 @@ struct options {
 	int verbose;
 };
 
+#define EF_HEADER_SIZE 0x0040
+
 static size_t uefi_file_size;
 static unsigned char *uefi_file;
 
@@ -124,23 +126,25 @@ static void free_file(void)
 static int check_uefi_file(void)
 {
 	static const char *format_err = "Error: uefi-object-file format\n";
+	const size_t min_size = EF_HEADER_SIZE + 212;
+	const size_t max_size = 0x00180000;
 
-	if (uefi_file_size < 596 || uefi_file_size >= 0x00180000)
+	if (uefi_file_size < min_size || uefi_file_size > max_size)
 		return fputs("Error: uefi-object-file size\n", stderr), 1;
-	if (LE16(&uefi_file[416 + 0]) != 0x8664)
+	if (LE16(&uefi_file[EF_HEADER_SIZE + 0]) != 0x8664)
 		return fputs(format_err, stderr), 1;
-	if (LE16(&uefi_file[416 + 2]) != 4)
+	if (LE16(&uefi_file[EF_HEADER_SIZE + 2]) != 4)
 		return fputs(format_err, stderr), 1;
-	if (LE32(&uefi_file[416 + 16]) != 0)
+	if (LE32(&uefi_file[EF_HEADER_SIZE + 16]) != 0)
 		return fputs(format_err, stderr), 1;
 
-	if (memcmp(&uefi_file[416 + 20], ".text", 6))
+	if (memcmp(&uefi_file[EF_HEADER_SIZE + 20], ".text", 6))
 		return fputs(format_err, stderr), 1;
-	if (memcmp(&uefi_file[416 + 60], ".rdata", 7))
+	if (memcmp(&uefi_file[EF_HEADER_SIZE + 60], ".rdata", 7))
 		return fputs(format_err, stderr), 1;
-	if (memcmp(&uefi_file[416 + 100], ".data", 6))
+	if (memcmp(&uefi_file[EF_HEADER_SIZE + 100], ".data", 6))
 		return fputs(format_err, stderr), 1;
-	if (memcmp(&uefi_file[416 + 140], ".bss", 5))
+	if (memcmp(&uefi_file[EF_HEADER_SIZE + 140], ".bss", 5))
 		return fputs(format_err, stderr), 1;
 	return 0;
 }
@@ -156,8 +160,8 @@ static int uefi(struct options *opt)
 	size_t data_size, size;
 	FILE *fp;
 
-	memcpy(&header[0], &uefi_file[0x01A0], sizeof(header));
-	memset(&uefi_file[0x01A0], 0, sizeof(header));
+	memcpy(&header[0], &uefi_file[EF_HEADER_SIZE], sizeof(header));
+	memset(&uefi_file[EF_HEADER_SIZE], 0, sizeof(header));
 	memcpy(&uefi_file[0], &header[0], sizeof(header));
 
 	data_size = uefi_file_size + 0x0FFF;
