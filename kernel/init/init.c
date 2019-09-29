@@ -53,19 +53,17 @@ void init(void *map)
 	 * Temporary code for testing purposes.
 	 */
 	{
-		const char *log_data = b_log_get_data();
-		size_t log_size = b_log_get_size();
 		size_t i;
 
-		for (i = 0; i < log_size + 1; i++) {
-			if (!b_put_byte_com1((unsigned char)log_data[i]))
+		for (i = 0; i < boot_log_size + 1; i++) {
+			if (!b_put_byte_com1((unsigned char)boot_log[i]))
 				break;
 		}
-		for (i = 0; i < log_size + 1; i++) {
-			if (!b_put_byte_com2((unsigned char)log_data[i]))
+		for (i = 0; i < boot_log_size + 1; i++) {
+			if (!b_put_byte_com2((unsigned char)boot_log[i]))
 				break;
 		}
 
-		b_output_string(log_data, (unsigned)log_size);
+		b_output_string(boot_log, (unsigned)boot_log_size);
 	}
 }
