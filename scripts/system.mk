@@ -30,7 +30,6 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/a32/int20h.o \
  ./o32/init/a32/start.o \
  ./o32/init/acpi.o \
- ./o32/init/bprint.o \
  ./o32/init/cpu.o \
  ./o32/init/db.o \
  ./o32/init/inflate.o \
@@ -38,6 +37,7 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/ld.o \
  ./o32/init/log.o \
  ./o32/init/memory.o \
+ ./o32/init/print.o \
  ./o32/init/rtc.o \
  ./o32/lib/a32/dark.o \
  ./o32/lib/a32/string.o \
@@ -53,7 +53,6 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/a64/int20h.o \
  ./o64/init/a64/start.o \
  ./o64/init/acpi.o \
- ./o64/init/bprint.o \
  ./o64/init/cpu.o \
  ./o64/init/db.o \
  ./o64/init/inflate.o \
@@ -61,6 +60,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/ld.o \
  ./o64/init/log.o \
  ./o64/init/memory.o \
+ ./o64/init/print.o \
  ./o64/init/rtc.o \
  ./o64/lib/a64/dark.o \
  ./o64/lib/a64/string.o \

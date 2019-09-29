@@ -48,12 +48,6 @@ struct acpi_information *acpi_get_information(void);
 
 
 /*
- * Declarations of bprint.c
- */
-void b_print(const char *format, ...);
-
-
-/*
  * Declarations of cpu.c
  */
 int cpu_test_features(void);
@@ -112,6 +106,12 @@ void b_log(const char *format, ...);
  */
 int memory_init(void *map);
 void memory_print_map(void (*print)(const char *, ...));
+
+
+/*
+ * Declarations of print.c
+ */
+void b_print(const char *format, ...);
 
 
 /*

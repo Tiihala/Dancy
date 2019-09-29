@@ -29,9 +29,6 @@
 ./o32/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/acpi.c
 
-./o32/init/bprint.o: ./kernel/init/bprint.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/bprint.c
-
 ./o32/init/cpu.o: ./kernel/init/cpu.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/cpu.c
 
@@ -52,6 +49,9 @@
 
 ./o32/init/memory.o: ./kernel/init/memory.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/memory.c
+
+./o32/init/print.o: ./kernel/init/print.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/print.c
 
 ./o32/init/rtc.o: ./kernel/init/rtc.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/rtc.c
@@ -98,9 +98,6 @@
 ./o64/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/acpi.c
 
-./o64/init/bprint.o: ./kernel/init/bprint.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/bprint.c
-
 ./o64/init/cpu.o: ./kernel/init/cpu.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/cpu.c
 
@@ -121,6 +118,9 @@
 
 ./o64/init/memory.o: ./kernel/init/memory.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/memory.c
+
+./o64/init/print.o: ./kernel/init/print.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/print.c
 
 ./o64/init/rtc.o: ./kernel/init/rtc.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/rtc.c
