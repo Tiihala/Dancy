@@ -19,7 +19,7 @@
 
 #include <dancy.h>
 
-int b_print(const char *format, ...)
+void b_print(const char *format, ...)
 {
 	char buf[4096];
 	char *ptr = &buf[0];
@@ -37,7 +37,7 @@ int b_print(const char *format, ...)
 				buf[i + 0] = '\r';
 				buf[i + 1] = '\n';
 				b_output_string(ptr, size + 2);
-				return (ret > 0) ? 0 : 1;
+				return;
 			}
 			if (size) {
 				b_output_string(ptr, size);
@@ -52,5 +52,4 @@ int b_print(const char *format, ...)
 	}
 	if (size)
 		b_output_string(ptr, size);
-	return (ret > 0) ? 0 : 1;
 }

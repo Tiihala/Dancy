@@ -50,7 +50,7 @@ struct acpi_information *acpi_get_information(void);
 /*
  * Declarations of bprint.c
  */
-int b_print(const char *format, ...);
+void b_print(const char *format, ...);
 
 
 /*
