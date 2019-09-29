@@ -143,5 +143,8 @@
 ./o64/uefi/a64/start.o: ./kernel/uefi/a64/start.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/uefi/a64/start.asm
 
+./o64/uefi/print.o: ./kernel/uefi/print.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/uefi/print.c
+
 ./o64/uefi/uefi.o: ./kernel/uefi/uefi.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/uefi/uefi.c

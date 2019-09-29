@@ -124,11 +124,16 @@ extern void                                     *gOriginalRsp;
 
 
 /*
+ * Declarations of print.c
+ */
+const void *L(const char *s);
+void u_print(const char *format, ...);
+
+
+/*
  * Declarations of uefi.c
  */
 void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...);
-const void *L(const char *s);
 void u_clear_screen(void);
-void u_print(const char *format, ...);
 
 #endif

@@ -61,41 +61,7 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	}
 }
 
-const void *L(const char *s)
-{
-	static char buf[4096];
-	size_t i;
-
-	for (i = 0; i < (sizeof(buf) - 4); i = i + 2) {
-		if (*s == '\0')
-			break;
-		if (*s == '\n') {
-			buf[i] = '\r', buf[i + 1] = '\0';
-			i = i + 2;
-		}
-		buf[i] = *s++, buf[i + 1] = '\0';
-	}
-
-	buf[i] = '\0', buf[i + 1] = '\0';
-	return &buf[0];
-}
-
 void u_clear_screen(void)
 {
 	gSystemTable->ConOut->ClearScreen(gSystemTable->ConOut);
-}
-
-void u_print(const char *format, ...)
-{
-	char buf[2048];
-	int ret;
-
-	va_list va;
-	va_start(va, format);
-	ret = vsnprintf(buf, sizeof(buf), format, va);
-	va_end(va);
-
-	if (ret <= 0)
-		return;
-	gSystemTable->ConOut->OutputString(gSystemTable->ConOut, L(&buf[0]));
 }
