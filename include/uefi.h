@@ -122,6 +122,16 @@ extern EFI_SYSTEM_TABLE                         *gSystemTable;
 extern void                                     *gBaseAddress;
 extern void                                     *gOriginalRsp;
 
+extern char                                     *uefi_log;
+extern size_t                                   uefi_log_size;
+
+
+/*
+ * Declarations of log.c
+ */
+void u_log_init(void);
+void u_log(const char *format, ...);
+
 
 /*
  * Declarations of print.c

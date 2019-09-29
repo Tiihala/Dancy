@@ -9,6 +9,7 @@ BOOTX64_EFI_OBJECTS= \
  ./o64/lib/snprintf.o \
  ./o64/lib/string.o \
  ./o64/uefi/a64/start.o \
+ ./o64/uefi/log.o \
  ./o64/uefi/print.o \
  ./o64/uefi/uefi.o
 
