@@ -19,31 +19,24 @@
 
         bits 64
 
-%define EFI_BootServices                0x60
-%define EFI_OutputString                0x08
-%define EFI_ConOut                      0x40
-
 section .text
 
+        extern uefi_main
         global start
 
 align 16
-        ; void start(uint64_t, uint64_t)
+        ; _Noreturn void start(uint64_t, uint64_t, uint64_t)
 start:
-        xor eax, eax                    ; rax = 0
-        push rax                        ; push 0
-        sub rax, 16                     ; rax = 0xFFFFFFFFFFFFFFF0
+        mov r9, rsp                     ; r9 = original stack pointer
+        push rax                        ; push register rax
+        mov rax, 0xFFFFFFFFFFFFFFF0     ; rax = 0xFFFFFFFFFFFFFFF0
         and rsp, rax                    ; align stack pointer
 
-        mov rcx, rdx                    ; rcx = "SystemTablePointer"
-        mov rcx, [rcx+EFI_ConOut]       ; rcx = "ConOut"
-        lea rdx, [rel hello_world]      ; rdx = address of message
-        sub rsp, 32                     ; stack shadow space (allocate)
-        call [rcx+EFI_OutputString]     ; call UEFI function
-        add rsp, 32                     ; stack shadow space (free)
-        db 0x90, 0xF4, 0xF4, 0xEB, 0xFC ; endless loop
+        push r9                         ; sub rsp, 8
+        push r8                         ; sub rsp, 8
+        push rdx                        ; sub rsp, 8
+        push rcx                        ; sub rsp, 8
 
-section .data
-
-hello_world:
-        dw __utf16__('hello, uefi world'), 13, 10, 0
+        call uefi_main                  ; call uefi_main
+.halt:  hlt                             ; halt
+        jmp short .halt
