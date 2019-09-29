@@ -100,11 +100,11 @@ int ld_validate(const char *name, const unsigned char *obj, size_t size);
 /*
  * Declarations of log.c
  */
+extern char *boot_log;
+extern size_t boot_log_size;
 int b_log_init(size_t max_size);
 void b_log_close(void);
-const char *b_log_get_data(void);
-size_t b_log_get_size(void);
-int b_log(const char *format, ...);
+void b_log(const char *format, ...);
 
 
 /*

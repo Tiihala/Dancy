@@ -19,10 +19,11 @@
 
 #include <dancy.h>
 
-static size_t log_size;
+char *boot_log;
+size_t boot_log_size;
+
 static size_t log_max_size;
 static size_t log_column;
-static void *boot_log;
 
 int b_log_init(size_t max_size)
 {
@@ -42,27 +43,17 @@ void b_log_close(void)
 {
 	void *new_ptr;
 
-	log_max_size = log_size;
+	log_max_size = boot_log_size;
 	log_column = 0;
 
-	new_ptr = realloc(boot_log, log_size);
+	new_ptr = realloc(boot_log, boot_log_size);
 	if (new_ptr != NULL)
 		boot_log = new_ptr;
 }
 
-const char *b_log_get_data(void)
+void b_log(const char *format, ...)
 {
-	return (const char *)boot_log;
-}
-
-size_t b_log_get_size(void)
-{
-	return log_size;
-}
-
-int b_log(const char *format, ...)
-{
-	char *out = (char *)boot_log;
+	char *out = boot_log;
 	char buf[4096];
 	int ret, i, j;
 
@@ -74,24 +65,20 @@ int b_log(const char *format, ...)
 	for (i = 0; i < ret; i++) {
 		if (buf[i] == '\t') {
 			for (j = 0; (j == 0 || log_column & 3); j++ ) {
-				if (log_size < log_max_size)
-					out[log_size++] = ' ';
+				if (boot_log_size < log_max_size)
+					out[boot_log_size++] = ' ';
 				log_column += 1;
 			}
 		} else if (buf[i] == '\n') {
-			if (log_size < log_max_size)
-				out[log_size++] = '\r';
-			if (log_size < log_max_size)
-				out[log_size++] = '\n';
+			if (boot_log_size < log_max_size)
+				out[boot_log_size++] = '\r';
+			if (boot_log_size < log_max_size)
+				out[boot_log_size++] = '\n';
 			log_column = 0;
 		} else {
-			if (log_size < log_max_size)
-				out[log_size++] = buf[i];
+			if (boot_log_size < log_max_size)
+				out[boot_log_size++] = buf[i];
 			log_column += 1;
 		}
 	}
-
-	if (log_size >= log_max_size)
-		return b_log_close(), 1;
-	return (ret > 0) ? 0 : 1;
 }
