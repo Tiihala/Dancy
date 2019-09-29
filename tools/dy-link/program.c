@@ -46,6 +46,7 @@ static void native_obj(unsigned char *data, int size)
 {
 	const int at_size = AT_HEADER_SIZE + (20 + 4 * 40);
 	const int in_size = IN_HEADER_SIZE + (20 + 4 * 40);
+	const int ef_size = EF_HEADER_SIZE + (20 + 4 * 40);
 	unsigned char header[20 + 4 * 40];
 
 	if (size < 32)
@@ -96,6 +97,24 @@ static void native_obj(unsigned char *data, int size)
 		memcpy(&data[0], &header[0], sizeof(header));
 		return;
 	}
+	/*
+	 * Uefi executables.
+	 */
+	if (LE32(&data[0]) == 0x00000000 && size >= ef_size) {
+		int i;
+		for (i = 4; i < EF_HEADER_SIZE; i++) {
+			if (data[i])
+				return;
+		}
+		if (LE16(&data[EF_HEADER_SIZE + 2]) != 4)
+			return;
+		if (LE32(&data[EF_HEADER_SIZE + 16]) != 0)
+			return;
+		memcpy(&header[0], &data[EF_HEADER_SIZE], sizeof(header));
+		memset(&data[0], 0, (size_t)ef_size);
+		memcpy(&data[0], &header[0], sizeof(header));
+		return;
+	}
 }
 
 int program(struct options *opt)
@@ -106,6 +125,8 @@ int program(struct options *opt)
 		if (!strcmp(opt->arg_f, "at")) {
 			; /* Accept */
 		} else if (!strcmp(opt->arg_f, "init")) {
+			; /* Accept */
+		} else if (!strcmp(opt->arg_f, "uefi")) {
 			; /* Accept */
 		} else if (!strcmp(opt->arg_f, "32")) {
 			if (default_obj(opt, 0x014C))

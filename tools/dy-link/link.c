@@ -153,6 +153,8 @@ static int get_pre_size(struct options *opt)
 		size += AT_HEADER_SIZE;
 	else if (!strcmp(opt->arg_f, "init"))
 		size += IN_HEADER_SIZE;
+	else if (!strcmp(opt->arg_f, "uefi"))
+		size += EF_HEADER_SIZE;
 	return size;
 }
 
@@ -292,6 +294,12 @@ int link_main(struct options *opt)
 	unsigned char *out;
 	int size;
 	int off;
+
+	/*
+	 * The uefi format is like "init" when it comes to file alignment.
+	 */
+	if (!strcmp(opt->arg_f, "uefi"))
+		init = 1;
 
 	/*
 	 * Handle "duplicate" sections and remove "mangled" names.
@@ -556,6 +564,24 @@ int link_main(struct options *opt)
 			if (!(total_size < 0x0000E000))
 				err = 1;
 		}
+		if (!strcmp(opt->arg_f, "uefi")) {
+			/*
+			 * section .text  align 64
+			 * section .data  align 64
+			 * section .rdata align 64
+			 */
+			if (opt->alignbits_t > 0x00700000) {
+				fputs("Warning: uefi .text align\n", stderr);
+			}
+			if (opt->alignbits_r > 0x00700000) {
+				fputs("Error: uefi .rdata align\n", stderr);
+				return free(out), 1;
+			}
+			if (opt->alignbits_d > 0x00700000) {
+				fputs("Error: uefi .data align\n", stderr);
+				return free(out), 1;
+			}
+		}
 		if (err || !(total_size < 0x7FFFFFFF)) {
 			const char *e = "Error: memory layout, %08lX bytes\n";
 			fprintf(stderr, e, total_size);
@@ -625,6 +651,10 @@ int link_main(struct options *opt)
 			fputs("Error: init file overflow\n", stderr);
 			return free(out), 1;
 		}
+	} else if (!strcmp(opt->arg_f, "uefi")) {
+		size_t s = (size_t)EF_HEADER_SIZE;
+		memmove(&out[s], &out[0], (20 + 4 * 40));
+		memset(&out[0], 0, s);
 	}
 
 	/*

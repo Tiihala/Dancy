@@ -74,6 +74,7 @@ struct mfile {
 	*((a) + 3) = (unsigned char)(((unsigned long)(d) >> 24) & 0xFFul))
 
 #define AT_HEADER_SIZE (0x0020)
+#define EF_HEADER_SIZE (0x0040)
 #define IN_HEADER_SIZE (0x01A0)
 
 /*
