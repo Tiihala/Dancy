@@ -15,4 +15,4 @@ BOOTX64_EFI_OBJECTS= \
 	$(DY_UEFI) -tx64 -o$@ ./o64/uefi/uefi.at
 
 ./o64/uefi/uefi.at: $(BOOTX64_EFI_OBJECTS)
-	$(DY_LINK) -finit -o$@ $(BOOTX64_EFI_OBJECTS)
+	$(DY_LINK) -fuefi -o$@ $(BOOTX64_EFI_OBJECTS)
