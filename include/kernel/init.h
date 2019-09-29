@@ -111,7 +111,7 @@ void b_log(const char *format, ...);
  * Declarations of memory.c
  */
 int memory_init(void *map);
-void memory_print_map(int (*print)(const char *, ...));
+void memory_print_map(void (*print)(const char *, ...));
 
 
 /*

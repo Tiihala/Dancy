@@ -123,14 +123,11 @@ int memory_init(void *map)
 	return (memory_map = map), 0;
 }
 
-void memory_print_map(int (*print)(const char *, ...))
+void memory_print_map(void (*print)(const char *, ...))
 {
 	const struct b_mem *memory = memory_map;
 	phys_addr_t total = 0;
 	size_t i;
-
-	if (!print)
-		print = b_print;
 
 	(*print)("Memory Map\n");
 
