@@ -45,8 +45,8 @@ static int default_obj(struct options *opt, unsigned magic)
 static void native_obj(unsigned char *data, int size)
 {
 	const int at_size = AT_HEADER_SIZE + (20 + 4 * 40);
-	const int in_size = IN_HEADER_SIZE + (20 + 4 * 40);
 	const int ef_size = EF_HEADER_SIZE + (20 + 4 * 40);
+	const int in_size = IN_HEADER_SIZE + (20 + 4 * 40);
 	unsigned char header[20 + 4 * 40];
 
 	if (size < 32)
@@ -82,14 +82,12 @@ static void native_obj(unsigned char *data, int size)
 	/*
 	 * Init executables (without header).
 	 */
-	if (LE32(&data[0]) == 0x00000000 && size >= in_size) {
+	if (size >= in_size && LE16(&data[IN_HEADER_SIZE + 2]) == 4) {
 		int i;
 		for (i = 4; i < IN_HEADER_SIZE; i++) {
 			if (data[i])
 				return;
 		}
-		if (LE16(&data[IN_HEADER_SIZE + 2]) != 4)
-			return;
 		if (LE32(&data[IN_HEADER_SIZE + 16]) != 0)
 			return;
 		memcpy(&header[0], &data[IN_HEADER_SIZE], sizeof(header));
@@ -100,14 +98,12 @@ static void native_obj(unsigned char *data, int size)
 	/*
 	 * Uefi executables.
 	 */
-	if (LE32(&data[0]) == 0x00000000 && size >= ef_size) {
+	if (size >= ef_size && LE16(&data[EF_HEADER_SIZE + 2]) == 4) {
 		int i;
 		for (i = 4; i < EF_HEADER_SIZE; i++) {
 			if (data[i])
 				return;
 		}
-		if (LE16(&data[EF_HEADER_SIZE + 2]) != 4)
-			return;
 		if (LE32(&data[EF_HEADER_SIZE + 16]) != 0)
 			return;
 		memcpy(&header[0], &data[EF_HEADER_SIZE], sizeof(header));
