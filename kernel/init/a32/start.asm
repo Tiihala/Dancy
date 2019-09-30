@@ -32,19 +32,13 @@ _start:
         sub al, 0xE8                    ; stack check
         jnz short .halt
 
-        mov ah, 0xE0                    ; get boot loader type
-        int 0x20                        ; boot loader syscall
-        jc short .map                   ; type 0 if syscall was not supported
-        mov [_boot_loader_type], eax    ; save boot loader type
-
-.map:   add ebx, 0x00010000             ; ebx = "address of memory map"
+        add ebx, 0x00010000             ; ebx = "address of memory map"
         push dword 0                    ; push 0x00000000
         push ebx                        ; "void init(void *)"
         xor ebx, ebx                    ; ebx = 0
         call _init                      ; call init
 
-.halt:  mov ah, 0xAE                    ; b_pause
-        int 0x20                        ; boot loader syscall
+.halt:  hlt                             ; halt
         jmp short .halt
 
 

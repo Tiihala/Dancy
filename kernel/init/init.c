@@ -66,4 +66,6 @@ void init(void *map)
 
 		b_output_string(boot_log, (unsigned)boot_log_size);
 	}
+
+	while (!b_pause()) { }
 }
