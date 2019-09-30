@@ -13,7 +13,7 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
-;; init/a64/int20h.asm
+;; init/a64/syscall.asm
 ;;      Boot loader system calls (64-bit)
 ;;
 

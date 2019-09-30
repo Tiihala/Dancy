@@ -27,8 +27,8 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/crc32/crc32c.o \
  ./o32/huffman/huffman.o \
  ./o32/init/a32/cpu.o \
- ./o32/init/a32/int20h.o \
  ./o32/init/a32/start.o \
+ ./o32/init/a32/syscall.o \
  ./o32/init/acpi.o \
  ./o32/init/cpu.o \
  ./o32/init/db.o \
@@ -50,8 +50,8 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/crc32/crc32c.o \
  ./o64/huffman/huffman.o \
  ./o64/init/a64/cpu.o \
- ./o64/init/a64/int20h.o \
  ./o64/init/a64/start.o \
+ ./o64/init/a64/syscall.o \
  ./o64/init/acpi.o \
  ./o64/init/cpu.o \
  ./o64/init/db.o \

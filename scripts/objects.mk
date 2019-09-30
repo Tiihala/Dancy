@@ -20,11 +20,11 @@
 ./o32/init/a32/cpu.o: ./kernel/init/a32/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/cpu.asm
 
-./o32/init/a32/int20h.o: ./kernel/init/a32/int20h.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/init/a32/int20h.asm
-
 ./o32/init/a32/start.o: ./kernel/init/a32/start.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/start.asm
+
+./o32/init/a32/syscall.o: ./kernel/init/a32/syscall.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/init/a32/syscall.asm
 
 ./o32/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/acpi.c
@@ -89,11 +89,11 @@
 ./o64/init/a64/cpu.o: ./kernel/init/a64/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/cpu.asm
 
-./o64/init/a64/int20h.o: ./kernel/init/a64/int20h.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/init/a64/int20h.asm
-
 ./o64/init/a64/start.o: ./kernel/init/a64/start.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/start.asm
+
+./o64/init/a64/syscall.o: ./kernel/init/a64/syscall.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/init/a64/syscall.asm
 
 ./o64/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/acpi.c
