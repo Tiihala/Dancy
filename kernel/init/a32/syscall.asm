@@ -203,33 +203,16 @@ _b_exit:
         ret
 
 
-        global _b_get_loader_type
         global _b_get_time
-
-align 16
-        ; unsigned long b_get_loader_type(void)
-_b_get_loader_type:
-        mov ah, 0xE0                    ; ah = syscall number
-        int 0x20                        ; boot loader syscall
-        jnc short .end
-        xor eax, eax                    ; eax = 0
-        xor edx, edx                    ; edx = 0
-.end:   ret
 
 align 16
         ; unsigned long b_get_time(void *)
 _b_get_time:
-        push ebx                        ; save register ebx
-        xor ebx, ebx                    ; ebx = argument 1 (zero)
-        mov ecx, [esp+8]                ; ecx = argument 2
-        mov ah, 0xE1                    ; ah = syscall number
-        int 0x20                        ; boot loader syscall
-        jnc short .end
+        mov ecx, [esp+4]                ; ecx = argument
         xor eax, eax                    ; eax = 0
         xor edx, edx                    ; edx = 0
         mov [ecx+0x00], eax             ; struct b_time ecx = { 0 }
         mov [ecx+0x04], edx
         mov [ecx+0x08], eax
         mov [ecx+0x0C], edx
-.end:   pop ebx                         ; restore register ebx
         ret

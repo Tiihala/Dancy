@@ -46,7 +46,6 @@ unsigned long b_write_blocks(unsigned int, unsigned int);
 unsigned long b_pause(void);
 unsigned long b_exit(void);
 
-unsigned long b_get_loader_type(void);
 unsigned long b_get_time(void *);
 
 enum b_ctl {
