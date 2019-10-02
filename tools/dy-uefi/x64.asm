@@ -144,6 +144,7 @@ patch4: dd 0x00001000                   ; size of raw data
 
 %define EFI_AllocatePages               0x28
 %define EFI_BootServices                0x60
+%define EFI_Stall                       0xF8
 %define EFI_OutputString                0x08
 %define EFI_ConOut                      0x40
 
@@ -151,9 +152,8 @@ patch4: dd 0x00001000                   ; size of raw data
 
 times 0x1000 - ($ - $$) db 0
 uefi_text_section:
-        xor eax, eax                    ; rax = 0
-        mov r12, rsp                    ; r12 = original stack pointer
-        push rax                        ; push 0
+        push r12                        ; save register r12
+        lea r12, [rsp]                  ; r12 = original stack pointer - 8
         and rsp, 0xFFFFFFFFFFFFFFF0     ; align stack pointer
         push rcx                        ; push "ImageHandle"
         push rdx                        ; push "SystemTablePointer"
@@ -166,62 +166,65 @@ uefi_text_section:
         dd PAGES_TO_ALLOCATE            ; number of pages
 
         lea r9, [rsp]                   ; address of allocated memory
-        mov dword [r9], 0xF0000000      ; r9 = "Memory"
+        mov dword [r9], 0xEFFFFFFF      ; r9 = "Memory"
         mov rax, [rsp+16]               ; rax = "SystemTablePointer"
         mov rax, [rax+EFI_BootServices] ; rax = "BootServices"
         sub rsp, 32                     ; stack shadow space (allocate)
         call [rax+EFI_AllocatePages]    ; call UEFI function
         test rax, rax                   ; test zero
-        jnz short .L1
+        jz short copy_object_file
 
-        mov edi, [rsp+32]               ; rdi = address of allocated memory
-        cmp dword [rsp+36], 0           ; test zero
-        jnz short .L1
-        cmp edi, 0                      ; test validity
-        je short .L1
-        cmp edi, 0xF0000000             ; test validity
-        jae short .L1
-        test edi, 0x00000FFF            ; test validity
-        jz short .L3
-
-.L1:    mov rcx, [rsp+48]               ; rcx = "SystemTablePointer"
+        mov rcx, [rsp+48]               ; rcx = "SystemTablePointer"
         mov rcx, [rcx+EFI_ConOut]       ; rcx = "ConOut"
         lea rdx, [rel alloc_error]      ; rdx = address of message
         call [rcx+EFI_OutputString]     ; call UEFI function
-        mov rsp, r12                    ; restore original stack pointer
-        db 0x48, 0x81, 0x3C, 0x24       ; "cmp [rsp], 0"
-        dd 0x00000000
-        jne short .L2
-.halt:  hlt                             ; halt
-.L2:    mov eax, 0x00000001             ; rax = 1
-        mov edx, 0x00000000             ; rdx = 0
-        lea ecx, [rdx]                  ; rcx = 0
-        je short .halt
+
+        lea rcx, [5000000]              ; rcx = "Microseconds"
+        mov rax, [rsp+48]               ; rax = "SystemTablePointer"
+        mov rax, [rax+EFI_BootServices] ; rax = "BootServices"
+        call [rax+EFI_Stall]            ; call UEFI function
+        mov rsp, r12                    ; restore original stack pointer - 8
+
+        ; "The registers rbx, rbp, rdi, rsi, r12, r13, r14, r15 are
+        ;  considered nonvolatile and must be saved and restored."
+
+        pop r12                         ; restore register r12
         ret                             ; return to firmware
 
-.L3:    mov ecx, [rel patch4]           ; rcx = "size of raw data (data)"
+copy_object_file:
+        mov edi, [rsp+32]               ; rdi = address of allocated memory
+        add r12d, [rsp+36]              ; high dword must be zero
+        cmp r12, [rsp+40]               ; stack pointer test
+        jne short .halt
+
+        cmp edi, 0xEFFFFFFF             ; test validity
+        jae short .halt
+        test edi, 0x00000FFF            ; test validity
+        jnz short .halt
+
+        mov ecx, [rel patch4]           ; rcx = "size of raw data (data)"
         lea rsi, [rel uefi_object_file] ; source data
         cld                             ; clear direction flag
         rep movsb                       ; move data to allocated memory
 
         mov ecx, 4096*PAGES_TO_ALLOCATE ; rcx = 4096*PAGES_TO_ALLOCATE
         sub ecx, [rel patch4]           ; rcx = sub "size of raw data (data)"
-        jc short .L1                    ; (should not happen)
+        jc short .halt                    ; (should not happen)
         cld                             ; clear direction flag
         rep stosb                       ; clear allocated memory (al = 0)
 
         add rsp, 32                     ; adjust stack pointer
         pop rbx                         ; rbx = address of allocated memory
-        cmp [byte rsp+0], r12           ; stack pointer test
-        jne short .L4
+        cmp r12, [byte rsp+0]           ; stack pointer test
+        jne short .halt
         add rsp, 8                      ; adjust stack pointer
         pop r9                          ; r9 = "SystemTablePointer"
         pop r8                          ; r8 = "ImageHandle"
         sub rsp, 16                     ; allocate stack space (16 bytes)
         lea rsi, [rbx]                  ; esi = object file
         jmp short uefi_in_x64
-.L4:    hlt                             ; halt
-        jmp short .L4
+.halt:  hlt                             ; halt
+        jmp short .halt
 
 uefi_in_x64:
         mov ecx, [byte rsi+0]           ; first dword of object file
@@ -304,14 +307,12 @@ relocate:
         jmp short .halt                 ; should not happen
 
 jump_to_start:
-        mov rsp, r12                    ; restore original stack pointer
-        test ebp, ebp                   ; test start address
-        jz short .halt
-        push rbp                        ; push start address
-        call .func
+        lea rsp, [byte r12+0]           ; restore original stack pointer - 8
+        cmp ebp, strict dword 0         ; test start address
+        jne short .go
 .halt:  hlt                             ; halt
         jmp short .halt                 ; should not happen
-.func:  lea rsp, [rsp+8]                ; remove return address
+.go:    mov [byte rsp+0], rbp           ; modify return address
         mov rcx, r8                     ; rcx = "ImageHandle"
         mov rdx, r9                     ; rdx = "SystemTablePointer"
         mov r8, rbx                     ; r8 = "ObjectFile"
