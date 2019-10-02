@@ -144,9 +144,9 @@ patch4: dd 0x00001000                   ; size of raw data
 
 %define EFI_AllocatePages               0x28
 %define EFI_BootServices                0x60
-%define EFI_Stall                       0xF8
-%define EFI_OutputString                0x08
 %define EFI_ConOut                      0x40
+%define EFI_OutputString                0x08
+%define EFI_Stall                       0xF8
 
 %define PAGES_TO_ALLOCATE               0x200
 
@@ -192,10 +192,12 @@ uefi_text_section:
         ret                             ; return to firmware
 
 copy_object_file:
-        mov edi, [rsp+32]               ; rdi = address of allocated memory
-        add r12d, [rsp+36]              ; high dword must be zero
-        cmp r12, [rsp+40]               ; stack pointer test
-        jne short .halt
+        mov eax, [rsp+32]               ; rax = allocated memory (low dword)
+        mov rdi, [rsp+32]               ; rdi = allocated memory (full)
+        sub rdi, rax                    ; test high dword
+        jnz short .halt
+        xchg rax, rdi                   ; rax = 0
+                                        ; rdi = address of allocated memory
 
         cmp edi, 0xEFFFFFFF             ; test validity
         jae short .halt
@@ -209,7 +211,7 @@ copy_object_file:
 
         mov ecx, 4096*PAGES_TO_ALLOCATE ; rcx = 4096*PAGES_TO_ALLOCATE
         sub ecx, [rel patch4]           ; rcx = sub "size of raw data (data)"
-        jc short .halt                    ; (should not happen)
+        jc short .halt                  ; (should not happen)
         cld                             ; clear direction flag
         rep stosb                       ; clear allocated memory (al = 0)
 
