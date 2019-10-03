@@ -145,6 +145,8 @@ patch4: dd 0x00001000                   ; size of raw data
 %define EFI_AllocatePages               0x28
 %define EFI_BootServices                0x60
 %define EFI_ConOut                      0x40
+%define EFI_Exit                        0xD8
+%define EFI_FreePages                   0x30
 %define EFI_OutputString                0x08
 %define EFI_Stall                       0xF8
 
@@ -309,20 +311,41 @@ relocate:
         jmp short .halt                 ; should not happen
 
 jump_to_start:
-        lea rsp, [byte r12+0]           ; restore original stack pointer - 8
-        cmp ebp, strict dword 0         ; test start address
-        jne short .go
-.halt:  hlt                             ; halt
-        jmp short .halt                 ; should not happen
-.go:    mov [byte rsp+0], rbp           ; modify return address
+        xor eax, eax                    ; rax = 0
+        mov rsp, r12                    ; restore original stack pointer - 8
+        mov [rsp], rax                  ; write zero
+
+        ; Data section is used for saving "ImageHandle", "SystemTablePointer"
+        ; and "ObjectFile" for the "exit_to_firmware" procedure.
+
+        lea rax, [rel (uefi_object_file+0xC0)]
+        and rsp, 0xFFFFFFFFFFFFFFF0     ; align stack pointer
+
+        mov [byte rax+0x00], r8         ; save "ImageHandle"
+        mov [byte rax+0x08], r9         ; save "SystemTablePointer"
+        mov [byte rax+0x10], rbx        ; save "ObjectFile"
+
         mov rcx, r8                     ; rcx = "ImageHandle"
         mov rdx, r9                     ; rdx = "SystemTablePointer"
         mov r8, rbx                     ; r8 = "ObjectFile"
+
+        lea rax, [rel exit_to_firmware] ; rax = return address
+        test rbp, rbp                   ; test start address
+        jnz short .go
+        mov rbp, rax                    ; use exit_to_firmware
+
+.go:    push r9                         ; "sub rsp, 8" (shadow space)
+        push r8                         ; "sub rsp, 8" (shadow space)
+        push rdx                        ; "sub rsp, 8" (shadow space)
+        push rcx                        ; "sub rsp, 8" (shadow space)
+        push rax                        ; return address (exit_to_firmware)
+
+        push rbp                        ; (start or exit_to_firmware)
         xor eax, eax                    ; rax = 0
         xor ebx, ebx                    ; rbx = 0
         xor ebp, ebp                    ; rbp = 0
-        xor rsi, rsi                    ; rsi = 0
-        xor rdi, rdi                    ; rdi = 0
+        xor esi, esi                    ; rsi = 0
+        xor edi, edi                    ; rdi = 0
         xor r9, r9                      ; r9 = 0
         xor r10, r10                    ; r10 = 0
         xor r11, r11                    ; r11 = 0
@@ -331,6 +354,27 @@ jump_to_start:
         xor r14, r14                    ; r14 = 0
         xor r15, r15                    ; r15 = 0
         ret
+
+exit_to_firmware:
+        lea rbx, [rel (uefi_object_file+0xC0)]
+
+        mov rcx, [rbx+0x10]             ; rcx = "ObjectFile"
+        mov edx, PAGES_TO_ALLOCATE      ; edx = "Pages"
+        mov rax, [rbx+0x08]             ; rax = "SystemTablePointer"
+        mov rax, [rax+EFI_BootServices] ; rax = "BootServices"
+        call [rax+EFI_FreePages]        ; call UEFI function
+        test rax, rax                   ; test zero
+        jnz short .halt
+
+        mov rcx, [rbx]                  ; rcx = "ImageHandle"
+        xor rdx, rdx                    ; rdx = "ExitStatus"
+        xor r8, r8                      ; r8 = "ExitDataSize"
+        xor r9, r9                      ; r9 = "ExitData"
+        mov rax, [rbx+0x08]             ; rax = "SystemTablePointer"
+        mov rax, [rax+EFI_BootServices] ; rax = "BootServices"
+        call [rax+EFI_Exit]             ; call UEFI function
+.halt:  hlt                             ; halt
+        jmp near .halt
 
 relocation_entry:
         push rbx                        ; save register rbx
