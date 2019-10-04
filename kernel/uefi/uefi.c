@@ -54,8 +54,8 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 
 	{
 		long seconds;
-		for (seconds = 1; seconds < LONG_MAX; seconds++) {
-			u_print("\rHalt [%ld]", seconds);
+		for (seconds = 20; seconds >= 0; seconds--) {
+			u_print("\rWaiting %2ld seconds...", seconds);
 			gSystemTable->BootServices->Stall(1000 * 1000);
 		}
 	}
