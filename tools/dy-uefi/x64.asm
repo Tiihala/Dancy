@@ -330,18 +330,17 @@ jump_to_start:
         mov r8, rbx                     ; r8 = "ObjectFile"
 
         lea rax, [rel exit_to_firmware] ; rax = return address
-        test rbp, rbp                   ; test start address
-        jnz short .go
-        mov rbp, rax                    ; use exit_to_firmware
-
-.go:    push r9                         ; "sub rsp, 8" (shadow space)
+        push 0                          ; "sub rsp, 8" (shadow space)
         push r8                         ; "sub rsp, 8" (shadow space)
         push rdx                        ; "sub rsp, 8" (shadow space)
         push rcx                        ; "sub rsp, 8" (shadow space)
         push rax                        ; return address (exit_to_firmware)
 
-        push rbp                        ; (start or exit_to_firmware)
-        xor eax, eax                    ; rax = 0
+        cmp ebp, strict dword 0         ; test start address
+        je short .go
+        push rbp                        ; return address (start)
+
+.go:    xor eax, eax                    ; rax = 0
         xor ebx, ebx                    ; rbx = 0
         xor ebp, ebp                    ; rbp = 0
         xor esi, esi                    ; rsi = 0
