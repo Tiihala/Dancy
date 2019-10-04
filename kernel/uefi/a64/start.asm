@@ -25,18 +25,16 @@ section .text
         global start
 
 align 16
-        ; _Noreturn void start(uint64_t, uint64_t, uint64_t)
+        ; void start(uint64_t, uint64_t, uint64_t)
 start:
-        mov r9, rsp                     ; r9 = original stack pointer
-        push rax                        ; push register rax
-        mov rax, 0xFFFFFFFFFFFFFFF0     ; rax = 0xFFFFFFFFFFFFFFF0
-        and rsp, rax                    ; align stack pointer
-
+        push rbp                        ; save register rbp
+        mov rbp, rsp                    ; rbp = current stack pointer
+        lea r9, [rsp+8]                 ; r9 = "OriginalRsp"
         push r9                         ; sub rsp, 8
         push r8                         ; sub rsp, 8
         push rdx                        ; sub rsp, 8
         push rcx                        ; sub rsp, 8
-
         call uefi_main                  ; call uefi_main
-.halt:  hlt                             ; halt
-        jmp short .halt
+        add rsp, 32                     ; free shadow space
+        pop rbp                         ; restore register rbp
+        ret
