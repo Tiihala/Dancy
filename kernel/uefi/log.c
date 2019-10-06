@@ -27,6 +27,40 @@ static size_t log_column;
 
 static char boot_log_buffer[0x20000];
 
+void u_log_dump(void)
+{
+	const char *ptr = uefi_log;
+	uint64_t column, row;
+	size_t length = 0;
+
+	u_clear_screen();
+
+	while (*ptr != '\0') {
+		length += 1;
+
+		if (*ptr++ != '\n')
+			continue;
+
+		u_get_cursor(&column, &row);
+
+		if (row >= gOutputRows - 1) {
+			EFI_INPUT_KEY key;
+
+			u_set_colors(0x70);
+			u_print("\r--More--");
+			u_set_colors(0x07);
+
+			while (u_read_key(&key))
+				u_stall(20);
+
+			u_print("\r%8s\n", " ");
+			u_set_cursor(0, gOutputRows - 2);
+		}
+		u_print("%.*s", length, (ptr - length));
+		length = 0;
+	}
+}
+
 void u_log_init(void)
 {
 	if (uefi_log)

@@ -37,6 +37,8 @@ typedef void *                                  EFI_PVOID;
 typedef void *                                  EFI_HANDLE;
 typedef uint64_t                                EFI_STATUS;
 
+#define EFI_SUCCESS                             0
+
 typedef struct {
 	uint64_t                                Signature;
 	uint32_t                                Revision;
@@ -81,28 +83,71 @@ typedef struct {
 	EFI_PVOID                               SetWatchdogTimer;
 } EFI_BOOT_SERVICES;
 
+typedef struct {
+	uint32_t                                MaxMode;
+	uint32_t                                Mode;
+	uint32_t                                Attribute;
+	uint32_t                                CursorColumn;
+	uint32_t                                CursorRow;
+	uint8_t                                 CursorVisible;
+} SIMPLE_TEXT_OUTPUT_MODE;
+
 typedef EFI_STATUS (*EFI_TEXT_CLEAR_SCREEN)(void *This);
+typedef EFI_STATUS (*EFI_TEXT_ENABLE_CURSOR)(void *This, uint8_t Visible);
+typedef EFI_STATUS (*EFI_TEXT_SET_ATTRIBUTE)(void *This, uint64_t Attribute);
 typedef EFI_STATUS (*EFI_TEXT_STRING)(void *This, const void *String);
+
+typedef EFI_STATUS (*EFI_TEXT_QUERY_MODE)(void *This,
+	uint64_t ModeNumber, uint64_t *Columns, uint64_t *Rows);
+
+typedef EFI_STATUS (*EFI_TEXT_SET_CURSOR_POSITION)(void *This,
+	uint64_t Column, uint64_t Row);
 
 typedef struct {
 	EFI_PVOID                               Reset;
 	EFI_TEXT_STRING                         OutputString;
 	EFI_PVOID                               TestString;
-	EFI_PVOID                               QueryMode;
+	EFI_TEXT_QUERY_MODE                     QueryMode;
 	EFI_PVOID                               SetMode;
-	EFI_PVOID                               SetAttribute;
+	EFI_TEXT_SET_ATTRIBUTE                  SetAttribute;
 	EFI_TEXT_CLEAR_SCREEN                   ClearScreen;
-	EFI_PVOID                               SetCursorPosition;
-	EFI_PVOID                               EnableCursor;
-	EFI_PVOID                               Mode;
+	EFI_TEXT_SET_CURSOR_POSITION            SetCursorPosition;
+	EFI_TEXT_ENABLE_CURSOR                  EnableCursor;
+	SIMPLE_TEXT_OUTPUT_MODE                 *Mode;
 } EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
+
+typedef struct {
+	uint32_t                                Data1;
+	uint16_t                                Data2;
+	uint16_t                                Data3;
+	uint8_t                                 Data4[8];
+} EFI_GUID;
+
+typedef struct {
+	EFI_GUID                                VendorGuid;
+	EFI_PVOID                               VendorTable;
+} EFI_CONFIGURATION_TABLE;
+
+
+typedef struct {
+	uint16_t                                ScanCode;
+	uint16_t                                UnicodeChar;
+} EFI_INPUT_KEY;
+
+typedef EFI_STATUS (*EFI_INPUT_READ_KEY)(void *This, EFI_INPUT_KEY *Key);
+
+typedef struct {
+	EFI_PVOID                               Reset;
+	EFI_INPUT_READ_KEY                      ReadKeyStroke;
+	EFI_PVOID                               WaitForKey;
+} EFI_SIMPLE_TEXT_INPUT_PROTOCOL;
 
 typedef struct {
 	EFI_TABLE_HEADER                        Hdr;
 	EFI_PVOID                               FirmwareVendor;
 	uint32_t                                FirmwareRevision;
 	EFI_PVOID                               ConsoleInHandle;
-	EFI_PVOID                               ConIn;
+	EFI_SIMPLE_TEXT_INPUT_PROTOCOL          *ConIn;
 	EFI_PVOID                               ConsoleOutHandle;
 	EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL         *ConOut;
 	EFI_PVOID                               StandardErrorHandle;
@@ -110,7 +155,7 @@ typedef struct {
 	EFI_PVOID                               RuntimeServices;
 	EFI_BOOT_SERVICES                       *BootServices;
 	uint64_t                                NumberOfTableEntries;
-	EFI_PVOID                               ConfigurationTable;
+	EFI_CONFIGURATION_TABLE                 *ConfigurationTable;
 } EFI_SYSTEM_TABLE;
 
 
@@ -121,6 +166,10 @@ extern EFI_HANDLE                               gImageHandle;
 extern EFI_SYSTEM_TABLE                         *gSystemTable;
 extern void                                     *gBaseAddress;
 extern void                                     *gOriginalRsp;
+extern uint64_t                                 gOutputMode;
+extern uint64_t                                 gOutputMaxMode;
+extern uint64_t                                 gOutputColumns;
+extern uint64_t                                 gOutputRows;
 
 extern char                                     *uefi_log;
 extern size_t                                   uefi_log_size;
@@ -129,8 +178,20 @@ extern size_t                                   uefi_log_size;
 /*
  * Declarations of log.c
  */
+void u_log_dump(void);
 void u_log_init(void);
 void u_log(const char *format, ...);
+
+
+/*
+ * Declarations of misc.c
+ */
+void u_clear_screen(void);
+void u_get_cursor(uint64_t *c, uint64_t *r);
+int u_read_key(EFI_INPUT_KEY *key);
+void u_set_colors(uint64_t attribute);
+void u_set_cursor(uint64_t c, uint64_t r);
+void u_stall(uint64_t milliseconds);
 
 
 /*
@@ -144,6 +205,5 @@ void u_print(const char *format, ...);
  * Declarations of uefi.c
  */
 void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...);
-void u_clear_screen(void);
 
 #endif

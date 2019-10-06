@@ -146,6 +146,9 @@
 ./o64/uefi/log.o: ./kernel/uefi/log.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/uefi/log.c
 
+./o64/uefi/misc.o: ./kernel/uefi/misc.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/uefi/misc.c
+
 ./o64/uefi/print.o: ./kernel/uefi/print.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/uefi/print.c
 
