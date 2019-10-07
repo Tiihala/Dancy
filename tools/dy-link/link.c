@@ -309,8 +309,8 @@ int link_main(struct options *opt)
 		int i;
 		int j;
 
-		for (i = 0; i < opt->nr_mfiles; i++) {
-			unsigned char *dat = opt->mfiles[i].data;
+		for (i = 0; i < opt->nr_ofiles; i++) {
+			unsigned char *dat = opt->ofiles[i].data;
 			unsigned char *sym = dat + LE32(&dat[8]);
 			unsigned char *str = sym + (LE32(&dat[12]) * 18);
 			int syms = (int)LE32(&dat[12]);
@@ -406,7 +406,7 @@ int link_main(struct options *opt)
 	 * Set the header values.
 	 */
 	{
-		unsigned long magic = LE16(opt->mfiles[0].data);
+		unsigned long magic = LE16(opt->ofiles[0].data);
 		W_LE16(&out[0], magic);
 		W_LE16(&out[2], 4);
 	}
@@ -603,7 +603,7 @@ int link_main(struct options *opt)
 			if (!LE32(&sym[0])) {
 				int t1 = (int)LE16(&sym[4]);
 				int t2 = (int)LE16(&sym[6]);
-				unsigned char *t3 = opt->mfiles[t1].data;
+				unsigned char *t3 = opt->ofiles[t1].data;
 				unsigned char *t4 = t3 + LE32(&t3[8]);
 				unsigned char *t5 = t4 + LE32(&t3[12]) * 18;
 				unsigned char *t6 = t4 + t2 * 18;

@@ -34,8 +34,8 @@ int symbol_copy_table(struct options *opt, unsigned char *out)
 	int total_size = 0;
 	int i;
 
-	for (i = 0; i < opt->nr_mfiles; i++) {
-		unsigned char *buf = opt->mfiles[i].data;
+	for (i = 0; i < opt->nr_ofiles; i++) {
+		unsigned char *buf = opt->ofiles[i].data;
 		unsigned char *sym = buf + LE32(&buf[8]);
 		int syms = (int)LE32(&buf[12]);
 		int j;
@@ -293,7 +293,7 @@ static char *get_long_name(struct options *opt, unsigned char *sym)
 	if (!LE32(&sym[0])) {
 		int t1 = (int)LE16(&sym[4]);
 		int t2 = (int)LE16(&sym[6]);
-		unsigned char *t3 = opt->mfiles[t1].data;
+		unsigned char *t3 = opt->ofiles[t1].data;
 		unsigned char *t4 = t3 + LE32(&t3[8]);
 		unsigned char *t5 = t4 + LE32(&t3[12]) * 18;
 		unsigned char *t6 = t4 + t2 * 18;
@@ -672,8 +672,8 @@ int symbol_string_size(struct options *opt)
 	int total_size = 0;
 	int i;
 
-	for (i = 0; i < opt->nr_mfiles; i++) {
-		unsigned char *buf = opt->mfiles[i].data;
+	for (i = 0; i < opt->nr_ofiles; i++) {
+		unsigned char *buf = opt->ofiles[i].data;
 		unsigned long off = LE32(&buf[8]);
 		unsigned long syms = LE32(&buf[12]);
 		unsigned long add;
@@ -700,8 +700,8 @@ int symbol_table_size(struct options *opt)
 	int total_size = 0;
 	int i;
 
-	for (i = 0; i < opt->nr_mfiles; i++) {
-		unsigned char *buf = opt->mfiles[i].data;
+	for (i = 0; i < opt->nr_ofiles; i++) {
+		unsigned char *buf = opt->ofiles[i].data;
 		unsigned long add = LE32(&buf[12]) * 18;
 
 		if (total_size < INT_MAX - (int)add)

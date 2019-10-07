@@ -24,22 +24,22 @@ static int default_obj(struct options *opt, unsigned magic)
 	size_t size = 20;
 	unsigned char *m;
 
-	if (opt->nr_mfiles) {
+	if (opt->nr_ofiles) {
 		const char *e = "Error: format %s with input files\n";
 		fprintf(stderr, e, opt->arg_f);
 		return 1;
 	}
 	/*
-	 * This memory allocation is handled like mfiles in general.
+	 * This memory allocation is handled like ofiles in general.
 	 */
 	if ((m = calloc(size, sizeof(unsigned char))) != NULL) {
 		W_LE16(&m[0], magic);
-		opt->mfiles[0].data = m;
-		opt->mfiles[0].size = (int)size;
+		opt->ofiles[0].data = m;
+		opt->ofiles[0].size = (int)size;
 	} else {
 		return fputs("Error: not enough memory\n", stderr), 1;
 	}
-	return opt->nr_mfiles++, 0;
+	return opt->nr_ofiles++, 0;
 }
 
 static void native_obj(unsigned char *data, int size)
@@ -138,11 +138,11 @@ int program(struct options *opt)
 		opt->arg_f = "obj";
 	}
 
-	if (!opt->nr_mfiles)
+	if (!opt->nr_ofiles)
 		return fputs("Warning: no input\n", stderr), 1;
 
-	for (i = 0; i < opt->nr_mfiles; i++) {
-		struct mfile *obj = &opt->mfiles[i];
+	for (i = 0; i < opt->nr_ofiles; i++) {
+		struct ofile *obj = &opt->ofiles[i];
 		/*
 		 * Translate native executables to normal objects.
 		 */

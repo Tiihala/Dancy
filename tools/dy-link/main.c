@@ -19,19 +19,19 @@
 
 #include "program.h"
 
-#define MFILES_LIMIT 256
-#define MFILES_CHUNK 16384
+#define OFILES_LIMIT 256
+#define OFILES_CHUNK 16384
 
-static int nr_mfiles;
-static struct mfile mfiles[MFILES_LIMIT];
+static int nr_ofiles;
+static struct ofile ofiles[OFILES_LIMIT];
 
-static int read_mfile(const char *name, int i)
+static int read_ofile(const char *name, int i)
 {
 	unsigned char *ptr;
 	FILE *fp = stdin;
 	int is_stdin = 1;
 
-	if (mfiles[i].data || i >= MFILES_LIMIT)
+	if (ofiles[i].data || i >= OFILES_LIMIT)
 		return fputs("Error: too many input files\n", stderr), 1;
 	if (strcmp(name, "-")) {
 		fp = (errno = 0, fopen(name, "rb"));
@@ -42,7 +42,7 @@ static int read_mfile(const char *name, int i)
 		}
 		is_stdin = 0;
 	}
-	ptr = (unsigned char *)malloc((size_t)(MFILES_CHUNK));
+	ptr = (unsigned char *)malloc((size_t)(OFILES_CHUNK));
 
 	for (;;) {
 		int size;
@@ -50,50 +50,50 @@ static int read_mfile(const char *name, int i)
 
 		if (!ptr) {
 			fputs("Error: not enough memory\n", stderr);
-			mfiles[i].size = -1;
+			ofiles[i].size = -1;
 			break;
 		}
-		mfiles[i].data = ptr;
-		ptr = mfiles[i].data + mfiles[i].size;
+		ofiles[i].data = ptr;
+		ptr = ofiles[i].data + ofiles[i].size;
 
 		errno = 0;
-		size = (int)fread(ptr, 1, (size_t)MFILES_CHUNK, fp);
+		size = (int)fread(ptr, 1, (size_t)OFILES_CHUNK, fp);
 		my_errno = errno;
 		if (ferror(fp)) {
 			fprintf(stderr, "Error: %s\n", strerror(my_errno));
-			mfiles[i].size = -1;
+			ofiles[i].size = -1;
 			break;
 		}
 
 		my_errno = 2;
-		if (mfiles[i].size < (INT_MAX - size)) {
-			mfiles[i].size += size;
+		if (ofiles[i].size < (INT_MAX - size)) {
+			ofiles[i].size += size;
 			if (feof(fp))
 				break;
 			my_errno--;
 		}
-		if (mfiles[i].size < (INT_MAX - MFILES_CHUNK)) {
-			size = mfiles[i].size + MFILES_CHUNK;
+		if (ofiles[i].size < (INT_MAX - OFILES_CHUNK)) {
+			size = ofiles[i].size + OFILES_CHUNK;
 			my_errno--;
 		}
 		if (my_errno) {
 			fprintf(stderr, "Error: %s is too big\n", name);
-			mfiles[i].size = -1;
+			ofiles[i].size = -1;
 			break;
 		}
-		ptr = (unsigned char *)realloc(mfiles[i].data, (size_t)size);
+		ptr = (unsigned char *)realloc(ofiles[i].data, (size_t)size);
 	}
 
 	if (!is_stdin && (errno = 0, fclose(fp)))
 		return perror("Error"), 1;
-	return (mfiles[i].size < 0);
+	return (ofiles[i].size < 0);
 }
 
-static void free_mfiles(void)
+static void free_ofiles(void)
 {
 	int i;
-	for (i = 0; i < MFILES_LIMIT && mfiles[i].data != NULL; i++)
-		free(mfiles[i].data);
+	for (i = 0; i < OFILES_LIMIT && ofiles[i].data != NULL; i++)
+		free(ofiles[i].data);
 }
 
 static const char *help_str =
@@ -223,26 +223,26 @@ int main(int argc, char *argv[])
 		int i = 0;
 		int total_size = 0;
 		argv_i = opts.operands;
-		if ((errno = 0, atexit(free_mfiles)))
+		if ((errno = 0, atexit(free_ofiles)))
 			return perror("atexit error"), EXIT_FAILURE;
 		while (*argv_i) {
-			if (read_mfile(*argv_i, i))
+			if (read_ofile(*argv_i, i))
 				return EXIT_FAILURE;
-			if (total_size < (INT_MAX - mfiles[i].size)) {
-				total_size += mfiles[i].size;
+			if (total_size < (INT_MAX - ofiles[i].size)) {
+				total_size += ofiles[i].size;
 			} else {
 				fputs("Error: total size\n", stderr);
 				return EXIT_FAILURE;
 			}
 			if (opts.verbose) {
 				const char *fmt = "Read file %s, %i bytes\n";
-				printf(fmt, *argv_i, mfiles[i].size);
+				printf(fmt, *argv_i, ofiles[i].size);
 			}
-			argv_i++, i++, nr_mfiles++;
+			argv_i++, i++, nr_ofiles++;
 		}
 	}
-	opts.nr_mfiles = nr_mfiles;
-	opts.mfiles = &mfiles[0];
+	opts.nr_ofiles = nr_ofiles;
+	opts.ofiles = &ofiles[0];
 
 	if (program(&opts)) {
 		if (opts.error)

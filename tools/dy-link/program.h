@@ -46,15 +46,15 @@ struct options {
 	int verbose;
 	int dump;
 	int dump_ext;
-	int nr_mfiles;
-	struct mfile *mfiles;
+	int nr_ofiles;
+	struct ofile *ofiles;
 	unsigned long alignbits_t;
 	unsigned long alignbits_r;
 	unsigned long alignbits_d;
 	unsigned long alignbits_b;
 };
 
-struct mfile {
+struct ofile {
 	unsigned char *data;
 	int size;
 };

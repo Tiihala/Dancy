@@ -45,8 +45,8 @@ static unsigned char *iterate_next(struct iterate *it)
 	unsigned j;
 
 	do {
-		for (i = it->obj; i < (unsigned)it->opt->nr_mfiles; i++) {
-			unsigned char *dat = it->opt->mfiles[i].data;
+		for (i = it->obj; i < (unsigned)it->opt->nr_ofiles; i++) {
+			unsigned char *dat = it->opt->ofiles[i].data;
 			unsigned secs = (unsigned)LE16(&dat[2]);
 
 			/*
@@ -202,7 +202,7 @@ int section_group(struct options *opt)
 		size_t i;
 
 		if ((unsigned)buf[0] == 0x2F) {
-			unsigned char *dat = opt->mfiles[it.obj].data;
+			unsigned char *dat = opt->ofiles[it.obj].data;
 			unsigned long offset = 0;
 
 			for (i = 1; i < 8 && buf[i]; i++) {
@@ -299,7 +299,7 @@ int section_copy_d(struct options *opt, const char *name, unsigned char *out)
 
 	iterate_init(&it, opt, name);
 	while ((buf = iterate_next(&it)) != NULL) {
-		unsigned char *dat = opt->mfiles[it.obj].data;
+		unsigned char *dat = opt->ofiles[it.obj].data;
 		unsigned long add = LE32(&buf[16]);
 		unsigned long off = LE32(&buf[20]);
 		unsigned long bit = LE32(&buf[36]);
@@ -344,7 +344,7 @@ int section_copy_r(struct options *opt, const char *name, unsigned char *out)
 
 	iterate_init(&it, opt, name);
 	while ((buf = iterate_next(&it)) != NULL) {
-		unsigned char *dat = opt->mfiles[it.obj].data;
+		unsigned char *dat = opt->ofiles[it.obj].data;
 		unsigned long t_off = 0;
 		unsigned long s_off = LE32(&buf[12]);
 		unsigned long r_off = LE32(&buf[24]);
@@ -357,7 +357,7 @@ int section_copy_r(struct options *opt, const char *name, unsigned char *out)
 		 * Figure out the global table offset.
 		 */
 		while (objs--) {
-			unsigned char *d = opt->mfiles[objs].data;
+			unsigned char *d = opt->ofiles[objs].data;
 			t_off += LE32(&d[12]);
 		}
 		/*
@@ -382,7 +382,7 @@ int section_copy_r(struct options *opt, const char *name, unsigned char *out)
 
 int section_reloc(struct options *opt, int obj, int sec, unsigned long *addr)
 {
-	unsigned char *dat = opt->mfiles[obj].data + 20 + ((sec - 1) * 40);
+	unsigned char *dat = opt->ofiles[obj].data + 20 + ((sec - 1) * 40);
 
 	*addr = LE32(&dat[12]);
 
