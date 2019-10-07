@@ -19,30 +19,7 @@
 
 #include "program.h"
 
-static int default_obj(struct options *opt, unsigned magic)
-{
-	size_t size = 20;
-	unsigned char *m;
-
-	if (opt->nr_ofiles) {
-		const char *e = "Error: format %s with input files\n";
-		fprintf(stderr, e, opt->arg_f);
-		return 1;
-	}
-	/*
-	 * This memory allocation is handled like ofiles in general.
-	 */
-	if ((m = calloc(size, sizeof(unsigned char))) != NULL) {
-		W_LE16(&m[0], magic);
-		opt->ofiles[0].data = m;
-		opt->ofiles[0].size = (int)size;
-	} else {
-		return fputs("Error: not enough memory\n", stderr), 1;
-	}
-	return opt->nr_ofiles++, 0;
-}
-
-static void native_obj(unsigned char *data, int size)
+static void native_to_obj(unsigned char *data, int size)
 {
 	const int at_size = AT_HEADER_SIZE + (20 + 4 * 40);
 	const int ef_size = EF_HEADER_SIZE + (20 + 4 * 40);
@@ -124,12 +101,6 @@ int program(struct options *opt)
 			; /* Accept */
 		} else if (!strcmp(opt->arg_f, "uefi")) {
 			; /* Accept */
-		} else if (!strcmp(opt->arg_f, "32")) {
-			if (default_obj(opt, 0x014C))
-				return 1;
-		} else if (!strcmp(opt->arg_f, "64")) {
-			if (default_obj(opt, 0x8664))
-				return 1;
 		} else {
 			fputs("Error: unknown output format\n", stderr);
 			return 1;
@@ -146,7 +117,7 @@ int program(struct options *opt)
 		/*
 		 * Translate native executables to normal objects.
 		 */
-		native_obj(obj->data, obj->size);
+		native_to_obj(obj->data, obj->size);
 		/*
 		 * Validating the input files is very important. Other code
 		 * procedures assume that the data buffers are safe to use.
