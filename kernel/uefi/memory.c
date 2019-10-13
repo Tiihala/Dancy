@@ -30,8 +30,14 @@ static uint64_t MemoryMapEntries;
 static uint64_t DescriptorSize;
 static uint32_t DescriptorVersion;
 
-static uint64_t DataBaseAddress;
-static const uint64_t Pages = 0x4000ul;
+#define NUMBER_OF_ALLOCATIONS 2
+
+static struct {
+	uint64_t Memory;
+	uint64_t Pages;
+} Allocations[NUMBER_OF_ALLOCATIONS];
+
+static const uint64_t StaticPages = 0x4000ul;
 static const uint64_t MaxAddress = 0xEFFFFFFFull;
 
 static const char *memory_types[] = {
@@ -59,10 +65,18 @@ int memory_export_map(void)
 
 void memory_free(void)
 {
-	int i;
+	size_t i;
 
-	gSystemTable->BootServices->FreePages(DataBaseAddress, Pages);
-	DataBaseAddress = 0;
+	for (i = 0; i < NUMBER_OF_ALLOCATIONS; i++) {
+		uint64_t m = Allocations[i].Memory;
+		uint64_t p = Allocations[i].Pages;
+
+		if (p != 0)
+			gSystemTable->BootServices->FreePages(m, p);
+
+		Allocations[i].Memory = 0;
+		Allocations[i].Pages = 0;
+	}
 
 	for (i = 0; i < 2; i++) {
 		memory_in_x64[i] = NULL;
@@ -72,8 +86,11 @@ void memory_free(void)
 		memory_db_all[i] = NULL;
 	}
 
-	MemoryMapSize = 0;
 	MemoryMap = NULL;
+	MemoryMapSize = 0;
+	MemoryMapEntries = 0;
+	DescriptorSize = 0;
+	DescriptorVersion = 0;
 }
 
 int memory_init(void)
@@ -82,24 +99,23 @@ int memory_init(void)
 	EFI_STATUS s;
 
 	s = gSystemTable->BootServices->AllocatePages(
-		AllocateMaxAddress, EfiLoaderData, Pages, &Memory);
+		AllocateMaxAddress, EfiLoaderData, StaticPages, &Memory);
 
 	if (s == EFI_OUT_OF_RESOURCES) {
 		u_print("AllocatePages: out of resources\n");
 		return 1;
 	}
-
 	if (s == EFI_NOT_FOUND) {
 		u_print("AllocatePages: pages could not be found\n");
 		return 1;
 	}
-
 	if (s != EFI_SUCCESS) {
 		u_print("AllocatePages: unknown error\n");
 		return 1;
 	}
 
-	DataBaseAddress = Memory;
+	Allocations[0].Memory = Memory;
+	Allocations[0].Pages = StaticPages;
 
 	/*
 	 * It should be very unlikely that a succesfully returned
@@ -110,7 +126,7 @@ int memory_init(void)
 		return memory_free(), 1;
 	}
 
-	memset((void *)DataBaseAddress, 0, (size_t)(Pages * 4096));
+	memset((void *)Memory, 0, (size_t)(StaticPages * 4096));
 
 	/*
 	 * Set the segment slots. All of them are 65536-byte aligned.
@@ -137,22 +153,95 @@ int memory_init(void)
 
 	if (memory_update_map())
 		return memory_free(), 1;
+
+	/*
+	 * Allocate another memory slot that will be used for memory
+	 * allocations (the init executable, IN_X64.AT). The type of
+	 * the memory slot is EfiLoaderData.
+	 */
+	{
+		uint64_t Pages = 16;
+		unsigned char *map = MemoryMap;
+		EFI_MEMORY_DESCRIPTOR *entry;
+		uint64_t i, b, e;
+
+		/*
+		 * Find the biggest contiguous area (EfiConventionalMemory).
+		 */
+		for (i = 0; i < MemoryMapEntries; i++) {
+			entry = (void *)(map + i * DescriptorSize);
+
+			if (entry->Type != EfiConventionalMemory)
+				continue;
+
+			b = entry->PhysicalAddress;
+
+			if (b >= (e = b + entry->NumberOfPages * 4096 - 1))
+				continue;
+			if (e > MaxAddress)
+				continue;
+
+			if (Pages < entry->NumberOfPages)
+				Pages = entry->NumberOfPages;
+		}
+
+		/*
+		 * The "Pages" is the amount of contiguous memory that
+		 * is potentially available for the next allocation. Use
+		 * only 3/4 of it because the UEFI firmware might need
+		 * free pages for boot services. For performance reasons,
+		 * the allocated memory is not zeroed.
+		 */
+		Memory = MaxAddress;
+		Pages = Pages - (Pages / 4);
+
+		s = gSystemTable->BootServices->AllocatePages(
+			AllocateMaxAddress, EfiLoaderData, Pages, &Memory);
+
+		if (s == EFI_OUT_OF_RESOURCES) {
+			u_print("AllocatePages: out of resources\n");
+			return memory_free(), 1;
+		}
+		if (s == EFI_NOT_FOUND) {
+			u_print("AllocatePages: pages could not be found\n");
+			return memory_free(), 1;
+		}
+		if (s != EFI_SUCCESS) {
+			u_print("AllocatePages: unknown error\n");
+			return memory_free(), 1;
+		}
+
+		Allocations[1].Memory = Memory;
+		Allocations[1].Pages = Pages;
+
+		/*
+		 * It should be very unlikely that a succesfully returned
+		 * memory area does not meet the MaxAddress requirement.
+		 */
+		if (Memory >= MaxAddress) {
+			u_print("AllocatePages: invalid MaxAddress\n");
+			return memory_free(), 1;
+		}
+	}
+
+	if (memory_update_map())
+		return memory_free(), 1;
 	return 0;
 }
 
 void memory_print_map(void (*print)(const char *, ...))
 {
 	size_t types_limit = sizeof(memory_types) / sizeof(memory_types[0]);
+	unsigned char *map = MemoryMap;
 	EFI_MEMORY_DESCRIPTOR *entry;
-	uint64_t i, b, e;
+	uint64_t i, j, b, e;
 
 	(*print)("Memory Map\n");
 
 	for (i = 0; i < MemoryMapEntries; i++) {
-		void *entry_address = (char *)MemoryMap + i * DescriptorSize;
 		const char *desc1 = "", *desc2 = "";
 
-		entry = entry_address;
+		entry = (void *)(map + i * DescriptorSize);
 		b = entry->PhysicalAddress;
 
 		if (b >= (e = b + entry->NumberOfPages * 4096 - 1))
@@ -161,10 +250,11 @@ void memory_print_map(void (*print)(const char *, ...))
 		if (entry->Type < (uint32_t)types_limit)
 			desc1 = memory_types[entry->Type];
 
-		if (DataBaseAddress == b || (uint64_t)gBaseAddress == b)
-			desc2 = " (*)";
-
-		(*print)("    %016llX %016llX  %s\n", b, e, desc1, desc2);
+		for (j = 0; j < NUMBER_OF_ALLOCATIONS; j++) {
+			if (Allocations[j].Memory == b)
+				desc2 = " (*)";
+		}
+		(*print)("    %016llX %016llX  %s%s\n", b, e, desc1, desc2);
 	}
 	(*print)("\n");
 }
