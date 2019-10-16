@@ -259,6 +259,18 @@ void memory_print_map(void (*print)(const char *, ...))
 	(*print)("\n");
 }
 
+static int qsort_compare(const void *a, const void *b)
+{
+	uint64_t addr1 = ((const EFI_MEMORY_DESCRIPTOR *)a)->PhysicalAddress;
+	uint64_t addr2 = ((const EFI_MEMORY_DESCRIPTOR *)b)->PhysicalAddress;
+
+	if (addr1 < addr2)
+		return -1;
+	if (addr1 > addr2)
+		return 1;
+	return 0;
+}
+
 int memory_update_map(void)
 {
 	const uint64_t memory_map_size = 0x10000;
@@ -282,6 +294,58 @@ int memory_update_map(void)
 	if ((MemoryMapEntries = MemoryMapSize / DescriptorSize) < 4) {
 		u_print("GetMemoryMap: suspicious map size\n");
 		return 1;
+	}
+
+	qsort(MemoryMap, (size_t)MemoryMapEntries,
+		(size_t)DescriptorSize, qsort_compare);
+
+	/*
+	 * Validate the memory map, e.g. overlapping memory areas are not
+	 * accepted because the whole map might be corrupted. If there
+	 * are many computers that fail this test, some memory map fixing
+	 * procedures must be implemented here.
+	 */
+	{
+		const unsigned char *map = MemoryMap;
+		const EFI_MEMORY_DESCRIPTOR *e1, *e2;
+		uint64_t i;
+
+		for (i = 0; i < MemoryMapEntries; i++) {
+			uint64_t addr, pages, next;
+			int err = 0;
+
+			e1 = (void *)(map + i * DescriptorSize);
+
+			addr = e1->PhysicalAddress;
+			pages = e1->NumberOfPages;
+
+			if ((addr & 4095ull) != 0ull)
+				err = 1;
+			if ((pages & 0xFFF0000000000000ull) != 0ull)
+				err = 1;
+
+			next = addr + pages * 4096;
+
+			if (addr >= next || err != 0) {
+				u_print("GetMemoryMap: corrupted map\n");
+				return 1;
+			}
+		}
+
+		for (i = 1; i < MemoryMapEntries; i++) {
+			uint64_t addr, next;
+
+			e1 = (void *)(map + (i - 1) * DescriptorSize);
+			e2 = (void *)(map + (i - 0) * DescriptorSize);
+
+			addr = e2->PhysicalAddress;
+			next = e1->PhysicalAddress + e1->NumberOfPages * 4096;
+
+			if (addr < next) {
+				u_print("GetMemoryMap: overlapping map\n");
+				return 1;
+			}
+		}
 	}
 	return 0;
 }

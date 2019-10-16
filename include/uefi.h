@@ -27,6 +27,7 @@
 #include <dancy/ctype.h>
 #include <dancy/limits.h>
 #include <dancy/stdarg.h>
+#include <dancy/stdlib.h>
 #include <dancy/string.h>
 #include <dancy/types.h>
 
