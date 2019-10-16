@@ -125,10 +125,21 @@ struct b_mem_raw {
 	uint8_t other[16];
 };
 
+#define B_MEM_EFI_LOADER_CODE   (0x00000001)
+#define B_MEM_EFI_LOADER_DATA   (0x00000002)
+#define B_MEM_EFI_BOOT_CODE     (0x00000003)
+#define B_MEM_EFI_BOOT_DATA     (0x00000004)
+#define B_MEM_EFI_RUNTIME_CODE  (0x00000005)
+#define B_MEM_EFI_RUNTIME_DATA  (0x00000006)
 #define B_MEM_NORMAL            (0x00000007)
 #define B_MEM_RESERVED          (0x00000008)
 #define B_MEM_ACPI_RECLAIMABLE  (0x00000009)
 #define B_MEM_ACPI_NVS          (0x0000000A)
+#define B_MEM_MAP_IO            (0x0000000B)
+#define B_MEM_MAP_IO_PORT_SPACE (0x0000000C)
+#define B_MEM_PAL_CODE          (0x0000000D)
+#define B_MEM_PERSISTENT        (0x0000000E)
+
 #define B_MEM_BOOT_LOADER       (0x80000004)
 #define B_MEM_INIT_EXECUTABLE   (0x80860000)
 #define B_MEM_INIT_ALLOC_MIN    (0x80860001)
