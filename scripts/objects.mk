@@ -68,6 +68,9 @@
 ./o32/lib/snprintf.o: ./kernel/lib/snprintf.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/snprintf.c
 
+./o32/lib/stdlib.o: ./kernel/lib/stdlib.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/lib/stdlib.c
+
 ./o32/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/string.c
 
@@ -136,6 +139,9 @@
 
 ./o64/lib/snprintf.o: ./kernel/lib/snprintf.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/snprintf.c
+
+./o64/lib/stdlib.o: ./kernel/lib/stdlib.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/lib/stdlib.c
 
 ./o64/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/string.c
