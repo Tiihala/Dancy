@@ -95,6 +95,23 @@ void memory_free(void)
 	DescriptorVersion = 0;
 }
 
+static int check_allocate_pages_errors(EFI_STATUS s)
+{
+	if (s == EFI_OUT_OF_RESOURCES) {
+		u_print("AllocatePages: out of resources\n");
+		return memory_free(), 1;
+	}
+	if (s == EFI_NOT_FOUND) {
+		u_print("AllocatePages: pages could not be found\n");
+		return memory_free(), 1;
+	}
+	if (s != EFI_SUCCESS) {
+		u_print("AllocatePages: unknown error\n");
+		return memory_free(), 1;
+	}
+	return 0;
+}
+
 int memory_init(void)
 {
 	uint64_t Memory = MaxAddress;
@@ -106,18 +123,8 @@ int memory_init(void)
 	s = gSystemTable->BootServices->AllocatePages(
 		AllocateMaxAddress, EfiLoaderData, StaticDataPages, &Memory);
 
-	if (s == EFI_OUT_OF_RESOURCES) {
-		u_print("AllocatePages: out of resources\n");
+	if (check_allocate_pages_errors(s))
 		return 1;
-	}
-	if (s == EFI_NOT_FOUND) {
-		u_print("AllocatePages: pages could not be found\n");
-		return 1;
-	}
-	if (s != EFI_SUCCESS) {
-		u_print("AllocatePages: unknown error\n");
-		return 1;
-	}
 
 	Allocations[0].Memory = Memory;
 	Allocations[0].Pages = StaticDataPages;
@@ -160,18 +167,8 @@ int memory_init(void)
 	s = gSystemTable->BootServices->AllocatePages(
 		AllocateMaxAddress, EfiLoaderCode, StaticCodePages, &Memory);
 
-	if (s == EFI_OUT_OF_RESOURCES) {
-		u_print("AllocatePages: out of resources\n");
-		return memory_free(), 1;
-	}
-	if (s == EFI_NOT_FOUND) {
-		u_print("AllocatePages: pages could not be found\n");
-		return memory_free(), 1;
-	}
-	if (s != EFI_SUCCESS) {
-		u_print("AllocatePages: unknown error\n");
-		return memory_free(), 1;
-	}
+	if (check_allocate_pages_errors(s))
+		return 1;
 
 	Allocations[1].Memory = Memory;
 	Allocations[1].Pages = StaticCodePages;
@@ -250,18 +247,8 @@ int memory_init(void)
 		s = gSystemTable->BootServices->AllocatePages(
 			AllocateMaxAddress, EfiLoaderData, Pages, &Memory);
 
-		if (s == EFI_OUT_OF_RESOURCES) {
-			u_print("AllocatePages: out of resources\n");
-			return memory_free(), 1;
-		}
-		if (s == EFI_NOT_FOUND) {
-			u_print("AllocatePages: pages could not be found\n");
-			return memory_free(), 1;
-		}
-		if (s != EFI_SUCCESS) {
-			u_print("AllocatePages: unknown error\n");
-			return memory_free(), 1;
-		}
+		if (check_allocate_pages_errors(s))
+			return 1;
 
 		Allocations[2].Memory = Memory;
 		Allocations[2].Pages = Pages;
