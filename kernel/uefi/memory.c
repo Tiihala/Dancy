@@ -30,14 +30,16 @@ static uint64_t MemoryMapEntries;
 static uint64_t DescriptorSize;
 static uint32_t DescriptorVersion;
 
-#define NUMBER_OF_ALLOCATIONS 2
+#define NUMBER_OF_ALLOCATIONS 3
 
 static struct {
 	uint64_t Memory;
 	uint64_t Pages;
 } Allocations[NUMBER_OF_ALLOCATIONS];
 
-static const uint64_t StaticPages = 0x4000ul;
+static const uint64_t StaticCodePages = 0x0040;
+static const uint64_t StaticDataPages = 0x4000;
+
 static const uint64_t MaxAddress = 0xEFFFFFFFull;
 
 static const char *memory_types[] = {
@@ -98,8 +100,11 @@ int memory_init(void)
 	uint64_t Memory = MaxAddress;
 	EFI_STATUS s;
 
+	/*
+	 * Allocate static data pages that are mainly used for databases.
+	 */
 	s = gSystemTable->BootServices->AllocatePages(
-		AllocateMaxAddress, EfiLoaderData, StaticPages, &Memory);
+		AllocateMaxAddress, EfiLoaderData, StaticDataPages, &Memory);
 
 	if (s == EFI_OUT_OF_RESOURCES) {
 		u_print("AllocatePages: out of resources\n");
@@ -115,7 +120,7 @@ int memory_init(void)
 	}
 
 	Allocations[0].Memory = Memory;
-	Allocations[0].Pages = StaticPages;
+	Allocations[0].Pages = StaticDataPages;
 
 	/*
 	 * It should be very unlikely that a succesfully returned
@@ -126,22 +131,18 @@ int memory_init(void)
 		return memory_free(), 1;
 	}
 
-	memset((void *)Memory, 0, (size_t)(StaticPages * 4096));
+	memset((void *)Memory, 0, (size_t)(StaticDataPages * 4096));
 
 	/*
-	 * Set the segment slots. All of them are 65536-byte aligned.
+	 * Set the data segment slots. All of them are 65536-byte aligned.
+	 * One segment slot is for the MemoryMap.
 	 */
 	{
 		const uint64_t segment_size = 0x10000;
 		int i;
 
-		Memory += 0x0000FFFFul;
-		Memory &= 0xFFFF0000ul;
-
-		for (i = 0; i < 2; i++) {
-			memory_in_x64[i] = (void *)Memory;
-			Memory += segment_size;
-		}
+		Memory += 0x0000FFFFull;
+		Memory &= 0xFFFF0000ull;
 
 		for (i = 0; i < 1000; i++) {
 			memory_db_all[i] = (void *)Memory;
@@ -151,11 +152,62 @@ int memory_init(void)
 		MemoryMap = (void *)Memory;
 	}
 
+	/*
+	 * Allocate static code pages (IN_X64.AT + native memory map).
+	 */
+	Memory = MaxAddress;
+
+	s = gSystemTable->BootServices->AllocatePages(
+		AllocateMaxAddress, EfiLoaderCode, StaticCodePages, &Memory);
+
+	if (s == EFI_OUT_OF_RESOURCES) {
+		u_print("AllocatePages: out of resources\n");
+		return memory_free(), 1;
+	}
+	if (s == EFI_NOT_FOUND) {
+		u_print("AllocatePages: pages could not be found\n");
+		return memory_free(), 1;
+	}
+	if (s != EFI_SUCCESS) {
+		u_print("AllocatePages: unknown error\n");
+		return memory_free(), 1;
+	}
+
+	Allocations[1].Memory = Memory;
+	Allocations[1].Pages = StaticCodePages;
+
+	/*
+	 * It should be very unlikely that a succesfully returned
+	 * memory area does not meet the MaxAddress requirement.
+	 */
+	if (Memory >= MaxAddress) {
+		u_print("AllocatePages: invalid MaxAddress\n");
+		return memory_free(), 1;
+	}
+
+	memset((void *)Memory, 0, (size_t)(StaticCodePages * 4096));
+
+	/*
+	 * Set the code segment slots. Both of them are 65536-byte aligned.
+	 */
+	{
+		const uint64_t segment_size = 0x10000;
+		int i;
+
+		Memory += 0x0000FFFFull;
+		Memory &= 0xFFFF0000ull;
+
+		for (i = 0; i < 2; i++) {
+			memory_in_x64[i] = (void *)Memory;
+			Memory += segment_size;
+		}
+	}
+
 	if (memory_update_map())
 		return memory_free(), 1;
 
 	/*
-	 * Allocate another memory slot that will be used for memory
+	 * Allocate the third memory slot that will be used for memory
 	 * allocations (the init executable, IN_X64.AT). The type of
 	 * the memory slot is EfiLoaderData.
 	 */
@@ -211,8 +263,8 @@ int memory_init(void)
 			return memory_free(), 1;
 		}
 
-		Allocations[1].Memory = Memory;
-		Allocations[1].Pages = Pages;
+		Allocations[2].Memory = Memory;
+		Allocations[2].Pages = Pages;
 
 		/*
 		 * It should be very unlikely that a succesfully returned
