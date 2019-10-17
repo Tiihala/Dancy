@@ -99,15 +99,15 @@ static int check_allocate_pages_errors(EFI_STATUS s)
 {
 	if (s == EFI_OUT_OF_RESOURCES) {
 		u_print("AllocatePages: out of resources\n");
-		return memory_free(), 1;
+		return 1;
 	}
 	if (s == EFI_NOT_FOUND) {
 		u_print("AllocatePages: pages could not be found\n");
-		return memory_free(), 1;
+		return 1;
 	}
 	if (s != EFI_SUCCESS) {
-		u_print("AllocatePages: unknown error\n");
-		return memory_free(), 1;
+		u_print("AllocatePages: unknown error (%016llX))\n", s);
+		return 1;
 	}
 	return 0;
 }
@@ -168,7 +168,7 @@ int memory_init(void)
 		AllocateMaxAddress, EfiLoaderCode, StaticCodePages, &Memory);
 
 	if (check_allocate_pages_errors(s))
-		return 1;
+		return memory_free(), 1;
 
 	Allocations[1].Memory = Memory;
 	Allocations[1].Pages = StaticCodePages;
@@ -248,7 +248,7 @@ int memory_init(void)
 			AllocateMaxAddress, EfiLoaderData, Pages, &Memory);
 
 		if (check_allocate_pages_errors(s))
-			return 1;
+			return memory_free(), 1;
 
 		Allocations[2].Memory = Memory;
 		Allocations[2].Pages = Pages;
@@ -326,7 +326,7 @@ int memory_update_map(void)
 		u_print("GetMemoryMap: could not get the memory map\n");
 		return 1;
 	}
-	if (DescriptorSize < 32) {
+	if ((size_t)DescriptorSize < sizeof(EFI_MEMORY_DESCRIPTOR)) {
 		u_print("GetMemoryMap: unknown descriptor size\n");
 		return 1;
 	}
