@@ -106,7 +106,7 @@ static int check_allocate_pages_errors(EFI_STATUS s)
 		return 1;
 	}
 	if (s != EFI_SUCCESS) {
-		u_print("AllocatePages: unknown error (%016llX))\n", s);
+		u_print("AllocatePages: unknown error %016llX\n", s);
 		return 1;
 	}
 	return 0;
@@ -210,15 +210,15 @@ int memory_init(void)
 	 */
 	{
 		uint64_t Pages = 16;
-		unsigned char *map = MemoryMap;
-		EFI_MEMORY_DESCRIPTOR *entry;
+		const unsigned char *map = MemoryMap;
+		const EFI_MEMORY_DESCRIPTOR *entry;
 		uint64_t i, b, e;
 
 		/*
 		 * Find the biggest contiguous area (EfiConventionalMemory).
 		 */
 		for (i = 0; i < MemoryMapEntries; i++) {
-			entry = (void *)(map + i * DescriptorSize);
+			entry = (const void *)(map + i * DescriptorSize);
 
 			if (entry->Type != EfiConventionalMemory)
 				continue;
@@ -271,8 +271,8 @@ int memory_init(void)
 void memory_print_map(void (*print)(const char *, ...))
 {
 	size_t types_limit = sizeof(memory_types) / sizeof(memory_types[0]);
-	unsigned char *map = MemoryMap;
-	EFI_MEMORY_DESCRIPTOR *entry;
+	const unsigned char *map = MemoryMap;
+	const EFI_MEMORY_DESCRIPTOR *entry;
 	uint64_t i, j, b, e;
 
 	(*print)("Memory Map\n");
@@ -280,7 +280,7 @@ void memory_print_map(void (*print)(const char *, ...))
 	for (i = 0; i < MemoryMapEntries; i++) {
 		const char *desc1 = "", *desc2 = "";
 
-		entry = (void *)(map + i * DescriptorSize);
+		entry = (const void *)(map + i * DescriptorSize);
 		b = entry->PhysicalAddress;
 
 		if (b >= (e = b + entry->NumberOfPages * 4096 - 1))
@@ -353,7 +353,7 @@ int memory_update_map(void)
 			uint64_t addr, pages, next;
 			int err = 0;
 
-			e1 = (void *)(map + i * DescriptorSize);
+			e1 = (const void *)(map + i * DescriptorSize);
 
 			addr = e1->PhysicalAddress;
 			pages = e1->NumberOfPages;
@@ -374,8 +374,8 @@ int memory_update_map(void)
 		for (i = 1; i < MemoryMapEntries; i++) {
 			uint64_t addr, next;
 
-			e1 = (void *)(map + (i - 1) * DescriptorSize);
-			e2 = (void *)(map + (i - 0) * DescriptorSize);
+			e1 = (const void *)(map + (i - 1) * DescriptorSize);
+			e2 = (const void *)(map + (i - 0) * DescriptorSize);
 
 			addr = e2->PhysicalAddress;
 			next = e1->PhysicalAddress + e1->NumberOfPages * 4096;
