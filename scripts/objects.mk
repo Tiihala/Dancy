@@ -146,6 +146,9 @@
 ./o64/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/string.c
 
+./o64/uefi/a64/memory.o: ./kernel/uefi/a64/memory.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/uefi/a64/memory.asm
+
 ./o64/uefi/a64/start.o: ./kernel/uefi/a64/start.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/uefi/a64/start.asm
 

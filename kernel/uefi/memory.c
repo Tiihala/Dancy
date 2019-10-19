@@ -24,7 +24,8 @@ uint64_t gMapkey;
 void *memory_db_all[1000];
 void *memory_in_x64[2];
 
-static void *MemoryMap;
+extern void *MemoryMap;
+
 static uint64_t MemoryMapSize;
 static uint64_t MemoryMapEntries;
 static uint64_t DescriptorSize;
@@ -190,7 +191,6 @@ int memory_init(void)
 
 	/*
 	 * Set the data segment slots. All of them are 65536-byte aligned.
-	 * One segment slot is for the MemoryMap.
 	 */
 	{
 		const uint64_t segment_size = 0x10000;
@@ -203,8 +203,6 @@ int memory_init(void)
 			memory_db_all[i] = (void *)Memory;
 			Memory += segment_size;
 		}
-
-		MemoryMap = (void *)Memory;
 	}
 
 	/*
