@@ -186,9 +186,17 @@ static void fix_memory_map(void)
 		struct b_mem_raw *m1 = &memory[i - 1];
 		struct b_mem_raw *m2 = &memory[i];
 
+		if (m2->base_low == 0 && m2->base_high == 1) {
+			i += 1;
+			continue;
+		}
+
 		if (m1->type == m2->type && m1->flags == m2->flags) {
-			size_t size, other = sizeof(m1->other);
+			size_t size, other;
+
 			size = sizeof(struct b_mem) * (memory_entries - i);
+			other = sizeof(m1->other);
+
 			if (size && !memcmp(&m1->other, &m2->other, other)) {
 				memmove(&memory[i], &memory[i + 1], size);
 				if (i < memory_free_end)
@@ -335,10 +343,6 @@ void free(void *ptr)
 		t = memory[i].type;
 
 		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
-			memory[i].type = B_MEM_NORMAL;
-			break;
-		}
-		if (t >= B_MEM_DATABASE_MIN && t <= B_MEM_DATABASE_MAX) {
 			memory[i].type = B_MEM_NORMAL;
 			break;
 		}
