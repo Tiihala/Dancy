@@ -119,10 +119,10 @@ static uint64_t find_free_memory(uint64_t pages, uint64_t *mem, uint64_t *att)
 {
 	const unsigned char *map = MemoryMap;
 	const EFI_MEMORY_DESCRIPTOR *entry;
-	uint64_t max_pages = pages;
+	uint64_t max_pages = (pages != 0) ? pages : 16;
 	uint64_t i, b, e;
 
-	*mem = 0, *att = 0;
+	*mem = 0xFFFFFFFFFFFFFFFFull, *att = 0;
 
 	if (memory_update_map())
 		return 1;
@@ -141,8 +141,8 @@ static uint64_t find_free_memory(uint64_t pages, uint64_t *mem, uint64_t *att)
 			continue;
 
 		if (pages == 0) {
-			if (entry->NumberOfPages > max_pages) {
-				*mem = b + 4096;
+			if (entry->NumberOfPages >= max_pages) {
+				*mem = b;
 				*att = entry->Attribute;
 				max_pages = entry->NumberOfPages;
 			}
@@ -152,8 +152,10 @@ static uint64_t find_free_memory(uint64_t pages, uint64_t *mem, uint64_t *att)
 		}
 	}
 
-	if (*mem == 0 || (pages == 0 && max_pages < 16))
-		return (void)check_allocate_pages_errors(EFI_NOT_FOUND), 0;
+	if (*mem == 0xFFFFFFFFFFFFFFFFull) {
+		(void)check_allocate_pages_errors(EFI_NOT_FOUND);
+		return (*att = 0);
+	}
 	return max_pages;
 }
 
@@ -269,6 +271,7 @@ int memory_init(void)
 		 * free pages for boot services. For performance reasons,
 		 * the allocated memory is not zeroed.
 		 */
+		Memory = Memory + ((Pages / 4) * 4096) - 4096;
 		Pages = Pages - (Pages / 4);
 
 		s = gSystemTable->BootServices->AllocatePages(
