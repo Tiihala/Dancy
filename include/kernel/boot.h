@@ -111,7 +111,8 @@ struct b_mem {
 	uint32_t flags;
 	phys_addr_t base;
 #if defined(DANCY_64)
-	uint8_t reserved[16];
+	uint64_t efi_attributes;
+	uint8_t reserved[8];
 #else
 	uint8_t reserved[20];
 #endif
@@ -150,6 +151,7 @@ struct b_mem_raw {
 
 #define B_FLAG_VALID_ENTRY      (1u << 0)
 #define B_FLAG_VALID_LEGACY     (1u << 1)
+#define B_FLAG_UEFI             (1u << 2)
 #define B_FLAG_NO_INIT_ALLOC    (1u << 16)
 
 #define B_A20_INT15H            (0x01)
