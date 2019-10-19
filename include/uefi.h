@@ -30,6 +30,7 @@
 #include <dancy/stdlib.h>
 #include <dancy/string.h>
 #include <dancy/types.h>
+#include <kernel/boot.h>
 
 int snprintf(char *s, size_t n, const char *format, ...);
 int vsnprintf(char *s, size_t n, const char *format, va_list arg);

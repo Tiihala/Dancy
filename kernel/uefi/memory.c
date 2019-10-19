@@ -35,6 +35,7 @@ static uint32_t DescriptorVersion;
 static struct {
 	uint64_t Memory;
 	uint64_t Pages;
+	uint64_t Attribute;
 } Allocations[NUMBER_OF_ALLOCATIONS];
 
 static const uint64_t StaticCodePages = 0x0040;
@@ -78,6 +79,7 @@ void memory_free(void)
 
 		Allocations[i].Memory = 0;
 		Allocations[i].Pages = 0;
+		Allocations[i].Attribute = 0;
 	}
 
 	for (i = 0; i < 2; i++) {
@@ -112,22 +114,68 @@ static int check_allocate_pages_errors(EFI_STATUS s)
 	return 0;
 }
 
+static uint64_t find_free_memory(uint64_t pages, uint64_t *mem, uint64_t *att)
+{
+	const unsigned char *map = MemoryMap;
+	const EFI_MEMORY_DESCRIPTOR *entry;
+	uint64_t max_pages = pages;
+	uint64_t i, b, e;
+
+	*mem = 0, *att = 0;
+
+	if (memory_update_map())
+		return 1;
+
+	for (i = 0; i < MemoryMapEntries; i++) {
+		entry = (const void *)(map + i * DescriptorSize);
+
+		if (entry->Type != EfiConventionalMemory)
+			continue;
+
+		b = entry->PhysicalAddress;
+
+		if (b >= (e = b + entry->NumberOfPages * 4096 - 1))
+			continue;
+		if (e > MaxAddress)
+			continue;
+
+		if (pages == 0) {
+			if (entry->NumberOfPages > max_pages) {
+				*mem = b + 4096;
+				*att = entry->Attribute;
+				max_pages = entry->NumberOfPages;
+			}
+		} else if (entry->NumberOfPages >= pages) {
+			*mem = b + ((entry->NumberOfPages - pages) * 4096);
+			*att = entry->Attribute;
+		}
+	}
+
+	if (*mem == 0 || (pages == 0 && max_pages < 16))
+		return (void)check_allocate_pages_errors(EFI_NOT_FOUND), 0;
+	return max_pages;
+}
+
 int memory_init(void)
 {
-	uint64_t Memory = MaxAddress;
+	uint64_t Memory, Attribute;
 	EFI_STATUS s;
 
 	/*
 	 * Allocate static data pages that are mainly used for databases.
 	 */
+	if (!find_free_memory(StaticDataPages, &Memory, &Attribute))
+		return 1;
+
 	s = gSystemTable->BootServices->AllocatePages(
-		AllocateMaxAddress, EfiLoaderData, StaticDataPages, &Memory);
+		AllocateAddress, EfiLoaderData, StaticDataPages, &Memory);
 
 	if (check_allocate_pages_errors(s))
 		return 1;
 
 	Allocations[0].Memory = Memory;
 	Allocations[0].Pages = StaticDataPages;
+	Allocations[0].Pages = Attribute;
 
 	/*
 	 * It should be very unlikely that a succesfully returned
@@ -162,16 +210,18 @@ int memory_init(void)
 	/*
 	 * Allocate static code pages (IN_X64.AT + native memory map).
 	 */
-	Memory = MaxAddress;
+	if (!find_free_memory(StaticCodePages, &Memory, &Attribute))
+		return memory_free(), 1;
 
 	s = gSystemTable->BootServices->AllocatePages(
-		AllocateMaxAddress, EfiLoaderCode, StaticCodePages, &Memory);
+		AllocateAddress, EfiLoaderCode, StaticCodePages, &Memory);
 
 	if (check_allocate_pages_errors(s))
 		return memory_free(), 1;
 
 	Allocations[1].Memory = Memory;
 	Allocations[1].Pages = StaticCodePages;
+	Allocations[1].Attribute = Attribute;
 
 	/*
 	 * It should be very unlikely that a succesfully returned
@@ -200,39 +250,19 @@ int memory_init(void)
 		}
 	}
 
-	if (memory_update_map())
-		return memory_free(), 1;
-
 	/*
 	 * Allocate the third memory slot that will be used for memory
 	 * allocations (the init executable, IN_X64.AT). The type of
 	 * the memory slot is EfiLoaderData.
 	 */
 	{
-		uint64_t Pages = 16;
-		const unsigned char *map = MemoryMap;
-		const EFI_MEMORY_DESCRIPTOR *entry;
-		uint64_t i, b, e;
+		uint64_t Pages;
 
 		/*
 		 * Find the biggest contiguous area (EfiConventionalMemory).
 		 */
-		for (i = 0; i < MemoryMapEntries; i++) {
-			entry = (const void *)(map + i * DescriptorSize);
-
-			if (entry->Type != EfiConventionalMemory)
-				continue;
-
-			b = entry->PhysicalAddress;
-
-			if (b >= (e = b + entry->NumberOfPages * 4096 - 1))
-				continue;
-			if (e > MaxAddress)
-				continue;
-
-			if (Pages < entry->NumberOfPages)
-				Pages = entry->NumberOfPages;
-		}
+		if ((Pages = find_free_memory(0, &Memory, &Attribute)) == 0)
+			return memory_free(), 1;
 
 		/*
 		 * The "Pages" is the amount of contiguous memory that
@@ -241,17 +271,17 @@ int memory_init(void)
 		 * free pages for boot services. For performance reasons,
 		 * the allocated memory is not zeroed.
 		 */
-		Memory = MaxAddress;
 		Pages = Pages - (Pages / 4);
 
 		s = gSystemTable->BootServices->AllocatePages(
-			AllocateMaxAddress, EfiLoaderData, Pages, &Memory);
+			AllocateAddress, EfiLoaderData, Pages, &Memory);
 
 		if (check_allocate_pages_errors(s))
 			return memory_free(), 1;
 
 		Allocations[2].Memory = Memory;
 		Allocations[2].Pages = Pages;
+		Allocations[2].Attribute = Attribute;
 
 		/*
 		 * It should be very unlikely that a succesfully returned
@@ -298,7 +328,7 @@ void memory_print_map(void (*print)(const char *, ...))
 	(*print)("\n");
 }
 
-static int qsort_compare(const void *a, const void *b)
+static int qsort_map(const void *a, const void *b)
 {
 	uint64_t addr1 = ((const EFI_MEMORY_DESCRIPTOR *)a)->PhysicalAddress;
 	uint64_t addr2 = ((const EFI_MEMORY_DESCRIPTOR *)b)->PhysicalAddress;
@@ -336,7 +366,7 @@ int memory_update_map(void)
 	}
 
 	qsort(MemoryMap, (size_t)MemoryMapEntries,
-		(size_t)DescriptorSize, qsort_compare);
+		(size_t)DescriptorSize, qsort_map);
 
 	/*
 	 * Validate the memory map, e.g. overlapping memory areas are not
