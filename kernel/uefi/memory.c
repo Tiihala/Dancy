@@ -178,7 +178,7 @@ int memory_init(void)
 
 	Allocations[0].Memory = Memory;
 	Allocations[0].Pages = StaticDataPages;
-	Allocations[0].Pages = Attribute;
+	Allocations[0].Attribute = Attribute;
 
 	/*
 	 * It should be very unlikely that a succesfully returned
