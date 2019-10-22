@@ -142,6 +142,7 @@ struct b_mem_raw {
 #define B_MEM_PERSISTENT        (0x0000000E)
 
 #define B_MEM_BOOT_LOADER       (0x80000004)
+#define B_MEM_UEFI_SYSCALLS     (0x80000005)
 #define B_MEM_INIT_EXECUTABLE   (0x80860000)
 #define B_MEM_INIT_ALLOC_MIN    (0x80860001)
 #define B_MEM_INIT_ALLOC_MAX    (0x8086FFFF)
