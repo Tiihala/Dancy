@@ -31,6 +31,8 @@ uint64_t gMapkey;
  * memory_in_x64[0]   IN_X64.AT          65536 bytes
  * memory_in_x64[1]   native memory map  65536 bytes
  *
+ * in_x64_syscalls    syscalls table     4096 bytes
+ *
  * Notes:
  *         1. All slots are 65536-byte aligned
  *         2. &memory_in_x64[0] + 0x10000 == &memory_in_x64[1]
@@ -38,6 +40,7 @@ uint64_t gMapkey;
  */
 void *memory_db_all[1000];
 void *memory_in_x64[2];
+void *in_x64_syscalls;
 
 extern void *MemoryMap;
 
@@ -103,7 +106,7 @@ static int qsort_native_map(const void *a, const void *b)
 	return 0;
 }
 
-int memory_export_map(void)
+int memory_export_map(int finalize)
 {
 	const size_t max_entries = 2019;
 	const unsigned char *map = MemoryMap;
@@ -242,7 +245,6 @@ int memory_export_map(void)
 			native_map[entries].type = type;
 		} else {
 			native_map[entries].type = B_MEM_NORMAL;
-			native_map[entries].flags = B_FLAG_VALID_ENTRY;
 		}
 		native_map[entries].base = (phys_addr_t)addr;
 		native_map[entries].efi_attributes = Allocations[0].Attribute;
@@ -255,10 +257,15 @@ int memory_export_map(void)
 	}
 
 	/*
-	 * Add an entry that starts after the last database.
+	 * Write the init syscall table.
 	 */
+	native_map[entries].type = B_MEM_UEFI_SYSCALLS;
+	native_map[entries].base = (phys_addr_t)in_x64_syscalls;
+	native_map[entries].efi_attributes = Allocations[0].Attribute;
+	entries += 1;
+
 	native_map[entries].type = B_MEM_NORMAL;
-	native_map[entries].base = (phys_addr_t)memory_db_all[999] + 0x10000;
+	native_map[entries].base = (phys_addr_t)in_x64_syscalls + 4096;
 	native_map[entries].efi_attributes = Allocations[0].Attribute;
 	entries += 1;
 
@@ -271,7 +278,7 @@ int memory_export_map(void)
 		if (native_map[i].base <= 0x100000000ull)
 			native_map[i].flags |= B_FLAG_VALID_LEGACY;
 
-		if (native_map[i].type == B_MEM_NORMAL) {
+		if (native_map[i].type == B_MEM_NORMAL && finalize == 0) {
 			if (native_map[i].base != Allocations[1].Memory)
 				native_map[i].flags |= B_FLAG_NO_INIT_ALLOC;
 		}
@@ -374,6 +381,7 @@ void memory_free(void)
 		memory_db_all[i] = NULL;
 	}
 
+	in_x64_syscalls = NULL;
 	MemoryMapSize = 0;
 	MemoryMapEntries = 0;
 	DescriptorSize = 0;
@@ -448,8 +456,8 @@ int memory_init(void)
 
 	/*
 	 * Allocate static memory pages that are used for the init executable
-	 * (IN_X64.AT), the native memory map, and the databases. The type of
-	 * the allocated memory is EfiLoaderCode.
+	 * (IN_X64.AT), the native memory map, the databases, and the init
+	 * syscall table. The type of the allocated memory is EfiLoaderCode.
 	 */
 	if (!find_free_memory(StaticPages, &Memory, &Attribute))
 		return 1;
@@ -490,6 +498,8 @@ int memory_init(void)
 			memory_db_all[i] = (void *)Memory;
 			Memory += segment_size;
 		}
+
+		in_x64_syscalls = (void *)Memory;
 	}
 
 	/*

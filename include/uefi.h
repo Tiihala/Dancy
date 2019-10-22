@@ -233,6 +233,7 @@ extern size_t                                   uefi_log_size;
 
 extern void                                     *memory_db_all[];
 extern void                                     *memory_in_x64[];
+extern void                                     *in_x64_syscalls;
 
 
 /*
@@ -246,7 +247,7 @@ void u_log(const char *format, ...);
 /*
  * Declarations of memory.c
  */
-int memory_export_map(void);
+int memory_export_map(int finalize);
 void memory_free(void);
 int memory_init(void);
 void memory_print_map(void (*print)(const char *, ...));
