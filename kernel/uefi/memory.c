@@ -21,6 +21,21 @@
 
 uint64_t gMapkey;
 
+/*
+ * memory_db_all[0]   database #0        65536 bytes
+ * memory_db_all[1]   database #1        65536 bytes
+ *   ...                ...
+ * memory_db_all[999] database #99       65536 bytes
+ *
+ *
+ * memory_in_x64[0]   IN_X64.AT          65536 bytes
+ * memory_in_x64[1]   native memory map  65536 bytes
+ *
+ * Notes:
+ *         1. All slots are 65536-byte aligned
+ *         2. &memory_in_x64[0] + 0x10000 == &memory_in_x64[1]
+ *         2. &memory_in_x64[1] + 0x10000 == &memory_db_all[0]
+ */
 void *memory_db_all[1000];
 void *memory_in_x64[2];
 
@@ -31,7 +46,7 @@ static uint64_t MemoryMapEntries;
 static uint64_t DescriptorSize;
 static uint32_t DescriptorVersion;
 
-#define NUMBER_OF_ALLOCATIONS 3
+#define NUMBER_OF_ALLOCATIONS 2
 
 static struct {
 	uint64_t Memory;
@@ -39,9 +54,7 @@ static struct {
 	uint64_t Attribute;
 } Allocations[NUMBER_OF_ALLOCATIONS];
 
-static const uint64_t StaticCodePages = 0x0040;
-static const uint64_t StaticDataPages = 0x4000;
-
+static const uint64_t StaticPages = 0x4000;
 static const uint64_t MaxAddress = 0xEFFFFFFFull;
 
 static const char *memory_types[] = {
@@ -62,9 +75,279 @@ static const char *memory_types[] = {
 	"EfiPersistentMemory"
 };
 
+static int qsort_native_map(const void *a, const void *b)
+{
+	uint64_t addr1 = ((const struct b_mem *)a)->base;
+	uint64_t addr2 = ((const struct b_mem *)b)->base;
+	uint32_t type1 = ((const struct b_mem *)a)->type + 1;
+	uint32_t type2 = ((const struct b_mem *)b)->type + 1;
+
+	if (addr1 < addr2)
+		return -1;
+	if (addr1 > addr2)
+		return 1;
+
+	/*
+	 * Bigger type value is listed first and this detail is very
+	 * important. Only the bigger type value is preserved and
+	 * other entries will be deleted (see memory_export_map).
+	 *
+	 * The special type 0xFFFFFFFF is for "not reported" areas
+	 * and that is why 1 was added to the types before comparing
+	 * the values. 0xFFFFFFFF + 1 == 0 (uint32_t).
+	 */
+	if (type1 > type2)
+		return -1;
+	if (type1 < type2)
+		return 1;
+	return 0;
+}
+
 int memory_export_map(void)
 {
-	return 1;
+	const size_t max_entries = 2019;
+	const unsigned char *map = MemoryMap;
+	struct b_mem *native_map = memory_in_x64[1];
+	const EFI_MEMORY_DESCRIPTOR *efi_entry;
+	size_t entries;
+	size_t i, j;
+
+	/*
+	 * The "max_entries" variable is not a strict limit for the
+	 * updated native map. The limit is 2047 + empty entry.
+	 */
+	for (entries = 0; entries < max_entries; entries++) {
+		if ((native_map[entries].flags & B_FLAG_VALID_ENTRY) == 0)
+			break;
+	}
+
+	if (entries >= max_entries) {
+		u_print("Error: the native memory map overflows\n");
+		return memset(native_map, 0, 0x10000), 1;
+	}
+
+	/*
+	 * Types B_MEM_INIT_ALLOC_MIN to MAX from the current native
+	 * map must be preserved. Other entries will be rewritten,
+	 * including the one that ends the memory allocation slot.
+	 */
+	for (i = 0; i < entries; /* void */) {
+		struct b_mem *m = &native_map[i];
+		size_t t, size;
+
+		t = (size_t)m->type;
+		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
+			i += 1;
+			continue;
+		}
+
+		size = sizeof(struct b_mem) * (entries - i);
+		memmove(&native_map[i], &native_map[i + 1], size);
+		entries -= 1;
+	}
+
+	/*
+	 * Write the entries that must be available on the native map.
+	 */
+	native_map[entries].type = 0xFFFFFFFFul;
+	native_map[entries].base = 0x000000000ull;
+	entries += 1;
+
+	native_map[entries].type = 0xFFFFFFFFul;
+	native_map[entries].base = 0x100000000ull;
+	entries += 1;
+
+	/*
+	 * Write all the memory entries from MemoryMap that are not
+	 * in the Allocations array.
+	 */
+	for (i = 0; i < MemoryMapEntries; i++) {
+		uint64_t addr, next;
+
+		efi_entry = (const void *)(map + i * DescriptorSize);
+
+		addr = efi_entry->PhysicalAddress;
+		next = addr + efi_entry->NumberOfPages * 4096;
+
+		for (j = 0; j < NUMBER_OF_ALLOCATIONS; j++) {
+			uint64_t t1 = Allocations[j].Memory;
+			uint64_t t2 = t1 + Allocations[j].Pages * 4096;
+
+			if (addr >= t1 && addr < t2)
+				efi_entry = NULL;
+			if ((next - 1) >= t1 && (next - 1) < t2)
+				efi_entry = NULL;
+		}
+		if (efi_entry == NULL)
+			continue;
+
+		native_map[entries].type = efi_entry->Type;
+		native_map[entries].base = (phys_addr_t)addr;
+		native_map[entries].efi_attributes = efi_entry->Attribute;
+		entries += 1;
+
+		native_map[entries].type = 0xFFFFFFFFul;
+		native_map[entries].base = (phys_addr_t)next;
+		native_map[entries].efi_attributes = 0;
+		entries += 1;
+
+		if (entries >= max_entries) {
+			u_print("Error: the native memory map overflows\n");
+			return memset(native_map, 0, 0x10000), 1;
+		}
+	}
+
+	/*
+	 * Write all the memory entries from the Allocations array.
+	 */
+	for (i = 0; i < NUMBER_OF_ALLOCATIONS; i++) {
+		uint64_t addr, next;
+
+		addr = Allocations[i].Memory;
+		next = addr + Allocations[i].Pages * 4096;
+
+		native_map[entries].type = B_MEM_NORMAL;
+		native_map[entries].base = (phys_addr_t)addr;
+		native_map[entries].efi_attributes = Allocations[i].Attribute;
+		entries += 1;
+
+		native_map[entries].type = 0xFFFFFFFFul;
+		native_map[entries].base = (phys_addr_t)next;
+		native_map[entries].efi_attributes = 0;
+		entries += 1;
+	}
+
+	/*
+	 * Write the IN_X64.AT + native memory map.
+	 */
+	{
+		uint64_t addr = (uint64_t)memory_in_x64[0];
+
+		native_map[entries].type = (uint32_t)(B_MEM_INIT_EXECUTABLE);
+		native_map[entries].base = (phys_addr_t)addr;
+		native_map[entries].efi_attributes = Allocations[0].Attribute;
+		entries += 1;
+	}
+
+	/*
+	 * Write all the database entries. If there is no database, change
+	 * the memory type to B_MEM_NORMAL.
+	 */
+	for (i = 0; i < 1000; i++) {
+		unsigned int db_test = *((unsigned int *)memory_db_all[i]);
+		uint64_t addr = (uint64_t)memory_db_all[i];;
+
+		if (db_test) {
+			uint32_t type = (uint32_t)(B_MEM_DATABASE_MIN + i);
+			native_map[entries].type = type;
+		} else {
+			native_map[entries].type = B_MEM_NORMAL;
+			native_map[entries].flags = B_FLAG_VALID_ENTRY;
+		}
+		native_map[entries].base = (phys_addr_t)addr;
+		native_map[entries].efi_attributes = Allocations[0].Attribute;
+		entries += 1;
+
+		if (entries >= max_entries) {
+			u_print("Error: the native memory map overflows\n");
+			return memset(native_map, 0, 0x10000), 1;
+		}
+	}
+
+	/*
+	 * Add an entry that starts after the last database.
+	 */
+	native_map[entries].type = B_MEM_NORMAL;
+	native_map[entries].base = (phys_addr_t)memory_db_all[999] + 0x10000;
+	native_map[entries].efi_attributes = Allocations[0].Attribute;
+	entries += 1;
+
+	/*
+	 * Set the proper memory map entry flags.
+	 */
+	for (i = 0; i < entries; i++) {
+		native_map[i].flags = (B_FLAG_VALID_ENTRY | B_FLAG_UEFI);
+
+		if (native_map[i].base <= 0x100000000ull)
+			native_map[i].flags |= B_FLAG_VALID_LEGACY;
+
+		if (native_map[i].type == B_MEM_NORMAL) {
+			if (native_map[i].base != Allocations[1].Memory)
+				native_map[i].flags |= B_FLAG_NO_INIT_ALLOC;
+		}
+	}
+
+	qsort(native_map, entries, sizeof(native_map[0]), qsort_native_map);
+
+	/*
+	 * Delete unnecessary map entries. The base address must be unique.
+	 */
+	for (i = 1; i < entries; /* void */) {
+		struct b_mem *m1 = &native_map[i - 1];
+		struct b_mem *m2 = &native_map[i];
+		size_t size;
+
+		if (m1->base != m2->base) {
+			i += 1;
+			continue;
+		}
+		size = sizeof(struct b_mem) * (entries - i);
+		memmove(&native_map[i], &native_map[i + 1], size);
+		entries -= 1;
+	}
+
+	/*
+	 * Merge contiguous memory areas. The entry for base 0x100000000 must
+	 * always be on the native map.
+	 */
+	for (i = 1; i < entries; /* void */) {
+		struct b_mem *m1 = &native_map[i - 1];
+		struct b_mem *m2 = &native_map[i];
+		size_t size;
+
+		if (m1->base <= 0xFFFFFFFFull && m2->base == 0x100000000ull) {
+			i += 1;
+			continue;
+		}
+
+		if (m1->type != m2->type || m1->flags != m2->flags) {
+			i += 1;
+			continue;
+		}
+		if (m1->efi_attributes != m2->efi_attributes) {
+			i += 1;
+			continue;
+		}
+
+		size = sizeof(struct b_mem) * (entries - i);
+		memmove(&native_map[i], &native_map[i + 1], size);
+		entries -= 1;
+	}
+
+	/*
+	 * Check the map so that there are no major structural errors.
+	 */
+	for (i = 1; i < entries + 4; i++) {
+		struct b_mem *m1 = &native_map[i - 1];
+		struct b_mem *m2 = &native_map[i];
+		int err = 0;
+
+		if (i < entries) {
+			if (m1->base >= m2->base)
+				err = 1;
+		} else {
+			if (m2->type != 0 || m2->flags != 0 || m2->base != 0)
+				err = 1;
+			if (m2->efi_attributes != 0)
+				err = 1;
+		}
+
+		if (err != 0) {
+			u_print("Error: exporting the memory map failed\n");
+			return memset(native_map, 0, 0x10000), 1;
+		}
+	}
+	return 0;
 }
 
 void memory_free(void)
@@ -91,7 +374,6 @@ void memory_free(void)
 		memory_db_all[i] = NULL;
 	}
 
-	MemoryMap = NULL;
 	MemoryMapSize = 0;
 	MemoryMapEntries = 0;
 	DescriptorSize = 0;
@@ -165,77 +447,32 @@ int memory_init(void)
 	EFI_STATUS s;
 
 	/*
-	 * Allocate static data pages that are mainly used for databases.
+	 * Allocate static memory pages that are used for the init executable
+	 * (IN_X64.AT), the native memory map, and the databases. The type of
+	 * the allocated memory is EfiLoaderCode.
 	 */
-	if (!find_free_memory(StaticDataPages, &Memory, &Attribute))
+	if (!find_free_memory(StaticPages, &Memory, &Attribute))
 		return 1;
 
 	s = gSystemTable->BootServices->AllocatePages(
-		AllocateAddress, EfiLoaderData, StaticDataPages, &Memory);
+		AllocateAddress, EfiLoaderCode, StaticPages, &Memory);
 
 	if (check_allocate_pages_errors(s))
 		return 1;
 
 	Allocations[0].Memory = Memory;
-	Allocations[0].Pages = StaticDataPages;
+	Allocations[0].Pages = StaticPages;
 	Allocations[0].Attribute = Attribute;
 
-	/*
-	 * It should be very unlikely that a succesfully returned
-	 * memory area does not meet the MaxAddress requirement.
-	 */
-	if (Memory >= MaxAddress) {
-		u_print("AllocatePages: invalid MaxAddress\n");
+	if ((Memory & 4095ull) != 0ull || Memory >= MaxAddress) {
+		u_print("AllocatePages: invalid memory address\n");
 		return memory_free(), 1;
 	}
 
-	memset((void *)Memory, 0, (size_t)(StaticDataPages * 4096));
+	memset((void *)Memory, 0, (size_t)(StaticPages * 4096));
 
 	/*
-	 * Set the data segment slots. All of them are 65536-byte aligned.
-	 */
-	{
-		const uint64_t segment_size = 0x10000;
-		int i;
-
-		Memory += 0x0000FFFFull;
-		Memory &= 0xFFFF0000ull;
-
-		for (i = 0; i < 1000; i++) {
-			memory_db_all[i] = (void *)Memory;
-			Memory += segment_size;
-		}
-	}
-
-	/*
-	 * Allocate static code pages (IN_X64.AT + native memory map).
-	 */
-	if (!find_free_memory(StaticCodePages, &Memory, &Attribute))
-		return memory_free(), 1;
-
-	s = gSystemTable->BootServices->AllocatePages(
-		AllocateAddress, EfiLoaderCode, StaticCodePages, &Memory);
-
-	if (check_allocate_pages_errors(s))
-		return memory_free(), 1;
-
-	Allocations[1].Memory = Memory;
-	Allocations[1].Pages = StaticCodePages;
-	Allocations[1].Attribute = Attribute;
-
-	/*
-	 * It should be very unlikely that a succesfully returned
-	 * memory area does not meet the MaxAddress requirement.
-	 */
-	if (Memory >= MaxAddress) {
-		u_print("AllocatePages: invalid MaxAddress\n");
-		return memory_free(), 1;
-	}
-
-	memset((void *)Memory, 0, (size_t)(StaticCodePages * 4096));
-
-	/*
-	 * Set the code segment slots. Both of them are 65536-byte aligned.
+	 * Set the segment slots. All of them are 65536-byte aligned.
 	 */
 	{
 		const uint64_t segment_size = 0x10000;
@@ -248,12 +485,17 @@ int memory_init(void)
 			memory_in_x64[i] = (void *)Memory;
 			Memory += segment_size;
 		}
+
+		for (i = 0; i < 1000; i++) {
+			memory_db_all[i] = (void *)Memory;
+			Memory += segment_size;
+		}
 	}
 
 	/*
-	 * Allocate the third memory slot that will be used for memory
+	 * Allocate another memory slot that will be used for memory
 	 * allocations (the init executable, IN_X64.AT). The type of
-	 * the memory slot is EfiLoaderData.
+	 * the memory slot is EfiLoaderCode.
 	 */
 	{
 		uint64_t Pages;
@@ -271,25 +513,21 @@ int memory_init(void)
 		 * free pages for boot services. For performance reasons,
 		 * the allocated memory is not zeroed.
 		 */
-		Memory = Memory + ((Pages / 4) * 4096) - 4096;
+		Memory = Memory + ((Pages / 4) * 4096);
 		Pages = Pages - (Pages / 4);
 
 		s = gSystemTable->BootServices->AllocatePages(
-			AllocateAddress, EfiLoaderData, Pages, &Memory);
+			AllocateAddress, EfiLoaderCode, Pages, &Memory);
 
 		if (check_allocate_pages_errors(s))
 			return memory_free(), 1;
 
-		Allocations[2].Memory = Memory;
-		Allocations[2].Pages = Pages;
-		Allocations[2].Attribute = Attribute;
+		Allocations[1].Memory = Memory;
+		Allocations[1].Pages = Pages;
+		Allocations[1].Attribute = Attribute;
 
-		/*
-		 * It should be very unlikely that a succesfully returned
-		 * memory area does not meet the MaxAddress requirement.
-		 */
-		if (Memory >= MaxAddress) {
-			u_print("AllocatePages: invalid MaxAddress\n");
+		if ((Memory & 4095ull) != 0ull || Memory >= MaxAddress) {
+			u_print("AllocatePages: invalid memory address\n");
 			return memory_free(), 1;
 		}
 	}
