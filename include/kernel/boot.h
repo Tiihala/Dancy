@@ -126,6 +126,7 @@ struct b_mem_raw {
 	uint8_t other[16];
 };
 
+#define B_MEM_EFI_RESERVED      (0x00000000)
 #define B_MEM_EFI_LOADER_CODE   (0x00000001)
 #define B_MEM_EFI_LOADER_DATA   (0x00000002)
 #define B_MEM_EFI_BOOT_CODE     (0x00000003)
