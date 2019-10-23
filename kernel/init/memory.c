@@ -125,9 +125,30 @@ int memory_init(void *map)
 
 void memory_print_map(void (*print)(const char *, ...))
 {
+	static const struct { uint32_t type; const char *desc; } names[] = {
+		{ B_MEM_EFI_RESERVED,      "EFI Reserved" },
+		{ B_MEM_EFI_LOADER_CODE,   "EFI Loader Code" },
+		{ B_MEM_EFI_LOADER_DATA,   "EFI Loader Data" },
+		{ B_MEM_EFI_BOOT_CODE,     "EFI Boot Code" },
+		{ B_MEM_EFI_BOOT_DATA,     "EFI Boot Data" },
+		{ B_MEM_EFI_RUNTIME_CODE,  "EFI Runtime Code" },
+		{ B_MEM_EFI_RUNTIME_DATA,  "EFI Runtime Data" },
+		{ B_MEM_NORMAL,            "Free" },
+		{ B_MEM_RESERVED,          "Reserved" },
+		{ B_MEM_ACPI_RECLAIMABLE,  "Acpi Reclaimable" },
+		{ B_MEM_ACPI_NVS,          "Acpi NVS" },
+		{ B_MEM_MAP_IO,            "Map IO" },
+		{ B_MEM_MAP_IO_PORT_SPACE, "Map IO Port Space" },
+		{ B_MEM_PAL_CODE,          "Pal Code" },
+		{ B_MEM_PERSISTENT,        "Persistent" },
+		{ B_MEM_BOOT_LOADER,       "Loader Runtime" },
+		{ B_MEM_UEFI_SYSCALLS,     "Loader Syscalls" },
+		{ B_MEM_INIT_EXECUTABLE,   "Executable (Init)" },
+		{ B_MEM_NOT_REPORTED,      "Not Reported" }
+	};
 	const struct b_mem *memory = memory_map;
 	phys_addr_t total = 0;
-	size_t i;
+	size_t i, j;
 
 	(*print)("Memory Map\n");
 
@@ -137,20 +158,15 @@ void memory_print_map(void (*print)(const char *, ...))
 		phys_addr_t e = memory[i + 1].base - 1;
 		const char *desc = "(Unknown)";
 
+		for (j = 0; j < sizeof(names) / sizeof(names[0]); j++) {
+			if (names[j].type == t) {
+				desc = names[j].desc;
+				break;
+			}
+		}
+
 		if (t == B_MEM_NORMAL)
-			desc = "Free", total += memory[i + 1].base - b;
-		else if (t == B_MEM_RESERVED)
-			desc = "Reserved";
-		else if (t == B_MEM_ACPI_RECLAIMABLE)
-			desc = "Acpi Reclaimable";
-		else if (t == B_MEM_ACPI_NVS)
-			desc = "Acpi NVS";
-		else if (t == B_MEM_BOOT_LOADER)
-			desc = "Loader Runtime (Reclaimable)";
-		else if (t == B_MEM_INIT_EXECUTABLE)
-			desc = "Executable (Init)";
-		else if (t == B_MEM_NOT_REPORTED)
-			desc = "Not Reported";
+			total += memory[i + 1].base - b;
 
 		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
 			unsigned a = (unsigned)t & 0x0000FFFFu;
