@@ -52,6 +52,13 @@ typedef struct {
 } EFI_TABLE_HEADER;
 
 typedef struct {
+	uint32_t                                Data1;
+	uint16_t                                Data2;
+	uint16_t                                Data3;
+	uint8_t                                 Data4[8];
+} EFI_GUID;
+
+typedef struct {
 	uint32_t                                Type;
 	uint32_t                                Pad;
 	uint64_t                                PhysicalAddress;
@@ -97,6 +104,25 @@ typedef EFI_STATUS (*EFI_GET_MEMORY_MAP)(
 	uint64_t                                *DescriptorSize,
 	uint32_t                                *DescriptorVersion);
 
+typedef EFI_STATUS (*EFI_HANDLE_PROTOCOL)(
+	EFI_HANDLE                              Handle,
+	EFI_GUID                                *Protocol,
+	void                                    **Interface);
+
+typedef EFI_STATUS (*EFI_OPEN_PROTOCOL)(
+	EFI_HANDLE                              Handle,
+	EFI_GUID                                *Protocol,
+	void                                    **Interface,
+	EFI_HANDLE                              AgentHandle,
+	EFI_HANDLE                              ControllerHandle,
+	uint32_t                                Attributes);
+
+typedef EFI_STATUS (*EFI_CLOSE_PROTOCOL)(
+	EFI_HANDLE                              Handle,
+	EFI_GUID                                *Protocol,
+	EFI_HANDLE                              AgentHandle,
+	EFI_HANDLE                              ControllerHandle);
+
 typedef EFI_STATUS (*EFI_FREE_PAGES)(uint64_t Memory, uint64_t Pages);
 typedef EFI_STATUS (*EFI_EXIT_BOOT_SERVICES)(void *Image, uint64_t MapKey);
 typedef EFI_STATUS (*EFI_STALL)(uint64_t Microseconds);
@@ -119,7 +145,7 @@ typedef struct {
 	EFI_PVOID                               InstallProtocolInterface;
 	EFI_PVOID                               ReinstallProtocolInterface;
 	EFI_PVOID                               UninstallProtocolInterface;
-	EFI_PVOID                               HandleProtocol;
+	EFI_HANDLE_PROTOCOL                     HandleProtocol;
 	EFI_PVOID                               Reserved;
 	EFI_PVOID                               RegisterProtocolNotify;
 	EFI_PVOID                               LocateHandle;
@@ -133,6 +159,11 @@ typedef struct {
 	EFI_PVOID                               GetNextMonotonicCount;
 	EFI_STALL                               Stall;
 	EFI_PVOID                               SetWatchdogTimer;
+	EFI_PVOID                               ConnectController;
+	EFI_PVOID                               DisconnectController;
+	EFI_OPEN_PROTOCOL                       OpenProtocol;
+	EFI_CLOSE_PROTOCOL                      CloseProtocol;
+	EFI_PVOID                               OpenProtocolInformation;
 } EFI_BOOT_SERVICES;
 
 typedef struct {
@@ -174,13 +205,6 @@ typedef struct {
 } EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
 
 typedef struct {
-	uint32_t                                Data1;
-	uint16_t                                Data2;
-	uint16_t                                Data3;
-	uint8_t                                 Data4[8];
-} EFI_GUID;
-
-typedef struct {
 	EFI_GUID                                VendorGuid;
 	EFI_PVOID                               VendorTable;
 } EFI_CONFIGURATION_TABLE;
@@ -213,6 +237,104 @@ typedef struct {
 	uint64_t                                NumberOfTableEntries;
 	EFI_CONFIGURATION_TABLE                 *ConfigurationTable;
 } EFI_SYSTEM_TABLE;
+
+typedef struct {
+	uint16_t                                Year;
+	uint8_t                                 Month;
+	uint8_t                                 Day;
+	uint8_t                                 Hour;
+	uint8_t                                 Minute;
+	uint8_t                                 Second;
+	uint8_t                                 Pad1;
+	uint32_t                                Nanosecond;
+	uint16_t                                TimeZone; /* INT16 */
+	uint8_t                                 Daylight;
+	uint8_t                                 Pad2;
+} EFI_TIME;
+
+#define EFI_LOADED_IMAGE_PROTOCOL_GUID \
+	{ 0x5B1B31A1,0x9562,0x11D2,{0x8E,0x3F,0x00,0xA0,0xC9,0x69,0x72,0x3B} }
+
+typedef struct {
+	uint32_t                                Revision;
+	EFI_HANDLE                              ParentHandle;
+	EFI_SYSTEM_TABLE                        *SystemTable;
+	EFI_HANDLE                              DeviceHandle;
+	void                                    *FilePath;
+	void                                    *Reserved;
+	uint32_t                                LoadOptionsSize;
+	void                                    *LoadOptions;
+	void                                    *ImageBase;
+	uint64_t                                ImageSize;
+	EFI_MEMORY_TYPE                         ImageCodeType;
+	EFI_MEMORY_TYPE                         ImageDataType;
+	EFI_PVOID                               UnLoad;
+} EFI_LOADED_IMAGE_PROTOCOL;
+
+typedef EFI_STATUS (*EFI_FILE_OPEN)(
+	void                                    *This,
+	void                                    **NewHandle,
+	void                                    *FileName,
+	uint64_t                                OpenMode,
+	uint64_t                                Attributes);
+
+typedef EFI_STATUS (*EFI_FILE_CLOSE)(void *This);
+
+typedef EFI_STATUS (*EFI_FILE_READ)(
+	void                                    *This,
+	uint64_t                                *BufferSize,
+	void                                    *Buffer);
+
+typedef EFI_STATUS (*EFI_FILE_GET_INFO)(
+	void                                    *This,
+	EFI_GUID                                *InformationType,
+	uint64_t                                *BufferSize,
+	void                                    *Buffer);
+
+#define EFI_FILE_INFO_ID \
+	{ 0x09576E92,0x6D3F,0x11D2,{0x8E,0x39,0x00,0xA0,0xC9,0x69,0x72,0x3B} }
+
+typedef struct {
+	uint64_t                                Size;
+	uint64_t                                FileSize;
+	uint64_t                                PhysicalSize;
+	EFI_TIME                                CreateTime;
+	EFI_TIME                                LastAccessTime;
+	EFI_TIME                                ModificationTime;
+	uint64_t                                Attribute;
+} EFI_FILE_INFO;
+
+#define EFI_FILE_SYSTEM_INFO_ID \
+	{ 0x09576E93,0x6D3F,0x11D2,{0x8E,0x39,0x00,0xA0,0xC9,0x69,0X72,0x3B} }
+
+typedef struct {
+	uint64_t                                Size;
+	uint8_t                                 ReadOnly;
+	uint64_t                                VolumeSize;
+	uint64_t                                FreeSpace;
+	uint32_t                                BlockSize;
+} EFI_FILE_SYSTEM_INFO;
+
+typedef struct {
+	uint64_t                                Revision;
+	EFI_FILE_OPEN                           Open;
+	EFI_FILE_CLOSE                          Close;
+	EFI_PVOID                               Delete;
+	EFI_FILE_READ                           Read;
+	EFI_PVOID                               Write;
+	EFI_PVOID                               GetPosition;
+	EFI_PVOID                               SetPosition;
+	EFI_FILE_GET_INFO                       GetInfo;
+	EFI_PVOID                               SetInfo;
+	EFI_PVOID                               Flush;
+} EFI_FILE_PROTOCOL;
+
+#define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID \
+	{ 0x964E5B22,0x6459,0x11D2,{0x8E,0x39,0x00,0xA0,0xC9,0x69,0x72,0x3B} }
+
+typedef EFI_STATUS (*EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME)(
+	void                                    *This,
+	EFI_FILE_PROTOCOL                       **Root);
 
 
 /*
