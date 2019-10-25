@@ -17,7 +17,7 @@
  *      Advanced Configuration and Power Interface Specification
  */
 
-#include <dancy.h>
+#include <init.h>
 
 static struct acpi_information information;
 

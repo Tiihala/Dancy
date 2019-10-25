@@ -17,7 +17,7 @@
  *      Simple memory manager for pre-kernel environment
  */
 
-#include <dancy.h>
+#include <init.h>
 
 static size_t memory_free_end;
 static size_t memory_entries;

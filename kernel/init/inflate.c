@@ -17,7 +17,7 @@
  *      Uncompress database files
  */
 
-#include <dancy.h>
+#include <init.h>
 
 struct bit_code {
 	unsigned extra;

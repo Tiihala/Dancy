@@ -17,7 +17,7 @@
  *      Test CPU features
  */
 
-#include <dancy.h>
+#include <init.h>
 
 int cpu_test_features(void)
 {

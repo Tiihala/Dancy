@@ -17,7 +17,7 @@
  *      Dynamic linker and loader
  */
 
-#include <dancy.h>
+#include <init.h>
 
 static int ld_error(const char *name, const char *msg)
 {

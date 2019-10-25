@@ -13,15 +13,29 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * kernel/init.h
+ * init.h
  *      Header of Dancy Operating System
  */
 
-#ifndef KERNEL_INIT_H
-#define KERNEL_INIT_H
+#ifndef DANCY_INIT_H
+#define DANCY_INIT_H
+
+#include <dancy/blob.h>
+#include <dancy/boot.h>
+#include <dancy/crc.h>
+#include <dancy/ctype.h>
+#include <dancy/keys.h>
+#include <dancy/limits.h>
+#include <dancy/stdarg.h>
+#include <dancy/stdio.h>
+#include <dancy/stdlib.h>
+#include <dancy/string.h>
+#include <dancy/types.h>
 
 #include <bitarray/bitarray.h>
-#include <dancy/types.h>
+#include <huffman/huffman.h>
+
+#include <kernel/core.h>
 
 /*
  * Declarations of acpi.c

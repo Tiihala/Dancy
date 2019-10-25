@@ -13,12 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * kernel/boot.h
+ * dancy/boot.h
  *      Header of Dancy Operating System
  */
 
-#ifndef KERNEL_BOOT_H
-#define KERNEL_BOOT_H
+#ifndef DANCY_BOOT_H
+#define DANCY_BOOT_H
 
 #include <dancy/types.h>
 

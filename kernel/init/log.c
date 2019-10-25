@@ -17,7 +17,7 @@
  *      Boot log manager
  */
 
-#include <dancy.h>
+#include <init.h>
 
 char *boot_log;
 size_t boot_log_size;

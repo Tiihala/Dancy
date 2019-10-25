@@ -17,7 +17,7 @@
  *      Use boot loader services to display text on screen
  */
 
-#include <dancy.h>
+#include <init.h>
 
 void b_print(const char *format, ...)
 {

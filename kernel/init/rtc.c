@@ -17,7 +17,7 @@
  *      Get current time and date
  */
 
-#include <dancy.h>
+#include <init.h>
 
 struct rtc_regs {
 	unsigned second;

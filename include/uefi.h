@@ -24,13 +24,13 @@
 #error Definition of DANCY_64 is not available
 #endif
 
+#include <dancy/boot.h>
 #include <dancy/ctype.h>
 #include <dancy/limits.h>
 #include <dancy/stdarg.h>
 #include <dancy/stdlib.h>
 #include <dancy/string.h>
 #include <dancy/types.h>
-#include <kernel/boot.h>
 
 int snprintf(char *s, size_t n, const char *format, ...);
 int vsnprintf(char *s, size_t n, const char *format, va_list arg);

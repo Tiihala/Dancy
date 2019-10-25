@@ -72,6 +72,7 @@ DANCY_HEADERS= \
  ./common/bitarray/bitarray.h \
  ./common/huffman/huffman.h \
  ./include/dancy/blob.h \
+ ./include/dancy/boot.h \
  ./include/dancy/crc.h \
  ./include/dancy/ctype.h \
  ./include/dancy/keys.h \
@@ -81,11 +82,10 @@ DANCY_HEADERS= \
  ./include/dancy/stdlib.h \
  ./include/dancy/string.h \
  ./include/dancy/types.h \
- ./include/kernel/boot.h \
  ./include/kernel/core.h \
  ./include/kernel/error.h \
- ./include/kernel/init.h \
  ./include/dancy.h \
+ ./include/init.h \
  ./include/uefi.h
 
 DANCY_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(DANCY_TARGET_TOOLS)

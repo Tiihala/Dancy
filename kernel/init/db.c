@@ -17,7 +17,7 @@
  *      Handle database files
  */
 
-#include <dancy.h>
+#include <init.h>
 
 static int db_count;
 static void **db_array;

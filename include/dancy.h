@@ -24,6 +24,7 @@
 
 #if defined(DANCY_32) || defined(DANCY_64)
 
+#include <dancy/boot.h>
 #include <dancy/crc.h>
 #include <dancy/ctype.h>
 #include <dancy/keys.h>
@@ -37,10 +38,8 @@
 #include <bitarray/bitarray.h>
 #include <huffman/huffman.h>
 
-#include <kernel/boot.h>
 #include <kernel/core.h>
 #include <kernel/error.h>
-#include <kernel/init.h>
 
 #endif
 #endif

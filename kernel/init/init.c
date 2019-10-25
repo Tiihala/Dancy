@@ -17,7 +17,7 @@
  *      Initialization of Dancy Operating System
  */
 
-#include <dancy.h>
+#include <init.h>
 
 void init(void *map)
 {
