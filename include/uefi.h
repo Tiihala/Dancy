@@ -32,6 +32,8 @@
 #include <dancy/string.h>
 #include <dancy/types.h>
 
+unsigned long crc32c(const void *obj, size_t len);
+
 int snprintf(char *s, size_t n, const char *format, ...);
 int vsnprintf(char *s, size_t n, const char *format, va_list arg);
 
@@ -332,9 +334,14 @@ typedef struct {
 #define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID \
 	{ 0x964E5B22,0x6459,0x11D2,{0x8E,0x39,0x00,0xA0,0xC9,0x69,0x72,0x3B} }
 
-typedef EFI_STATUS (*EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME)(
+typedef EFI_STATUS (*SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME)(
 	void                                    *This,
 	EFI_FILE_PROTOCOL                       **Root);
+
+typedef struct {
+	uint64_t                                Revision;
+	SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME OpenVolume;
+} EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
 
 
 /*
@@ -353,9 +360,19 @@ extern uint64_t                                 gMapkey;
 extern char                                     *uefi_log;
 extern size_t                                   uefi_log_size;
 
+extern void                                     *config_file;
+extern size_t                                   config_file_size;
+
 extern void                                     *memory_db_all[];
 extern void                                     *memory_in_x64[];
 extern void                                     *in_x64_syscalls;
+
+
+/*
+ * Declarations of file.c
+ */
+int file_init(void);
+int file_read_all(void);
 
 
 /*

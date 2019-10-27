@@ -146,11 +146,17 @@
 ./o64/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/string.c
 
+./o64/uefi/a64/file.o: ./kernel/uefi/a64/file.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/uefi/a64/file.asm
+
 ./o64/uefi/a64/memory.o: ./kernel/uefi/a64/memory.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/uefi/a64/memory.asm
 
 ./o64/uefi/a64/start.o: ./kernel/uefi/a64/start.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/uefi/a64/start.asm
+
+./o64/uefi/file.o: ./kernel/uefi/file.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/uefi/file.c
 
 ./o64/uefi/log.o: ./kernel/uefi/log.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/uefi/log.c

@@ -3,14 +3,17 @@
 ##############################################################################
 
 BOOTX64_EFI_OBJECTS= \
+ ./o64/crc32/crc32c.o \
  ./o64/lib/a64/dark.o \
  ./o64/lib/a64/string.o \
  ./o64/lib/ctype.o \
  ./o64/lib/snprintf.o \
  ./o64/lib/stdlib.o \
  ./o64/lib/string.o \
+ ./o64/uefi/a64/file.o \
  ./o64/uefi/a64/memory.o \
  ./o64/uefi/a64/start.o \
+ ./o64/uefi/file.o \
  ./o64/uefi/log.o \
  ./o64/uefi/memory.o \
  ./o64/uefi/misc.o \
