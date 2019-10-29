@@ -412,6 +412,15 @@ void u_print(const char *format, ...);
 
 
 /*
+ * Declarations of syscall.asm and syscall.c
+ *
+ * The boot loader syscalls have been defined in the boot.h file.
+ */
+void syscall_init(void *addr);
+void syscall_jump(void *addr);
+
+
+/*
  * Declarations of uefi.c
  */
 void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...);

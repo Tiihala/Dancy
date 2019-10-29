@@ -212,6 +212,18 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 		u_set_colors(0x07);
 	}
 
+	/*
+	 * Start the in_x64.at executable.
+	 */
+	u_print("\nStarting the in_x64.at executable...\n\n");
+	memory_export_map(0);
+	syscall_init(in_x64_syscalls);
+	syscall_jump(memory_in_x64[0]);
+
+	/*
+	 * This should not happen.
+	 */
+	u_print("Error: could not start in_x64.at\n");
 	memory_free();
 	wait_until_return(20);
 }

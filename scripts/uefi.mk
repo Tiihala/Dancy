@@ -13,11 +13,13 @@ BOOTX64_EFI_OBJECTS= \
  ./o64/uefi/a64/file.o \
  ./o64/uefi/a64/memory.o \
  ./o64/uefi/a64/start.o \
+ ./o64/uefi/a64/syscall.o \
  ./o64/uefi/file.o \
  ./o64/uefi/log.o \
  ./o64/uefi/memory.o \
  ./o64/uefi/misc.o \
  ./o64/uefi/print.o \
+ ./o64/uefi/syscall.o \
  ./o64/uefi/uefi.o
 
 ./efi/boot/BOOTX64.EFI: ./o64/uefi/uefi.at
