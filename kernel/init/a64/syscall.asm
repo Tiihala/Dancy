@@ -183,7 +183,7 @@ b_write_blocks:
         push rbx                        ; save register rbx
         mov ebx, ecx                    ; ebx = argument 1
         mov ecx, edx                    ; ecx = argument 2
-        mov ah, 0xAF                    ; ah = syscall number
+        mov ah, 0xAD                    ; ah = syscall number
         int 0x20                        ; boot loader syscall
         pop rbx                         ; restore register rbx
         ret
