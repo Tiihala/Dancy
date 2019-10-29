@@ -87,6 +87,9 @@ int memory_init(void *map)
 		} else if (t == B_MEM_BOOT_LOADER) {
 			memory_types |= TYPE_BOOT;
 
+		} else if (t == B_MEM_UEFI_SYSCALLS) {
+			memory_types |= TYPE_BOOT;
+
 		} else if (t == B_MEM_INIT_EXECUTABLE) {
 			phys_addr_t init_b = (phys_addr_t)memory - 0x10000ul;
 			phys_addr_t size = e - b;
