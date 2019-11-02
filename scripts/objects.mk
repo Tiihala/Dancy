@@ -158,6 +158,9 @@
 ./o64/uefi/a64/syscall.o: ./kernel/uefi/a64/syscall.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/uefi/a64/syscall.asm
 
+./o64/uefi/block.o: ./kernel/uefi/block.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/uefi/block.c
+
 ./o64/uefi/file.o: ./kernel/uefi/file.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/uefi/file.c
 

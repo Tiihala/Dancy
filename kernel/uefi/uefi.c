@@ -196,6 +196,12 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	}
 	memory_print_map(u_log);
 
+	if (block_init()) {
+		memory_free();
+		wait_until_return(20);
+		return;
+	}
+
 	if (file_init() || file_read_all()) {
 		memory_free();
 		wait_until_return(20);

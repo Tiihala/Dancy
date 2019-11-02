@@ -79,24 +79,24 @@ unsigned long b_get_structure(void *arg1, unsigned int arg2)
 	return not_implemented("b_get_structure");
 }
 
-unsigned long b_set_read_buffer(void *arg1, unsigned int arg2)
+unsigned long b_set_read_buffer(void *addr, unsigned int size)
 {
-	return not_implemented("b_set_read_buffer");
+	return block_set_read_buffer(addr, size);
 }
 
-unsigned long b_read_blocks(unsigned int arg1, unsigned int arg2)
+unsigned long b_read_blocks(unsigned int lba, unsigned int blocks)
 {
-	return not_implemented("b_read_blocks");
+	return block_read_blocks(lba, blocks);
 }
 
-unsigned long b_set_write_buffer(void *arg1, unsigned int arg2)
+unsigned long b_set_write_buffer(void *addr, unsigned int size)
 {
-	return not_implemented("b_set_write_buffer");
+	return block_set_write_buffer(addr, size);
 }
 
-unsigned long b_write_blocks(unsigned int arg1, unsigned int arg2)
+unsigned long b_write_blocks(unsigned int lba, unsigned int blocks)
 {
-	return not_implemented("b_write_blocks");
+	return block_write_blocks(lba, blocks);
 }
 
 unsigned long b_pause(void)

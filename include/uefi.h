@@ -24,6 +24,7 @@
 #error Definition of DANCY_64 is not available
 #endif
 
+#include <dancy/blob.h>
 #include <dancy/boot.h>
 #include <dancy/ctype.h>
 #include <dancy/limits.h>
@@ -43,6 +44,7 @@ typedef uint64_t                                EFI_STATUS;
 
 #define EFI_SUCCESS                             0x0000000000000000ull
 #define EFI_OUT_OF_RESOURCES                    0x8000000000000009ull
+#define EFI_MEDIA_CHANGED                       0x800000000000000Dull
 #define EFI_NOT_FOUND                           0x800000000000000Eull
 
 typedef struct {
@@ -343,6 +345,48 @@ typedef struct {
 	SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME OpenVolume;
 } EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
 
+typedef uint64_t                                EFI_LBA;
+
+typedef struct {
+	uint32_t                                MediaId;
+	uint8_t                                 RemovableMedia;
+	uint8_t                                 MediaPresent;
+	uint8_t                                 LogicalPartition;
+	uint8_t                                 ReadOnly;
+	uint8_t                                 WriteCaching;
+	uint32_t                                BlockSize;
+	uint32_t                                IoAlign;
+	EFI_LBA                                 LastBlock;
+} EFI_BLOCK_IO_MEDIA;
+
+typedef EFI_STATUS (*EFI_BLOCK_READ)(
+	void                                    *This,
+	uint32_t                                MediaId,
+	EFI_LBA                                 LBA,
+	uint64_t                                BufferSize,
+	void                                    *Buffer);
+
+typedef EFI_STATUS (*EFI_BLOCK_WRITE)(
+	void                                    *This,
+	uint32_t                                MediaId,
+	EFI_LBA                                 LBA,
+	uint64_t                                BufferSize,
+	void                                    *Buffer);
+
+typedef EFI_STATUS (*EFI_BLOCK_FLUSH)(void *This);
+
+#define EFI_BLOCK_IO_PROTOCOL_GUID \
+	{ 0x964E5B21,0x6459,0x11D2,{0x8E,0x39,0x00,0xA0,0xC9,0x69,0x72,0x3B} }
+
+typedef struct {
+	uint64_t                                Revision;
+	EFI_BLOCK_IO_MEDIA                      *Media;
+	EFI_PVOID                               Reset;
+	EFI_BLOCK_READ                          ReadBlocks;
+	EFI_BLOCK_WRITE                         WriteBlocks;
+	EFI_BLOCK_FLUSH                         FlushBlocks;
+} EFI_BLOCK_IO_PROTOCOL;
+
 
 /*
  * Global variables
@@ -366,6 +410,22 @@ extern size_t                                   config_file_size;
 extern void                                     *memory_db_all[];
 extern void                                     *memory_in_x64[];
 extern void                                     *in_x64_syscalls;
+
+extern uint32_t                                 b_bytes_per_block;
+extern uint32_t                                 b_total_blocks;
+extern uint32_t                                 b_hidden_blocks;
+extern uint32_t                                 b_drive_number;
+extern uint32_t                                 b_media_changed;
+
+
+/*
+ * Declarations of block.c
+ */
+int block_init(void);
+unsigned long block_set_read_buffer(void *addr, unsigned int size);
+unsigned long block_read_blocks(unsigned int lba, unsigned int blocks);
+unsigned long block_set_write_buffer(void *addr, unsigned int size);
+unsigned long block_write_blocks(unsigned int lba, unsigned int blocks);
 
 
 /*
