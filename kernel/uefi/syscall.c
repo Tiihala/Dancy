@@ -51,22 +51,22 @@ unsigned long b_get_keycode(void)
 
 unsigned long b_get_byte_com1(void)
 {
-	return not_implemented("b_get_byte_com1");
+	return serial_get_byte(1);
 }
 
-unsigned long b_put_byte_com1(unsigned char arg1)
+unsigned long b_put_byte_com1(unsigned char b)
 {
-	return not_implemented("b_put_byte_com1");
+	return serial_put_byte(1, b);
 }
 
 unsigned long b_get_byte_com2(void)
 {
-	return not_implemented("b_get_byte_com2");
+	return serial_get_byte(2);
 }
 
-unsigned long b_put_byte_com2(unsigned char arg1)
+unsigned long b_put_byte_com2(unsigned char b)
 {
-	return not_implemented("b_put_byte_com2");
+	return serial_put_byte(2, b);
 }
 
 unsigned long b_get_parameter(unsigned int arg1)

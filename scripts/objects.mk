@@ -176,6 +176,9 @@
 ./o64/uefi/print.o: ./kernel/uefi/print.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/uefi/print.c
 
+./o64/uefi/serial.o: ./kernel/uefi/serial.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/uefi/serial.c
+
 ./o64/uefi/syscall.o: ./kernel/uefi/syscall.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/uefi/syscall.c
 

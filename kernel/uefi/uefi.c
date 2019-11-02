@@ -190,6 +190,8 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	log_global_variables();
 	log_system_table();
 
+	serial_init();
+
 	if (memory_init()) {
 		wait_until_return(20);
 		return;

@@ -20,6 +20,7 @@ BOOTX64_EFI_OBJECTS= \
  ./o64/uefi/memory.o \
  ./o64/uefi/misc.o \
  ./o64/uefi/print.o \
+ ./o64/uefi/serial.o \
  ./o64/uefi/syscall.o \
  ./o64/uefi/uefi.o
 

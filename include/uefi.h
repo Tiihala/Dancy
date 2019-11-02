@@ -95,6 +95,12 @@ typedef enum {
 	AllocateAddress
 } EFI_ALLOCATE_TYPE;
 
+typedef enum {
+	AllHandles,
+	ByRegisterNotify,
+	ByProtocol
+} EFI_LOCATE_SEARCH_TYPE;
+
 typedef EFI_STATUS (*EFI_ALLOCATE_PAGES)(
 	EFI_ALLOCATE_TYPE                       Type,
 	EFI_MEMORY_TYPE                         MemoryType,
@@ -112,6 +118,13 @@ typedef EFI_STATUS (*EFI_HANDLE_PROTOCOL)(
 	EFI_HANDLE                              Handle,
 	EFI_GUID                                *Protocol,
 	void                                    **Interface);
+
+typedef EFI_STATUS (*EFI_LOCATE_HANDLE)(
+	EFI_LOCATE_SEARCH_TYPE                  SearchType,
+	EFI_GUID                                *Protocol,
+	void                                    *SearchKey,
+	uint64_t                                *BufferSize,
+	EFI_HANDLE                              *Buffer);
 
 typedef EFI_STATUS (*EFI_OPEN_PROTOCOL)(
 	EFI_HANDLE                              Handle,
@@ -152,7 +165,7 @@ typedef struct {
 	EFI_HANDLE_PROTOCOL                     HandleProtocol;
 	EFI_PVOID                               Reserved;
 	EFI_PVOID                               RegisterProtocolNotify;
-	EFI_PVOID                               LocateHandle;
+	EFI_LOCATE_HANDLE                       LocateHandle;
 	EFI_PVOID                               LocateDevicePath;
 	EFI_PVOID                               InstallConfigurationTable;
 	EFI_PVOID                               LoadImage;
@@ -387,6 +400,78 @@ typedef struct {
 	EFI_BLOCK_FLUSH                         FlushBlocks;
 } EFI_BLOCK_IO_PROTOCOL;
 
+typedef struct {
+	uint32_t                                ControlMask;
+	uint32_t                                Timeout;
+	uint64_t                                BaudRate;
+	uint32_t                                ReceiveFifoDepth;
+	uint32_t                                DataBits;
+	uint32_t                                Parity;
+	uint32_t                                StopBits;
+} SERIAL_IO_MODE;
+
+typedef enum {
+	DefaultParity,
+	NoParity
+} EFI_PARITY_TYPE;
+
+typedef enum {
+	DefaultStopBits,
+	OneStopBit
+} EFI_STOP_BITS_TYPE;
+
+typedef EFI_STATUS (*EFI_SERIAL_RESET)(void *This);
+
+typedef EFI_STATUS (*EFI_SERIAL_SET_ATTRIBUTES)(
+	void                                    *This,
+	uint64_t                                BaudRate,
+	uint32_t                                ReceiveFifoDepth,
+	uint32_t                                TimeOut,
+	EFI_PARITY_TYPE                         Parity,
+	uint8_t                                 DataBits,
+	EFI_STOP_BITS_TYPE                      StopBits);
+
+typedef EFI_STATUS (*EFI_SERIAL_SET_CONTROL_BITS)(
+	void                                    *This,
+	uint32_t                                Control);
+
+typedef EFI_STATUS (*EFI_SERIAL_GET_CONTROL_BITS)(
+	void                                    *This,
+	uint32_t                                *Control);
+
+typedef EFI_STATUS (*EFI_SERIAL_WRITE)(
+	void                                    *This,
+	uint64_t                                *BufferSize,
+	void                                    *Buffer);
+
+typedef EFI_STATUS (*EFI_SERIAL_READ)(
+	void                                    *This,
+	uint64_t                                *BufferSize,
+	void                                    *Buffer);
+
+#define EFI_SERIAL_IO_PROTOCOL_GUID \
+	{ 0xBB25CF6F,0xF1D4,0x11D2,{0x9A,0x0C,0x00,0x90,0x27,0x3F,0xC1,0xFD} }
+
+typedef struct {
+	uint32_t                                Revision;
+	EFI_SERIAL_RESET                        Reset;
+	EFI_SERIAL_SET_ATTRIBUTES               SetAttributes;
+	EFI_SERIAL_SET_CONTROL_BITS             SetControl;
+	EFI_SERIAL_GET_CONTROL_BITS             GetControl;
+	EFI_SERIAL_WRITE                        Write;
+	EFI_SERIAL_READ                         Read;
+	SERIAL_IO_MODE                          *Mode;
+} EFI_SERIAL_IO_PROTOCOL;
+
+#define EFI_DEVICE_PATH_PROTOCOL_GUID \
+	{ 0x09576E91,0x6D3F,0x11D2,{0x8E,0x39,0x00,0xA0,0xC9,0x69,0x72,0x3B} }
+
+typedef struct {
+	uint8_t                                 Type;
+	uint8_t                                 SubType;
+	uint8_t                                 Length[2];
+} EFI_DEVICE_PATH_PROTOCOL;
+
 
 /*
  * Global variables
@@ -469,6 +554,14 @@ void u_stall(uint64_t milliseconds);
  */
 const void *L(const char *s);
 void u_print(const char *format, ...);
+
+
+/*
+ * Declarations of serial.c
+ */
+void serial_init(void);
+unsigned long serial_get_byte(unsigned int port);
+unsigned long serial_put_byte(unsigned int port, unsigned char c);
 
 
 /*
