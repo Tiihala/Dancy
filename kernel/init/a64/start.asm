@@ -37,6 +37,7 @@ start:
 
         test byte [ebx+4], 4            ; test uefi bit
         jz short .L2
+        mov byte [boot_loader_type], 1  ; set the boot loader type
 .L1:    lea ebx, [ebx+32]               ; next entry
         test byte [ebx+4], 2            ; test B_FLAG_VALID_LEGACY
         jz short .halt
