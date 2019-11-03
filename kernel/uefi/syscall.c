@@ -69,9 +69,77 @@ unsigned long b_put_byte_com2(unsigned char b)
 	return serial_put_byte(2, b);
 }
 
-unsigned long b_get_parameter(unsigned int arg1)
+unsigned long b_get_parameter(unsigned int num)
 {
-	return not_implemented("b_get_parameter");
+	unsigned long r = 0;
+
+	if (num == B_ACPI_POINTER) {
+		EFI_GUID guid1 = EFI_ACPI_TABLE_GUID;
+		EFI_GUID guid2 = ACPI_TABLE_GUID;;
+		EFI_CONFIGURATION_TABLE *t;
+		uint64_t i, j, vt;
+
+		for (i = 0; i < gSystemTable->NumberOfTableEntries; i++) {
+			t = &gSystemTable->ConfigurationTable[i];
+
+			if (t->VendorGuid.Data1 != guid1.Data1)
+				continue;
+			if (t->VendorGuid.Data2 != guid1.Data2)
+				continue;
+			if (t->VendorGuid.Data3 != guid1.Data3)
+				continue;
+			for (j = 0; j < 8; j++) {
+				if (t->VendorGuid.Data4[j] != guid1.Data4[j])
+					continue;
+			}
+			vt = (uint64_t)t->VendorTable;
+			if (vt < 0x100000000ull)
+				return (unsigned long)vt;
+		}
+
+		for (i = 0; i < gSystemTable->NumberOfTableEntries; i++) {
+			t = &gSystemTable->ConfigurationTable[i];
+
+			if (t->VendorGuid.Data1 != guid2.Data1)
+				continue;
+			if (t->VendorGuid.Data2 != guid2.Data2)
+				continue;
+			if (t->VendorGuid.Data3 != guid2.Data3)
+				continue;
+			for (j = 0; j < 8; j++) {
+				if (t->VendorGuid.Data4[j] != guid2.Data4[j])
+					continue;
+			}
+			vt = (uint64_t)t->VendorTable;
+			if (vt < 0x100000000ull)
+				return (unsigned long)vt;
+		}
+		return r;
+	}
+
+	switch (num) {
+	case B_BYTES_PER_BLOCK:
+		r = b_bytes_per_block;
+		break;
+	case B_TOTAL_BLOCKS:
+		r = b_total_blocks;
+		break;
+	case B_HIDDEN_BLOCKS:
+		r = b_hidden_blocks;
+		break;
+	case B_DRIVE_NUMBER:
+		r = b_drive_number;
+		break;
+	case B_MEDIA_CHANGED:
+		r = b_media_changed;
+		break;
+	case B_A20_STATE:
+		r = B_A20_AUTOMATIC;
+		break;
+	default:
+		break;
+	}
+	return r;
 }
 
 unsigned long b_get_structure(void *arg1, unsigned int arg2)
