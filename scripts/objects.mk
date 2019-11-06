@@ -149,6 +149,9 @@
 ./o64/uefi/a64/file.o: ./kernel/uefi/a64/file.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/uefi/a64/file.asm
 
+./o64/uefi/a64/font7x9.o: ./kernel/uefi/a64/font7x9.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/uefi/a64/font7x9.asm
+
 ./o64/uefi/a64/memory.o: ./kernel/uefi/a64/memory.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/uefi/a64/memory.asm
 
@@ -184,3 +187,6 @@
 
 ./o64/uefi/uefi.o: ./kernel/uefi/uefi.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/uefi/uefi.c
+
+./o64/uefi/video.o: ./kernel/uefi/video.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/uefi/video.c

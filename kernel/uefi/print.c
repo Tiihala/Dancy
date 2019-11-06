@@ -50,5 +50,10 @@ void u_print(const char *format, ...)
 
 	if (ret <= 0)
 		return;
+
+	video_output_string(&buf[0], 0, 1);
+	if (video_active)
+		return;
+
 	gSystemTable->ConOut->OutputString(gSystemTable->ConOut, L(&buf[0]));
 }

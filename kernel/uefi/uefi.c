@@ -179,9 +179,10 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 		return;
 
 	query_output_mode();
-
 	u_set_colors(0x07);
 	u_clear_screen();
+
+	video_init();
 	u_print(welcome);
 
 	u_log_init();
@@ -214,11 +215,13 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	 * Temporary code for testing purposes.
 	 */
 	{
-		u_log_dump();
-		u_set_colors(0x05);
-		u_print("Warning: the UEFI Boot Loader is not ready yet\n");
-		u_set_colors(0x07);
+
 	}
+
+	/*
+	 * Show the video mode selection menu.
+	 */
+	video_show_menu();
 
 	/*
 	 * Start the in_x64.at executable.

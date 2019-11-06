@@ -142,9 +142,17 @@ unsigned long b_get_parameter(unsigned int num)
 	return r;
 }
 
-unsigned long b_get_structure(void *arg1, unsigned int arg2)
+unsigned long b_get_structure(void *addr, unsigned int num)
 {
-	return not_implemented("b_get_structure");
+	if (num == 0) {
+		struct b_video_info *info = addr;
+		return (unsigned long)video_get_info(info);
+	}
+	if (num == 1) {
+		struct b_video_edid *edid = addr;
+		return (unsigned long)video_get_edid(edid);
+	}
+	return 0;
 }
 
 unsigned long b_set_read_buffer(void *addr, unsigned int size)

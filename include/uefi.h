@@ -478,6 +478,73 @@ typedef struct {
 #define ACPI_TABLE_GUID \
 	{ 0xEB9D2D30,0x2D88,0x11D3,{0x9A,0x16,0x00,0x90,0x27,0x3F,0xC1,0x4D} }
 
+typedef enum {
+	PixelRedGreenBlueReserved8BitPerColor,
+	PixelBlueGreenRedReserved8BitPerColor,
+	PixelBitMask
+} EFI_GRAPHICS_PIXEL_FORMAT;
+
+typedef struct {
+	uint32_t                                RedMask;
+	uint32_t                                GreenMask;
+	uint32_t                                BlueMask;
+	uint32_t                                ReservedMask;
+} EFI_PIXEL_BITMASK;
+
+typedef struct {
+	uint32_t                                Version;
+	uint32_t                                HorizontalResolution;
+	uint32_t                                VerticalResolution;
+	EFI_GRAPHICS_PIXEL_FORMAT               PixelFormat;
+	EFI_PIXEL_BITMASK                       PixelInformation;
+	uint32_t                                PixelsPerScanLine;
+} EFI_GRAPHICS_OUTPUT_MODE_INFORMATION;
+
+typedef struct {
+	uint32_t                                MaxMode;
+	uint32_t                                Mode;
+	EFI_GRAPHICS_OUTPUT_MODE_INFORMATION    *Info;
+	uint64_t                                SizeOfInfo;
+	uint64_t                                FrameBufferBase;
+	uint64_t                                FrameBufferSize;
+} EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE;
+
+typedef EFI_STATUS (*EFI_GRAPHICS_OUTPUT_PROTOCOL_QUERY_MODE)(
+	void                                    *This,
+	uint32_t                                ModeNumber,
+	uint64_t                                *SizeOfInfo,
+	EFI_GRAPHICS_OUTPUT_MODE_INFORMATION    **Info);
+
+typedef EFI_STATUS (*EFI_GRAPHICS_OUTPUT_PROTOCOL_SET_MODE)(
+	void                                    *This,
+	uint32_t                                ModeNumber);
+
+#define EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID \
+	{ 0x9042A9DE,0x23DC,0x4A38,{0x96,0xFB,0x7A,0xDE,0xD0,0x80,0x51,0x6A} }
+
+typedef struct {
+	EFI_GRAPHICS_OUTPUT_PROTOCOL_QUERY_MODE QueryMode;
+	EFI_GRAPHICS_OUTPUT_PROTOCOL_SET_MODE   SetMode;
+	EFI_PVOID                               Blt;
+	EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE       *Mode;
+} EFI_GRAPHICS_OUTPUT_PROTOCOL;
+
+#define EFI_EDID_DISCOVERED_PROTOCOL_GUID \
+	{ 0x1C0C34F6,0xD380,0x41FA,{0xA0,0x49,0x8A,0xD0,0x6C,0x1A,0x66,0xAA} }
+
+typedef struct {
+	uint32_t                                SizeOfEdid;
+	uint8_t                                 *Edid;
+} EFI_EDID_DISCOVERED_PROTOCOL;
+
+#define EFI_EDID_ACTIVE_PROTOCOL_GUID \
+	{ 0xBD8C1056,0x9F36,0x44EC,{0x92,0xA8,0xA6,0x33,0x7F,0x81,0x79,0x86} }
+
+typedef struct {
+	uint32_t                                SizeOfEdid;
+	uint8_t                                 *Edid;
+} EFI_EDID_ACTIVE_PROTOCOL;
+
 
 /*
  * Global variables
@@ -507,6 +574,12 @@ extern uint32_t                                 b_total_blocks;
 extern uint32_t                                 b_hidden_blocks;
 extern uint32_t                                 b_drive_number;
 extern uint32_t                                 b_media_changed;
+
+extern uint32_t                                 video_active;
+extern uint32_t                                 video_column;
+extern uint32_t                                 video_columns;
+extern uint32_t                                 video_row;
+extern uint32_t                                 video_rows;
 
 
 /*
@@ -583,5 +656,16 @@ void syscall_jump(void *addr);
  * Declarations of uefi.c
  */
 void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...);
+
+
+/*
+ * Declarations of video.c
+ */
+void video_init(void);
+void video_clear(int mode);
+size_t video_get_edid(struct b_video_edid *out);
+size_t video_get_info(struct b_video_info *out);
+void video_output_string(const char *str, int hl, int cr);
+void video_show_menu(void);
 
 #endif
