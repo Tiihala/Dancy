@@ -50,7 +50,6 @@ void video_init(void)
 	 */
 	{
 		EFI_GUID guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
-		EFI_GRAPHICS_OUTPUT_PROTOCOL *graphics;
 		uint64_t size = (uint64_t)(sizeof(handles));
 
 		s = LocateHandle(ByProtocol, &guid, NULL, &size, &handles[0]);
