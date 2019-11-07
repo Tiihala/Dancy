@@ -185,7 +185,7 @@ size_t video_get_info(struct b_video_info *out)
 	return (sizeof(struct b_video_info));
 }
 
-static void render_1x(uint32_t h, uint32_t v, int hl)
+static void render_1x(uint32_t h, uint32_t v)
 {
 	uint32_t *fb = (uint32_t *)gop->Mode->FrameBufferBase;
 	uint32_t stride = gop->Mode->Info->PixelsPerScanLine;
@@ -198,24 +198,26 @@ static void render_1x(uint32_t h, uint32_t v, int hl)
 	if (((h & 0x80000000u) | (v & 0x80000000u)) != 0)
 		return;
 
-	hl = (hl != 0) ? 1 : 0;
 	fb += ((h / 4) + (stride * (v / 4)));
 
 	for (y = 0; y < video_rows; y++) {
 		for (x = 0; x < video_columns; x++) {
 			uint32_t *ptr = fb + (x * 7);
 			unsigned char u;
-			uint32_t i, j;
-			int offset;
+			uint32_t i, j, bc;
+			int hl, offset;
 
 			u = video_buffer[x + (y * video_columns)];
 			offset = (int)(u & 0x7Fu) - 0x20;
 			font = (offset >= 0) ? font7x9[offset] : 0;
 
+			hl = (int)(u >> 7);
+			bc = hl ? 0x00AAAAAA : 0;
+
 			if ((font & 0x8000000000000000ull) != 0) {
 				for (i = 0; i < 2; i++) {
 					for (j = 0; j < 7; j++)
-						ptr[j] = 0;
+						ptr[j] = bc;
 					ptr += stride;
 				}
 				offset = 3;
@@ -234,7 +236,7 @@ static void render_1x(uint32_t h, uint32_t v, int hl)
 			}
 			for (i = 0; i < (uint32_t)offset; i++) {
 				for (j = 0; j < 7; j++)
-					ptr[j] = 0;
+					ptr[j] = bc;
 				ptr += stride;
 			}
 		}
@@ -242,7 +244,7 @@ static void render_1x(uint32_t h, uint32_t v, int hl)
 	}
 }
 
-static int render_2x(uint32_t h, uint32_t v, int hl)
+static int render_2x(uint32_t h, uint32_t v)
 {
 	uint32_t *fb = (uint32_t *)gop->Mode->FrameBufferBase;
 	uint32_t stride = gop->Mode->Info->PixelsPerScanLine;
@@ -255,24 +257,26 @@ static int render_2x(uint32_t h, uint32_t v, int hl)
 	if (((h & 0x80000000u) | (v & 0x80000000u)) != 0)
 		return 1;
 
-	hl = (hl != 0) ? 1 : 0;
 	fb += ((h / 4) + (stride * (v / 4)));
 
 	for (y = 0; y < video_rows; y++) {
 		for (x = 0; x < video_columns; x++) {
 			uint32_t *ptr = fb + (x * 14);
 			unsigned char u;
-			uint32_t i, j;
-			int offset;
+			uint32_t i, j, bc;
+			int hl, offset;
 
 			u = video_buffer[x + (y * video_columns)];
 			offset = (int)(u & 0x7Fu) - 0x20;
 			font = (offset >= 0) ? font7x9[offset] : 0;
 
+			hl = (int)(u >> 7);
+			bc = hl ? 0x00AAAAAA : 0;
+
 			if ((font & 0x8000000000000000ull) != 0) {
 				for (i = 0; i < 4; i++) {
 					for (j = 0; j < 14; j++)
-						ptr[j] = 0;
+						ptr[j] = bc;
 					ptr += stride;
 				}
 				offset = 6;
@@ -299,7 +303,7 @@ static int render_2x(uint32_t h, uint32_t v, int hl)
 			}
 			for (i = 0; i < (uint32_t)offset; i++) {
 				for (j = 0; j < 14; j++)
-					ptr[j] = 0;
+					ptr[j] = bc;
 				ptr += stride;
 			}
 		}
@@ -308,7 +312,7 @@ static int render_2x(uint32_t h, uint32_t v, int hl)
 	return 0;
 }
 
-void video_output_string(const char *str, int hl, int cr)
+void video_output_string(const char *str, unsigned int len, int hl, int cr)
 {
 	char c;
 
@@ -357,15 +361,20 @@ void video_output_string(const char *str, int hl, int cr)
 			memset(&video_buffer[size], 0, (size_t)video_columns);
 			video_row = video_rows - 1;
 		}
+
+		if (len == 1)
+			break;
+		if (len > 1)
+			len -= 1;
 	}
 
 	if (video_active != 0) {
 		uint32_t h = gop->Mode->Info->HorizontalResolution;
 		uint32_t v = gop->Mode->Info->VerticalResolution;
 
-		if (!render_2x(h, v, hl))
+		if (!render_2x(h, v))
 			return;
-		render_1x(h, v, hl);
+		render_1x(h, v);
 	}
 }
 

@@ -665,7 +665,7 @@ void video_init(void);
 void video_clear(int mode);
 size_t video_get_edid(struct b_video_edid *out);
 size_t video_get_info(struct b_video_info *out);
-void video_output_string(const char *str, int hl, int cr);
+void video_output_string(const char *str, unsigned int len, int hl, int cr);
 void video_show_menu(void);
 
 #endif
