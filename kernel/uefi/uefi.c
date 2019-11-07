@@ -33,20 +33,6 @@ uint64_t gOutputMaxMode;
 uint64_t gOutputColumns;
 uint64_t gOutputRows;
 
-static void log_global_variables(void)
-{
-	u_log("Global Variables\n");
-	u_log("\tgImageHandle        %p\n", gImageHandle);
-	u_log("\tgSystemTable        %p\n", gSystemTable);
-	u_log("\tgBaseAddress        %p\n", gBaseAddress);
-	u_log("\tgOriginalRsp        %p\n", gOriginalRsp);
-	u_log("\tgOutputMode         %-3lld (decimal)\n", gOutputMode);
-	u_log("\tgOutputMaxMode      %-3lld (decimal)\n", gOutputMaxMode);
-	u_log("\tgOutputColumns      %-3lld (decimal)\n", gOutputColumns);
-	u_log("\tgOutputRows         %-3lld (decimal)\n", gOutputRows);
-	u_log("\n");
-}
-
 static void log_system_table(void)
 {
 	EFI_SYSTEM_TABLE *st = gSystemTable;
@@ -55,8 +41,6 @@ static void log_system_table(void)
 	u_log("\tHdr.Signature       %016llX\n", st->Hdr.Signature);
 	u_log("\tHdr.Revision        %08X\n", st->Hdr.Revision);
 	u_log("\tHdr.HeaderSize      %08X\n", st->Hdr.HeaderSize);
-	u_log("\tHdr.CRC32           %08X\n", st->Hdr.CRC32);
-	u_log("\tHdr.Reserved        %08X\n", st->Hdr.Reserved);
 
 	{
 		const uint16_t *vendor = st->FirmwareVendor;
@@ -77,37 +61,8 @@ static void log_system_table(void)
 	}
 
 	u_log("\tFirmwareRevision    %08X\n", st->FirmwareRevision);
-	u_log("\tConsoleInHandle     %p\n", st->ConsoleInHandle);
-	u_log("\tConIn               %p\n", st->ConIn);
-	u_log("\tConsoleOutHandle    %p\n", st->ConsoleOutHandle);
-	u_log("\tConOut              %p\n", st->ConOut);
-	u_log("\tStandardErrorHandle %p\n", st->StandardErrorHandle);
-	u_log("\tStdErr              %p\n", st->StdErr);
-	u_log("\tRuntimeServices     %p\n", st->RuntimeServices);
-	u_log("\tBootServices        %p\n", st->BootServices);
-	u_log("\tTableEntries        %016llX\n", st->NumberOfTableEntries);
-	u_log("\tConfigurationTable  %p\n", st->ConfigurationTable);
+	u_log("\tTableEntries        %lld\n", st->NumberOfTableEntries);
 	u_log("\n");
-
-	{
-		EFI_CONFIGURATION_TABLE *t = st->ConfigurationTable;
-		uint64_t table_entries = st->NumberOfTableEntries;
-		uint64_t i, j;
-
-		u_log("EFI Configuration Table\n");
-
-		for (i = 0; i < table_entries; i++) {
-			uint32_t d1 = t[i].VendorGuid.Data1;
-			uint16_t d2 = t[i].VendorGuid.Data2;
-			uint16_t d3 = t[i].VendorGuid.Data3;
-
-			u_log("\t{0x%08X,0x%04hX,0x%04hX,{", d1, d2, d3);
-			for (j = 0; j < 7; j++)
-				u_log("0x%02hhX,", t[i].VendorGuid.Data4[j]);
-			u_log("0x%02hhX}}\n", t[i].VendorGuid.Data4[7]);
-		}
-		u_log("\n");
-	}
 }
 
 static void query_output_mode(void)
@@ -178,33 +133,52 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	if (((addr_t)gBaseAddress & 4095) + 495 - 'D' - 'a' - 'n' - 'c' - 'y')
 		return;
 
+	/*
+	 * Read current console size and clear the screen.
+	 */
 	query_output_mode();
 	u_set_colors(0x07);
 	u_clear_screen();
 
+	/*
+	 * Initialize log functions.
+	 */
+	u_log_init();
+	u_log(welcome);
+	log_system_table();
+
+	/*
+	 * Initialize video functions and print a welcome message.
+	 */
 	video_init();
 	u_print(welcome);
 
-	u_log_init();
-	u_log(welcome);
-
-	log_global_variables();
-	log_system_table();
-
+	/*
+	 * Initialize Serial I/O.
+	 */
 	serial_init();
 
+	/*
+	 * Initialize memory functions and log the current memory map.
+	 */
 	if (memory_init()) {
 		wait_until_return(20);
 		return;
 	}
 	memory_print_map(u_log);
 
+	/*
+	 * Initialize Block I/O.
+	 */
 	if (block_init()) {
 		memory_free();
 		wait_until_return(20);
 		return;
 	}
 
+	/*
+	 * Read all the databases, config, and in_x64.at.
+	 */
 	if (file_init() || file_read_all()) {
 		memory_free();
 		wait_until_return(20);
