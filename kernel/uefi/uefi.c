@@ -215,7 +215,7 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	 * Temporary code for testing purposes.
 	 */
 	{
-
+		u_log_dump();
 	}
 
 	/*

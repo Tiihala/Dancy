@@ -30,10 +30,11 @@ static char boot_log_buffer[0x20000];
 void u_log_dump(void)
 {
 	const char *ptr = uefi_log;
-	uint64_t column, row;
+	uint32_t row, rows;
 	size_t length = 0;
 
-	u_clear_screen();
+	b_output_control(0, B_CLEAR_CONSOLE);
+	rows = (video_active != 0) ? video_rows : (uint32_t)gOutputRows;
 
 	while (*ptr != '\0') {
 		length += 1;
@@ -41,20 +42,18 @@ void u_log_dump(void)
 		if (*ptr++ != '\n')
 			continue;
 
-		u_get_cursor(&column, &row);
+		row = (uint32_t)(b_output_control(0, B_GET_CURSOR) >> 8);
 
-		if (row >= gOutputRows - 1) {
+		if (row >= rows - 1) {
 			EFI_INPUT_KEY key;
 
-			u_set_colors(0x70);
-			u_print("\r--More--");
-			u_set_colors(0x07);
+			b_output_string_hl("\r--More--", 0);
 
 			while (u_read_key(&key))
 				u_stall(20);
 
 			u_print("\r%8s\n", " ");
-			u_set_cursor(0, gOutputRows - 2);
+			b_output_control(((rows - 2) << 8), B_SET_CURSOR);
 		}
 		u_print("%.*s", length, (ptr - length));
 		length = 0;
