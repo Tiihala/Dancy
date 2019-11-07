@@ -26,17 +26,29 @@ static unsigned long not_implemented(const char *name)
 	return 0;
 }
 
-unsigned long b_output_string(const char *arg1, unsigned int arg2)
+unsigned long b_output_string(const char *str, unsigned int len)
 {
-	size_t size = (arg2 != 0) ? arg2 : (unsigned long)strlen(arg1);
+	size_t size = (len != 0) ? len : (size_t)strlen(str);
 
-	u_print("%.*s", size, arg1);
+	if (video_active)
+		video_output_string(str, len, 0, 0);
+	else
+		u_print("%.*s", size, str);
 	return (unsigned long)size;
 }
 
-unsigned long b_output_string_hl(const char *arg1, unsigned int arg2)
+unsigned long b_output_string_hl(const char *str, unsigned int len)
 {
-	return not_implemented("b_output_string_hl");
+	size_t size = (len != 0) ? len : (size_t)strlen(str);
+
+	if (video_active) {
+		video_output_string(str, len, 1, 0);
+	} else {
+		u_set_colors(0x70);
+		u_print("%.*s", size, str);
+		u_set_colors(0x07);
+	}
+	return (unsigned long)size;
 }
 
 unsigned long b_output_control(unsigned int cursor, unsigned int ctl)
