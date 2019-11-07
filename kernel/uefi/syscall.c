@@ -39,9 +39,44 @@ unsigned long b_output_string_hl(const char *arg1, unsigned int arg2)
 	return not_implemented("b_output_string_hl");
 }
 
-unsigned long b_output_control(unsigned int arg1, unsigned int arg2)
+unsigned long b_output_control(unsigned int cursor, unsigned int ctl)
 {
-	return not_implemented("b_output_control");
+	if (ctl == B_CLEAR_CONSOLE) {
+		if (video_active)
+			video_clear(1);
+		else
+			u_clear_screen();
+		return 0;
+	}
+	if (ctl == B_GET_CURSOR) {
+		uint64_t col, row;
+
+		if (video_active) {
+			col = video_column;
+			row = video_row;
+		} else {
+			u_get_cursor(&col, &row);
+		}
+		return B_CURSOR(col, row);
+	}
+	if (ctl == B_SET_CURSOR) {
+		uint64_t col = cursor & 0xFFull;
+		uint64_t row = (cursor >> 8) & 0xFFull;
+
+		if (video_active) {
+			if (col >= video_columns)
+				col = video_columns - 1;
+			if (row >= video_rows)
+				row = video_rows - 1;
+			video_column = (uint32_t)col;
+			video_row = (uint32_t)row;
+		} else {
+			u_set_cursor(col, row);
+			u_get_cursor(&col, &row);
+		}
+		return B_CURSOR(col, row);
+	}
+	return 0;
 }
 
 unsigned long b_get_keycode(void)
