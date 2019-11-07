@@ -50,7 +50,7 @@ void u_set_cursor(uint64_t c, uint64_t r)
 	if (c >= gOutputColumns)
 		c = gOutputColumns - 1;
 	if (r >= gOutputRows)
-		c = gOutputRows - 1;
+		r = gOutputRows - 1;
 
 	gSystemTable->ConOut->SetCursorPosition(gSystemTable->ConOut, c, r);
 }
