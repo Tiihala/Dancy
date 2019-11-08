@@ -224,7 +224,8 @@ unsigned long b_write_blocks(unsigned int lba, unsigned int blocks)
 
 unsigned long b_pause(void)
 {
-	return not_implemented("b_pause");
+	u_stall(500);
+	return 0;
 }
 
 unsigned long b_exit(void)
