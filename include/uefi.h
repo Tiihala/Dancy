@@ -63,6 +63,20 @@ typedef struct {
 } EFI_GUID;
 
 typedef struct {
+	uint16_t                                Year;
+	uint8_t                                 Month;
+	uint8_t                                 Day;
+	uint8_t                                 Hour;
+	uint8_t                                 Minute;
+	uint8_t                                 Second;
+	uint8_t                                 Pad1;
+	uint32_t                                Nanosecond;
+	uint16_t                                TimeZone; /* INT16 */
+	uint8_t                                 Daylight;
+	uint8_t                                 Pad2;
+} EFI_TIME;
+
+typedef struct {
 	uint32_t                                Type;
 	uint32_t                                Pad;
 	uint64_t                                PhysicalAddress;
@@ -183,6 +197,35 @@ typedef struct {
 	EFI_PVOID                               OpenProtocolInformation;
 } EFI_BOOT_SERVICES;
 
+typedef EFI_STATUS (*EFI_GET_TIME)(EFI_TIME *Time, void *Capabilities);
+
+typedef EFI_STATUS (*EFI_GET_VARIABLE)(
+	void                                    *VariableName,
+	EFI_GUID                                *VendorGuid,
+	uint32_t                                *Attributes,
+	uint64_t                                *DataSize,
+	void                                    *Data);
+
+typedef EFI_STATUS (*EFI_GET_NEXT_VARIABLE_NAME)(
+	uint64_t                                *VariableNameSize,
+	void                                    *VariableName,
+	EFI_GUID                                *VendorGuid);
+
+typedef struct {
+	EFI_TABLE_HEADER                        Hdr;
+	EFI_GET_TIME                            GetTime;
+	EFI_PVOID                               SetTime;
+	EFI_PVOID                               GetWakeupTime;
+	EFI_PVOID                               SetWakeupTime;
+	EFI_PVOID                               SetVirtualAddressMap;
+	EFI_PVOID                               ConvertPointer;
+	EFI_GET_VARIABLE                        GetVariable;
+	EFI_GET_NEXT_VARIABLE_NAME              GetNextVariableName;
+	EFI_PVOID                               SetVariable;
+	EFI_PVOID                               GetNextHighMonotonicCount;
+	EFI_PVOID                               ResetSystem;
+} EFI_RUNTIME_SERVICES;
+
 typedef struct {
 	uint32_t                                MaxMode;
 	uint32_t                                Mode;
@@ -249,25 +292,11 @@ typedef struct {
 	EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL         *ConOut;
 	EFI_PVOID                               StandardErrorHandle;
 	EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL         *StdErr;
-	EFI_PVOID                               RuntimeServices;
+	EFI_RUNTIME_SERVICES                    *RuntimeServices;
 	EFI_BOOT_SERVICES                       *BootServices;
 	uint64_t                                NumberOfTableEntries;
 	EFI_CONFIGURATION_TABLE                 *ConfigurationTable;
 } EFI_SYSTEM_TABLE;
-
-typedef struct {
-	uint16_t                                Year;
-	uint8_t                                 Month;
-	uint8_t                                 Day;
-	uint8_t                                 Hour;
-	uint8_t                                 Minute;
-	uint8_t                                 Second;
-	uint8_t                                 Pad1;
-	uint32_t                                Nanosecond;
-	uint16_t                                TimeZone; /* INT16 */
-	uint8_t                                 Daylight;
-	uint8_t                                 Pad2;
-} EFI_TIME;
 
 #define EFI_LOADED_IMAGE_PROTOCOL_GUID \
 	{ 0x5B1B31A1,0x9562,0x11D2,{0x8E,0x3F,0x00,0xA0,0xC9,0x69,0x72,0x3B} }
