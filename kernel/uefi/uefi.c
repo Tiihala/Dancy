@@ -159,6 +159,11 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	serial_init();
 
 	/*
+	 * Initialize Simple Text Input Ex.
+	 */
+	key_init();
+
+	/*
 	 * Initialize memory functions and log the current memory map.
 	 */
 	if (memory_init()) {

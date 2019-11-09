@@ -93,7 +93,7 @@ unsigned long b_output_control(unsigned int cursor, unsigned int ctl)
 
 unsigned long b_get_keycode(void)
 {
-	return not_implemented("b_get_keycode");
+	return key_get_code();
 }
 
 unsigned long b_get_byte_com1(void)
@@ -256,5 +256,4 @@ unsigned long b_get_time(void *addr)
 	out->second = efi_time.Second;
 
 	return (unsigned long)size;
-
 }

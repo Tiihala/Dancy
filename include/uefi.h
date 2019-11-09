@@ -27,6 +27,7 @@
 #include <dancy/blob.h>
 #include <dancy/boot.h>
 #include <dancy/ctype.h>
+#include <dancy/keys.h>
 #include <dancy/limits.h>
 #include <dancy/stdarg.h>
 #include <dancy/stdlib.h>
@@ -297,6 +298,36 @@ typedef struct {
 	uint64_t                                NumberOfTableEntries;
 	EFI_CONFIGURATION_TABLE                 *ConfigurationTable;
 } EFI_SYSTEM_TABLE;
+
+typedef struct {
+	uint32_t                                KeyShiftState;
+	uint8_t                                 KeyToggleState;
+} EFI_KEY_STATE;
+
+typedef struct {
+	EFI_INPUT_KEY                           Key;
+	EFI_KEY_STATE                           KeyState;
+} EFI_KEY_DATA;
+
+typedef EFI_STATUS (*EFI_INPUT_READ_KEY_EX)(
+	void                                    *This,
+	EFI_KEY_DATA                            *KeyData);
+
+typedef EFI_STATUS (*EFI_SET_STATE)(
+	void                                    *This,
+	uint8_t                                 *KeyToggleState);
+
+#define EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL_GUID \
+	{ 0xDD9E7534,0x7762,0x4698,{0x8C,0x14,0xF5,0x85,0x17,0xA6,0x25,0xAA} }
+
+typedef struct {
+	EFI_PVOID                               Reset;
+	EFI_INPUT_READ_KEY_EX                   ReadKeyStrokeEx;
+	EFI_PVOID                               WaitForKeyEx;
+	EFI_SET_STATE                           SetState;
+	EFI_PVOID                               RegisterKeyNotify;
+	EFI_PVOID                               UnregisterKeyNotify;
+} EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL;
 
 #define EFI_LOADED_IMAGE_PROTOCOL_GUID \
 	{ 0x5B1B31A1,0x9562,0x11D2,{0x8E,0x3F,0x00,0xA0,0xC9,0x69,0x72,0x3B} }
@@ -626,6 +657,13 @@ unsigned long block_write_blocks(unsigned int lba, unsigned int blocks);
  */
 int file_init(void);
 int file_read_all(void);
+
+
+/*
+ * Declarations of key.c
+ */
+void key_init(void);
+unsigned long key_get_code(void);
 
 
 /*

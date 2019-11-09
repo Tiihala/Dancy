@@ -167,6 +167,9 @@
 ./o64/uefi/file.o: ./kernel/uefi/file.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/uefi/file.c
 
+./o64/uefi/key.o: ./kernel/uefi/key.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/uefi/key.c
+
 ./o64/uefi/log.o: ./kernel/uefi/log.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/uefi/log.c
 
