@@ -717,6 +717,8 @@ unsigned long serial_put_byte(unsigned int port, unsigned char c);
  */
 void syscall_init(void *addr);
 void syscall_jump(void *addr);
+void syscall_halt(void);
+unsigned long syscall_exit(void);
 
 
 /*

@@ -19,13 +19,6 @@
 
 #include <uefi.h>
 
-static unsigned long not_implemented(const char *name)
-{
-	u_print("%s\n", name);
-	while (gSystemTable->BootServices->Stall(1000000) == EFI_SUCCESS) { }
-	return 0;
-}
-
 unsigned long b_output_string(const char *str, unsigned int len)
 {
 	size_t size = (len != 0) ? len : (size_t)strlen(str);
@@ -261,5 +254,18 @@ unsigned long b_pause(void)
 
 unsigned long b_exit(void)
 {
-	return not_implemented("b_exit");
+	EFI_STATUS s;
+
+	if (memory_update_map() || memory_export_map(1))
+		syscall_halt();
+
+	s = gSystemTable->BootServices->ExitBootServices(
+		gImageHandle, gMapkey);
+
+	if (s != EFI_SUCCESS) {
+		u_print("\nExitBootServices: error %016llX\n", s);
+		syscall_halt();
+	}
+
+	return syscall_exit();
 }

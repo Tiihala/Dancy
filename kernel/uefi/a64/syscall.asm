@@ -39,6 +39,8 @@ section .text
         extern b_exit
         global syscall_init
         global syscall_jump
+        global syscall_halt
+        global syscall_exit
 
 align 16
         ; void syscall_init(void *addr)
@@ -258,6 +260,20 @@ sys_15:
         call b_exit                     ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
+        ret
+
+align 16
+        ; _Noreturn void syscall_halt(void)
+syscall_halt:
+        hlt                             ; hlt instruction
+        jmp short syscall_halt          ; endless loop
+
+align 16
+        ; unsigned long syscall_exit(void)
+syscall_exit:
+        cli                             ; disable interrupts
+        xor eax, eax                    ; rax = 0
+        xor edx, edx                    ; rdx = 0
         ret
 
 
