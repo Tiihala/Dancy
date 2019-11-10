@@ -222,6 +222,14 @@ unsigned long b_get_structure(void *addr, unsigned int num)
 
 		return (unsigned long)size;
 	}
+	if (num == 3) {
+		struct b_uefi_info *out = addr;
+		size_t size = sizeof(struct b_uefi_info);
+
+		memset(out, 0, size);
+		out->runtime_services = (void *)gSystemTable->RuntimeServices;
+		return (unsigned long)size;
+	}
 	return 0;
 }
 

@@ -74,7 +74,8 @@ enum b_parameter {
 enum b_structure {
 	B_VIDEO_INFO,
 	B_VIDEO_EDID,
-	B_TIME
+	B_TIME,
+	B_UEFI_INFO
 };
 
 struct b_video_info {
@@ -123,6 +124,10 @@ struct b_mem_raw {
 	uint32_t base_low;
 	uint32_t base_high;
 	uint8_t other[16];
+};
+
+struct b_uefi_info {
+	const void *runtime_services;
 };
 
 #define B_MEM_EFI_RESERVED      (0x00000000)
