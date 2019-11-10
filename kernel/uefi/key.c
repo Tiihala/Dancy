@@ -355,8 +355,18 @@ unsigned long key_get_code(void)
 		key_code = (unsigned long)table_code[unicode_char].key;
 	}
 
-	if ((key_data.KeyState.KeyToggleState & 0x04u) != 0)
-		caps_lock = 1;
+	if ((key_data.KeyState.KeyToggleState & 0x80u) != 0) {
+		uint8_t toggle_state = key_data.KeyState.KeyToggleState;
+
+		if ((toggle_state & 0x01u) != 0)
+			key_code |= DANCY_KEYMOD_SCROLLLOCK;
+		if ((toggle_state & 0x02u) != 0)
+			key_code |= DANCY_KEYMOD_NUMLOCK;
+		if ((toggle_state & 0x04u) != 0) {
+			key_code |= DANCY_KEYMOD_CAPSLOCK;
+			caps_lock = 1;
+		}
+	}
 
 	if (shift == 1 && caps_lock == 1)
 		key_code |= DANCY_KEYMOD_SHIFT;
