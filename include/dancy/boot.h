@@ -46,8 +46,6 @@ unsigned long b_write_blocks(unsigned int, unsigned int);
 unsigned long b_pause(void);
 unsigned long b_exit(void);
 
-unsigned long b_get_time(void *);
-
 enum b_ctl {
 	B_CLEAR_CONSOLE,
 	B_GET_CURSOR,
@@ -75,7 +73,8 @@ enum b_parameter {
 
 enum b_structure {
 	B_VIDEO_INFO,
-	B_VIDEO_EDID
+	B_VIDEO_EDID,
+	B_TIME
 };
 
 struct b_video_info {

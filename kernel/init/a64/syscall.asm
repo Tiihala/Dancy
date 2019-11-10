@@ -298,21 +298,3 @@ b_exit:
         mov ah, 0xAF                    ; ah = syscall number
         int 0x20                        ; boot loader syscall
         ret
-
-
-        global b_get_time
-
-align 16
-        ; unsigned long b_get_time(void *)
-b_get_time:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
-        test eax, eax                   ; test zero
-        jz short .bios_boot_loader
-        add eax, (16 * 8)               ; syscall offset
-        jmp [rax]                       ; jump into the boot loader
-.bios_boot_loader:
-        xor eax, eax                    ; eax = 0
-        xor edx, edx                    ; edx = 0
-        mov [rcx+0x00], rax             ; struct b_time ecx = { 0 }
-        mov [rcx+0x08], rdx
-        ret

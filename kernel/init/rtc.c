@@ -111,11 +111,13 @@ int rtc_read(struct b_time *bt)
 	uint8_t pic1, pic2, century_idx;
 	int i, j;
 
+	memset(bt, 0, sizeof(*bt));
+
 	/*
 	 * For boot loaders other than "BIOS", use loader services.
 	 */
 	if (boot_loader_type != BOOT_LOADER_TYPE_BIOS) {
-		unsigned long r = b_get_time(bt);
+		unsigned long r = b_get_structure(bt, B_TIME);
 
 		if (first_run) {
 			b_log("Real Time Clock (RTC)\n");
@@ -127,7 +129,6 @@ int rtc_read(struct b_time *bt)
 		return (r != 0) ? 0 : 1;
 	}
 
-	memset(bt, 0, sizeof(*bt));
 	memset(&regs1, 0, sizeof(regs1));
 	memset(&regs2, 0, sizeof(regs2));
 	century_idx = 0;

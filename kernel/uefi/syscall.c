@@ -199,6 +199,29 @@ unsigned long b_get_structure(void *addr, unsigned int num)
 		struct b_video_edid *edid = addr;
 		return (unsigned long)video_get_edid(edid);
 	}
+	if (num == 2) {
+		struct b_time *out = addr;
+		size_t size = sizeof(struct b_time);
+		EFI_TIME efi_time;
+		EFI_STATUS s;
+
+		memset(out, 0, size);
+		memset(&efi_time, 0, sizeof(EFI_TIME));
+
+		s = gSystemTable->RuntimeServices->GetTime(&efi_time, NULL);
+
+		if (s != EFI_SUCCESS)
+			return 0;
+
+		out->year   = efi_time.Year;
+		out->month  = efi_time.Month;
+		out->day    = efi_time.Day;
+		out->hour   = efi_time.Hour;
+		out->minute = efi_time.Minute;
+		out->second = efi_time.Second;
+
+		return (unsigned long)size;
+	}
 	return 0;
 }
 
@@ -231,29 +254,4 @@ unsigned long b_pause(void)
 unsigned long b_exit(void)
 {
 	return not_implemented("b_exit");
-}
-
-unsigned long b_get_time(void *addr)
-{
-	struct b_time *out = addr;
-	size_t size = sizeof(struct b_time);
-	EFI_TIME efi_time;
-	EFI_STATUS s;
-
-	memset(out, 0, size);
-	memset(&efi_time, 0, sizeof(EFI_TIME));
-
-	s = gSystemTable->RuntimeServices->GetTime(&efi_time, NULL);
-
-	if (s != EFI_SUCCESS)
-		return 0;
-
-	out->year   = efi_time.Year;
-	out->month  = efi_time.Month;
-	out->day    = efi_time.Day;
-	out->hour   = efi_time.Hour;
-	out->minute = efi_time.Minute;
-	out->second = efi_time.Second;
-
-	return (unsigned long)size;
 }

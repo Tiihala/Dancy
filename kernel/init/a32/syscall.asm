@@ -201,18 +201,3 @@ _b_exit:
         mov ah, 0xAF                    ; ah = syscall number
         int 0x20                        ; boot loader syscall
         ret
-
-
-        global _b_get_time
-
-align 16
-        ; unsigned long b_get_time(void *)
-_b_get_time:
-        mov ecx, [esp+4]                ; ecx = argument
-        xor eax, eax                    ; eax = 0
-        xor edx, edx                    ; edx = 0
-        mov [ecx+0x00], eax             ; struct b_time ecx = { 0 }
-        mov [ecx+0x04], edx
-        mov [ecx+0x08], eax
-        mov [ecx+0x0C], edx
-        ret

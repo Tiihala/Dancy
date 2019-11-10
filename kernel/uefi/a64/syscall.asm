@@ -37,7 +37,6 @@ section .text
         extern b_write_blocks
         extern b_pause
         extern b_exit
-        extern b_get_time
         global syscall_init
         global syscall_jump
 
@@ -60,7 +59,6 @@ syscall_init:
         mov dword [rcx+(13*8)], sys_13  ; b_write_blocks
         mov dword [rcx+(14*8)], sys_14  ; b_pause
         mov dword [rcx+(15*8)], sys_15  ; b_exit
-        mov dword [rcx+(16*8)], sys_16  ; b_get_time
         ret
 
 align 16
@@ -258,16 +256,6 @@ sys_15:
         mov rbp, rsp                    ; rbp = current stack pointer
         mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
         call b_exit                     ; call the syscall function
-        mov rsp, rbp                    ; restore stack pointer
-        pop rbp                         ; restore register rbp
-        ret
-
-align 16
-sys_16:
-        push rbp                        ; save register rbp
-        mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
-        call b_get_time                 ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
         ret
