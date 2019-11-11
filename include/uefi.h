@@ -619,8 +619,6 @@ extern EFI_HANDLE                               gImageHandle;
 extern EFI_SYSTEM_TABLE                         *gSystemTable;
 extern void                                     *gBaseAddress;
 extern void                                     *gOriginalRsp;
-extern uint64_t                                 gOutputMode;
-extern uint64_t                                 gOutputMaxMode;
 extern uint64_t                                 gOutputColumns;
 extern uint64_t                                 gOutputRows;
 extern uint64_t                                 gMapkey;

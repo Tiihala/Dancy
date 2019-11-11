@@ -28,67 +28,8 @@ EFI_SYSTEM_TABLE *gSystemTable;
 void *gBaseAddress;
 void *gOriginalRsp;
 
-uint64_t gOutputMode;
-uint64_t gOutputMaxMode;
-uint64_t gOutputColumns;
-uint64_t gOutputRows;
-
-static void log_system_table(void)
-{
-	EFI_SYSTEM_TABLE *st = gSystemTable;
-
-	u_log("EFI System Table\n");
-	u_log("\tHdr.Signature       %016llX\n", st->Hdr.Signature);
-	u_log("\tHdr.Revision        %08X\n", st->Hdr.Revision);
-	u_log("\tHdr.HeaderSize      %08X\n", st->Hdr.HeaderSize);
-
-	{
-		const uint16_t *vendor = st->FirmwareVendor;
-		char buf[32];
-		size_t i;
-
-		for (i = 0; i < sizeof(buf) - 1; i++) {
-			uint16_t w = *vendor++;
-			if (w == 0x00)
-				break;
-			if (w >= 0x20 && w < 0x7F)
-				buf[i] = (char)w;
-			else
-				buf[i] = '?';
-		}
-		buf[i] = '\0';
-		u_log("\tFirmwareVendor      %s\n", &buf[0]);
-	}
-
-	u_log("\tFirmwareRevision    %08X\n", st->FirmwareRevision);
-	u_log("\tTableEntries        %lld\n", st->NumberOfTableEntries);
-	u_log("\n");
-}
-
-static void query_output_mode(void)
-{
-	EFI_STATUS s;
-	uint64_t mode, max_mode;
-	uint64_t rows = 0, columns = 0;
-
-	mode = gSystemTable->ConOut->Mode->Mode;
-	max_mode = gSystemTable->ConOut->Mode->MaxMode;
-
-	s = gSystemTable->ConOut->QueryMode(gSystemTable->ConOut,
-		mode, &columns, &rows);
-
-	if (s == EFI_SUCCESS) {
-		gOutputMode = mode;
-		gOutputMaxMode = max_mode;
-		gOutputColumns = columns;
-		gOutputRows = rows;
-	}
-
-	if (!gOutputColumns)
-		gOutputColumns = 80;
-	if (!gOutputRows)
-		gOutputRows = 25;
-}
+uint64_t gOutputColumns = 80;
+uint64_t gOutputRows = 25;
 
 static void wait_until_return(int seconds)
 {
@@ -141,16 +82,60 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	/*
 	 * Read current console size and clear the screen.
 	 */
-	query_output_mode();
-	u_set_colors(0x07);
-	u_clear_screen();
+	{
+		EFI_STATUS s;
+		uint64_t rows = 0, columns = 0;
+
+		s = gSystemTable->ConOut->QueryMode(gSystemTable->ConOut,
+			gSystemTable->ConOut->Mode->Mode, &columns, &rows);
+
+		if (s == EFI_SUCCESS) {
+			gOutputColumns = columns;
+			gOutputRows = rows;
+		}
+
+		u_set_colors(0x07);
+		u_clear_screen();
+	}
 
 	/*
 	 * Initialize log functions.
 	 */
 	u_log_init();
 	u_log(welcome);
-	log_system_table();
+
+	/*
+	 * Log some information from the system table.
+	 */
+	{
+		EFI_SYSTEM_TABLE *st = gSystemTable;
+
+		u_log("EFI System Table\n");
+		u_log("\tHdr.Signature       %016llX\n", st->Hdr.Signature);
+		u_log("\tHdr.Revision        %08X\n", st->Hdr.Revision);
+		u_log("\tHdr.HeaderSize      %08X\n", st->Hdr.HeaderSize);
+
+		{
+			const uint16_t *vendor = st->FirmwareVendor;
+			char buf[32];
+			size_t i;
+
+			for (i = 0; i < sizeof(buf) - 1; i++) {
+				uint16_t w = *vendor++;
+				if (w == 0x00)
+					break;
+				if (w >= 0x20 && w < 0x7F)
+					buf[i] = (char)w;
+				else
+					buf[i] = '?';
+			}
+			buf[i] = '\0';
+			u_log("\tFirmwareVendor      %s\n", &buf[0]);
+		}
+
+		u_log("\tFirmwareRevision    %08X\n", st->FirmwareRevision);
+		u_log("\n");
+	}
 
 	/*
 	 * Initialize video functions and print a welcome message.
