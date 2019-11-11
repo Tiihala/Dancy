@@ -155,6 +155,12 @@ typedef EFI_STATUS (*EFI_CLOSE_PROTOCOL)(
 	EFI_HANDLE                              AgentHandle,
 	EFI_HANDLE                              ControllerHandle);
 
+typedef EFI_STATUS (*EFI_SET_WATCHDOG_TIMER)(
+	uint64_t                                Timeout,
+	uint64_t                                WatchdogCode,
+	uint64_t                                Datasize,
+	void                                    *WatchdogData);
+
 typedef EFI_STATUS (*EFI_FREE_PAGES)(uint64_t Memory, uint64_t Pages);
 typedef EFI_STATUS (*EFI_EXIT_BOOT_SERVICES)(void *Image, uint64_t MapKey);
 typedef EFI_STATUS (*EFI_STALL)(uint64_t Microseconds);
@@ -190,7 +196,7 @@ typedef struct {
 	EFI_EXIT_BOOT_SERVICES                  ExitBootServices;
 	EFI_PVOID                               GetNextMonotonicCount;
 	EFI_STALL                               Stall;
-	EFI_PVOID                               SetWatchdogTimer;
+	EFI_SET_WATCHDOG_TIMER                  SetWatchdogTimer;
 	EFI_PVOID                               ConnectController;
 	EFI_PVOID                               DisconnectController;
 	EFI_OPEN_PROTOCOL                       OpenProtocol;

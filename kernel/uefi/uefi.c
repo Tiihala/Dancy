@@ -134,6 +134,11 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 		return;
 
 	/*
+	 * Disable the watchdog timer.
+	 */
+	gSystemTable->BootServices->SetWatchdogTimer(0, 0, 0, NULL);
+
+	/*
 	 * Read current console size and clear the screen.
 	 */
 	query_output_mode();
