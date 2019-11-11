@@ -31,9 +31,12 @@ void *gOriginalRsp;
 uint64_t gOutputColumns = 80;
 uint64_t gOutputRows = 25;
 
-static void wait_until_return(int seconds)
+static void boot_error(void)
 {
-	static const char *m = "\rPress any key or wait %2d seconds...";
+	static const char *m1 = "\n*** Press F1 to view the boot log ***\n\n";
+	static const char *m2 = "\rPress other keys or wait %2d seconds...";
+	int show_log = 0;
+	int seconds = 20;
 	EFI_INPUT_KEY key;
 	int i;
 
@@ -43,8 +46,8 @@ static void wait_until_return(int seconds)
 	 * key strokes in the buffer will be discarded.
 	 */
 	u_print("\n");
-	u_print(m, seconds);
-	u_stall(1000), seconds--;
+	u_print(m1, seconds);
+	u_stall(2000), seconds--;
 
 	for (i = 0; i < 128; i++) {
 		if (u_read_key(&key))
@@ -52,13 +55,26 @@ static void wait_until_return(int seconds)
 	}
 
 	for (/* void */; seconds >= 0; seconds--) {
-		u_print(m, seconds);
+		u_print(m2, seconds);
 		u_stall(500);
-		if (!u_read_key(&key))
+		if (!u_read_key(&key)) {
+			if (key.ScanCode == 0x0B)
+				show_log = 1;
 			break;
+		}
 		u_stall(500);
 	}
 	u_print("\n");
+
+	if (show_log) {
+		u_log_dump();
+		u_stall(2000);
+	}
+
+	/*
+	 * Free allocated memory (see memory.c)
+	 */
+	memory_free();
 }
 
 void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
@@ -157,7 +173,7 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	 * Initialize memory functions and log the current memory map.
 	 */
 	if (memory_init()) {
-		wait_until_return(20);
+		boot_error();
 		return;
 	}
 	memory_print_map(u_log);
@@ -166,8 +182,7 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	 * Initialize Block I/O.
 	 */
 	if (block_init()) {
-		memory_free();
-		wait_until_return(20);
+		boot_error();
 		return;
 	}
 
@@ -175,8 +190,7 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	 * Read all the databases, config, and in_x64.at.
 	 */
 	if (file_init() || file_read_all()) {
-		memory_free();
-		wait_until_return(20);
+		boot_error();
 		return;
 	}
 
@@ -197,6 +211,5 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	 * This should not happen.
 	 */
 	u_print("Error: could not start in_x64.at\n");
-	memory_free();
-	wait_until_return(20);
+	boot_error();
 }
