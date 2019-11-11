@@ -128,6 +128,8 @@ struct b_mem_raw {
 
 struct b_uefi_info {
 	const void *runtime_services;
+	const char *log;
+	size_t log_size;
 };
 
 #define B_MEM_EFI_RESERVED      (0x00000000)

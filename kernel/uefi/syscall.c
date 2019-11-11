@@ -221,6 +221,8 @@ unsigned long b_get_structure(void *addr, unsigned int num)
 
 		memset(out, 0, size);
 		out->runtime_services = (void *)gSystemTable->RuntimeServices;
+		out->log = uefi_log;
+		out->log_size = uefi_log_size;
 		return (unsigned long)size;
 	}
 	return 0;
