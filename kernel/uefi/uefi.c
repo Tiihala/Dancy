@@ -40,15 +40,14 @@ static void boot_error(void)
 	EFI_INPUT_KEY key;
 	int i;
 
+	u_print(m1);
+	u_stall(2000);
+
 	/*
 	 * Do not allow key strokes immediately. The intention is to
 	 * display the message and then accept _new_ key strokes. The
 	 * key strokes in the buffer will be discarded.
 	 */
-	u_print("\n");
-	u_print(m1, seconds);
-	u_stall(2000), seconds--;
-
 	for (i = 0; i < 128; i++) {
 		if (u_read_key(&key))
 			break;
@@ -72,7 +71,8 @@ static void boot_error(void)
 	}
 
 	/*
-	 * Free allocated memory (see memory.c)
+	 * Free allocated memory (see memory.c). It is safe to run this
+	 * function even if the memory_init itself has failed.
 	 */
 	memory_free();
 }
@@ -170,12 +170,16 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	key_init();
 
 	/*
-	 * Initialize memory functions and log the current memory map.
+	 * Initialize memory functions.
 	 */
 	if (memory_init()) {
 		boot_error();
 		return;
 	}
+
+	/*
+	 * Log the current memory map.
+	 */
 	memory_print_map(u_log);
 
 	/*
@@ -200,16 +204,18 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	video_show_menu();
 
 	/*
-	 * Start the in_x64.at executable.
+	 * Start the in_x64.at executable. The boot loader should not
+	 * return control back to the UEFI firmware anymore, although
+	 * the ExitBootServices() function is not called yet.
 	 */
-	u_print("\nStarting the in_x64.at executable...\n\n");
+	u_print("Starting the in_x64.at executable...\n\n");
 	memory_export_map(0);
 	syscall_init(in_x64_syscalls);
 	syscall_jump(memory_in_x64[0]);
 
 	/*
-	 * This should not happen.
+	 * This should not happen. The "syscall_jump" must not return
+	 * unless there are serious problems (e.g. memory corruption).
 	 */
-	u_print("Error: could not start in_x64.at\n");
 	boot_error();
 }
