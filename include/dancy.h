@@ -38,8 +38,5 @@
 #include <bitarray/bitarray.h>
 #include <huffman/huffman.h>
 
-#include <kernel/core.h>
-#include <kernel/error.h>
-
 #endif
 #endif

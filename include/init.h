@@ -35,8 +35,6 @@
 #include <bitarray/bitarray.h>
 #include <huffman/huffman.h>
 
-#include <kernel/core.h>
-
 /*
  * Declarations of acpi.c
  */
