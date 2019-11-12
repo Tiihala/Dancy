@@ -21,9 +21,10 @@
 
 section .text
 
+        extern b_pause
         extern boot_loader_type
-        extern uefi_syscalls
         extern start_init
+        extern uefi_syscalls
         global start
 
 align 16
@@ -51,6 +52,9 @@ start:
 
         xor ebx, ebx                    ; rbx = 0
         call start_init                 ; call start_init
+
+.pause: call b_pause                    ; "unsigned long b_pause(void)"
+        jmp short .pause
 
 .halt:  hlt                             ; halt
         jmp short .halt

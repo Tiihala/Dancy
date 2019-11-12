@@ -21,6 +21,7 @@
 
 section .text
 
+        extern _b_pause
         extern _boot_loader_type
         extern _start_init
         global _start
@@ -38,6 +39,9 @@ _start:
         push ebx                        ; "void start_init(void *)"
         xor ebx, ebx                    ; ebx = 0
         call _start_init                ; call start_init
+
+.pause: call _b_pause                   ; "unsigned long b_pause(void)"
+        jmp short .pause
 
 .halt:  hlt                             ; halt
         jmp short .halt
