@@ -8,8 +8,8 @@
 ##############################################################################
 
 DANCY_DB_FILES= \
- ./o32/acpica.o \
- ./o64/acpica.o
+ ./o32/acpica.at \
+ ./o64/acpica.at
 
 DANCY_INIT_OBJECTS_32= \
  ./o32/bitarray/bitarray.o \

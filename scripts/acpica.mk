@@ -387,11 +387,11 @@ ACPICA_HEADERS= \
 ACPICA_DEPS=$(DANCY_EXT) $(ACPICA_HEADERS)
 ACPICA_TEMP=./include/acpica/acpi.h
 
-./o32/acpica.o: $(ACPICA_OBJECTS_32) $(DY_LINK)
-	$(DY_LINK) -o$@ $(ACPICA_OBJECTS_32)
+./o32/acpica.at: $(ACPICA_OBJECTS_32) $(DY_LINK)
+	$(DY_LINK) -o$@ -fat $(ACPICA_OBJECTS_32)
 
-./o64/acpica.o: $(ACPICA_OBJECTS_64) $(DY_LINK)
-	$(DY_LINK) -o$@ $(ACPICA_OBJECTS_64)
+./o64/acpica.at: $(ACPICA_OBJECTS_64) $(DY_LINK)
+	$(DY_LINK) -o$@ -fat $(ACPICA_OBJECTS_64)
 
 ##############################################################################
 
