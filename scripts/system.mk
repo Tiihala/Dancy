@@ -9,17 +9,7 @@
 
 DANCY_DB_FILES= \
  ./o32/acpica.o \
- ./o32/core.o \
- ./o32/lib.o \
- ./o64/acpica.o \
- ./o64/core.o \
- ./o64/lib.o
-
-DANCY_CORE_OBJECTS_32= \
- ./o32/core/start.o
-
-DANCY_CORE_OBJECTS_64= \
- ./o64/core/start.o
+ ./o64/acpica.o
 
 DANCY_INIT_OBJECTS_32= \
  ./o32/bitarray/bitarray.o \
@@ -66,32 +56,6 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/lib/a64/string.o \
  ./o64/lib/snprintf.o \
  ./o64/lib/string.o
-
-DANCY_LIB_OBJECTS_32= \
- ./o32/lib/a32/dark.o \
- ./o32/lib/a32/string.o \
- ./o32/lib/snprintf.o \
- ./o32/lib/string.o
-
-DANCY_LIB_OBJECTS_64= \
- ./o64/lib/a64/dark.o \
- ./o64/lib/a64/string.o \
- ./o64/lib/snprintf.o \
- ./o64/lib/string.o
-
-##############################################################################
-
-./o32/core.o: $(DANCY_CORE_OBJECTS_32)
-	$(DY_LINK) -o$@ $(DANCY_CORE_OBJECTS_32)
-
-./o32/lib.o: $(DANCY_LIB_OBJECTS_32)
-	$(DY_LINK) -o$@ $(DANCY_LIB_OBJECTS_32)
-
-./o64/core.o: $(DANCY_CORE_OBJECTS_64)
-	$(DY_LINK) -o$@ $(DANCY_CORE_OBJECTS_64)
-
-./o64/lib.o: $(DANCY_LIB_OBJECTS_64)
-	$(DY_LINK) -o$@ $(DANCY_LIB_OBJECTS_64)
 
 ##############################################################################
 
