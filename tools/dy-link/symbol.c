@@ -588,10 +588,13 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	 * Handle non-external symbols and detect multiply defined externals.
 	 */
 	{
-		int allow_ext = strcmp(opt->arg_f, "obj") ? 0 : 1;
+		int allow_ext = 0;
 		int syms = (int)LE32(&obj[12]);
 		int i_t = 1, i_r = 1, i_d = 1, i_b = 1;
 		int unresolved = 0;
+
+		if (!strcmp(opt->arg_f, "at") || !strcmp(opt->arg_f, "obj"))
+			allow_ext = 1;
 
 		for (i = 0; i < syms; i++) {
 			unsigned char *s = obj + symtab + (i * 18);
