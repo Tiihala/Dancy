@@ -81,12 +81,6 @@ int db_init(struct b_mem *map)
 
 void db_free(void)
 {
-	while ((++db_map)->base) {
-		uint32_t t = db_map->type;
-		if (t >= B_MEM_DATABASE_MIN && t <= B_MEM_DATABASE_MAX)
-			free((void *)db_map->base);
-	}
-
 	free(db_array);
 
 	db_count = 0;
