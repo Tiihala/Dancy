@@ -21,7 +21,6 @@
 
 static int ld_error(const char *name, const char *msg)
 {
-	b_log("Error: %s (%s)\n", name, msg);
 	b_print("Error: %s (%s)\n", name, msg);
 	return 1;
 }

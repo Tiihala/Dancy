@@ -21,7 +21,9 @@
 
 section .text
 
-        extern init
+        extern boot_loader_type
+        extern uefi_syscalls
+        extern start_init
         global start
 
 align 16
@@ -33,7 +35,7 @@ start:
         jnz short .halt
 
         add ebx, 0x00010000             ; rbx = "address of memory map"
-        mov ecx, ebx                    ; "void init(void *)"
+        mov ecx, ebx                    ; "void start_init(void *)"
 
         test byte [ebx+4], 4            ; test uefi bit
         jz short .L2
@@ -48,19 +50,7 @@ start:
 .L2:    ; nop
 
         xor ebx, ebx                    ; rbx = 0
-        call init                       ; call init
+        call start_init                 ; call start_init
 
 .halt:  hlt                             ; halt
         jmp short .halt
-
-
-section .data
-
-        global boot_loader_type
-        global uefi_syscalls
-
-align 4
-boot_loader_type:
-        dd 0x00000000
-uefi_syscalls:
-        dd 0x00000000

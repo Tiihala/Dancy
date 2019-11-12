@@ -21,7 +21,8 @@
 
 section .text
 
-        extern _init
+        extern _boot_loader_type
+        extern _start_init
         global _start
 
 align 16
@@ -34,18 +35,9 @@ _start:
 
         add ebx, 0x00010000             ; ebx = "address of memory map"
         push dword 0                    ; push 0x00000000
-        push ebx                        ; "void init(void *)"
+        push ebx                        ; "void start_init(void *)"
         xor ebx, ebx                    ; ebx = 0
-        call _init                      ; call init
+        call _start_init                ; call start_init
 
 .halt:  hlt                             ; halt
         jmp short .halt
-
-
-section .data
-
-        global _boot_loader_type
-
-align 4
-_boot_loader_type:
-        dd 0x00000000

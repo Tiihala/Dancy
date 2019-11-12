@@ -21,7 +21,6 @@
 
 section .text
 
-        extern uefi_syscalls
         global b_output_string
         global b_output_string_hl
         global b_output_control
@@ -298,3 +297,15 @@ b_exit:
         mov ah, 0xAF                    ; ah = syscall number
         int 0x20                        ; boot loader syscall
         ret
+
+
+section .data
+
+        global boot_loader_type
+        global uefi_syscalls
+
+align 4
+boot_loader_type:
+        dd 0x00000000
+uefi_syscalls:
+        dd 0x00000000

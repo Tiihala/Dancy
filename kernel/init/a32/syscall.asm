@@ -201,3 +201,12 @@ _b_exit:
         mov ah, 0xAF                    ; ah = syscall number
         int 0x20                        ; boot loader syscall
         ret
+
+
+section .data
+
+        global _boot_loader_type
+
+align 4
+_boot_loader_type:
+        dd 0x00000000

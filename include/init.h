@@ -96,7 +96,7 @@ int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);
 /*
  * Declarations of init.c
  */
-void init(void *map);
+void init(void *map, uint32_t type);
 
 
 /*
@@ -132,5 +132,11 @@ void b_print(const char *format, ...);
  * Declarations of rtc.c
  */
 int rtc_read(struct b_time *bt);
+
+
+/*
+ * Declarations of start.c
+ */
+void start_init(void *map);
 
 #endif
