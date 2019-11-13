@@ -144,11 +144,11 @@ DY_VBR_OBJECTS= \
 
 DY_ZIP_OBJECTS= \
  ./tools/dy-zip/main.obj \
+ ./tools/dy-zip/bitarray.obj \
  ./tools/dy-zip/deflate.obj \
+ ./tools/dy-zip/huffman.obj \
  ./tools/dy-zip/program.obj \
- ./common/bitarray/bitarray.obj \
- ./common/crc32/crc32.obj \
- ./common/huffman/huffman.obj
+ ./common/crc32/crc32.obj
 
 ./bin/dy-zip$(DANCY_EXE): $(DY_ZIP_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_ZIP_OBJECTS)
@@ -272,8 +272,14 @@ DY_ZIP_OBJECTS= \
 ./tools/dy-vbr/dy-vbr.obj: ./tools/dy-vbr/dy-vbr.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-vbr/dy-vbr.c
 
+./tools/dy-zip/bitarray.obj: ./tools/dy-zip/bitarray.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-zip/bitarray.c
+
 ./tools/dy-zip/deflate.obj: ./tools/dy-zip/deflate.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-zip/deflate.c
+
+./tools/dy-zip/huffman.obj: ./tools/dy-zip/huffman.c
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-zip/huffman.c
 
 ./tools/dy-zip/main.obj: ./tools/dy-zip/main.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-zip/main.c

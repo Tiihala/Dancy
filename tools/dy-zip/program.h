@@ -39,9 +39,6 @@
 #error Definition of INT_MAX is not compatible
 #endif
 
-#include <bitarray/bitarray.h>
-#include <huffman/huffman.h>
-
 struct options {
 	char **operands;
 	const char *error;
@@ -77,10 +74,42 @@ struct state {
 
 unsigned long crc32(const void *obj, size_t len);
 
+struct bitarray {
+	unsigned char *data;
+	size_t size;
+	unsigned state[2];
+	size_t written;
+	int (*callback)(struct bitarray *b);
+};
+
+struct huffman {
+	unsigned lengths[16];
+	unsigned *symbols;
+	unsigned completed;
+};
+
+/*
+ * bitarray.c
+ */
+void bitarray_init(struct bitarray *b, unsigned char *data, size_t size);
+void bitarray_callback(struct bitarray *b, int (*func)(struct bitarray *b));
+void bitarray_clear(struct bitarray *b);
+long bitarray_aligned_fetch(struct bitarray *b, unsigned bits, void **data);
+long bitarray_fetch(struct bitarray *b, unsigned bits);
+int bitarray_shove(struct bitarray *b, unsigned bits, unsigned val);
+int bitarray_written(struct bitarray *b, size_t *written);
+
 /*
  * deflate.c
  */
 int deflate_compress(unsigned char *data, size_t *size);
+
+/*
+ * huffman.c
+ */
+int huffman_init(struct huffman *h, unsigned *symbols, int n);
+int huffman_fetch(struct huffman *h, struct bitarray *b);
+int huffman_table(struct huffman *h, unsigned *table, int n);
 
 /*
  * program.c
