@@ -35,8 +35,5 @@
 #include <dancy/string.h>
 #include <dancy/types.h>
 
-#include <bitarray/bitarray.h>
-#include <huffman/huffman.h>
-
 #endif
 #endif

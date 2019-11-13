@@ -26,11 +26,17 @@
 ./o32/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/acpi.c
 
+./o32/init/bitarray.o: ./kernel/init/bitarray.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/bitarray.c
+
 ./o32/init/cpu.o: ./kernel/init/cpu.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/cpu.c
 
 ./o32/init/db.o: ./kernel/init/db.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/db.c
+
+./o32/init/huffman.o: ./kernel/init/huffman.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/huffman.c
 
 ./o32/init/inflate.o: ./kernel/init/inflate.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/inflate.c
@@ -98,11 +104,17 @@
 ./o64/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/acpi.c
 
+./o64/init/bitarray.o: ./kernel/init/bitarray.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/bitarray.c
+
 ./o64/init/cpu.o: ./kernel/init/cpu.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/cpu.c
 
 ./o64/init/db.o: ./kernel/init/db.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/db.c
+
+./o64/init/huffman.o: ./kernel/init/huffman.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/huffman.c
 
 ./o64/init/inflate.o: ./kernel/init/inflate.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/inflate.c
