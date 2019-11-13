@@ -225,7 +225,7 @@ static void render_1x(uint32_t h, uint32_t v)
 			}
 			for (i = 0; i < 9; i++) {
 				for (j = 0; j < 7; j++) {
-					if ((font & 1ull) != hl)
+					if ((int)(font & 1ull) != hl)
 						ptr[j] = 0x00AAAAAA;
 					else
 						ptr[j] = 0;
@@ -285,7 +285,7 @@ static int render_2x(uint32_t h, uint32_t v)
 			for (i = 0; i < 18; i += 2) {
 				for (j = 0; j < 14; j += 2) {
 					uint32_t color = 0x00AAAAAA;
-					if ((font & 1ull) != hl) {
+					if ((int)(font & 1ull) != hl) {
 						ptr[j + 0] = color;
 						ptr[j + 1] = color;
 						ptr[j + stride + 0] = color;
