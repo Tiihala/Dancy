@@ -15,7 +15,7 @@ DY_BLOB_OBJECTS= \
 
 DY_CONF_OBJECTS= \
  ./tools/dy-conf/dy-conf.obj \
- ./common/crc32/crc32c.obj
+ ./common/crc32c.obj
 
 ./bin/dy-conf$(DANCY_EXE): $(DY_CONF_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_CONF_OBJECTS)
@@ -25,7 +25,7 @@ DY_CONF_OBJECTS= \
 DY_GPT_OBJECTS= \
  ./tools/dy-gpt/dy-gpt.obj \
  ./boot/gpt/gpt.obj \
- ./common/crc32/crc32c.obj
+ ./common/crc32c.obj
 
 ./bin/dy-gpt$(DANCY_EXE): $(DY_GPT_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_GPT_OBJECTS)
@@ -82,7 +82,7 @@ DY_LINK_HEADERS= \
 DY_MBR_OBJECTS= \
  ./tools/dy-mbr/dy-mbr.obj \
  ./boot/mbr/mbr.obj \
- ./common/crc32/crc32c.obj
+ ./common/crc32c.obj
 
 ./bin/dy-mbr$(DANCY_EXE): $(DY_MBR_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_MBR_OBJECTS)
@@ -135,7 +135,7 @@ DY_VBR_OBJECTS= \
  ./boot/fat/ldr512.obj \
  ./boot/fat/vbrchs.obj \
  ./boot/fat/vbrlba.obj \
- ./common/crc32/crc32c.obj
+ ./common/crc32c.obj
 
 ./bin/dy-vbr$(DANCY_EXE): $(DY_VBR_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_VBR_OBJECTS)
@@ -148,7 +148,7 @@ DY_ZIP_OBJECTS= \
  ./tools/dy-zip/deflate.obj \
  ./tools/dy-zip/huffman.obj \
  ./tools/dy-zip/program.obj \
- ./common/crc32/crc32.obj
+ ./common/crc32.obj
 
 ./bin/dy-zip$(DANCY_EXE): $(DY_ZIP_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_ZIP_OBJECTS)
@@ -179,11 +179,11 @@ DY_ZIP_OBJECTS= \
 ./common/bitarray/bitarray.obj: ./common/bitarray/bitarray.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./common/bitarray/bitarray.c
 
-./common/crc32/crc32.obj: ./common/crc32/crc32.c
-	$(DANCY_HOST_OBJECT)$@ ./common/crc32/crc32.c
+./common/crc32.obj: ./common/crc32.c
+	$(DANCY_HOST_OBJECT)$@ ./common/crc32.c
 
-./common/crc32/crc32c.obj: ./common/crc32/crc32c.c
-	$(DANCY_HOST_OBJECT)$@ ./common/crc32/crc32c.c
+./common/crc32c.obj: ./common/crc32c.c
+	$(DANCY_HOST_OBJECT)$@ ./common/crc32c.c
 
 ./common/huffman/huffman.obj: ./common/huffman/huffman.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./common/huffman/huffman.c

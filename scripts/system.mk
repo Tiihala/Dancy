@@ -14,8 +14,8 @@ DANCY_DB_FILES= \
  ./o64/init.at
 
 DANCY_START_OBJECTS_32= \
- ./o32/crc32/crc32.o \
- ./o32/crc32/crc32c.o \
+ ./o32/common/crc32.o \
+ ./o32/common/crc32c.o \
  ./o32/init/a32/start.o \
  ./o32/init/a32/syscall.o \
  ./o32/init/bitarray.o \
@@ -32,8 +32,8 @@ DANCY_START_OBJECTS_32= \
  ./o32/lib/string.o
 
 DANCY_START_OBJECTS_64= \
- ./o64/crc32/crc32.o \
- ./o64/crc32/crc32c.o \
+ ./o64/common/crc32.o \
+ ./o64/common/crc32c.o \
  ./o64/init/a64/start.o \
  ./o64/init/a64/syscall.o \
  ./o64/init/bitarray.o \
@@ -50,8 +50,8 @@ DANCY_START_OBJECTS_64= \
  ./o64/lib/string.o
 
 DANCY_INIT_OBJECTS_32= \
- ./o32/crc32/crc32.o \
- ./o32/crc32/crc32c.o \
+ ./o32/common/crc32.o \
+ ./o32/common/crc32c.o \
  ./o32/init/a32/cpu.o \
  ./o32/init/a32/syscall.o \
  ./o32/init/acpi.o \
@@ -72,8 +72,8 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/lib/string.o
 
 DANCY_INIT_OBJECTS_64= \
- ./o64/crc32/crc32.o \
- ./o64/crc32/crc32c.o \
+ ./o64/common/crc32.o \
+ ./o64/common/crc32c.o \
  ./o64/init/a64/cpu.o \
  ./o64/init/a64/syscall.o \
  ./o64/init/acpi.o \

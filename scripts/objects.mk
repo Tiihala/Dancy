@@ -5,11 +5,11 @@
 ./o32/bitarray/bitarray.o: ./common/bitarray/bitarray.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/bitarray/bitarray.c
 
-./o32/crc32/crc32.o: ./common/crc32/crc32.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./common/crc32/crc32.c
+./o32/common/crc32.o: ./common/crc32.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./common/crc32.c
 
-./o32/crc32/crc32c.o: ./common/crc32/crc32c.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./common/crc32/crc32c.c
+./o32/common/crc32c.o: ./common/crc32c.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./common/crc32c.c
 
 ./o32/huffman/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/huffman/huffman.c
@@ -83,11 +83,11 @@
 ./o64/bitarray/bitarray.o: ./common/bitarray/bitarray.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/bitarray/bitarray.c
 
-./o64/crc32/crc32.o: ./common/crc32/crc32.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./common/crc32/crc32.c
+./o64/common/crc32.o: ./common/crc32.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./common/crc32.c
 
-./o64/crc32/crc32c.o: ./common/crc32/crc32c.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./common/crc32/crc32c.c
+./o64/common/crc32c.o: ./common/crc32c.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./common/crc32c.c
 
 ./o64/huffman/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/huffman/huffman.c
