@@ -131,7 +131,7 @@ void init(void *map, uint32_t type);
 /*
  * Declarations of ld.c
  */
-int ld_validate(const char *name, const unsigned char *obj, size_t size);
+int ld_validate(const char *name, unsigned char *obj, size_t size);
 
 
 /*
