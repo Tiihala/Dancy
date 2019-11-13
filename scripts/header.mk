@@ -69,8 +69,6 @@ DANCY_TARGET_RELEASE= \
  ./release/dancy.zip
 
 DANCY_HEADERS= \
- ./common/bitarray/bitarray.h \
- ./common/huffman/huffman.h \
  ./include/dancy/blob.h \
  ./include/dancy/boot.h \
  ./include/dancy/crc.h \
