@@ -2,17 +2,11 @@
 
 ##############################################################################
 
-./o32/bitarray/bitarray.o: ./common/bitarray/bitarray.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./common/bitarray/bitarray.c
-
 ./o32/common/crc32.o: ./common/crc32.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/crc32.c
 
 ./o32/common/crc32c.o: ./common/crc32c.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/crc32c.c
-
-./o32/huffman/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./common/huffman/huffman.c
 
 ./o32/init/a32/cpu.o: ./kernel/init/a32/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/cpu.asm
@@ -80,17 +74,11 @@
 ./o32/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/string.c
 
-./o64/bitarray/bitarray.o: ./common/bitarray/bitarray.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./common/bitarray/bitarray.c
-
 ./o64/common/crc32.o: ./common/crc32.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/crc32.c
 
 ./o64/common/crc32c.o: ./common/crc32c.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/crc32c.c
-
-./o64/huffman/huffman.o: ./common/huffman/huffman.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./common/huffman/huffman.c
 
 ./o64/init/a64/cpu.o: ./kernel/init/a64/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/cpu.asm
