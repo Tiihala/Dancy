@@ -57,13 +57,12 @@ static unsigned char *iterate_next(struct iterate *it)
 				unsigned char *sec = dat + 20u + j * 40u;
 				unsigned grp = (unsigned)LE32(&sec[28]);
 
-				if (grp > it->grp_max)
-					it->grp_max = grp;
-
 				if (it->name) {
 					const char *s = (const char *)sec;
 					if (strncmp(s, it->name, 8))
 						continue;
+					if (grp > it->grp_max)
+						it->grp_max = grp;
 					if (grp != it->grp)
 						continue;
 				}
