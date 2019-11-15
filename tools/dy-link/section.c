@@ -23,6 +23,7 @@ struct iterate {
 	struct options *opt;
 	const char *name;
 	unsigned grp;
+	unsigned grp_max;
 	unsigned obj;
 	unsigned sec;
 	unsigned i;
@@ -33,6 +34,7 @@ static void iterate_init(struct iterate *it, void *opt, const void *name)
 	it->opt = opt;
 	it->name = name;
 	it->grp = 0;
+	it->grp_max = 0;
 	it->obj = 0;
 	it->sec = 0;
 	it->i = 0;
@@ -40,7 +42,6 @@ static void iterate_init(struct iterate *it, void *opt, const void *name)
 
 static unsigned char *iterate_next(struct iterate *it)
 {
-	int next_group = 0;
 	unsigned i;
 	unsigned j;
 
@@ -56,12 +57,13 @@ static unsigned char *iterate_next(struct iterate *it)
 				unsigned char *sec = dat + 20u + j * 40u;
 				unsigned grp = (unsigned)LE32(&sec[28]);
 
+				if (grp > it->grp_max)
+					it->grp_max = grp;
+
 				if (it->name) {
 					const char *s = (const char *)sec;
 					if (strncmp(s, it->name, 8))
 						continue;
-					if (grp > it->grp)
-						next_group = 1;
 					if (grp != it->grp)
 						continue;
 				}
@@ -72,8 +74,8 @@ static unsigned char *iterate_next(struct iterate *it)
 			it->sec = 0;
 		}
 		it->obj = 0;
-		it->grp++;
-	} while (next_group-- > 0);
+		it->sec = 0;
+	} while (it->grp++ < it->grp_max);
 
 	it->obj = UINT_MAX;
 	return NULL;
