@@ -44,20 +44,8 @@ void start_init(void *map)
 
 	r = db_read(init_at, &buf, &size);
 
-	if (r == 1) {
-		b_print("Error: could not found init.at\n");
-		return;
-	}
-	if (r == 2) {
-		b_print("Error: could not allocate memory for init.at\n");
-		return;
-	}
-	if (r == 3) {
-		b_print("Error: could not read init.at\n");
-		return;
-	}
-	if (r == 4) {
-		b_print("Error: CRC-32 of init.at\n");
+	if (r != 0) {
+		b_print("init.at error: %s\n", db_read_error(r));
 		return;
 	}
 

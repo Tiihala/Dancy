@@ -100,6 +100,7 @@ void cpu_out32(uint16_t port, uint32_t value);
 int db_init(struct b_mem *map);
 void db_free(void);
 int db_read(const char *name, unsigned char **buf, size_t *size);
+const char *db_read_error(int retval);
 
 
 /*

@@ -230,3 +230,18 @@ int db_read(const char *name, unsigned char **buf, size_t *size)
 	}
 	return 1;
 }
+
+const char *db_read_error(int retval)
+{
+	static const char *e[] = {
+		"",                           /* 0 */
+		"could not found",            /* 1 */
+		"could not allocate memory",  /* 2 */
+		"could not read",             /* 3 */
+		"CRC-32 does not match"       /* 4 */
+	};
+
+	if (retval < 0 || retval >= (int)(sizeof(e) / sizeof(e[0])))
+		return e[0];
+	return e[retval];
+}
