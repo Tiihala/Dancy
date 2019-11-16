@@ -72,6 +72,4 @@ void start_init(void *map)
 	{
 		b_print("start_init is not implemented\n");
 	}
-
-	while (!b_pause()) { }
 }

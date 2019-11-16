@@ -26,9 +26,6 @@ void init(void *map, uint32_t type)
 
 	boot_loader_type = type;
 
-	if ((size_t)(!map + 494 - 'D' - 'a' - 'n' - 'c' - 'y') != SIZE_MAX)
-		return;
-
 	if (memory_init(map))
 		return;
 
@@ -60,6 +57,4 @@ void init(void *map, uint32_t type)
 	{
 		b_print("init is not implemented\n");
 	}
-
-	while (!b_pause()) { }
 }
