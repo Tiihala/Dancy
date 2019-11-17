@@ -84,22 +84,23 @@ static int qsort_compare(const void *s1, const void *s2)
 {
 	const struct { unsigned char *s; char *n; size_t l; } *t1 = s1;
 	const struct { unsigned char *s; char *n; size_t l; } *t2 = s2;
-	const char *str1 = &t1->n[0];
-	const char *str2 = &t2->n[0];
-	char buf1[9];
-	char buf2[9];
+	char buf1[32];
+	char buf2[32];
+	size_t i;
 
-	if (t1->l == 8u) {
-		memcpy(&buf1[0], str1, 8);
-		buf1[8] = '\0';
-		str1 = &buf1[0];
+	for (i = 0; i < t1->l && i < (sizeof(buf1) - 1); i++) {
+		char c = t1->n[i];
+		buf1[i] = ((c == '$') ? '~' : c);
 	}
-	if (t2->l == 8u) {
-		memcpy(&buf2[0], str2, 8);
-		buf2[8] = '\0';
-		str2 = &buf2[0];
+	buf1[i] = '\0';
+
+	for (i = 0; i < t2->l && i < (sizeof(buf2) - 1); i++) {
+		char c = t2->n[i];
+		buf2[i] = ((c == '$') ? '~' : c);
 	}
-	return strcmp(str1, str2);
+	buf2[i] = '\0';
+
+	return strcmp(&buf1[0], &buf2[0]);
 }
 
 int section_data_size(struct options *opt, const char *name)
@@ -216,8 +217,8 @@ int section_group(struct options *opt)
 			str = (char *)(dat + offset);
 			len = strlen(str);
 		}
-		for (i = 0u; i < len; i++) {
-			if ((unsigned)str[i] == 0x24) {
+		for (i = 1; i < len; i++) {
+			if (str[i] == '$' || str[i] == '.') {
 				sec = buf_sort;
 				sec += it.i++;
 				sec->s = &buf[0];
@@ -252,9 +253,11 @@ int section_group(struct options *opt)
 			sec += i;
 			memset(&name[0], 0, 8u);
 			for (j = 0; j < 8; j++) {
-				if ((unsigned)sec->n[j] == 0x24)
-					break;
 				name[j] = (unsigned char)sec->n[j];
+				if (sec->n[j + 1] == '$')
+					break;
+				if (sec->n[j + 1] == '.')
+					break;
 			}
 			memcpy(&sec->s[0], &name[0], 8);
 		}
