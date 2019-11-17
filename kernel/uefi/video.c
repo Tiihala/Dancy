@@ -379,5 +379,5 @@ void video_output_string(const char *str, unsigned int len, int hl, int cr)
 
 void video_show_menu(void)
 {
-
+	u_print("\n");
 }

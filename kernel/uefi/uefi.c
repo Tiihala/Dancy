@@ -208,7 +208,6 @@ void uefi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable, ...)
 	 * return control back to the UEFI firmware anymore, although
 	 * the ExitBootServices() function is not called yet.
 	 */
-	u_print("Starting the in_x64.at executable...\n\n");
 	memory_export_map(0);
 	syscall_init(in_x64_syscalls);
 	syscall_jump(memory_in_x64[0]);
