@@ -126,7 +126,7 @@ int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);
 /*
  * Declarations of init.c
  */
-void init(void *map, uint32_t type);
+void init(void);
 
 
 /*

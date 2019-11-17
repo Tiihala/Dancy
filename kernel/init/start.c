@@ -31,7 +31,6 @@ void start_init(void *map)
 {
 	unsigned char *buf;
 	size_t size;
-	int r;
 
 	if ((size_t)(!map + 494 - 'D' - 'a' - 'n' - 'c' - 'y') != SIZE_MAX)
 		return;
@@ -42,14 +41,14 @@ void start_init(void *map)
 	if (db_init(map))
 		return;
 
-	r = db_read(init_at, &buf, &size);
+	{
+		int r = db_read(init_at, &buf, &size);
 
-	if (r != 0) {
-		b_print("init.at error: %s\n", db_read_error(r));
-		return;
+		if (r != 0) {
+			b_print("init.at error: %s\n", db_read_error(r));
+			return;
+		}
 	}
-
-	b_print("Found init.at module, %u bytes\n\n", (unsigned)size);
 
 	if (ld_validate("init.at", buf, size))
 		return;

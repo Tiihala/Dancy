@@ -19,22 +19,12 @@
 
 #include <init.h>
 
-void init(void *map, uint32_t type)
+void init(void)
 {
 	const uint32_t log_mem = 0x00080000;
 	struct b_time bt;
 
-	boot_loader_type = type;
-
-	if (memory_init(map))
-		return;
-
 	if (b_log_init(log_mem))
-		return;
-
-	memory_print_map(b_log);
-
-	if (db_init(map))
 		return;
 
 	if (cpu_test_features())
@@ -49,12 +39,5 @@ void init(void *map, uint32_t type)
 		 */
 		b_print("Warning: reading Real Time Clock (RTC) failed\n");
 		b_pause();
-	}
-
-	/*
-	 * Temporary code for testing purposes.
-	 */
-	{
-		b_print("init is not implemented\n");
 	}
 }
