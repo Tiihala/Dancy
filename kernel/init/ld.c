@@ -31,43 +31,6 @@ static int ld_error(const char *name, const char *msg)
 	return 1;
 }
 
-static int ld_reloc_access(unsigned reloc_type)
-{
-	/*
-	 * The return value tells how many bytes must be accessible from
-	 * the reloc offset in the relocatable section. Accessible does
-	 * not necessarily mean that the relocation modifies all bytes.
-	 */
-	int bytes_to_access = 0;
-
-#if defined (DANCY_32)
-	if (reloc_type < 0x8000) {
-		switch (reloc_type) {
-		case 0x06: bytes_to_access = 0x04; break;
-		case 0x07: bytes_to_access = 0x04; break;
-		case 0x14: bytes_to_access = 0x04; break;
-		default: break;
-		}
-	}
-#elif defined (DANCY_64)
-	if (reloc_type < 0x8000) {
-		switch (reloc_type) {
-		case 0x01: bytes_to_access = 0x08; break;
-		case 0x02: bytes_to_access = 0x04; break;
-		case 0x03: bytes_to_access = 0x04; break;
-		case 0x04: bytes_to_access = 0x04; break;
-		case 0x05: bytes_to_access = 0x05; break;
-		case 0x06: bytes_to_access = 0x06; break;
-		case 0x07: bytes_to_access = 0x07; break;
-		case 0x08: bytes_to_access = 0x08; break;
-		case 0x09: bytes_to_access = 0x09; break;
-		default: break;
-		}
-	}
-#endif
-	return bytes_to_access;
-}
-
 int ld_validate(const char *name, unsigned char *obj, size_t size)
 {
 	if (size < 212)
