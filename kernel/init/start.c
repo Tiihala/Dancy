@@ -21,10 +21,12 @@
 
 #ifdef DANCY_32
 static const char *init_at = "o32/init.at";
+static const char *init_symbol = "_init";
 #endif
 
 #ifdef DANCY_64
 static const char *init_at = "o64/init.at";
+static const char *init_symbol = "init";
 #endif
 
 void start_init(void *map)
@@ -54,9 +56,70 @@ void start_init(void *map)
 		return;
 
 	/*
-	 * Temporary code for testing purposes.
+	 * Collect all the external symbols from this module.
 	 */
 	{
-		b_print("start_init is not implemented\n");
+		const unsigned char *image = (unsigned char *)map - 0x10000;
+		const unsigned char *symtab, *strtab;
+		size_t i, symbols;
+
+		if (memcmp(image + 0x1B4, ".text", 5))
+			return;
+
+		symtab = image + LE32(&image[0x01A8]);
+		symbols = (size_t)LE32(&image[0x01AC]);
+		strtab = symtab + symbols * 18;
+
+		if (ld_init())
+			return;
+
+		for (i = 0; i < symbols; i++) {
+			if (symtab[16] == 0x02) {
+				struct global_symbol sym;
+				const char *s;
+
+				memset(&sym, 0, sizeof(sym));
+
+				if (LE32(&symtab[0])) {
+					s = (char *)symtab;
+					size = 8;
+				} else {
+					s = (char *)strtab + LE32(&symtab[4]);
+					size = sizeof(sym.name) - 1;
+				}
+
+				sym.value = (uint32_t)LE32(&symtab[8]);
+				strncpy(&sym.name[0], s, size);
+
+				if (ld_add(&sym))
+					return;
+			}
+			symtab += 18;
+		}
+	}
+
+	if (ld_link("init.at", buf))
+		return;
+
+	/*
+	 * Start init.at module.
+	 */
+	{
+		struct global_symbol *init_sym;
+		addr_t init_addr;
+		void (*init)(void);
+
+		if (ld_find(init_symbol, &init_sym) != 0) {
+			b_print("Error: init not found\n");
+			return;
+		}
+
+		if ((init_addr = init_sym->value) == 0)
+			return;
+
+		ld_free();
+
+		init = (void (*)(void))init_addr;
+		(*init)();
 	}
 }

@@ -27,6 +27,8 @@ void init(void)
 	if (b_log_init(log_mem))
 		return;
 
+	memory_print_map(b_log);
+
 	if (cpu_test_features())
 		return;
 
@@ -39,5 +41,24 @@ void init(void)
 		 */
 		b_print("Warning: reading Real Time Clock (RTC) failed\n");
 		b_pause();
+	}
+
+	/*
+	 * Temporary code for testing purposes.
+	 */
+	{
+		size_t i;
+
+		for (i = 0; i < boot_log_size; i++) {
+			if (!b_put_byte_com1((unsigned char)boot_log[i]))
+				break;
+		}
+
+		for (i = 0; i < boot_log_size; i++) {
+			if (!b_put_byte_com2((unsigned char)boot_log[i]))
+				break;
+		}
+
+		memory_print_map(b_print);
 	}
 }
