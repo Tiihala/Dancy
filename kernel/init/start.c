@@ -118,6 +118,7 @@ void start_init(void *map)
 			return;
 
 		ld_free();
+		free(buf);
 
 		init = (void (*)(void))init_addr;
 		(*init)();
