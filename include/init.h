@@ -130,8 +130,19 @@ void init(void);
 
 
 /*
- * Declarations of ld.c
+ * Declarations of ld.asm and ld.c
  */
+struct global_symbol {
+	uint32_t value;
+	char name[28];
+};
+
+int ld_init(void);
+int ld_add(const struct global_symbol *symbol);
+int ld_find(const char *name, struct global_symbol **symbol);
+void ld_free(void);
+int ld_link(const char *name, unsigned char *obj);
+void ld_relocate(void *base, void *reloc, void *symbol);
 int ld_validate(const char *name, unsigned char *obj, size_t size);
 
 
