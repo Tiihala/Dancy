@@ -5,6 +5,7 @@
 DANCY_START_OBJECTS_32= \
  ./o32/common/crc32.o \
  ./o32/common/crc32c.o \
+ ./o32/init/a32/ld.o \
  ./o32/init/a32/start.o \
  ./o32/init/a32/syscall.o \
  ./o32/init/bitarray.o \
@@ -23,6 +24,7 @@ DANCY_START_OBJECTS_32= \
 DANCY_START_OBJECTS_64= \
  ./o64/common/crc32.o \
  ./o64/common/crc32c.o \
+ ./o64/init/a64/ld.o \
  ./o64/init/a64/start.o \
  ./o64/init/a64/syscall.o \
  ./o64/init/bitarray.o \
