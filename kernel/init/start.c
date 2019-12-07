@@ -107,7 +107,7 @@ void start_init(void *map)
 	{
 		struct global_symbol *init_sym;
 		addr_t init_addr;
-		void (*init)(void);
+		void (*init_func)(void);
 
 		if (ld_find(init_symbol, &init_sym) != 0) {
 			b_print("Error: init not found\n");
@@ -120,7 +120,7 @@ void start_init(void *map)
 		ld_free();
 		free(buf);
 
-		init = (void (*)(void))init_addr;
-		(*init)();
+		init_func = (void (*)(void))init_addr;
+		(*init_func)();
 	}
 }
