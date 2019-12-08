@@ -70,7 +70,7 @@ void start_init(void *map)
 		symbols = (size_t)LE32(&image[0x01AC]);
 		strtab = symtab + symbols * 18;
 
-		if (ld_init())
+		if (ld_init(4096))
 			return;
 
 		for (i = 0; i < symbols; i++) {

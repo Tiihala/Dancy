@@ -137,7 +137,7 @@ struct global_symbol {
 	char name[28];
 };
 
-int ld_init(void);
+int ld_init(size_t symbols);
 int ld_add(const struct global_symbol *symbol);
 int ld_find(const char *name, struct global_symbol **symbol);
 void ld_free(void);

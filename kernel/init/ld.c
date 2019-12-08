@@ -33,10 +33,8 @@ static int ld_error(const char *name, const char *msg)
 	return 1;
 }
 
-int ld_init(void)
+int ld_init(size_t symbols)
 {
-	const size_t symbols = 4096;
-
 	symtab = calloc(symbols, sizeof(symtab[0]));
 
 	if (!symtab)
