@@ -128,7 +128,7 @@ int create_config_file(struct options *opt)
 	 *     0x26 = (height << 4) | (bits_per_pixel >> 2)
 	 */
 	W_LE16(&out[0x24], opt->video_width);
-	W_LE16(&out[0x26], (opt->video_width << 4) | (opt->video_bits >> 2));
+	W_LE16(&out[0x26], (opt->video_height << 4) | (opt->video_bits >> 2));
 
 	/*
 	 * Reserved memory area
