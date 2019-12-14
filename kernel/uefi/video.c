@@ -377,7 +377,308 @@ void video_output_string(const char *str, unsigned int len, int hl, int cr)
 	}
 }
 
+static int qsort_info_array(const void *a, const void *b)
+{
+	const EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *info1 = a;
+	const EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *info2 = b;
+	uint32_t t1, t2;
+
+	t1 = info1->HorizontalResolution;
+	t2 = info2->HorizontalResolution;
+
+	if (t1 != t2)
+		return (t1 < t2) ? 1 : -1;
+
+	t1 = info1->VerticalResolution;
+	t2 = info2->VerticalResolution;
+
+	if (t1 != t2)
+		return (t1 < t2) ? 1 : -1;
+
+	t1 = (uint32_t)info1->PixelFormat;
+	t2 = (uint32_t)info2->PixelFormat;
+
+	if (t1 != t2)
+		return (t1 < t2) ? -1 : 1;
+
+	return (info1->Version < info2->Version) ? -1 : 1;
+}
+
 void video_show_menu(void)
 {
+	static EFI_GRAPHICS_OUTPUT_MODE_INFORMATION info_array[1024];
+	EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *info;
+	uint32_t i, modes;
+	uint32_t f1_state, state = 0;
+	unsigned rows = 13;
+	EFI_STATUS s;
+
+	uint32_t no_menu = 0;
+	uint32_t preferred_width = 1024;
+	uint32_t preferred_height = 768;
+
+	/*
+	 * Get settings from CONFIG.AT file.
+	 */
+	if (config_file_size >= 0x28) {
+		const unsigned char *c = config_file;
+		unsigned long w = LE16(&c[0x24]);
+		unsigned long h = LE16(&c[0x26]) >> 4;
+
+		no_menu = ((unsigned)c[0x20] & 0x02) ? 1 : 0;
+
+		if (w != 0 && h != 0) {
+			preferred_width = (uint32_t)w;
+			preferred_height = (uint32_t)h;
+		}
+	}
+
+	if (gop == NULL)
+		return;
+
+	modes = gop->Mode->MaxMode;
+
+	if (modes == 0 || modes > 1024)
+		return;
+
+	for (i = 0; i < modes; i++) {
+		uint64_t size = 0;
+
+		s = gop->QueryMode(gop, i, &size, &info);
+
+		if (s == EFI_SUCCESS && (size_t)size >= sizeof(*info)) {
+			memcpy(&info_array[i], info, sizeof(*info));
+
+			if (info->HorizontalResolution > 3840)
+				info_array[i].HorizontalResolution = 0;
+
+			if (info->VerticalResolution > 2160)
+				info_array[i].HorizontalResolution = 0;
+
+			if (info->PixelFormat >= 2)
+				info_array[i].HorizontalResolution = 0;
+		}
+
+		/*
+		 * Use "Version" member for saving the mode number.
+		 */
+		info_array[i].Version = i;
+	}
+
+	qsort(&info_array[0], (size_t)modes, sizeof(*info), qsort_info_array);
+
+	if (modes > rows * 2)
+		modes = rows * 2;
+
+	for (i = 0; i < modes; i++) {
+		info = &info_array[i];
+
+		if (info->HorizontalResolution < 800) {
+			modes = i;
+			break;
+		}
+		if (info->VerticalResolution < 600) {
+			modes = i;
+			break;
+		}
+		if (info->HorizontalResolution == preferred_width) {
+			if (info->VerticalResolution == preferred_height)
+				state = i + 1;
+		}
+	}
+
+	while (modes > 4 && (rows * 2 - modes) >= 2)
+		rows -= 1;
+
+	if (rows > modes)
+		rows = modes;
+
+	if (!state)
+		state = modes;
+	f1_state = state;
+
+	while (state) {
+		static char buf[4096];
+		const uint32_t wait_loops = 300;
+		uint32_t new_state = state;
+		unsigned hl_start = 0;
+		int first_run, n = 0;
+
+		first_run = (buf[0] == '\0') ? 1 : 0;
+
+		n += snprintf(&buf[n], 64, "Video Modes (GOP)\r\n");
+		n = n > 0 ? n : 0;
+
+		for (i = 0; i < modes && i < rows; i++) {
+			info = &info_array[i];
+
+			if (state == i + 1)
+				hl_start = (unsigned)n + 2;
+
+			n += snprintf(&buf[n], 64,
+				"  %4dx%-4d 32-bit",
+				info->HorizontalResolution,
+				info->VerticalResolution);
+			n = n > 0 ? n : 0;
+
+			if (i + rows < modes) {
+				info = &info_array[i + rows];
+
+				if (state == i + rows + 1)
+					hl_start = (unsigned)n + 4;
+
+				n += snprintf(&buf[n], 64,
+					"    %4dx%-4d 32-bit",
+					info->HorizontalResolution,
+					info->VerticalResolution);
+				n = n > 0 ? n : 0;
+			}
+
+			n += snprintf(&buf[n], 64, "\r\n");
+			n = n > 0 ? n : 0;
+		}
+
+		if (hl_start == 0)
+			break;
+
+		if (first_run != 0) {
+			snprintf(&buf[n], 128, "\r\n"
+				"  Waiting keyboard input for a few seconds"
+				"...\r", 0);
+		} else {
+			snprintf(&buf[n], 128, "\r\n"
+				"  [ESC] Close/Continue    [F1] Default"
+				"    [ENTER] Set Mode\r", 0);
+		}
+
+		if (no_menu == 0) {
+			b_output_string(&buf[0], hl_start);
+			b_output_string_hl(&buf[hl_start], 16);
+			b_output_string(&buf[hl_start + 16], 0);
+		} else {
+			new_state = 0xFFFFFFFFu;
+		}
+
+		for (i = 0; i < wait_loops && no_menu == 0; i++) {
+			unsigned long keycode = b_get_keycode();;
+			int shift = keycode & DANCY_KEYMOD_SHIFT;
+			int alt = keycode & DANCY_KEYMOD_ALT;
+			int key = (int)(keycode & 0xFFFFul);
+
+			switch (key) {
+			case DANCY_KEY_TAB:
+				if (shift)
+					new_state = state - 1;
+				else
+					new_state = state + 1;
+				break;
+			case DANCY_KEY_HOME:
+				new_state = 1;
+				break;
+			case DANCY_KEY_PAGEUP:
+				new_state = state - 1;
+				break;
+			case DANCY_KEY_END:
+				new_state = modes;
+				break;
+			case DANCY_KEY_PAGEDOWN:
+				new_state = state + 1;
+				break;
+			case DANCY_KEY_RIGHTARROW:
+				new_state = state + rows;
+				break;
+			case DANCY_KEY_LEFTARROW:
+				new_state = state - rows;
+				break;
+			case DANCY_KEY_DOWNARROW:
+				new_state = state + 1;
+				break;
+			case DANCY_KEY_UPARROW:
+				new_state = state - 1;
+				break;
+			default:
+				break;
+			}
+
+			if (new_state == 0 || new_state > modes)
+				new_state = state;
+
+			if (state != new_state) {
+				state = new_state;
+				break;
+			}
+
+			if (key == DANCY_KEY_ESCAPE) {
+				state = 0;
+				break;
+			}
+
+			if (key == DANCY_KEY_F1) {
+				state = f1_state;
+				new_state = alt ? 0xFFFFFFFEu :  0xFFFFFFFFu;
+				break;
+			}
+
+			if (key == DANCY_KEY_ENTER) {
+				new_state = 0xFFFFFFFFu;
+				break;
+			}
+
+			u_stall(10);
+		}
+
+		if (first_run && i >= wait_loops) {
+			new_state = 0xFFFFFFFFu;
+			no_menu = 1;
+		}
+
+		if (state != 0 && new_state == 0xFFFFFFFEu) {
+			info = &info_array[state - 1];
+			uint32_t new_mode = info->Version;
+
+			video_clear(1);
+			video_active = 0;
+			gop->SetMode(gop, new_mode);
+			u_clear_screen();
+		}
+
+		if (state != 0 && new_state == 0xFFFFFFFFu) {
+			info = &info_array[state - 1];
+			uint32_t new_mode = info->Version;
+
+			if (!video_active || new_mode != gop->Mode->Mode) {
+				s = gop->SetMode(gop, new_mode);
+				if (s == EFI_SUCCESS) {
+					if (!video_active) {
+						video_active = 1;
+						video_clear(1);
+					} else {
+						video_clear(0);
+					}
+				}
+			}
+		}
+
+		if (no_menu != 0 || state == 0) {
+			buf[0] = '\r', memset(&buf[1], ' ', 78);
+			b_output_string(&buf[0], 79);
+			state = 0;
+		}
+
+		if (state != 0) {
+			unsigned cursor;
+			unsigned offset = ((rows << 8) + 0x0200);
+
+			cursor = (unsigned)b_output_control(0, B_GET_CURSOR);
+
+			if (cursor >= offset)
+				cursor -= offset;
+			else
+				cursor = 0;
+
+			b_output_control(cursor, B_SET_CURSOR);
+		}
+	}
+
 	u_print("\n");
 }
