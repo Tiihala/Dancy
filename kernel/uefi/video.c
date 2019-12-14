@@ -213,15 +213,20 @@ static void render_1x(uint32_t h, uint32_t v)
 			hl = (int)(u >> 7);
 			bc = hl ? 0x00AAAAAA : 0;
 
+			for (i = 0; i < 2; i++) {
+				for (j = 0; j < 7; j++)
+					ptr[j] = bc;
+				ptr += stride;
+			}
 			if ((font & 0x8000000000000000ull) != 0) {
 				for (i = 0; i < 2; i++) {
 					for (j = 0; j < 7; j++)
 						ptr[j] = bc;
 					ptr += stride;
 				}
-				offset = 3;
+				offset = 1;
 			} else {
-				offset = 5;
+				offset = 3;
 			}
 			for (i = 0; i < 9; i++) {
 				for (j = 0; j < 7; j++) {
@@ -250,6 +255,9 @@ static int render_2x(uint32_t h, uint32_t v)
 	uint32_t x, y;
 	uint64_t font;
 
+	if (h < 1920 || v < 1080)
+		return 1;
+
 	h -= (video_columns * 14);
 	v -= (video_rows * 28);
 
@@ -272,15 +280,20 @@ static int render_2x(uint32_t h, uint32_t v)
 			hl = (int)(u >> 7);
 			bc = hl ? 0x00AAAAAA : 0;
 
+			for (i = 0; i < 4; i++) {
+				for (j = 0; j < 14; j++)
+					ptr[j] = bc;
+				ptr += stride;
+			}
 			if ((font & 0x8000000000000000ull) != 0) {
 				for (i = 0; i < 4; i++) {
 					for (j = 0; j < 14; j++)
 						ptr[j] = bc;
 					ptr += stride;
 				}
-				offset = 6;
+				offset = 2;
 			} else {
-				offset = 10;
+				offset = 6;
 			}
 			for (i = 0; i < 18; i += 2) {
 				for (j = 0; j < 14; j += 2) {
