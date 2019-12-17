@@ -120,6 +120,23 @@ DY_PATH_OBJECTS= \
 
 ##############################################################################
 
+DY_PNG_OBJECTS= \
+ ./tools/dy-png/main.obj \
+ ./tools/dy-png/bitarray.obj \
+ ./tools/dy-png/convert.obj \
+ ./tools/dy-png/deflate.obj \
+ ./tools/dy-png/huffman.obj \
+ ./tools/dy-png/program.obj \
+ ./tools/dy-png/vga.obj \
+ ./common/crc32.obj
+DY_PNG_HEADERS= \
+ ./tools/dy-png/program.h
+
+./bin/dy-png$(DANCY_EXE): $(DY_PNG_OBJECTS) ./scripts/dancy.mk
+	$(DANCY_HOST_BINARY)$@ $(DY_PNG_OBJECTS)
+
+##############################################################################
+
 DY_UEFI_OBJECTS= \
  ./tools/dy-uefi/dy-uefi.obj \
  ./tools/dy-uefi/x64.obj
@@ -262,6 +279,27 @@ DY_ZIP_OBJECTS= \
 
 ./tools/dy-path/dy-path.obj: ./tools/dy-path/dy-path.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-path/dy-path.c
+
+./tools/dy-png/bitarray.obj: ./tools/dy-png/bitarray.c $(DY_PNG_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/bitarray.c
+
+./tools/dy-png/convert.obj: ./tools/dy-png/convert.c $(DY_PNG_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/convert.c
+
+./tools/dy-png/deflate.obj: ./tools/dy-png/deflate.c $(DY_PNG_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/deflate.c
+
+./tools/dy-png/huffman.obj: ./tools/dy-png/huffman.c $(DY_PNG_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/huffman.c
+
+./tools/dy-png/main.obj: ./tools/dy-png/main.c $(DY_PNG_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/main.c
+
+./tools/dy-png/program.obj: ./tools/dy-png/program.c $(DY_PNG_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/program.c
+
+./tools/dy-png/vga.obj: ./tools/dy-png/vga.c $(DY_PNG_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/vga.c
 
 ./tools/dy-uefi/dy-uefi.obj: ./tools/dy-uefi/dy-uefi.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-uefi/dy-uefi.c
