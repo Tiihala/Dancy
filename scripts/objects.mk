@@ -59,6 +59,9 @@
 ./o32/init/start.o: ./kernel/init/start.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/start.c
 
+./o32/init/vga.o: ./kernel/init/vga.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/vga.c
+
 ./o32/lib/a32/dark.o: ./kernel/lib/a32/dark.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/dark.asm
 
@@ -133,6 +136,9 @@
 
 ./o64/init/start.o: ./kernel/init/start.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/start.c
+
+./o64/init/vga.o: ./kernel/init/vga.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/vga.c
 
 ./o64/lib/a64/dark.o: ./kernel/lib/a64/dark.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/dark.asm

@@ -22,6 +22,7 @@
 void init(void)
 {
 	const uint32_t log_mem = 0x00080000;
+	struct b_video_info vi;
 	struct b_time bt;
 
 	if (b_log_init(log_mem))
@@ -41,6 +42,32 @@ void init(void)
 		 */
 		b_print("Warning: reading Real Time Clock (RTC) failed\n");
 		b_pause();
+	}
+
+	if (b_get_structure(&vi, B_VIDEO_INFO) != 0 && vi.width != 0) {
+		static const char *mode_names[8] = {
+			"4 VGA",
+			"8 PALETTE",
+			"15",
+			"16",
+			"24 RGB",
+			"24 BGR",
+			"32 RGBX",
+			"32 BGRX"
+		};
+		unsigned i = (unsigned)vi.mode;
+		const char *mode_name = (i < 8) ? mode_names[i] : "";
+
+		b_log("Video Mode\n");
+		b_log("\tMode: %ux%ux%s\n", vi.width, vi.height, mode_name);
+		b_log("\n");
+
+		/*
+		 * The boot loader guarantees that VGA registers can be
+		 * accessed if mode is B_MODE_VGA or B_MODE_PALETTE.
+		 */
+		if (vi.mode == B_MODE_VGA || vi.mode == B_MODE_PALETTE)
+			vga_set_palette();
 	}
 
 	/*

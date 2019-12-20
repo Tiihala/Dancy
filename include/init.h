@@ -180,4 +180,10 @@ int rtc_read(struct b_time *bt);
  */
 void start_init(void *map);
 
+
+/*
+ * Declarations of vga.c
+ */
+void vga_set_palette(void);
+
 #endif

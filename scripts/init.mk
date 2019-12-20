@@ -48,7 +48,8 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/cpu.o \
  ./o32/init/init.o \
  ./o32/init/log.o \
- ./o32/init/rtc.o
+ ./o32/init/rtc.o \
+ ./o32/init/vga.o
 
 DANCY_INIT_OBJECTS_64= \
  ./o64/init/a64/cpu.o \
@@ -56,7 +57,8 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/cpu.o \
  ./o64/init/init.o \
  ./o64/init/log.o \
- ./o64/init/rtc.o
+ ./o64/init/rtc.o \
+ ./o64/init/vga.o
 
 ##############################################################################
 
