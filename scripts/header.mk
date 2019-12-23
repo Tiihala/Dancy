@@ -29,6 +29,7 @@ DY_MCOPY=$(DANCY_DY)-mcopy$(DANCY_EXE)
 DY_PATCH=$(DANCY_DY)-patch$(DANCY_EXE)
 DY_PATH=$(DANCY_DY)-path$(DANCY_EXE)
 DY_PNG=$(DANCY_DY)-png$(DANCY_EXE)
+DY_TTF=$(DANCY_DY)-ttf$(DANCY_EXE)
 DY_UEFI=$(DANCY_DY)-uefi$(DANCY_EXE)
 DY_VBR=$(DANCY_DY)-vbr$(DANCY_EXE)
 DY_ZIP=$(DANCY_DY)-zip$(DANCY_EXE)
@@ -46,6 +47,7 @@ DANCY_TARGET_TOOLS= \
  ./bin/dy-patch$(DANCY_EXE) \
  ./bin/dy-path$(DANCY_EXE) \
  ./bin/dy-png$(DANCY_EXE) \
+ ./bin/dy-ttf$(DANCY_EXE) \
  ./bin/dy-uefi$(DANCY_EXE) \
  ./bin/dy-vbr$(DANCY_EXE) \
  ./bin/dy-zip$(DANCY_EXE)

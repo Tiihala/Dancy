@@ -137,6 +137,21 @@ DY_PNG_HEADERS= \
 
 ##############################################################################
 
+DY_TTF_OBJECTS= \
+ ./tools/dy-ttf/main.obj \
+ ./tools/dy-ttf/dump.obj \
+ ./tools/dy-ttf/program.obj \
+ ./tools/dy-ttf/table.obj \
+ ./tools/dy-ttf/ttf.obj \
+ ./tools/dy-ttf/vm.obj
+DY_TTF_HEADERS= \
+ ./tools/dy-ttf/program.h
+
+./bin/dy-ttf$(DANCY_EXE): $(DY_TTF_OBJECTS) ./scripts/dancy.mk
+	$(DANCY_HOST_BINARY)$@ $(DY_TTF_OBJECTS)
+
+##############################################################################
+
 DY_UEFI_OBJECTS= \
  ./tools/dy-uefi/dy-uefi.obj \
  ./tools/dy-uefi/x64.obj
@@ -300,6 +315,24 @@ DY_ZIP_OBJECTS= \
 
 ./tools/dy-png/vga.obj: ./tools/dy-png/vga.c $(DY_PNG_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/vga.c
+
+./tools/dy-ttf/dump.obj: ./tools/dy-ttf/dump.c $(DY_TTF_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/dump.c
+
+./tools/dy-ttf/main.obj: ./tools/dy-ttf/main.c $(DY_TTF_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/main.c
+
+./tools/dy-ttf/program.obj: ./tools/dy-ttf/program.c $(DY_TTF_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/program.c
+
+./tools/dy-ttf/table.obj: ./tools/dy-ttf/table.c $(DY_TTF_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/table.c
+
+./tools/dy-ttf/ttf.obj: ./tools/dy-ttf/ttf.c $(DY_TTF_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/ttf.c
+
+./tools/dy-ttf/vm.obj: ./tools/dy-ttf/vm.c $(DY_TTF_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/vm.c
 
 ./tools/dy-uefi/dy-uefi.obj: ./tools/dy-uefi/dy-uefi.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-uefi/dy-uefi.c
