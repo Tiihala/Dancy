@@ -90,11 +90,6 @@ struct options {
 #define TTF_TABLE_POST (0x706F7374ul)
 
 /*
- * dump.c
- */
-int dump(unsigned char *data, size_t size);
-
-/*
  * program.c
  */
 int program(struct options *opt);

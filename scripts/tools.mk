@@ -139,7 +139,6 @@ DY_PNG_HEADERS= \
 
 DY_TTF_OBJECTS= \
  ./tools/dy-ttf/main.obj \
- ./tools/dy-ttf/dump.obj \
  ./tools/dy-ttf/program.obj \
  ./tools/dy-ttf/table.obj \
  ./tools/dy-ttf/ttf.obj \
@@ -315,9 +314,6 @@ DY_ZIP_OBJECTS= \
 
 ./tools/dy-png/vga.obj: ./tools/dy-png/vga.c $(DY_PNG_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/vga.c
-
-./tools/dy-ttf/dump.obj: ./tools/dy-ttf/dump.c $(DY_TTF_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/dump.c
 
 ./tools/dy-ttf/main.obj: ./tools/dy-ttf/main.c $(DY_TTF_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/main.c

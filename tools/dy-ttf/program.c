@@ -64,11 +64,6 @@ int program(struct options *opt)
 		return free_files(), ret;
 	}
 
-	if (opt->dump) {
-		if ((ret = dump(input_file, input_size)) != 0 || !opt->arg_o)
-			return free_files(), ret;
-	}
-
 	ret = ttf_main(opt);
 	return free_files(), ret;
 }
