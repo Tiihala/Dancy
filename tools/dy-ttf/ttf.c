@@ -39,22 +39,41 @@ static unsigned long ttf_head_locfmt;
 
 static unsigned long ttf_maxp_glyphs;
 
+struct loca {
+	unsigned char *glyph;
+	size_t size;
+};
+
+static struct loca   *ttf_loca_array;
+static unsigned long ttf_loca_points;
+
+struct glyf {
+	unsigned long flag;
+	signed long x;
+	signed long y;
+};
+
+static struct glyf   *ttf_glyf_array;
+static unsigned long ttf_glyf_points;
+
 static void ttf_dump(void)
 {
-	printf("%-20s: %lu\n", "ttf_head_size", ttf_head_size);
-	printf("%-20s: %04lX\n", "ttf_head_flags", ttf_head_flags);
-	printf("%-20s: %lu\n", "ttf_head_em", ttf_head_em);
+	printf("%-20s%lu\n", "ttf_head_size:", ttf_head_size);
+	printf("%-20s%04lX\n", "ttf_head_flags:", ttf_head_flags);
+	printf("%-20s%lu\n", "ttf_head_em:", ttf_head_em);
 	printf("\n");
-	printf("%-20s: %ld\n", "ttf_head_xmin", ttf_head_xmin);
-	printf("%-20s: %ld\n", "ttf_head_ymin", ttf_head_ymin);
-	printf("%-20s: %ld\n", "ttf_head_xmax", ttf_head_xmax);
-	printf("%-20s: %ld\n", "ttf_head_ymax", ttf_head_ymax);
+	printf("%-20s%ld\n", "ttf_head_xmin:", ttf_head_xmin);
+	printf("%-20s%ld\n", "ttf_head_ymin:", ttf_head_ymin);
+	printf("%-20s%ld\n", "ttf_head_xmax:", ttf_head_xmax);
+	printf("%-20s%ld\n", "ttf_head_ymax:", ttf_head_ymax);
 	printf("\n");
-	printf("%-20s: %ld\n", "ttf_head_lowest", ttf_head_lowest);
-	printf("%-20s: %ld\n", "ttf_head_locfmt", ttf_head_locfmt);
+	printf("%-20s%ld\n", "ttf_head_lowest:", ttf_head_lowest);
+	printf("%-20s%ld\n", "ttf_head_locfmt:", ttf_head_locfmt);
 	printf("\n");
 
-	printf("%-20s: %ld\n", "ttf_maxp_glyphs", ttf_maxp_glyphs);
+	printf("%-20s%ld\n", "ttf_maxp_glyphs:", ttf_maxp_glyphs);
+	printf("%-20s%ld\n", "ttf_loca_points:", ttf_loca_points);
+	printf("\n");
 }
 
 static int ttf_read_head(void)
@@ -187,8 +206,10 @@ static int ttf_read_cmap(void)
 
 		ttf_cmap_array = calloc(ttf_cmap_points, sizeof(struct cmap));
 
-		if (ttf_cmap_array == NULL)
+		if (ttf_cmap_array == NULL) {
+			fputs("Error: not enough memory\n", stderr);
 			return 1;
+		}
 
 		for (add = 0, i = 0; i < segs; i++) {
 			const unsigned char *p;
@@ -249,12 +270,268 @@ static int ttf_read_cmap(void)
 	return 0;
 }
 
+static int ttf_cmap_bsearch(const void *a, const void *b)
+{
+	const struct cmap *cmap_a = a, *cmap_b = b;
+
+	if (cmap_a->point > cmap_b->point)
+		return 1;
+	if (cmap_a->point < cmap_b->point)
+		return -1;
+
+	return 0;
+}
+
+static unsigned long ttf_search_cmap(unsigned long point)
+{
+	const struct cmap *cmap_entry;
+	struct cmap key;
+
+	key.point = point, key.index = 0;
+
+	if (ttf_cmap_array == NULL || ttf_cmap_points == 0)
+		return 0;
+
+	cmap_entry = bsearch(&key, ttf_cmap_array, ttf_cmap_points,
+		sizeof(struct cmap), ttf_cmap_bsearch);
+
+	return (cmap_entry != NULL) ? cmap_entry->index : 0;
+}
+
+static int ttf_read_loca(void)
+{
+	size_t entry_size = (ttf_head_locfmt != 0) ? 4 : 2;
+	unsigned char *glyf_table, *loca_table;
+	size_t glyf_size, loca_size;
+	unsigned long i;
+
+	if (table_find(TTF_TABLE_GLYF, &glyf_table, &glyf_size))
+		return 1;
+	if (table_find(TTF_TABLE_LOCA, &loca_table, &loca_size))
+		return 1;
+
+	ttf_loca_points = ttf_maxp_glyphs + 1;
+
+	if (ttf_loca_points > (loca_size / entry_size))
+		return 1;
+
+	ttf_loca_array = calloc(ttf_loca_points, sizeof(struct loca));
+
+	if (ttf_loca_array == NULL) {
+		fputs("Error: not enough memory\n", stderr);
+		return 1;
+	}
+
+	for (i = 1; i < ttf_loca_points; i++) {
+		const unsigned char *p1 = &loca_table[(i - 1) * entry_size];
+		const unsigned char *p2 = &loca_table[(i - 0) * entry_size];
+		unsigned long t1, t2;
+
+		if (entry_size == 4) {
+			t1 = BE32(&p1[0]);
+			t2 = BE32(&p2[0]);
+		} else {
+			t1 = BE16(&p1[0]);
+			t2 = BE16(&p2[0]);
+		}
+
+		if (t1 > t2 || t1 >= glyf_size || t2 > glyf_size)
+			return 1;
+
+		ttf_loca_array[i - 1].glyph = glyf_table + t1;
+		ttf_loca_array[i - 1].size = (size_t)(t2 - t1);
+	}
+
+	return 0;
+}
+
+static int ttf_read_glyf(unsigned long point)
+{
+	unsigned long i = ttf_search_cmap(point);
+	const unsigned char *glyph = ttf_loca_array[i].glyph;
+	size_t size = ttf_loca_array[i].size;
+
+	unsigned long offset = 0, last_point = 0;
+	unsigned long contours;
+
+	ttf_glyf_points = 0;
+
+	/*
+	 * Only simple glyphs are supported.
+	 */
+	if (size < 2 || (contours = BE16(&glyph[0])) >= 0x8000ul)
+		return 0;
+	if (!contours)
+		return 0;
+	if (size < (12 + contours * 2))
+		return 1;
+
+	offset += 10;
+
+	/*
+	 * Find the last point index.
+	 */
+	for (i = 0; i < contours; i++) {
+		const unsigned char *p = &glyph[offset];
+
+		if (last_point < BE16(&p[0]))
+			last_point = BE16(&p[0]);
+		offset += 2;
+	}
+
+	if (!last_point)
+		return 0;
+
+	/*
+	 * Skip instructions.
+	 */
+	offset += (BE16(&glyph[offset]) + 2);
+	if (size <= offset)
+		return 1;
+
+	/*
+	 * Process flags.
+	 */
+	{
+		unsigned repeat = 0;
+
+		for (i = 0; i <= last_point; i++) {
+			unsigned long flag = (unsigned long)glyph[offset];
+
+			ttf_glyf_array[i].flag = (flag & 0xF7ul);
+			ttf_glyf_array[i].x = 0;
+			ttf_glyf_array[i].y = 0;
+
+			if (size <= offset + 2)
+				return 1;
+
+			if ((flag & 0x08ul) != 0) {
+				if (repeat == (unsigned)glyph[offset + 1]) {
+					repeat &= 0u;
+					offset += 1;
+				} else {
+					repeat += 1;
+					offset -= 1;
+				}
+			}
+
+			offset += 1;
+		}
+	}
+
+	/*
+	 * Process X coordinates.
+	 */
+	for (i = 0; i <= last_point; i++) {
+		int size_bit = (ttf_glyf_array[i].flag & 0x02ul) != 0 ? 1 : 0;
+		int misc_bit = (ttf_glyf_array[i].flag & 0x10ul) != 0 ? 1 : 0;
+		long x = 0;
+
+		if (size_bit == 0 && misc_bit == 0) {
+			unsigned long d;
+
+			if (i != 0)
+				x = ttf_glyf_array[i - 1].x;
+			if (size <= offset + 1) {
+				return 1;
+			}
+
+			d = BE16(&glyph[offset]);
+			x += BE16_TO_LONG(d);
+			offset += 2;
+
+		} else if (size_bit == 0 && misc_bit == 1) {
+			if (i != 0)
+				x = ttf_glyf_array[i - 1].x;
+
+		} else if (size_bit == 1 && misc_bit == 0) {
+			if (size <= offset)
+				return 1;
+			x = -((long)((unsigned long)glyph[offset]));
+			offset += 1;
+
+		} else {
+			if (size <= offset)
+				return 1;
+			x = (long)((unsigned long)glyph[offset]);
+			offset += 1;
+		}
+
+		ttf_glyf_array[i].x = x;
+	}
+
+	/*
+	 * Process Y coordinates.
+	 */
+	for (i = 0; i <= last_point; i++) {
+		int size_bit = (ttf_glyf_array[i].flag & 0x04ul) != 0 ? 1 : 0;
+		int misc_bit = (ttf_glyf_array[i].flag & 0x20ul) != 0 ? 1 : 0;
+		long y = 0;
+
+		if (size_bit == 0 && misc_bit == 0) {
+			unsigned long d;
+
+			if (i != 0)
+				y = ttf_glyf_array[i - 1].y;
+			if (size <= offset + 1) {
+				return 1;
+			}
+
+			d = BE16(&glyph[offset]);
+			y += BE16_TO_LONG(d);
+			offset += 2;
+
+		} else if (size_bit == 0 && misc_bit == 1) {
+			if (i != 0)
+				y = ttf_glyf_array[i - 1].y;
+
+		} else if (size_bit == 1 && misc_bit == 0) {
+			if (size <= offset)
+				return 1;
+			y = -((long)((unsigned long)glyph[offset]));
+			offset += 1;
+
+		} else {
+			if (size <= offset)
+				return 1;
+			y = (long)((unsigned long)glyph[offset]);
+			offset += 1;
+		}
+
+		ttf_glyf_array[i].y = y;
+	}
+
+	/*
+	 * Set the last points of contours.
+	 */
+	for (i = 0; i < contours; i++) {
+		const unsigned char *p = &glyph[10 + i * 2];
+
+		ttf_glyf_array[BE16(&p[0])].flag |= 0x0100ul;
+	}
+
+	ttf_glyf_points = last_point + 1;
+	return 0;
+}
+
 static void ttf_free(void)
 {
 	if (ttf_cmap_array) {
 		ttf_cmap_points = 0;
 		free(ttf_cmap_array);
 		ttf_cmap_array = NULL;
+	}
+
+	if (ttf_loca_array) {
+		ttf_loca_points = 0;
+		free(ttf_loca_array);
+		ttf_loca_array = NULL;
+	}
+
+	if (ttf_glyf_array) {
+		ttf_glyf_points = 0;
+		free(ttf_glyf_array);
+		ttf_glyf_array = NULL;
 	}
 }
 
@@ -274,6 +551,20 @@ int ttf_main(struct options *opt)
 
 	if ((ret = ttf_read_cmap()) != 0) {
 		fputs("Error: cmap table\n", stderr);
+		return ttf_free(), ret;
+	}
+
+	if ((ret = ttf_read_loca()) != 0) {
+		fputs("Error: loca table\n", stderr);
+		return ttf_free(), ret;
+	}
+
+	/*
+	 * Allocate memory for the glyf data.
+	 */
+	ttf_glyf_array = calloc(65536, sizeof(struct glyf));
+	if (ttf_glyf_array == NULL) {
+		fputs("Error: not enough memory\n", stderr);
 		return ttf_free(), ret;
 	}
 
