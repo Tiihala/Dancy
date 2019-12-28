@@ -81,7 +81,7 @@ static void draw_point(int bold, long x, long y, unsigned long color)
 	if (y < offset || (unsigned long)(y + offset) >= raw_height)
 		return;
 
-	y = raw_height - y - 1;
+	y = (long)raw_height - y - 1;
 
 	for (i = -offset; i <= offset; i++) {
 		p1 = raw_data + ((unsigned long)(y + i) * raw_width * 4);
@@ -196,7 +196,7 @@ int render(struct options *opt, unsigned long points, struct glyf *array)
 		}
 		if (state == 1)
 			printf("  </contour><!-- ERROR -->\n");
-		printf("</TTGlyph\n");
+		printf("</TTGlyph>\n");
 	}
 
 	raw_width = (unsigned long)(xmax - xmin) + 64;
@@ -240,7 +240,6 @@ int render(struct options *opt, unsigned long points, struct glyf *array)
 	for (i = 0; i < points; i++) {
 		long x = x_off + array[i].x;
 		long y = y_off + array[i].y;
-		int err;
 
 		if ((array[i].flag & 1ul) != 0)
 			draw_point(4, x, y, 0xFF00AA00ul);
