@@ -37,7 +37,19 @@ int program(struct options *opt)
 
 	if (!opt->operands[0])
 		return opt->error = "no input", 1;
-	if (opt->operands[1])
+
+	if (opt->render) {
+		if (!opt->arg_o)
+			return opt->error = "no output", 1;
+		if (!opt->operands[1])
+			return opt->error = "no code point", 1;
+
+		opt->code_point = strtoul(opt->operands[1], NULL, 0);
+		if (opt->code_point == 0 || opt->code_point > 0x10FFFF)
+			return opt->error = "invalid code point", 1;
+	}
+
+	if (opt->operands[(opt->render ? 2 : 1)])
 		return opt->error = "too many operands", 1;
 
 	if (read_file(opt->operands[0], &input_file, &input_size))

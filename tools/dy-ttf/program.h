@@ -43,7 +43,9 @@ struct options {
 	char **operands;
 	const char *error;
 	const char *arg_o;
+	unsigned long code_point;
 	int dump;
+	int render;
 	int verbose;
 };
 
@@ -89,12 +91,33 @@ struct options {
 #define TTF_TABLE_NAME (0x6E616D65ul)
 #define TTF_TABLE_POST (0x706F7374ul)
 
+struct cmap {
+	unsigned long point;
+	unsigned long index;
+};
+
+struct glyf {
+	unsigned long flag;
+	signed long x;
+	signed long y;
+};
+
+struct loca {
+	unsigned char *glyph;
+	size_t size;
+};
+
 /*
  * program.c
  */
 int program(struct options *opt);
 int read_file(const char *name, unsigned char **out, size_t *size);
 int write_file(struct options *opt, unsigned char *out, size_t size);
+
+/*
+ * render.c
+ */
+int render(struct options *opt, unsigned long points, struct glyf *array);
 
 /*
  * table.c

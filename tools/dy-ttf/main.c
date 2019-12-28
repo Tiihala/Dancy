@@ -21,10 +21,11 @@
 
 static const char *help_str =
 	"Usage: " PROGRAM_CMDNAME
-	" [-o output] input-file\n"
+	" [-o output] input-file [code-point]\n"
 	"\nOptions:\n"
 	"  -o output     output file\n"
 	"  --dump        input file information\n"
+	"  --render      render code point\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -83,6 +84,10 @@ int main(int argc, char *argv[])
 			}
 			if (!strcmp(arg + 2, "dump")) {
 				opts.dump = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "render")) {
+				opts.render = 1;
 				continue;
 			}
 			help("unknown long option \"%s\"", arg);

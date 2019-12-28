@@ -140,6 +140,7 @@ DY_PNG_HEADERS= \
 DY_TTF_OBJECTS= \
  ./tools/dy-ttf/main.obj \
  ./tools/dy-ttf/program.obj \
+ ./tools/dy-ttf/render.obj \
  ./tools/dy-ttf/table.obj \
  ./tools/dy-ttf/ttf.obj \
  ./tools/dy-ttf/vm.obj
@@ -320,6 +321,9 @@ DY_ZIP_OBJECTS= \
 
 ./tools/dy-ttf/program.obj: ./tools/dy-ttf/program.c $(DY_TTF_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/program.c
+
+./tools/dy-ttf/render.obj: ./tools/dy-ttf/render.c $(DY_TTF_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/render.c
 
 ./tools/dy-ttf/table.obj: ./tools/dy-ttf/table.c $(DY_TTF_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/table.c

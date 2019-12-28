@@ -19,14 +19,6 @@
 
 #include "program.h"
 
-struct cmap {
-	unsigned long point;
-	unsigned long index;
-};
-
-static struct cmap   *ttf_cmap_array;
-static unsigned long ttf_cmap_points;
-
 static unsigned long ttf_head_size;
 static unsigned long ttf_head_flags;
 static unsigned long ttf_head_em;
@@ -39,19 +31,11 @@ static unsigned long ttf_head_locfmt;
 
 static unsigned long ttf_maxp_glyphs;
 
-struct loca {
-	unsigned char *glyph;
-	size_t size;
-};
+static struct cmap   *ttf_cmap_array;
+static unsigned long ttf_cmap_points;
 
 static struct loca   *ttf_loca_array;
 static unsigned long ttf_loca_points;
-
-struct glyf {
-	unsigned long flag;
-	signed long x;
-	signed long y;
-};
 
 static struct glyf   *ttf_glyf_array;
 static unsigned long ttf_glyf_points;
@@ -425,13 +409,11 @@ static int ttf_read_glyf(unsigned long point)
 	for (i = 0; i <= last_point; i++) {
 		int size_bit = (ttf_glyf_array[i].flag & 0x02ul) != 0 ? 1 : 0;
 		int misc_bit = (ttf_glyf_array[i].flag & 0x10ul) != 0 ? 1 : 0;
-		long x = 0;
+		long x = (i != 0) ? ttf_glyf_array[i - 1].x : 0;
 
 		if (size_bit == 0 && misc_bit == 0) {
 			unsigned long d;
 
-			if (i != 0)
-				x = ttf_glyf_array[i - 1].x;
 			if (size <= offset + 1) {
 				return 1;
 			}
@@ -440,20 +422,16 @@ static int ttf_read_glyf(unsigned long point)
 			x += BE16_TO_LONG(d);
 			offset += 2;
 
-		} else if (size_bit == 0 && misc_bit == 1) {
-			if (i != 0)
-				x = ttf_glyf_array[i - 1].x;
-
 		} else if (size_bit == 1 && misc_bit == 0) {
 			if (size <= offset)
 				return 1;
-			x = -((long)((unsigned long)glyph[offset]));
+			x += (-((long)((unsigned long)glyph[offset])));
 			offset += 1;
 
-		} else {
+		} else if (size_bit == 1 && misc_bit == 1) {
 			if (size <= offset)
 				return 1;
-			x = (long)((unsigned long)glyph[offset]);
+			x += (long)((unsigned long)glyph[offset]);
 			offset += 1;
 		}
 
@@ -466,13 +444,11 @@ static int ttf_read_glyf(unsigned long point)
 	for (i = 0; i <= last_point; i++) {
 		int size_bit = (ttf_glyf_array[i].flag & 0x04ul) != 0 ? 1 : 0;
 		int misc_bit = (ttf_glyf_array[i].flag & 0x20ul) != 0 ? 1 : 0;
-		long y = 0;
+		long y = (i != 0) ? ttf_glyf_array[i - 1].y : 0;
 
 		if (size_bit == 0 && misc_bit == 0) {
 			unsigned long d;
 
-			if (i != 0)
-				y = ttf_glyf_array[i - 1].y;
 			if (size <= offset + 1) {
 				return 1;
 			}
@@ -481,20 +457,16 @@ static int ttf_read_glyf(unsigned long point)
 			y += BE16_TO_LONG(d);
 			offset += 2;
 
-		} else if (size_bit == 0 && misc_bit == 1) {
-			if (i != 0)
-				y = ttf_glyf_array[i - 1].y;
-
 		} else if (size_bit == 1 && misc_bit == 0) {
 			if (size <= offset)
 				return 1;
-			y = -((long)((unsigned long)glyph[offset]));
+			y += (-((long)((unsigned long)glyph[offset])));
 			offset += 1;
 
-		} else {
+		} else if (size_bit == 1 && misc_bit == 1) {
 			if (size <= offset)
 				return 1;
-			y = (long)((unsigned long)glyph[offset]);
+			y += (long)((unsigned long)glyph[offset]);
 			offset += 1;
 		}
 
@@ -565,13 +537,22 @@ int ttf_main(struct options *opt)
 	ttf_glyf_array = calloc(65536, sizeof(struct glyf));
 	if (ttf_glyf_array == NULL) {
 		fputs("Error: not enough memory\n", stderr);
-		return ttf_free(), ret;
+		return ttf_free(), 1;
 	}
 
 	if (opt->dump) {
 		ret = (ttf_dump(), 0);
 		if (opt->arg_o == NULL)
 			return ttf_free(), ret;
+	}
+
+	if (opt->render) {
+		if ((ret = ttf_read_glyf(opt->code_point)) != 0) {
+			fputs("Error: could not read glyf data\n", stderr);
+			return ttf_free(), ret;
+		}
+		ret = render(opt, ttf_glyf_points, ttf_glyf_array);
+		return ttf_free(), ret;
 	}
 
 	return ttf_free(), 0;
