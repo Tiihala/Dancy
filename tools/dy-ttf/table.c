@@ -149,7 +149,7 @@ int table_init(unsigned char *data, size_t size)
 
 		if (name == TTF_TABLE_HEAD) {
 			unsigned char *p = tables[i].data;
-			unsigned long head_sum, file_sum;
+			unsigned long head_sum, file_sum, test_sum;
 
 			if (tables[i].size < 16)
 				return 3;
@@ -158,8 +158,9 @@ int table_init(unsigned char *data, size_t size)
 			W_BE32(&p[8], 0);
 
 			file_sum = table_checksum(ttf_data, ttf_size);
+			test_sum = (0xB1B0AFBAul - file_sum) & 0xFFFFFFFFul;
 
-			if (head_sum != 0xB1B0AFBAul - file_sum)
+			if (head_sum != test_sum)
 				err = 4;
 			if (table_checksum(&p[0], tables[i].size) != sum)
 				err = 5;
