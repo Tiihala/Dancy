@@ -143,9 +143,35 @@ static int ttf_read_cmap(void)
 		if (BE32(&p[4]) > size - 4)
 			return 1;
 
+		/*
+		 * Primary: "Platform ID" 0 (Unicode).
+		 */
 		if (BE16(&p[0]) == 0) {
-			offset = BE32(&p[4]);
-			subtable = table + offset;
+			unsigned long cmap_offset = BE32(&p[4]);
+			unsigned char *cmap_subtable = table + cmap_offset;
+
+			if (subtable == NULL) {
+				offset = cmap_offset;
+				subtable = cmap_subtable;
+			}
+			if (BE16(&cmap_subtable[0]) == 12) {
+				offset = cmap_offset;
+				subtable = cmap_subtable;
+			}
+			if (BE16(&subtable[0]) != 12) {
+				offset = cmap_offset;
+				subtable = cmap_subtable;
+			}
+		}
+
+		/*
+		 * Secondary: "Platform ID" 3 (UCS-2).
+		 */
+		if (subtable == NULL) {
+			if (BE16(&p[0]) == 3 && BE16(&p[2]) == 1) {
+				offset = BE32(&p[4]);
+				subtable = table + offset;
+			}
 		}
 	}
 
@@ -156,7 +182,7 @@ static int ttf_read_cmap(void)
 		unsigned long len = BE16(&subtable[2]);
 		unsigned long add, segs;
 
-		if (len < 16 ||len > size - offset)
+		if (len < 16 || len > size - offset)
 			return 1;
 
 		segs = BE16(&subtable[6]) / 2;
@@ -185,7 +211,7 @@ static int ttf_read_cmap(void)
 			ttf_cmap_points += add;
 		}
 
-		if (ttf_cmap_points == 0)
+		if (ttf_cmap_points == 0 || ttf_cmap_points > 0x10FFFF)
 			return 1;
 
 		ttf_cmap_array = calloc(ttf_cmap_points, sizeof(struct cmap));
@@ -237,6 +263,79 @@ static int ttf_read_cmap(void)
 
 				ttf_cmap_array[add].point = c;
 				ttf_cmap_array[add].index = glyph_index;
+				add += 1;
+			}
+		}
+
+		if (add != ttf_cmap_points)
+			return 1;
+
+	/*
+	 * Format 12
+	 */
+	} else if (subtable != NULL && BE16(&subtable[0]) == 12) {
+		unsigned long add, len, groups;
+
+		if (BE16(&subtable[2]) != 0)
+			return 1;
+		if (offset > size - 16)
+			return 1;
+
+		len = BE32(&subtable[4]);
+		if (len < 16 || len > size - offset)
+			return 1;
+
+		groups = BE32(&subtable[12]);
+		if (groups == 0 || ((len - 16) / 12) < groups)
+			return 1;
+
+		ttf_cmap_points = 0;
+
+		for (i = 0; i < groups; i++) {
+			const unsigned char *p = subtable + (i * 12) + 16;
+			unsigned long t1, t2;
+
+			t1 = BE32(&p[0]);
+			t2 = BE32(&p[4]);
+
+			if (t1 > t2)
+				return 1;
+
+			add = (t2 - t1) + 1;
+			if (!(ttf_cmap_points < ULONG_MAX - add))
+				return 1;
+
+			ttf_cmap_points += add;
+		}
+
+		if (ttf_cmap_points == 0 || ttf_cmap_points > 0x10FFFF)
+			return 1;
+
+		ttf_cmap_array = calloc(ttf_cmap_points, sizeof(struct cmap));
+
+		if (ttf_cmap_array == NULL) {
+			fputs("Error: not enough memory\n", stderr);
+			return 1;
+		}
+
+		for (add = 0, i = 0; i < groups; i++) {
+			const unsigned char *p = subtable + (i * 12) + 16;
+			unsigned long t1, t2;
+			unsigned long c, glyph_index;
+
+			t1 = BE32(&p[0]);
+			t2 = BE32(&p[4]);
+			glyph_index = BE32(&p[8]);
+
+			for (c = t1; c <= t2; c++) {
+				if (glyph_index >= ttf_maxp_glyphs)
+					return 1;
+
+				if (add >= ttf_cmap_points)
+					return 1;
+
+				ttf_cmap_array[add].point = c;
+				ttf_cmap_array[add].index = glyph_index++;
 				add += 1;
 			}
 		}
