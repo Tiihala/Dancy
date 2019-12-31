@@ -131,6 +131,45 @@ static void draw_line(long x0, long y0, long x1, long y1)
 	}
 }
 
+static void draw_bezier(long x0, long y0, long x1, long y1, long x2, long y2)
+{
+	const long points = 10;
+	long line_x0, line_y0;
+	long line_x1, line_y1;
+	long i;
+
+	line_x0 = x0;
+	line_y0 = y0;
+
+	for (i = 1; i < points; i++) {
+		double t = ((double)i / (double)points);
+
+		line_x1 = (long)(((1.0 - t) * (1.0 - t)) * (double)x0
+			+ 2.0 * (1.0 - t) * t * (double)x1
+			+ (t * t) * (double)x2);
+
+		line_y1 = (long)(((1.0 - t) * (1.0 - t)) * (double)y0
+			+ 2.0 * (1.0 - t) * t * (double)y1
+			+ (t * t) * (double)y2);
+
+		draw_line(line_x0, line_y0, line_x1, line_y1);
+
+		line_x0 = line_x1;
+		line_y0 = line_y1;
+	}
+
+	line_x1 = x2;
+	line_y1 = y2;
+
+	draw_line(line_x0, line_y0, line_x1, line_y1);
+}
+
+static void midpoint(long x0, long y0, long x1, long y1, long *x, long *y)
+{
+	*x = x0 + ((x1 - x0) / 2);
+	*y = y0 + ((y1 - y0) / 2);
+}
+
 int render(struct options *opt, unsigned long points, struct glyf *array)
 {
 	long xmin = 0, ymin = 0, xmax = 0, ymax = 0;
@@ -221,19 +260,55 @@ int render(struct options *opt, unsigned long points, struct glyf *array)
 
 	if (points != 0) {
 		unsigned long contour_start = 0;
+		long x0, y0, x1, y1, x2, y2;
 
-		for (i = 1; i <= points; i++) {
-			long x0 = x_off + array[i - 1].x;
-			long y0 = y_off + array[i - 1].y;
-			long x1 = (i < points) ? x_off + array[i - 0].x : 0;
-			long y1 = (i < points) ? y_off + array[i - 0].y : 0;
+		for (i = 0; i < points; i++) {
+			unsigned long flag = array[i].flag;
+			struct glyf *prev = &array[((i > 0) ? i - 1 : 0)];
+			struct glyf *next = &array[((i + 1) % points)];
 
-			if ((array[i - 1].flag & 0x0100) != 0) {
-				x1 = x_off + array[contour_start].x;
-				y1 = y_off + array[contour_start].y;
-				contour_start = i;
+			if (contour_start == i) {
+				for (j = i; j < points; j++) {
+					if ((prev->flag & 0x0100) != 0)
+						break;
+					prev = &array[j];
+				}
 			}
-			draw_line(x0, y0, x1, y1);
+
+			if ((flag & 0x0100) != 0) {
+				next = &array[contour_start];
+				contour_start = i + 1;
+			}
+
+			if ((flag & 1) == 0) {
+				x0 = prev->x;
+				y0 = prev->y;
+				x1 = array[i].x;
+				y1 = array[i].y;
+
+				if ((prev->flag & 1) == 0)
+					midpoint(x0, y0, x1, y1, &x0, &y0);
+
+				x2 = next->x;
+				y2 = next->y;
+
+				if ((next->flag & 1) == 0)
+					midpoint(x1, y1, x2, y2, &x2, &y2);
+
+				x0 += x_off, y0 += y_off;
+				x1 += x_off, y1 += y_off;
+				x2 += x_off, y2 += y_off;
+
+				draw_bezier(x0, y0, x1, y1, x2, y2);
+
+			} else if ((next->flag & 1) != 0) {
+				x0 = x_off + array[i].x;
+				y0 = y_off + array[i].y;
+				x1 = x_off + next->x;
+				y1 = y_off + next->y;
+
+				draw_line(x0, y0, x1, y1);
+			}
 		}
 	}
 
