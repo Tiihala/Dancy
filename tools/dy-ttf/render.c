@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2020 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,12 +25,30 @@ static unsigned long raw_height;
 static size_t raw_size;
 static unsigned char *raw_data;
 
+static unsigned long vga_colors[16] = {
+	0x00000000, /* 0x00 */
+	0x00AA0000, /* 0x01 */
+	0x0000AA00, /* 0x02 */
+	0x00AAAA00, /* 0x03 */
+	0x000000AA, /* 0x04 */
+	0x00AA00AA, /* 0x05 */
+	0x000055AA, /* 0x06 */
+	0x00AAAAAA, /* 0x07 */
+	0x00555555, /* 0x08 */
+	0x00FF5555, /* 0x09 */
+	0x0055FF55, /* 0x0A */
+	0x00FFFF55, /* 0x0B */
+	0x005555FF, /* 0x0C */
+	0x00FF55FF, /* 0x0D */
+	0x0055FFFF, /* 0x0E */
+	0x00FFFFFF  /* 0x0F */
+};
+
 static int write_bmp_file(struct options *opt)
 {
-	size_t row_size = (size_t)(raw_width * 4);
-	size_t size = raw_size + 138;
+	size_t size = (raw_size * 4) + 138;
 	unsigned char *out, *p;
-	unsigned long i;
+	unsigned long i, j;
 
 	out = malloc(size);
 	if (!out)
@@ -47,7 +65,7 @@ static int write_bmp_file(struct options *opt)
 	W_LE16(&out[0x1A], 0x0001ul);
 	W_LE16(&out[0x1C], 0x0020ul);
 	W_LE32(&out[0x1E], 0x00000003ul);
-	W_LE32(&out[0x22], (unsigned long)raw_size);
+	W_LE32(&out[0x22], (unsigned long)(raw_size * 4));
 	W_LE32(&out[0x36], 0x000000FFul);
 	W_LE32(&out[0x3A], 0x0000FF00ul);
 	W_LE32(&out[0x3E], 0x00FF0000ul);
@@ -58,10 +76,15 @@ static int write_bmp_file(struct options *opt)
 	p = out + 138;
 
 	for (i = raw_height; i > 0; i--) {
-		unsigned char *line = raw_data + ((i - 1) * row_size);
+		unsigned char *line = raw_data + ((i - 1) * raw_width);
 
-		memcpy(p, line, row_size);
-		p += row_size;
+		for (j = 0; j < raw_width; j++) {
+			unsigned long color = vga_colors[(line[j] & 0x0Fu)];
+
+			color |= 0xFF000000ul;
+			W_LE32(&p[0], color);
+			p += 4;
+		}
 	}
 
 	if (write_file(opt, out, size))
@@ -70,9 +93,30 @@ static int write_bmp_file(struct options *opt)
 	return free(out), 0;
 }
 
-static void draw_point(int bold, long x, long y, unsigned long color)
+static void draw_point(long x, long y, unsigned color)
 {
-	long offset = (long)((bold > 0 && bold < 10) ? bold : 0);
+	unsigned char *p1, *p2;
+
+	if (x < 0 || (unsigned long)x >= raw_width)
+		return;
+	if (y < 0 || (unsigned long)y >= raw_height)
+		return;
+
+	y = (long)raw_height - y - 1;
+
+	p1 = raw_data + ((unsigned long)y * raw_width);
+	p2 = p1 + (unsigned long)x;
+
+	/*
+	 * Color indices have been carefully selected
+	 * to make this "or" logic work as intended.
+	 */
+	p2[0] |= (unsigned char)color;
+}
+
+static void draw_point_bold(long x, long y, unsigned color)
+{
+	const long offset = 2;
 	unsigned char *p1, *p2;
 	long i, j;
 
@@ -84,18 +128,18 @@ static void draw_point(int bold, long x, long y, unsigned long color)
 	y = (long)raw_height - y - 1;
 
 	for (i = -offset; i <= offset; i++) {
-		p1 = raw_data + ((unsigned long)(y + i) * raw_width * 4);
+		p1 = raw_data + ((unsigned long)(y + i) * raw_width);
 
 		for (j = -offset; j <= offset; j++) {
-			p2 = p1 + ((unsigned long)(x + j) * 4);
-			W_LE32(&p2[0], color);
+			p2 = p1 + (unsigned long)(x + j);
+			p2[0] = (unsigned char)color;
 		}
 	}
 }
 
-static void draw_line(long x0, long y0, long x1, long y1)
+static void draw_line(long x0, long y0, long x1, long y1, int y_dir)
 {
-	const unsigned long color = 0xFFFFFFFFul;
+	unsigned color = ((y_dir == 0) ? 0x04 : ((y_dir < 0) ? 0x05 : 0x06));
 	long dx, dy;
 	long sx, sy;
 	long t1, t2;
@@ -114,7 +158,7 @@ static void draw_line(long x0, long y0, long x1, long y1)
 
 	for (;;) {
 		t2 = t1 * 2;
-		draw_point(1, x0, y0, color);
+		draw_point(x0, y0, color);
 
 		if (t2 >= dy) {
 			if (x0 == x1)
@@ -134,25 +178,42 @@ static void draw_line(long x0, long y0, long x1, long y1)
 static void draw_bezier(long x0, long y0, long x1, long y1, long x2, long y2)
 {
 	const long points = 10;
+	double prev_y = (double)y0;
+
 	long line_x0, line_y0;
 	long line_x1, line_y1;
+	int y_dir;
 	long i;
 
 	line_x0 = x0;
 	line_y0 = y0;
 
+	if (y0 == y1 && y1 == y2)
+		y_dir = 0;
+	else if (y0 < y1 || (y0 == y1 && y1 < y2))
+		y_dir = -1;
+	else
+		y_dir = 1;
+
 	for (i = 1; i < points; i++) {
 		double t = ((double)i / (double)points);
 
-		line_x1 = (long)(((1.0 - t) * (1.0 - t)) * (double)x0
+		double x = (((1.0 - t) * (1.0 - t)) * (double)x0
 			+ 2.0 * (1.0 - t) * t * (double)x1
 			+ (t * t) * (double)x2);
 
-		line_y1 = (long)(((1.0 - t) * (1.0 - t)) * (double)y0
+		double y = (((1.0 - t) * (1.0 - t)) * (double)y0
 			+ 2.0 * (1.0 - t) * t * (double)y1
 			+ (t * t) * (double)y2);
 
-		draw_line(line_x0, line_y0, line_x1, line_y1);
+		line_x1 = (long)x;
+		line_y1 = (long)y;
+
+		if (y_dir != 0)
+			y_dir = (prev_y < y) ? -1 : 1;
+
+		draw_line(line_x0, line_y0, line_x1, line_y1, y_dir);
+		prev_y = y;
 
 		line_x0 = line_x1;
 		line_y0 = line_y1;
@@ -161,7 +222,63 @@ static void draw_bezier(long x0, long y0, long x1, long y1, long x2, long y2)
 	line_x1 = x2;
 	line_y1 = y2;
 
-	draw_line(line_x0, line_y0, line_x1, line_y1);
+	draw_line(line_x0, line_y0, line_x1, line_y1, y_dir);
+}
+
+static void fill_contours(void)
+{
+	unsigned long i, j, k;
+
+	for (i = 0; i < raw_height; i++) {
+		unsigned char *line = raw_data + (i * raw_width);
+
+		for (j = 0; j < raw_width; j++) {
+			if (line[j] != 0)
+				break;
+		}
+
+		while (j < raw_width) {
+			unsigned long size = 1;
+
+			if (line[j] == 0) {
+				unsigned color = 0;
+				int add = 0, state = 0;
+
+				for (k = j + 1; k < raw_width; k++) {
+					if (line[k] != 0)
+						break;
+					size += 1;
+				}
+
+				for (k = j + 1; k < raw_width; k++) {
+					if (color != 0 && line[k] == 0) {
+						if (add != 0x7FFF) {
+							if (add < 0)
+								state -= 1;
+							else if (add > 0)
+								state += 1;
+						}
+						add = 0;
+					}
+					if (color != line[k]) {
+						color = (unsigned)line[k];
+
+						if (add != 0x7FFF) {
+							if (color == 5)
+								add -= 1;
+							else if (color == 6)
+								add += 1;
+							else if (color == 7)
+								add = 0x7FFF;
+						}
+					}
+				}
+				if (state != 0)
+					memset(&line[j], 0x08, (size_t)size);
+			}
+			j += size;
+		}
+	}
 }
 
 static void midpoint(long x0, long y0, long x1, long y1, long *x, long *y)
@@ -244,19 +361,13 @@ int render(struct options *opt, unsigned long points, struct glyf *array)
 	if (raw_width > 8192 || raw_height > 8192)
 		return fputs("Error: rendering size\n", stderr), 1;
 
-	raw_size = (raw_width * raw_height * 4);
+	raw_size = (raw_width * raw_height);
 	raw_data = malloc(raw_size);
 
 	if (raw_data == NULL)
 		return fputs("Error: not enough memory\n", stderr), 1;
 
-	for (i = 0; i < raw_height; i++) {
-		unsigned char *line = raw_data + (i * raw_width * 4);
-		for (j = 0; j < raw_width; j++) {
-			unsigned char *p = line + (j * 4);
-			W_LE32(&p[0], 0xFF000000ul);
-		}
-	}
+	memset(raw_data, 0, raw_size);
 
 	if (points != 0) {
 		unsigned long contour_start = 0;
@@ -302,24 +413,29 @@ int render(struct options *opt, unsigned long points, struct glyf *array)
 				draw_bezier(x0, y0, x1, y1, x2, y2);
 
 			} else if ((next->flag & 1) != 0) {
+				int y_dir;
+
 				x0 = x_off + array[i].x;
 				y0 = y_off + array[i].y;
 				x1 = x_off + next->x;
 				y1 = y_off + next->y;
 
-				draw_line(x0, y0, x1, y1);
+				y_dir = (y0 == y1) ? 0 : ((y0 < y1) ? -1 : 1);
+				draw_line(x0, y0, x1, y1, y_dir);
 			}
 		}
 	}
+
+	fill_contours();
 
 	for (i = 0; i < points; i++) {
 		long x = x_off + array[i].x;
 		long y = y_off + array[i].y;
 
-		if ((array[i].flag & 1ul) != 0)
-			draw_point(4, x, y, 0xFF00AA00ul);
+		if ((array[i].flag & 1) != 0)
+			draw_point_bold(x, y, 2);
 		else
-			draw_point(4, x, y, 0xFF0000AAul);
+			draw_point_bold(x, y, 4);
 	}
 
 	if ((ret = write_bmp_file(opt)) != 0)
