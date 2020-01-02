@@ -438,6 +438,19 @@ int render(struct options *opt, unsigned long points, struct glyf *array)
 			draw_point_bold(x, y, 4);
 	}
 
+	if (ymin <= 0) {
+		size_t offset = (unsigned long)(-ymin) * raw_width;
+
+		offset = (raw_width * (raw_height - 33)) - offset;
+
+		if (offset < raw_size - raw_width) {
+			for (i = 16; i < raw_width - 16; i++) {
+				if (raw_data[offset + i] == 0)
+					raw_data[offset + i] = 14;
+			}
+		}
+	}
+
 	if ((ret = write_bmp_file(opt)) != 0)
 		return free(raw_data), ret;
 
