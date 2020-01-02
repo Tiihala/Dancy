@@ -142,8 +142,7 @@ DY_TTF_OBJECTS= \
  ./tools/dy-ttf/program.obj \
  ./tools/dy-ttf/render.obj \
  ./tools/dy-ttf/table.obj \
- ./tools/dy-ttf/ttf.obj \
- ./tools/dy-ttf/vm.obj
+ ./tools/dy-ttf/ttf.obj
 DY_TTF_HEADERS= \
  ./tools/dy-ttf/program.h
 
@@ -330,9 +329,6 @@ DY_ZIP_OBJECTS= \
 
 ./tools/dy-ttf/ttf.obj: ./tools/dy-ttf/ttf.c $(DY_TTF_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/ttf.c
-
-./tools/dy-ttf/vm.obj: ./tools/dy-ttf/vm.c $(DY_TTF_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/vm.c
 
 ./tools/dy-uefi/dy-uefi.obj: ./tools/dy-uefi/dy-uefi.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-uefi/dy-uefi.c

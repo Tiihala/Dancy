@@ -133,9 +133,4 @@ unsigned table_power_of_two(unsigned num);
  */
 int ttf_main(struct options *opt);
 
-/*
- * vm.c
- */
-int vm_disasm(const unsigned char *instructions, size_t size);
-
 #endif
