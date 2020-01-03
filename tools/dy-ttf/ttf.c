@@ -191,8 +191,10 @@ static int ttf_read_hmtx(void)
 		 * Repeat the last width value.
 		 */
 		while (size--) {
+			unsigned long lsb = BE16(&p[2]);
+
 			ttf_hmtx_array[i].width = val;
-			ttf_hmtx_array[i].lsb = BE16(&p[2]);
+			ttf_hmtx_array[i].lsb = BE16_TO_LONG(lsb);
 			i += 1, p += 2;
 		}
 	}
