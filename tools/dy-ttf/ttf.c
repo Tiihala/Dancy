@@ -29,10 +29,21 @@ static signed long   ttf_head_ymax;
 static unsigned long ttf_head_lowest;
 static unsigned long ttf_head_locfmt;
 
+static signed long   ttf_hhea_ascent;
+static signed long   ttf_hhea_descent;
+static signed long   ttf_hhea_linegap;
+static unsigned long ttf_hhea_maxwid;
+static signed long   ttf_hhea_minlsb;
+static signed long   ttf_hhea_minrsb;
+static unsigned long ttf_hhea_metrics;
+
 static unsigned long ttf_maxp_glyphs;
 
 static struct cmap   *ttf_cmap_array;
 static unsigned long ttf_cmap_points;
+
+static struct hmtx   *ttf_hmtx_array;
+static unsigned long ttf_hmtx_points;
 
 static struct loca   *ttf_loca_array;
 static unsigned long ttf_loca_points;
@@ -55,7 +66,17 @@ static void ttf_dump(void)
 	printf("%-20s%ld\n", "ttf_head_locfmt:", ttf_head_locfmt);
 	printf("\n");
 
+	printf("%-20s%ld\n", "ttf_hhea_ascent:", ttf_hhea_ascent);
+	printf("%-20s%ld\n", "ttf_hhea_descent:", ttf_hhea_descent);
+	printf("%-20s%ld\n", "ttf_hhea_linegap:", ttf_hhea_linegap);
+	printf("%-20s%lu\n", "ttf_hhea_maxwid:", ttf_hhea_maxwid);
+	printf("%-20s%ld\n", "ttf_hhea_minlsb:", ttf_hhea_minlsb);
+	printf("%-20s%ld\n", "ttf_hhea_minrsb:", ttf_hhea_minrsb);
+	printf("%-20s%lu\n", "ttf_hhea_metrics:", ttf_hhea_metrics);
+	printf("\n");
+
 	printf("%-20s%ld\n", "ttf_maxp_glyphs:", ttf_maxp_glyphs);
+	printf("%-20s%ld\n", "ttf_hmtx_points:", ttf_hmtx_points);
 	printf("%-20s%ld\n", "ttf_loca_points:", ttf_loca_points);
 	printf("\n");
 }
@@ -87,6 +108,97 @@ static int ttf_read_head(void)
 
 	ttf_head_lowest = BE16(&table[46]);
 	ttf_head_locfmt = BE16(&table[50]);
+
+	return 0;
+}
+
+static int ttf_read_hhea(void)
+{
+	unsigned char *table;
+	unsigned long val;
+	size_t size;
+
+	if (table_find(TTF_TABLE_HHEA, &table, &size))
+		return 1;
+
+	val = BE16(&table[4]);
+	ttf_hhea_ascent = BE16_TO_LONG(val);
+
+	val = BE16(&table[6]);
+	ttf_hhea_descent = BE16_TO_LONG(val);
+
+	val = BE16(&table[8]);
+	ttf_hhea_linegap = BE16_TO_LONG(val);
+
+	ttf_hhea_maxwid = BE16(&table[10]);
+
+	val = BE16(&table[12]);
+	ttf_hhea_minlsb = BE16_TO_LONG(val);
+
+	val = BE16(&table[14]);
+	ttf_hhea_minrsb = BE16_TO_LONG(val);
+
+	ttf_hhea_metrics = BE16(&table[34]);
+
+	return 0;
+}
+
+static int ttf_read_hmtx(void)
+{
+	unsigned char *table;
+	unsigned long i, val;
+	size_t size;
+
+	if (table_find(TTF_TABLE_HMTX, &table, &size))
+		return 1;
+
+	ttf_hmtx_array = calloc(ttf_maxp_glyphs, sizeof(struct hmtx));
+
+	if (ttf_hmtx_array == NULL) {
+		fputs("Error: not enough memory\n", stderr);
+		return 1;
+	}
+
+	ttf_hmtx_points = ttf_maxp_glyphs;
+
+	if (ttf_hhea_metrics == 0)
+		return 1;
+
+	val = ttf_hhea_metrics * 4;
+	if (size < val)
+		return 1;
+
+	size -= val;
+	size /= 2;
+
+	if (ttf_hhea_metrics + size != ttf_hmtx_points)
+		return 1;
+
+	for (i = 0; i < ttf_hhea_metrics; i++) {
+		const unsigned char *p = table + (i * 4);
+
+		val = BE16(&p[2]);
+		ttf_hmtx_array[i].lsb = BE16_TO_LONG(val);
+
+		val = BE16(&p[0]);
+		ttf_hmtx_array[i].width = val;
+	}
+
+	if (size != 0) {
+		const unsigned char *p = table + (i * 4);
+
+		/*
+		 * Repeat the last width value.
+		 */
+		while (size--) {
+			ttf_hmtx_array[i].width = val;
+			ttf_hmtx_array[i].lsb = BE16(&p[2]);
+			i += 1, p += 2;
+		}
+	}
+
+	if (i != ttf_hmtx_points)
+		return 1;
 
 	return 0;
 }
@@ -593,6 +705,12 @@ static void ttf_free(void)
 		ttf_cmap_array = NULL;
 	}
 
+	if (ttf_hmtx_array) {
+		ttf_hmtx_points = 0;
+		free(ttf_hmtx_array);
+		ttf_hmtx_array = NULL;
+	}
+
 	if (ttf_loca_array) {
 		ttf_loca_points = 0;
 		free(ttf_loca_array);
@@ -615,8 +733,18 @@ int ttf_main(struct options *opt)
 		return ttf_free(), ret;
 	}
 
+	if ((ret = ttf_read_hhea()) != 0) {
+		fputs("Error: hhea table\n", stderr);
+		return ttf_free(), ret;
+	}
+
 	if ((ret = ttf_read_maxp()) != 0) {
 		fputs("Error: maxp table\n", stderr);
+		return ttf_free(), ret;
+	}
+
+	if ((ret = ttf_read_hmtx()) != 0) {
+		fputs("Error: hmtx table\n", stderr);
 		return ttf_free(), ret;
 	}
 
@@ -646,9 +774,23 @@ int ttf_main(struct options *opt)
 	}
 
 	if (opt->render) {
+		unsigned long i = ttf_search_cmap(opt->code_point);
+
+		if (i == 0) {
+			printf("No glyph for code point 0x%04lX\n",
+				opt->code_point);
+			return ttf_free(), 0;
+		}
 		if ((ret = ttf_read_glyf(opt->code_point)) != 0) {
 			fputs("Error: could not read glyf data\n", stderr);
 			return ttf_free(), ret;
+		}
+		if (opt->verbose) {
+			printf("\n<hmtx>\n  <mtx");
+			printf(" name=\"uni%04lX\"", opt->code_point);
+			printf(" width=\"%lu\"", ttf_hmtx_array[i].width);
+			printf(" lsb=\"%ld\"", ttf_hmtx_array[i].lsb);
+			printf("/>\n</hmtx>\n");
 		}
 		ret = render(opt, ttf_glyf_points, ttf_glyf_array);
 		return ttf_free(), ret;

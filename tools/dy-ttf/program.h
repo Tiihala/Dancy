@@ -96,6 +96,11 @@ struct cmap {
 	unsigned long index;
 };
 
+struct hmtx {
+	unsigned long width;
+	signed long lsb;
+};
+
 struct glyf {
 	unsigned long flag;
 	signed long x;
