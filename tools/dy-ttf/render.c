@@ -111,7 +111,7 @@ static void draw_point(long x, long y, unsigned color)
 	 * Color indices have been carefully selected
 	 * to make this "or" logic work as intended.
 	 */
-	p2[0] |= (unsigned char)color;
+	p2[0] = (unsigned char)((unsigned)p2[0] | color);
 }
 
 static void draw_point_bold(long x, long y, unsigned color)
