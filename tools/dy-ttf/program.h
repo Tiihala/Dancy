@@ -44,7 +44,6 @@ struct options {
 	const char *error;
 	const char *arg_o;
 	unsigned long code_point;
-	int dump;
 	int render;
 	int verbose;
 };

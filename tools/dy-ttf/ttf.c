@@ -769,11 +769,8 @@ int ttf_main(struct options *opt)
 		return ttf_free(), 1;
 	}
 
-	if (opt->dump) {
-		ret = (ttf_dump(), 0);
-		if (opt->arg_o == NULL)
-			return ttf_free(), ret;
-	}
+	if (opt->verbose)
+		ttf_dump();
 
 	if (opt->render) {
 		unsigned long i = ttf_search_cmap(opt->code_point);
