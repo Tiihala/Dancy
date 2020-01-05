@@ -287,8 +287,11 @@ static void midpoint(long x0, long y0, long x1, long y1, long *x, long *y)
 	*y = y0 + ((y1 - y0) / 2);
 }
 
-int render(struct options *opt, unsigned long points, struct glyf *array)
+int render_glyph(struct options *opt, struct render *glyph)
 {
+	struct glyf *array = glyph->array;
+	unsigned long points = glyph->points;
+
 	long xmin = 0, ymin = 0, xmax = 0, ymax = 0;
 	long x_off, y_off;
 	unsigned long i, j;
@@ -353,6 +356,12 @@ int render(struct options *opt, unsigned long points, struct glyf *array)
 		if (state == 1)
 			printf("  </contour><!-- ERROR -->\n");
 		printf("</TTGlyph>\n");
+
+		printf("\n<hmtx>\n  <mtx");
+		printf(" name=\"%s\"", &name[0]);
+		printf(" width=\"%lu\"", glyph->advance);
+		printf(" lsb=\"%ld\"", glyph->lsb);
+		printf("/>\n</hmtx>\n");
 	}
 
 	raw_width = (unsigned long)(xmax - xmin) + 64;

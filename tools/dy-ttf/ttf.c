@@ -702,6 +702,7 @@ static int ttf_read_glyf(unsigned long point)
 static int ttf_render(struct options *opt)
 {
 	unsigned long i = ttf_search_cmap(opt->code_point);
+	struct render glyph;
 	int ret;
 
 	if (i == 0) {
@@ -714,15 +715,16 @@ static int ttf_render(struct options *opt)
 		return ret;
 	}
 
-	if (opt->verbose) {
-		printf("<hmtx>\n  <mtx");
-		printf(" name=\"uni%04lX\"", opt->code_point);
-		printf(" width=\"%lu\"", ttf_hmtx_array[i].width);
-		printf(" lsb=\"%ld\"", ttf_hmtx_array[i].lsb);
-		printf("/>\n</hmtx>\n");
-	}
+	memset(&glyph, 0, sizeof(glyph));
 
-	return render(opt, ttf_glyf_points, ttf_glyf_array);
+	glyph.array = ttf_glyf_array;
+	glyph.points = ttf_glyf_points;
+	glyph.head_ymin = ttf_head_ymin;
+	glyph.head_ymax = ttf_head_ymax;
+	glyph.advance = ttf_hmtx_array[i].width;
+	glyph.lsb = ttf_hmtx_array[i].lsb;
+
+	return render_glyph(opt, &glyph);
 }
 
 static void ttf_free(void)

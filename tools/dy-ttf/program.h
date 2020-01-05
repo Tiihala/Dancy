@@ -111,6 +111,15 @@ struct loca {
 	size_t size;
 };
 
+struct render {
+	struct glyf *array;
+	unsigned long points;
+	signed long head_ymin;
+	signed long head_ymax;
+	unsigned long advance;
+	signed long lsb;
+};
+
 /*
  * program.c
  */
@@ -121,7 +130,7 @@ int write_file(struct options *opt, unsigned char *out, size_t size);
 /*
  * render.c
  */
-int render(struct options *opt, unsigned long points, struct glyf *array);
+int render_glyph(struct options *opt, struct render *glyph);
 
 /*
  * table.c
