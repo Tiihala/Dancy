@@ -699,6 +699,32 @@ static int ttf_read_glyf(unsigned long point)
 	return 0;
 }
 
+static int ttf_render(struct options *opt)
+{
+	unsigned long i = ttf_search_cmap(opt->code_point);
+	int ret;
+
+	if (i == 0) {
+		printf("No glyph for code point 0x%04lX\n", opt->code_point);
+		return 0;
+	}
+
+	if ((ret = ttf_read_glyf(opt->code_point)) != 0) {
+		fputs("Error: could not read glyf data\n", stderr);
+		return ret;
+	}
+
+	if (opt->verbose) {
+		printf("<hmtx>\n  <mtx");
+		printf(" name=\"uni%04lX\"", opt->code_point);
+		printf(" width=\"%lu\"", ttf_hmtx_array[i].width);
+		printf(" lsb=\"%ld\"", ttf_hmtx_array[i].lsb);
+		printf("/>\n</hmtx>\n");
+	}
+
+	return render(opt, ttf_glyf_points, ttf_glyf_array);
+}
+
 static void ttf_free(void)
 {
 	if (ttf_cmap_array) {
@@ -773,25 +799,7 @@ int ttf_main(struct options *opt)
 		ttf_dump();
 
 	if (opt->render) {
-		unsigned long i = ttf_search_cmap(opt->code_point);
-
-		if (i == 0) {
-			printf("No glyph for code point 0x%04lX\n",
-				opt->code_point);
-			return ttf_free(), 0;
-		}
-		if ((ret = ttf_read_glyf(opt->code_point)) != 0) {
-			fputs("Error: could not read glyf data\n", stderr);
-			return ttf_free(), ret;
-		}
-		if (opt->verbose) {
-			printf("\n<hmtx>\n  <mtx");
-			printf(" name=\"uni%04lX\"", opt->code_point);
-			printf(" width=\"%lu\"", ttf_hmtx_array[i].width);
-			printf(" lsb=\"%ld\"", ttf_hmtx_array[i].lsb);
-			printf("/>\n</hmtx>\n");
-		}
-		ret = render(opt, ttf_glyf_points, ttf_glyf_array);
+		ret = ttf_render(opt);
 		return ttf_free(), ret;
 	}
 
