@@ -43,6 +43,7 @@ struct options {
 	char **operands;
 	const char *error;
 	const char *arg_o;
+	const char *arg_s;
 	unsigned long code_point;
 	int render;
 	int verbose;

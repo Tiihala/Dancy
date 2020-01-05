@@ -702,17 +702,20 @@ static int ttf_read_glyf(unsigned long point)
 static int ttf_render(struct options *opt)
 {
 	unsigned long i = ttf_search_cmap(opt->code_point);
+	long glyph_divisor = 1;
 	struct render glyph;
 	int ret;
 
-	if (i == 0) {
-		printf("No glyph for code point 0x%04lX\n", opt->code_point);
-		return 0;
+	if (i != 0) {
+		if ((ret = ttf_read_glyf(opt->code_point)) != 0) {
+			fputs("Error: could not read glyf data\n", stderr);
+			return ret;
+		}
 	}
 
-	if ((ret = ttf_read_glyf(opt->code_point)) != 0) {
-		fputs("Error: could not read glyf data\n", stderr);
-		return ret;
+	if (i == 0 || ttf_glyf_points == 0) {
+		printf("No glyph for code point 0x%04lX\n", opt->code_point);
+		return 0;
 	}
 
 	memset(&glyph, 0, sizeof(glyph));
@@ -723,6 +726,27 @@ static int ttf_render(struct options *opt)
 	glyph.head_ymax = ttf_head_ymax;
 	glyph.advance = ttf_hmtx_array[i].width;
 	glyph.lsb = ttf_hmtx_array[i].lsb;
+
+	if (opt->arg_s) {
+		unsigned long gd = strtoul(opt->arg_s, NULL, 0);
+
+		if (gd == 0 || gd > 128) {
+			fputs("Warning: invalid scale divisor\n", stderr);
+			return 1;
+		}
+		glyph_divisor = (long)gd;
+	}
+
+	if (glyph_divisor > 1) {
+		for (i = 0; i < glyph.points; i++) {
+			glyph.array[i].x /= glyph_divisor;
+			glyph.array[i].y /= glyph_divisor;
+		}
+		glyph.head_ymin /= glyph_divisor;
+		glyph.head_ymax /= glyph_divisor;
+		glyph.advance /= (unsigned long)glyph_divisor;
+		glyph.lsb /= glyph_divisor;
+	}
 
 	return render_glyph(opt, &glyph);
 }

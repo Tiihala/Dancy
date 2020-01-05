@@ -24,6 +24,7 @@ static const char *help_str =
 	" [-o output] input-file [code-point]\n"
 	"\nOptions:\n"
 	"  -o output     output file\n"
+	"  -s divisor    scale divisor for rendering\n"
 	"  --render      render code point\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
@@ -99,6 +100,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'o':
 				optarg = &opts.arg_o;
+				break;
+			case 's':
+				optarg = &opts.arg_s;
 				break;
 			case 'v':
 				opts.verbose = 1;

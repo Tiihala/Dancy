@@ -48,7 +48,8 @@ static int write_bmp_file(struct options *opt)
 {
 	size_t size = (raw_size * 4) + 138;
 	unsigned char *out, *p;
-	unsigned long i, j;
+	unsigned char *line;
+	unsigned long color, i, j;
 
 	out = malloc(size);
 	if (!out)
@@ -75,15 +76,31 @@ static int write_bmp_file(struct options *opt)
 
 	p = out + 138;
 
-	for (i = raw_height; i > 0; i--) {
-		unsigned char *line = raw_data + ((i - 1) * raw_width);
+	if (opt->arg_s == NULL) {
+		for (i = raw_height; i > 0; i--) {
+			line = raw_data + ((i - 1) * raw_width);
 
-		for (j = 0; j < raw_width; j++) {
-			unsigned long color = vga_colors[(line[j] & 0x0Fu)];
+			for (j = 0; j < raw_width; j++) {
+				color = vga_colors[(line[j] & 0x0Fu)];
+				color |= 0xFF000000ul;
 
-			color |= 0xFF000000ul;
-			W_LE32(&p[0], color);
-			p += 4;
+				W_LE32(&p[0], color);
+				p += 4;
+			}
+		}
+	} else {
+		for (i = raw_height; i > 0; i--) {
+			line = raw_data + ((i - 1) * raw_width);
+
+			for (j = 0; j < raw_width; j++) {
+				if (line[j] == 0)
+					color = 0xFF000000ul;
+				else
+					color = 0xFFFFFFFFul;
+
+				W_LE32(&p[0], color);
+				p += 4;
+			}
 		}
 	}
 
@@ -116,7 +133,7 @@ static void draw_point(long x, long y, unsigned color)
 
 static void draw_point_bold(long x, long y, unsigned color)
 {
-	const long offset = 2;
+	const long offset = 1;
 	unsigned char *p1, *p2;
 	long i, j;
 
@@ -177,7 +194,7 @@ static void draw_line(long x0, long y0, long x1, long y1, int y_dir)
 
 static void draw_bezier(long x0, long y0, long x1, long y1, long x2, long y2)
 {
-	const long points = 10;
+	const long points = 32;
 	double prev_y = (double)y0;
 
 	long line_x0, line_y0;
@@ -316,8 +333,11 @@ int render_glyph(struct options *opt, struct render *glyph)
 		}
 	}
 
+	if (ymin < glyph->head_ymin || ymax > glyph->head_ymax)
+		return fputs("Error: glyph size inconsistency\n", stderr), 1;
+
 	x_off = 32 - xmin;
-	y_off = 32 - ymin;
+	y_off = 32 - glyph->head_ymin;
 
 	/*
 	 * Print contour information in "ttx" format.
@@ -364,8 +384,8 @@ int render_glyph(struct options *opt, struct render *glyph)
 		printf("/>\n</hmtx>\n");
 	}
 
-	raw_width = (unsigned long)(xmax - xmin) + 64;
-	raw_height = (unsigned long)(ymax - ymin) + 64;
+	raw_width = (unsigned)(xmax - xmin) + 64;
+	raw_height = (unsigned)(glyph->head_ymax - glyph->head_ymin) + 64;
 
 	if (raw_width > 8192 || raw_height > 8192)
 		return fputs("Error: rendering size\n", stderr), 1;
@@ -437,19 +457,28 @@ int render_glyph(struct options *opt, struct render *glyph)
 
 	fill_contours();
 
-	for (i = 0; i < points; i++) {
-		long x = x_off + array[i].x;
-		long y = y_off + array[i].y;
+	/*
+	 * Draw "on-curve" and control points.
+	 */
+	if (opt->arg_s == NULL) {
+		for (i = 0; i < points; i++) {
+			long x = x_off + array[i].x;
+			long y = y_off + array[i].y;
 
-		if ((array[i].flag & 1) != 0)
-			draw_point_bold(x, y, 2);
-		else
-			draw_point_bold(x, y, 4);
+			if ((array[i].flag & 1) != 0)
+				draw_point_bold(x, y, 2);
+			else
+				draw_point_bold(x, y, 4);
+		}
 	}
 
-	if (ymin <= 0) {
-		size_t offset = (unsigned long)(-ymin) * raw_width;
+	/*
+	 * Draw the y reference line.
+	 */
+	if (opt->arg_s == NULL && glyph->head_ymin <= 0) {
+		size_t offset;
 
+		offset = (unsigned long)(-(glyph->head_ymin)) * raw_width;
 		offset = (raw_width * (raw_height - 33)) - offset;
 
 		if (offset < raw_size - raw_width) {
