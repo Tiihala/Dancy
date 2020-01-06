@@ -737,16 +737,7 @@ static int ttf_render(struct options *opt)
 		glyph_divisor = (long)gd;
 	}
 
-	if (glyph_divisor > 1) {
-		for (i = 0; i < glyph.points; i++) {
-			glyph.array[i].x /= glyph_divisor;
-			glyph.array[i].y /= glyph_divisor;
-		}
-		glyph.head_ymin /= glyph_divisor;
-		glyph.head_ymax /= glyph_divisor;
-		glyph.advance /= (unsigned long)glyph_divisor;
-		glyph.lsb /= glyph_divisor;
-	}
+	glyph.glyph_divisor = glyph_divisor;
 
 	return render_glyph(opt, &glyph);
 }

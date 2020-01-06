@@ -115,6 +115,7 @@ struct loca {
 struct render {
 	struct glyf *array;
 	unsigned long points;
+	signed long glyph_divisor;
 	signed long head_ymin;
 	signed long head_ymax;
 	unsigned long advance;

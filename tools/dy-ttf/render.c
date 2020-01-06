@@ -76,31 +76,15 @@ static int write_bmp_file(struct options *opt)
 
 	p = out + 138;
 
-	if (opt->arg_s == NULL) {
-		for (i = raw_height; i > 0; i--) {
-			line = raw_data + ((i - 1) * raw_width);
+	for (i = raw_height; i > 0; i--) {
+		line = raw_data + ((i - 1) * raw_width);
 
-			for (j = 0; j < raw_width; j++) {
-				color = vga_colors[(line[j] & 0x0Fu)];
-				color |= 0xFF000000ul;
+		for (j = 0; j < raw_width; j++) {
+			color = vga_colors[(line[j] & 0x0Fu)];
+			color |= 0xFF000000ul;
 
-				W_LE32(&p[0], color);
-				p += 4;
-			}
-		}
-	} else {
-		for (i = raw_height; i > 0; i--) {
-			line = raw_data + ((i - 1) * raw_width);
-
-			for (j = 0; j < raw_width; j++) {
-				if (line[j] == 0)
-					color = 0xFF000000ul;
-				else
-					color = 0xFFFFFFFFul;
-
-				W_LE32(&p[0], color);
-				p += 4;
-			}
+			W_LE32(&p[0], color);
+			p += 4;
 		}
 	}
 
@@ -304,6 +288,11 @@ static void midpoint(long x0, long y0, long x1, long y1, long *x, long *y)
 	*y = y0 + ((y1 - y0) / 2);
 }
 
+static void process_image(long glyph_divisor)
+{
+
+}
+
 int render_glyph(struct options *opt, struct render *glyph)
 {
 	struct glyf *array = glyph->array;
@@ -487,6 +476,11 @@ int render_glyph(struct options *opt, struct render *glyph)
 					raw_data[offset + i] = 14;
 			}
 		}
+	}
+
+	if (opt->arg_s != NULL) {
+		long d = glyph->glyph_divisor >= 1 ? glyph->glyph_divisor : 1;
+		process_image(d);
 	}
 
 	if ((ret = write_bmp_file(opt)) != 0)
