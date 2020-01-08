@@ -290,7 +290,57 @@ static void midpoint(long x0, long y0, long x1, long y1, long *x, long *y)
 
 static void process_image(long glyph_divisor)
 {
+	unsigned long width, height, offset;
+	unsigned long threshold;
+	unsigned long i, j;
 
+	for (i = 0; i < raw_size; i++) {
+		if (raw_data[i] != 0)
+			raw_data[i] = 1;
+	}
+
+	width = raw_width / (unsigned long)glyph_divisor;
+	width = (width > 0) ? width : 1;
+
+	height = raw_height / (unsigned long)glyph_divisor;
+	height = (height > 0) ? height : 1;
+
+	offset = (unsigned long)glyph_divisor;
+	threshold = (offset > 1) ? ((offset * offset) / 2) : 1;
+
+	for (i = 0; i < height; i++) {
+		unsigned char *line = raw_data + ((i * offset) * raw_width);
+
+		for (j = 0; j < width; j++) {
+			unsigned char *p = line + (j * offset);
+			unsigned long pixels_set = 0;
+			unsigned long x, y;
+
+			for (y = 0; y < offset; y++) {
+				for (x = 0; x < offset; x++) {
+					if ((p[x] & 1u) != 0)
+						pixels_set += 1;
+				}
+				p += raw_width;
+			}
+
+			if (pixels_set >= threshold) {
+				p = raw_data + (i * width) + j;
+				*p = (unsigned char)(((unsigned)*p) | 2u);
+			}
+		}
+	}
+
+	raw_width = width;
+	raw_height = height;
+	raw_size = (size_t)(raw_width * raw_height);
+
+	for (i = 0; i < raw_size; i++) {
+		if (raw_data[i] > 1)
+			raw_data[i] = 7;
+		else
+			raw_data[i] = 0;
+	}
 }
 
 int render_glyph(struct options *opt, struct render *glyph)
