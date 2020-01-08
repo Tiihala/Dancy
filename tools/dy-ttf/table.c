@@ -35,7 +35,7 @@ static struct {
 	{ TTF_TABLE_HMTX, 0, NULL, 0  },
 	{ TTF_TABLE_LOCA, 0, NULL, 0  },
 	{ TTF_TABLE_MAXP, 0, NULL, 6  },
-	{ TTF_TABLE_NAME, 0, NULL, 0  },
+	{ TTF_TABLE_NAME, 0, NULL, 6  },
 	{ TTF_TABLE_POST, 0, NULL, 0  }
 };
 

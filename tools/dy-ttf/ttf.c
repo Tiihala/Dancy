@@ -699,6 +699,48 @@ static int ttf_read_glyf(unsigned long point)
 	return 0;
 }
 
+static const void *ttf_read_name(int id, size_t *length)
+{
+	unsigned char *table;
+	unsigned long i, count, offset;
+	size_t size;
+
+	*length = 0;
+
+	if (table_find(TTF_TABLE_NAME, &table, &size))
+		return NULL;
+
+	count = BE16(&table[2]);
+	offset = BE16(&table[4]);
+
+	if (id < 0 || id > 14)
+		return NULL;
+
+	if (size < (count * 12) + 6)
+		return NULL;
+
+	for (i = 0; i < count; i++) {
+		const unsigned char *p = table + (i * 12) + 6;
+
+		/*
+		 * Unicode and English language.
+		 */
+		if (BE16(&p[0]) != 0 || BE16(&p[4]) != 0)
+			continue;
+
+		if (BE16(&p[6]) != (unsigned)id)
+			continue;
+
+		if (size < offset + BE16(&p[8]) + BE16(&p[10]))
+			return NULL;
+
+		*length = (size_t)BE16(&p[8]);
+		return (table + offset + BE16(&p[10]));
+	}
+
+	return NULL;
+}
+
 static int ttf_render(struct options *opt)
 {
 	unsigned long i = ttf_search_cmap(opt->code_point);
@@ -812,8 +854,21 @@ int ttf_main(struct options *opt)
 		return ttf_free(), 1;
 	}
 
-	if (opt->verbose)
+	if (opt->verbose) {
+		const unsigned char *name;
+		size_t i, length;
+
+		if ((name = ttf_read_name(4, &length)) != NULL) {
+			printf("\n%-20s", "ttf_name:");
+			for (i = 0; i < length; i += 2) {
+				unsigned c = (unsigned)BE16(&name[i]);
+				if (c >= 0x20 && c < 0x7F)
+					printf("%c", (int)c);
+			}
+			printf("\n\n");
+		}
 		ttf_dump();
+	}
 
 	if (opt->render) {
 		ret = ttf_render(opt);
