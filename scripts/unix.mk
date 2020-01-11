@@ -27,6 +27,14 @@ ACPICA_SOURCE=bash ./scripts/acpica.sh
 ACPICA_O32=$(DANCY_CC) $(ACPICA_CPPFLAGS_32) $(ACPICA_CFLAGS_32) -c -m32 -o
 ACPICA_O64=$(DANCY_CC) $(ACPICA_CPPFLAGS_64) $(ACPICA_CFLAGS_64) -c -m64 -o
 
+ifdef DANCY_WITH_ACPICA
+ACPICA_O32_AT=./o32/acpica.at
+ACPICA_O64_AT=./o64/acpica.at
+else
+ACPICA_O32_AT=
+ACPICA_O64_AT=
+endif
+
 all: all-release
 
 all-release: $(DANCY_TARGET_RELEASE)
