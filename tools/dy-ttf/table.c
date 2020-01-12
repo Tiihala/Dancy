@@ -147,6 +147,9 @@ int table_init(unsigned char *data, size_t size)
 		unsigned long sum = tables[i].checksum;
 		int err = 0;
 
+		if (tables[i].data == NULL)
+			continue;
+
 		if (name == TTF_TABLE_HEAD) {
 			unsigned char *p = tables[i].data;
 			unsigned long head_sum, file_sum, test_sum;
