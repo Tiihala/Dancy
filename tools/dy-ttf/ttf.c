@@ -19,6 +19,9 @@
 
 #include "program.h"
 
+static unsigned char *output_data;
+static size_t        output_size;
+
 static unsigned long ttf_head_size;
 static unsigned long ttf_head_flags;
 static unsigned long ttf_head_em;
@@ -784,6 +787,25 @@ static int ttf_render(struct options *opt)
 	return render_glyph(opt, &glyph);
 }
 
+static void ttf_write_header(size_t tables, unsigned char *out)
+{
+	unsigned long number_of_tables = (unsigned long)tables;
+	unsigned long val;
+
+	W_BE32(&out[0], 0x00010000);
+	W_BE16(&out[4], number_of_tables);
+
+	val = table_power_of_two((unsigned)number_of_tables) * 16;
+	W_BE16(&out[6], val);
+
+	val = table_power_of_two((unsigned)number_of_tables);
+	val = table_log2(table_power_of_two((unsigned)val));
+	W_BE16(&out[8], val);
+
+	val = (number_of_tables * 16) - BE16(&output_data[6]);
+	W_BE16(&out[10], val);
+}
+
 static void ttf_free(void)
 {
 	if (ttf_cmap_array) {
@@ -809,10 +831,62 @@ static void ttf_free(void)
 		free(ttf_glyf_array);
 		ttf_glyf_array = NULL;
 	}
+
+	if (output_data) {
+		output_size = 0;
+		free(output_data);
+		output_data = NULL;
+	}
+}
+
+static size_t ttf_build_cmap(size_t offset)
+{
+	return 0;
+}
+
+static size_t ttf_build_glyf(size_t offset)
+{
+	return 0;
+}
+
+static size_t ttf_build_head(size_t offset)
+{
+	return 0;
+}
+
+static size_t ttf_build_hhea(size_t offset)
+{
+	return 0;
+}
+
+static size_t ttf_build_hmtx(size_t offset)
+{
+	return 0;
+}
+
+static size_t ttf_build_loca(size_t offset)
+{
+	return 0;
+}
+
+static size_t ttf_build_maxp(size_t offset)
+{
+	return 0;
+}
+
+static size_t ttf_build_name(size_t offset)
+{
+	return 0;
+}
+
+static size_t ttf_build_post(size_t offset)
+{
+	return 0;
 }
 
 int ttf_main(struct options *opt)
 {
+	size_t offset;
 	int ret;
 
 	if ((ret = ttf_read_head()) != 0) {
@@ -875,5 +949,97 @@ int ttf_main(struct options *opt)
 		return ttf_free(), ret;
 	}
 
-	return ttf_free(), 0;
+	/*
+	 * Allocate output buffer. Use fixed size for now, although
+	 * the "ttf_build" functions can increase the size if needed.
+	 */
+	output_size = 0x200000;
+	output_data = malloc(output_size);
+
+	if (output_data == NULL) {
+		fputs("Error: not enough memory\n", stderr);
+		return 1;
+	}
+
+	memset(output_data, 0, output_size);
+	offset = 0;
+
+	/*
+	 * Write to the output buffer.
+	 */
+	{
+		static struct {
+			unsigned long name;
+			size_t offset;
+			size_t size;
+			size_t (*callback)(size_t);
+		} tables[] = {
+			{ TTF_TABLE_CMAP, 0, 0, ttf_build_cmap },
+			{ TTF_TABLE_GLYF, 0, 0, ttf_build_glyf },
+			{ TTF_TABLE_HEAD, 0, 0, ttf_build_head },
+			{ TTF_TABLE_HHEA, 0, 0, ttf_build_hhea },
+			{ TTF_TABLE_HMTX, 0, 0, ttf_build_hmtx },
+			{ TTF_TABLE_LOCA, 0, 0, ttf_build_loca },
+			{ TTF_TABLE_MAXP, 0, 0, ttf_build_maxp },
+			{ TTF_TABLE_NAME, 0, 0, ttf_build_name },
+			{ TTF_TABLE_POST, 0, 0, ttf_build_post }
+		};
+		size_t number_of_tables = sizeof(tables) / sizeof(tables[0]);
+		size_t i, size;
+
+		offset = number_of_tables * 16 + 12;
+
+		for (i = 0; i < number_of_tables; i++) {
+			if ((size = tables[i].callback(offset)) == 0)
+				return ttf_free(), 1;
+
+			tables[i].offset = offset;
+			tables[i].size = size;
+
+			if (output_size - 128 < offset)
+				return ttf_free(), 1;
+
+			offset += (size + 3);
+			offset &= 0xFFFFFFFCul;
+		}
+
+		output_size = offset;
+
+		for (i = 0; i < number_of_tables; i++) {
+			unsigned char *p = output_data + (i * 16) + 12;
+			unsigned long off, val;
+
+			val = tables[i].name;
+			W_BE32(&p[0], val);
+
+			off = tables[i].offset;
+			size = tables[i].size;
+
+			val = table_checksum(output_data + off, size);
+			W_BE32(&p[4], val);
+			W_BE32(&p[8], off);
+			W_BE32(&p[12], size);
+		}
+
+		ttf_write_header(number_of_tables, output_data);
+
+		/*
+		 * Update 'head' checksum.
+		 */
+		for (i = 0; i < number_of_tables; i++) {
+			if (tables[i].name == TTF_TABLE_HEAD) {
+				unsigned char *p;
+				unsigned long s;
+
+				s = table_checksum(output_data, output_size);
+				s = (0xB1B0AFBAul - s) & 0xFFFFFFFFul;
+
+				p = output_data + tables[i].offset;
+				W_BE32(&p[8], s);
+			}
+		}
+	}
+
+	ret = write_file(opt, output_data, output_size);
+	return ttf_free(), ret;
 }
