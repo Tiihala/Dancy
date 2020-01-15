@@ -876,7 +876,85 @@ static size_t ttf_build_maxp(size_t offset)
 
 static size_t ttf_build_name(size_t offset)
 {
-	return 0;
+	unsigned char *p = &output_data[offset];
+	unsigned long count = 0, total = 0;
+	size_t length;
+	int i;
+
+	struct {
+		const unsigned char *data;
+		unsigned long length;
+		unsigned long offset;
+	} entries[15];
+
+	int number_of_entries = (int)(sizeof(entries) / sizeof(entries[0]));
+
+	for (i = 0; i < number_of_entries; i++) {
+		entries[i].data = ttf_read_name(i, &length);
+		entries[i].length = (unsigned long)length;
+		entries[i].offset = total;
+
+		if (length == 0)
+			entries[i].data = NULL;
+
+		if (entries[i].data != NULL) {
+			total += ((unsigned long)length + 1);
+			total &= 0xFFFFFFFEul;
+			count += 1;
+		}
+	}
+
+	count *= 2;
+	total += ((count * 12) + 6);
+
+	if (output_size - offset < total) {
+		fputs("Error: name table overflow\n", stderr);
+		return 0;
+	}
+
+	W_BE16(&p[0], 0);
+	W_BE16(&p[2], count);
+	W_BE16(&p[4], ((count * 12) + 6));
+	p += 6;
+
+	for (i = 0; i < number_of_entries; i++) {
+		if (entries[i].data == NULL)
+			continue;
+
+		W_BE16(&p[0], 0);
+		W_BE16(&p[2], 4);
+		W_BE16(&p[4], 0);
+		W_BE16(&p[6], ((unsigned long)i));
+		W_BE16(&p[8], (entries[i].length));
+		W_BE16(&p[10], (entries[i].offset));
+		p += 12;
+	}
+
+	for (i = 0; i < number_of_entries; i++) {
+		if (entries[i].data == NULL)
+			continue;
+
+		W_BE16(&p[0], 3);
+		W_BE16(&p[2], 1);
+		W_BE16(&p[4], 0x0409);
+		W_BE16(&p[6], ((unsigned long)i));
+		W_BE16(&p[8], (entries[i].length));
+		W_BE16(&p[10], (entries[i].offset));
+		p += 12;
+	}
+
+	for (i = 0; i < number_of_entries; i++) {
+		if (entries[i].data == NULL)
+			continue;
+
+		memcpy(p, entries[i].data, (size_t)entries[i].length);
+		p += entries[i].length;
+	}
+
+	if ((output_data + offset + total) != p)
+		return 0;
+
+	return total;
 }
 
 static size_t ttf_build_post(size_t offset)
