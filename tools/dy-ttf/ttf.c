@@ -959,7 +959,33 @@ static size_t ttf_build_name(size_t offset)
 
 static size_t ttf_build_post(size_t offset)
 {
-	return 0;
+	unsigned char *p = &output_data[offset];
+	unsigned long italic_angle = 0;
+	unsigned char *table;
+	size_t size;
+
+	if (table_find(TTF_TABLE_POST, &table, &size) == 0) {
+		if (size >= 32)
+			italic_angle = BE32(&table[4]);
+	}
+
+	size = 32;
+
+	if (output_size - offset < size) {
+		fputs("Error: post table overflow\n", stderr);
+		return 0;
+	}
+
+	memset(&p[0], 0, size);
+
+	/*
+	 * Format 3, a very simple format.
+	 */
+	W_BE16(&p[0], 0x0003);
+	W_BE32(&p[4], italic_angle);
+	W_BE16(&p[10], 10);
+
+	return size;
 }
 
 int ttf_main(struct options *opt)
