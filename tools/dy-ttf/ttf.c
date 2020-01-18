@@ -41,6 +41,8 @@ static signed long   ttf_hhea_minrsb;
 static unsigned long ttf_hhea_metrics;
 
 static unsigned long ttf_maxp_glyphs;
+static unsigned long ttf_maxp_points;
+static unsigned long ttf_maxp_contours;
 
 static struct cmap   *ttf_cmap_array;
 static unsigned long ttf_cmap_points;
@@ -545,9 +547,9 @@ static int ttf_read_loca(void)
 	return 0;
 }
 
-static int ttf_read_glyf(unsigned long point)
+static int ttf_read_glyf(unsigned long point, unsigned long index)
 {
-	unsigned long i = ttf_search_cmap(point);
+	unsigned long i = (point != 0) ? ttf_search_cmap(point) : index;
 	const unsigned char *glyph = ttf_loca_array[i].glyph;
 	size_t size = ttf_loca_array[i].size;
 
@@ -752,7 +754,7 @@ static int ttf_render(struct options *opt)
 	int ret;
 
 	if (i != 0) {
-		if ((ret = ttf_read_glyf(opt->code_point)) != 0) {
+		if ((ret = ttf_read_glyf(opt->code_point, 0)) != 0) {
 			fputs("Error: could not read glyf data\n", stderr);
 			return ret;
 		}
@@ -841,37 +843,502 @@ static void ttf_free(void)
 
 static size_t ttf_build_cmap(size_t offset)
 {
-	return 0;
+	unsigned char *p = &output_data[offset];
+	unsigned long i, val, groups = 0, groups_format4 = 0;
+	size_t size;
+
+	struct {
+		unsigned long start;
+		unsigned long end;
+		unsigned long index;
+		unsigned long delta;
+	} *group_array;
+
+	size = (size_t)ttf_cmap_points + 1;
+	group_array = calloc(size, sizeof(*group_array));
+
+	if (group_array == NULL) {
+		fputs("Error: not enough memory\n", stderr);
+		return 0;
+	}
+
+	for (i = 0; i < ttf_cmap_points; i++) {
+		unsigned long point = ttf_cmap_array[i].point;
+		unsigned long index = ttf_cmap_array[i].index;
+		unsigned long delta = (index - point) & 0xFFFFul;
+		int repeat = 0;
+
+		if (i != 0 && ttf_cmap_array[i - 1].point + 1 == point) {
+			if (ttf_cmap_array[i - 1].index + 1 == index)
+				repeat = 1;
+		}
+
+		if (repeat) {
+			group_array[--groups].end = point;
+		} else {
+			group_array[groups].start = point;
+			group_array[groups].end = point;
+			group_array[groups].index = index;
+			group_array[groups].delta = delta;
+		}
+
+		groups += 1;
+	}
+
+	for (i = 0; i < groups; i++) {
+		if (group_array[i].end <= 0xFFFFul)
+			groups_format4 += 1;
+	}
+
+	/*
+	 * Check the buffer size using the worst case scenario plus
+	 * enough extra for the headers. There should be enough free
+	 * memory because this is the first table in the final file.
+	 */
+	size = (groups * 20) + 4096;
+
+	if (output_size - offset < size) {
+		fputs("Error: cmap table overflow\n", stderr);
+		return free(group_array), 0u;
+	}
+
+	W_BE16(&p[0], 0);
+	W_BE16(&p[2], 2);
+
+	W_BE16(&p[4], 0);
+	W_BE16(&p[6], 4);
+	W_BE32(&p[8], 20);
+
+	W_BE16(&p[12], 3);
+	W_BE16(&p[14], 1);
+	W_BE32(&p[16], 0);
+
+	/*
+	 * Format 12.0.
+	 */
+	W_BE16(&p[20], 12);
+	W_BE16(&p[22], 0);
+
+	val = 16 + (groups * 12);
+	W_BE32(&p[24], val);
+
+	W_BE32(&p[28], 0);
+	W_BE32(&p[32], groups);
+
+	size = 36;
+	p += size;
+
+	for (i = 0; i < groups; i++) {
+		unsigned long s = group_array[i].start;
+		unsigned long e = group_array[i].end;
+		unsigned long index = group_array[i].index;
+
+		W_BE32(&p[0], s);
+		W_BE32(&p[4], e);
+		W_BE32(&p[8], index);
+
+		p += 12;
+	}
+
+	size += (groups * 12);
+
+	p = &output_data[offset];
+	W_BE32(&p[16], ((unsigned long)size));
+	p += size;
+
+	/*
+	 * Format 4.
+	 */
+	W_BE16(&p[0], 0x0004);
+
+	if (group_array[groups_format4 - 1].end != 0xFFFF) {
+		group_array[groups_format4].start = 0xFFFF;
+		group_array[groups_format4].end = 0xFFFF;
+		group_array[groups_format4].index = 0;
+		group_array[groups_format4].delta = 1;
+		groups_format4 += 1;
+	}
+
+	val = (groups_format4 * 8) + 16;
+	W_BE16(&p[2], val);
+	W_BE16(&p[4], 0);
+	size += val;
+
+	val = groups_format4 * 2;
+	W_BE16(&p[6], val);
+
+	W_BE16(&p[8], 0);
+	W_BE16(&p[10], 0);
+	W_BE16(&p[12], 0);
+	p += 14;
+
+	for (i = 0; i < groups_format4; i++) {
+		val = group_array[i].end;
+		W_BE16(&p[0], val);
+		p += 2;
+	}
+
+	W_BE16(&p[0], 0x0000);
+	p += 2;
+
+	for (i = 0; i < groups_format4; i++) {
+		val = group_array[i].start;
+		W_BE16(&p[0], val);
+		p += 2;
+	}
+
+	for (i = 0; i < groups_format4; i++) {
+		val = group_array[i].delta;
+		W_BE16(&p[0], val);
+		p += 2;
+	}
+
+	for (i = 0; i < groups_format4; i++) {
+		W_BE16(&p[0], 0);
+		p += 2;
+	}
+
+	return free(group_array), size;
 }
 
 static size_t ttf_build_glyf(size_t offset)
 {
-	return 0;
+	long head_xmin = 0, head_ymin = 0, head_xmax = 0, head_ymax = 0;
+	unsigned long maxp_points = 0, maxp_contours = 0;
+
+	unsigned char *p = &output_data[offset];
+	size_t total_size = 0;
+	unsigned long i, j;
+
+	for (i = 0; i < ttf_loca_points; i++) {
+		long xmin = 0, ymin = 0, xmax = 0, ymax = 0;
+		unsigned long val, contours = 0;
+		size_t size = 0;
+
+		if (ttf_read_glyf(0, i)) {
+			fputs("Error: could not read glyf data\n", stderr);
+			return 0;
+		}
+
+		for (j = 0; j < ttf_glyf_points; j++) {
+			long x = ttf_glyf_array[j].x;
+			long y = ttf_glyf_array[j].y;
+
+			if ((ttf_glyf_array[j].flag & 0x0100) != 0)
+				contours += 1;
+
+			if (xmin > x)
+				xmin = x;
+			if (xmax < x)
+				xmax = x;
+			if (ymin > y)
+				ymin = y;
+			if (ymax < y)
+				ymax = y;
+
+			if (head_xmin > x)
+				head_xmin = x;
+			if (head_xmax < x)
+				head_xmax = x;
+			if (head_ymin > y)
+				head_ymin = y;
+			if (head_ymax < y)
+				head_ymax = y;
+		}
+
+		if (i < ttf_hmtx_points) {
+			ttf_hmtx_array[i].xmin = xmin;
+			ttf_hmtx_array[i].xmax = xmax;
+		}
+
+		if (maxp_points < ttf_glyf_points)
+			maxp_points = ttf_glyf_points;
+		if (maxp_contours < contours)
+			maxp_contours = contours;
+
+		if (ttf_glyf_points != 0)
+			size = (contours * 2) + (ttf_glyf_points * 5) + 12;
+
+		if (output_size - offset < size) {
+			fputs("Error: glyf table overflow\n", stderr);
+			return 0;
+		}
+
+		ttf_loca_array[i].ttf_new_offset = total_size;
+		ttf_loca_array[i].ttf_new_size = size;
+
+		total_size += size;
+
+		if (ttf_glyf_points == 0)
+			continue;
+
+		/*
+		 * Simple glyph format.
+		 */
+		W_BE16(&p[0], contours);
+		{
+			val = LONG_TO_UNSIGNED(xmin);
+			W_BE16(&p[2], val);
+
+			val = LONG_TO_UNSIGNED(ymin);
+			W_BE16(&p[4], val);
+
+			val = LONG_TO_UNSIGNED(xmax);
+			W_BE16(&p[6], val);
+
+			val = LONG_TO_UNSIGNED(ymax);
+			W_BE16(&p[8], val);
+		}
+		p += 10;
+
+		/*
+		 * Endpoints of contours.
+		 */
+		for (j = 0; j < ttf_glyf_points; j++) {
+			if ((ttf_glyf_array[j].flag & 0x0100) != 0) {
+				W_BE16(&p[0], j);
+				p += 2;
+			}
+		}
+
+		/*
+		 * Instructions are not copied.
+		 */
+		W_BE16(&p[0], 0);
+		p += 2;
+
+		/*
+		 * Array of flags. Only values 0 and 1 are used.
+		 */
+		for (j = 0; j < ttf_glyf_points; j++) {
+			if ((ttf_glyf_array[j].flag & 1) != 0)
+				*p++ = 1;
+			else
+				*p++ = 0;
+		}
+
+		/*
+		 * X coordinates.
+		 */
+		for (j = 0; j < ttf_glyf_points; j++) {
+			long x = ttf_glyf_array[j].x;
+
+			if (j > 0)
+				x -= (ttf_glyf_array[j - 1].x);
+
+			val = LONG_TO_UNSIGNED(x);
+			W_BE16(&p[0], val);
+			p += 2;
+		}
+
+		/*
+		 * Y coordinates.
+		 */
+		for (j = 0; j < ttf_glyf_points; j++) {
+			long y = ttf_glyf_array[j].y;
+
+			if (j > 0)
+				y -= (ttf_glyf_array[j - 1].y);
+
+			val = LONG_TO_UNSIGNED(y);
+			W_BE16(&p[0], val);
+			p += 2;
+		}
+	}
+
+	if ((output_data + offset + total_size) != p) {
+		fputs("Error: glyf table inconsistency\n", stderr);
+		return 0;
+	}
+
+	ttf_head_xmin = head_xmin;
+	ttf_head_ymin = head_ymin;
+	ttf_head_xmax = head_xmax;
+	ttf_head_ymax = head_ymax;
+
+	ttf_maxp_points = maxp_points;
+	ttf_maxp_contours = maxp_contours;
+
+	return total_size;
 }
 
 static size_t ttf_build_head(size_t offset)
 {
-	return 0;
+	unsigned char *p = &output_data[offset];
+	unsigned char *table;
+	unsigned long val;
+	size_t size;
+
+	if (table_find(TTF_TABLE_HEAD, &table, &size))
+		return 0;
+
+	size = 54;
+
+	if (output_size - offset < size) {
+		fputs("Error: head table overflow\n", stderr);
+		return 0;
+	}
+
+	memset(&p[0], 0, size);
+
+	W_BE16(&p[0], 0x0001);
+
+	val = BE32(&table[4]);
+	W_BE32(&p[4], val);
+	W_BE32(&p[12], 0x5F0F3CF5);
+
+	/*
+	 * Flags are fixed.
+	 */
+	W_BE16(&p[16], 0x000B);
+
+	memcpy(&p[18], &table[18], 18);
+
+	val = LONG_TO_UNSIGNED(ttf_head_xmin);
+	W_BE16(&p[36], val);
+
+	val = LONG_TO_UNSIGNED(ttf_head_ymin);
+	W_BE16(&p[38], val);
+
+	val = LONG_TO_UNSIGNED(ttf_head_xmax);
+	W_BE16(&p[40], val);
+
+	val = LONG_TO_UNSIGNED(ttf_head_ymax);
+	W_BE16(&p[42], val);
+
+	W_BE16(&p[46], 16);
+	W_BE16(&p[50], 1);
+
+	return size;
 }
 
 static size_t ttf_build_hhea(size_t offset)
 {
-	return 0;
+	unsigned char *p = &output_data[offset];
+	long minlsb = 0, minrsb = 0, maxextent = 0;
+	unsigned long i, val, maxwid = 0;
+	size_t size = 36;
+
+	if (output_size - offset < size) {
+		fputs("Error: hhea table overflow\n", stderr);
+		return 0;
+	}
+
+	for (i = 0; i < ttf_hmtx_points; i++) {
+		unsigned long width = ttf_hmtx_array[i].width;
+		long lsb = ttf_hmtx_array[i].lsb;
+		long xmin = ttf_hmtx_array[i].xmin;
+		long xmax = ttf_hmtx_array[i].xmax;
+		long rsb = (long)width - lsb - (xmax - xmin);
+
+		if (maxwid < width)
+			maxwid = width;
+		if (minlsb > lsb)
+			minlsb = lsb;
+		if (minrsb > rsb)
+			minrsb = rsb;
+
+		if (maxextent < (lsb + (xmax - xmin)))
+			maxextent = (lsb + (xmax - xmin));
+	}
+
+	memset(&p[0], 0, size);
+
+	W_BE16(&p[0], 0x0001);
+
+	val = LONG_TO_UNSIGNED(ttf_hhea_ascent);
+	W_BE16(&p[4], val);
+
+	val = LONG_TO_UNSIGNED(ttf_hhea_descent);
+	W_BE16(&p[6],val);
+
+	val = LONG_TO_UNSIGNED(ttf_hhea_linegap);
+	W_BE16(&p[8], val);
+
+	W_BE16(&p[10], maxwid);
+
+	val = LONG_TO_UNSIGNED(minlsb);
+	W_BE16(&p[12], val);
+
+	val = LONG_TO_UNSIGNED(minrsb);
+	W_BE16(&p[14], val);
+
+	val = LONG_TO_UNSIGNED(maxextent);
+	W_BE16(&p[16], val);
+
+	W_BE16(&p[18], 1);
+	W_BE16(&p[34], ttf_maxp_glyphs);
+
+	return size;
 }
 
 static size_t ttf_build_hmtx(size_t offset)
 {
-	return 0;
+	unsigned char *p = &output_data[offset];
+	size_t size = (size_t)(ttf_hmtx_points * 4);
+	unsigned long i, val;
+
+	if (output_size - offset < size) {
+		fputs("Error: hmtx table overflow\n", stderr);
+		return 0;
+	}
+
+	for (i = 0; i < ttf_hmtx_points; i++) {
+		unsigned long width = ttf_hmtx_array[i].width;
+		long lsb = ttf_hmtx_array[i].lsb;
+
+		W_BE16(&p[0], width);
+
+		val = LONG_TO_UNSIGNED(lsb);
+		W_BE16(&p[2], val);
+
+		p += 4;
+	}
+
+	return size;
 }
 
 static size_t ttf_build_loca(size_t offset)
 {
-	return 0;
+	unsigned char *p = &output_data[offset];
+	size_t size = (size_t)(ttf_loca_points * 4);
+	unsigned long i, val = 0;
+
+	if (size < 8 || output_size - offset < size) {
+		fputs("Error: incompatible loca table\n", stderr);
+		return 0;
+	}
+
+	for (i = 0; i < ttf_loca_points - 1; i++) {
+		val = ttf_loca_array[i].ttf_new_offset;
+		W_BE32(&p[0], val);
+		p += 4;
+	}
+
+	val = val + ttf_loca_array[ttf_loca_points - 2].ttf_new_size;
+	W_BE32(&p[0], val);
+
+	return size;
 }
 
 static size_t ttf_build_maxp(size_t offset)
 {
-	return 0;
+	unsigned char *p = &output_data[offset];
+	size_t size = 32;
+
+	if (output_size - offset < size) {
+		fputs("Error: maxp table overflow\n", stderr);
+		return 0;
+	}
+
+	memset(&p[0], 0, size);
+
+	W_BE16(&p[0], 0x0001);
+	W_BE16(&p[4], ttf_maxp_glyphs);
+	W_BE16(&p[6], ttf_maxp_points);
+	W_BE16(&p[8], ttf_maxp_contours);
+
+	return size;
 }
 
 static size_t ttf_build_name(size_t offset)

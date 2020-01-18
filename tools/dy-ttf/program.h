@@ -78,6 +78,9 @@ struct options {
 #define BE16_TO_LONG(a) \
 	(((a) >= 0x8000ul) ? -((long)((~(a) + 1ul) & 0xFFFFul)) : (long)(a))
 
+#define LONG_TO_UNSIGNED(a) \
+	((((a) < 0) ? ~((unsigned)(-(a))) + 1u : (unsigned)(a)) & 0xFFFFu)
+
 /*
  * The required TTF tables.
  */
@@ -99,6 +102,8 @@ struct cmap {
 struct hmtx {
 	unsigned long width;
 	signed long lsb;
+	signed long xmin;
+	signed long xmax;
 };
 
 struct glyf {
@@ -110,6 +115,8 @@ struct glyf {
 struct loca {
 	unsigned char *glyph;
 	size_t size;
+	size_t ttf_new_offset;
+	size_t ttf_new_size;
 };
 
 struct render {
