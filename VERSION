@@ -1,7 +1,6 @@
 # Dancy Operating System
-# Copyright (c) 2018 Antti Tiihala
+# Copyright (c) 2018, 2019, 2020 Antti Tiihala
 
 DANCY_MAJOR=0
 DANCY_MINOR=2
-DANCY_PATCH=0
-DANCY_STATE=preliminary
+DANCY_STATE=development
