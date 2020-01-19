@@ -503,8 +503,8 @@ static int ttf_read_loca(void)
 			t1 = BE32(&p1[0]);
 			t2 = BE32(&p2[0]);
 		} else {
-			t1 = BE16(&p1[0]);
-			t2 = BE16(&p2[0]);
+			t1 = BE16(&p1[0]) * 2;
+			t2 = BE16(&p2[0]) * 2;
 		}
 
 		if (t1 > t2 || t1 >= glyf_size || t2 > glyf_size)
