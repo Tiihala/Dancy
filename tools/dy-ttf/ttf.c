@@ -713,6 +713,25 @@ static const void *ttf_read_name(int id, size_t *length)
 		return (table + offset + BE16(&p[10]));
 	}
 
+	for (i = 0; i < count; i++) {
+		const unsigned char *p = table + (i * 12) + 6;
+
+		/*
+		 * Platform 3 and English language.
+		 */
+		if (BE16(&p[0]) != 3 || BE16(&p[4]) != 0x0409)
+			continue;
+
+		if (BE16(&p[6]) != (unsigned)id)
+			continue;
+
+		if (size < offset + BE16(&p[8]) + BE16(&p[10]))
+			return NULL;
+
+		*length = (size_t)BE16(&p[8]);
+		return (table + offset + BE16(&p[10]));
+	}
+
 	return NULL;
 }
 
