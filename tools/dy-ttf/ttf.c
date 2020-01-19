@@ -891,6 +891,11 @@ static size_t ttf_build_cmap(size_t offset)
 		return free(group_array), 0u;
 	}
 
+	if (groups_format4 == 0) {
+		fputs("Error: empty cmap table\n", stderr);
+		return free(group_array), 0u;
+	}
+
 	W_BE16(&p[0], 0);
 	W_BE16(&p[2], 2);
 
@@ -1503,7 +1508,7 @@ int ttf_main(struct options *opt)
 		size_t i, length;
 
 		if ((name = ttf_read_name(4, &length)) != NULL) {
-			printf("\n%-20s", "ttf_name:");
+			printf("ttf_name: ");
 			for (i = 0; i < length; i += 2) {
 				unsigned c = (unsigned)BE16(&name[i]);
 				if (c >= 0x20 && c < 0x7F)
