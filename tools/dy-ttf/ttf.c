@@ -56,36 +56,6 @@ static unsigned long ttf_loca_points;
 static struct glyf   *ttf_glyf_array;
 static unsigned long ttf_glyf_points;
 
-static void ttf_dump(void)
-{
-	printf("%-20s%lu\n", "ttf_head_size:", ttf_head_size);
-	printf("%-20s%04lX\n", "ttf_head_flags:", ttf_head_flags);
-	printf("%-20s%lu\n", "ttf_head_em:", ttf_head_em);
-	printf("\n");
-	printf("%-20s%ld\n", "ttf_head_xmin:", ttf_head_xmin);
-	printf("%-20s%ld\n", "ttf_head_ymin:", ttf_head_ymin);
-	printf("%-20s%ld\n", "ttf_head_xmax:", ttf_head_xmax);
-	printf("%-20s%ld\n", "ttf_head_ymax:", ttf_head_ymax);
-	printf("\n");
-	printf("%-20s%ld\n", "ttf_head_lowest:", ttf_head_lowest);
-	printf("%-20s%ld\n", "ttf_head_locfmt:", ttf_head_locfmt);
-	printf("\n");
-
-	printf("%-20s%ld\n", "ttf_hhea_ascent:", ttf_hhea_ascent);
-	printf("%-20s%ld\n", "ttf_hhea_descent:", ttf_hhea_descent);
-	printf("%-20s%ld\n", "ttf_hhea_linegap:", ttf_hhea_linegap);
-	printf("%-20s%lu\n", "ttf_hhea_maxwid:", ttf_hhea_maxwid);
-	printf("%-20s%ld\n", "ttf_hhea_minlsb:", ttf_hhea_minlsb);
-	printf("%-20s%ld\n", "ttf_hhea_minrsb:", ttf_hhea_minrsb);
-	printf("%-20s%lu\n", "ttf_hhea_metrics:", ttf_hhea_metrics);
-	printf("\n");
-
-	printf("%-20s%ld\n", "ttf_maxp_glyphs:", ttf_maxp_glyphs);
-	printf("%-20s%ld\n", "ttf_hmtx_points:", ttf_hmtx_points);
-	printf("%-20s%ld\n", "ttf_loca_points:", ttf_loca_points);
-	printf("\n");
-}
-
 static int ttf_read_head(void)
 {
 	unsigned char *table;
@@ -1512,7 +1482,6 @@ int ttf_main(struct options *opt)
 			}
 			printf("\n\n");
 		}
-		ttf_dump();
 	}
 
 	if (opt->render) {
