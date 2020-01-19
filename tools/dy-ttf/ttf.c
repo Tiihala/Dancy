@@ -937,9 +937,19 @@ static size_t ttf_build_cmap(size_t offset)
 	val = groups_format4 * 2;
 	W_BE16(&p[6], val);
 
-	W_BE16(&p[8], 0);
-	W_BE16(&p[10], 0);
-	W_BE16(&p[12], 0);
+	/*
+	 * searchRange, entrySelector, and rangeShift.
+	 */
+	{
+		val = 2 * table_power_of_two((unsigned)groups_format4);
+		W_BE16(&p[8], val);
+
+		val = table_log2((unsigned)(val / 2));
+		W_BE16(&p[10], val);
+
+		val = (groups_format4 * 2) - BE16(&p[8]);
+		W_BE16(&p[12], val);
+	}
 	p += 14;
 
 	for (i = 0; i < groups_format4; i++) {
