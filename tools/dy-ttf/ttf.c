@@ -1063,7 +1063,7 @@ static size_t ttf_build_glyf(size_t offset)
 		if (ttf_glyf_points != 0)
 			size = (contours * 2) + (ttf_glyf_points * 5) + 12;
 
-		if (output_size - offset < size) {
+		if (output_size - offset - total_size < size) {
 			fputs("Error: glyf table overflow\n", stderr);
 			return 0;
 		}
