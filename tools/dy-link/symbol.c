@@ -367,7 +367,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	 * Detect exported symbols.
 	 */
 	if (strcmp(opt->arg_f, "obj")) {
-		static const char *exp = "__dancy_export_";
+		static const char *exp_prefix = "__dancy_export_";
 		int exp_mode = 0;
 
 		for (i = 0; i < (int)LE32(&obj[12]); i++) {
@@ -388,7 +388,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 
 			name = get_long_name(opt, sym);
 
-			if (strncmp(name, exp, 15) || name[15] == '\0')
+			if (strncmp(name, exp_prefix, 15) || name[15] == '\0')
 				continue;
 
 			name += 15;
@@ -674,7 +674,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	{
 		int allow_ext = 0;
 		int syms = (int)LE32(&obj[12]);
-		int i_t = 1, i_r = 1, i_d = 1, i_b = 1;
+		int it = 1, ir = 1, id = 1, ib = 1;
 		int unresolved = 0;
 
 		if (!strcmp(opt->arg_f, "at") || !strcmp(opt->arg_f, "obj"))
@@ -702,13 +702,13 @@ int symbol_process(struct options *opt, unsigned char *obj)
 					strcpy((char *)&s[0], ".bss");
 			} else {
 				if (s_num == 1)
-					sprintf((char *)&s[0], "_t%i", i_t++);
+					sprintf((char *)&s[0], "_t%i", it++);
 				else if (s_num == 2)
-					sprintf((char *)&s[0], "_r%i", i_r++);
+					sprintf((char *)&s[0], "_r%i", ir++);
 				else if (s_num == 3)
-					sprintf((char *)&s[0], "_d%i", i_d++);
+					sprintf((char *)&s[0], "_d%i", id++);
 				else if (s_num == 4)
-					sprintf((char *)&s[0], "_b%i", i_b++);
+					sprintf((char *)&s[0], "_b%i", ib++);
 			}
 			s[14] = 0, s[15] = 0, s[16] = 3;
 		}
