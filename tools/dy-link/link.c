@@ -321,6 +321,14 @@ int link_main(struct options *opt)
 				unsigned type = (unsigned)sym[16];
 
 				/*
+				 * Symbols have a "type", typically 0x20 or
+				 * 0x00 (function or unknown). The current
+				 * implementation removes this information
+				 * and uses the data field internally.
+				 */
+				sym[14] = 0, sym[15] = 0;
+
+				/*
 				 * The current implementation changes weak
 				 * externals to "normal" externals. Symbol
 				 * type 0xFF is replaced with type 6. The
