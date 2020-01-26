@@ -22,9 +22,12 @@
 section .text
 
         extern uefi_main
+        global __dancy_export_start
         global start
 
 align 16
+__dancy_export_start:
+
         ; void start(uint64_t, uint64_t, uint64_t)
 start:
         push rbp                        ; save register rbp
