@@ -366,40 +366,40 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	/*
 	 * Detect exported symbols.
 	 */
-	if (strcmp(opt->arg_f, "obj")) {
-		static const char *exp_prefix = "__dancy_export_";
-		int exp_mode = 0;
+	if (!opt->export_all && strcmp(opt->arg_f, "obj")) {
+		unsigned char *sym;
+		const char *name;
+		int j;
 
 		for (i = 0; i < (int)LE32(&obj[12]); i++) {
-			unsigned char *sym = obj + symtab + (i * 18);
+			sym = obj + symtab + (i * 18);
 
 			if ((unsigned)sym[16] == 2u)
 				sym[14] = 0x01u;
 		}
 
 		for (i = 0; i < (int)LE32(&obj[12]); i++) {
-			unsigned char *sym = obj + symtab + (i * 18);
-			unsigned sym_found = 0;
-			const char *name;
-			int j;
+			unsigned long sym_found = 0;
+
+			sym = obj + symtab + (i * 18);
 
 			if ((unsigned)sym[16] != 2u)
 				continue;
 
 			name = get_long_name(opt, sym);
 
-			if (strncmp(name, exp_prefix, 15) || name[15] == '\0')
+			if (strncmp(name, "__dancy_export_", 15))
 				continue;
 
 			name += 15;
 			sym[16] = 3u;
-			exp_mode = 1;
 
 			for (j = 0; j < (int)LE32(&obj[12]); j++) {
 				sym = obj + symtab + (j * 18);
 
 				if ((unsigned)sym[16] != 2u)
 					continue;
+
 				if (!LE16(&sym[12]))
 					continue;
 
@@ -415,21 +415,14 @@ int symbol_process(struct options *opt, unsigned char *obj)
 					if (!strcmp(s, name))
 						sym[14] = 0x00u, sym_found++;
 				}
-
-				if (sym_found > 1) {
-					fprintf(stderr, "Error: symbol \"");
-					fprintf(stderr, "%s\" ", name);
-					fprintf(stderr, "multiply defined (");
-					fprintf(stderr, "%s)\n", (name - 15));
-					return 1;
-				}
 			}
-		}
 
-		if (!exp_mode) {
-			for (i = 0; i < (int)LE32(&obj[12]); i++) {
-				unsigned char *sym = obj + symtab + (i * 18);
-				sym[14] = 0x00u;
+			if (sym_found > 1) {
+				fprintf(stderr, "Error: symbol \"");
+				fprintf(stderr, "%s\" ", name);
+				fprintf(stderr, "multiply defined ");
+				fprintf(stderr, "(%s)\n", (name - 15));
+				return 1;
 			}
 		}
 	}

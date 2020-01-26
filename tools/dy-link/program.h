@@ -46,6 +46,7 @@ struct options {
 	int verbose;
 	int dump;
 	int dump_ext;
+	int export_all;
 	int nr_ofiles;
 	struct ofile *ofiles;
 	unsigned long alignbits_t;
