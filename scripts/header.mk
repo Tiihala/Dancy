@@ -81,6 +81,7 @@ DANCY_HEADERS= \
  ./include/dancy/stdio.h \
  ./include/dancy/stdlib.h \
  ./include/dancy/string.h \
+ ./include/dancy/symbol.h \
  ./include/dancy/types.h \
  ./include/dancy.h \
  ./include/init.h \

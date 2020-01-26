@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2020 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -30,6 +30,7 @@
 #include <dancy/stdio.h>
 #include <dancy/stdlib.h>
 #include <dancy/string.h>
+#include <dancy/symbol.h>
 #include <dancy/types.h>
 
 /*

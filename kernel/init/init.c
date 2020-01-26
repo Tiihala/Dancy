@@ -89,3 +89,5 @@ void init(void)
 		memory_print_map(b_print);
 	}
 }
+
+DANCY_SYMBOL(init);
