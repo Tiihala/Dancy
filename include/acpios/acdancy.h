@@ -46,4 +46,13 @@
 #define ACPI_USE_NATIVE_DIVIDE
 #define ACPI_USE_SYSTEM_CLIBRARY
 
+int acpios_acquire_global_lock(void *facs);
+int acpios_release_global_lock(void *facs);
+
+#define ACPI_ACQUIRE_GLOBAL_LOCK(FacsPtr, Acquired) \
+	( Acquired = (BOOLEAN)acpios_acquire_global_lock((FacsPtr)) )
+
+#define ACPI_RELEASE_GLOBAL_LOCK(FacsPtr, Pending) \
+	( Pending = (BOOLEAN)acpios_release_global_lock((FacsPtr)) )
+
 #endif
