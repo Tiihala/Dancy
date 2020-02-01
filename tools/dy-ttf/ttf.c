@@ -976,7 +976,9 @@ static size_t ttf_build_cmap(size_t offset)
 
 static size_t ttf_build_glyf(size_t offset)
 {
-	long head_xmin = 0, head_ymin = 0, head_xmax = 0, head_ymax = 0;
+	long head_xmin = LONG_MAX, head_ymin = LONG_MAX;
+	long head_xmax = 0, head_ymax = 0;
+
 	unsigned long maxp_points = 0, maxp_contours = 0;
 	long ymin_limit = -((long)ttf_head_em / 4L);
 	long ymax_limit = (long)ttf_head_em - ((long)ttf_head_em / 4L);
@@ -986,7 +988,7 @@ static size_t ttf_build_glyf(size_t offset)
 	unsigned long i, j;
 
 	for (i = 0; i < ttf_loca_points; i++) {
-		long xmin = 0, ymin = 0, xmax = 0, ymax = 0;
+		long xmin = LONG_MAX, ymin = LONG_MAX, xmax = 0, ymax = 0;
 		unsigned long val, contours = 0;
 		size_t size = 0;
 
@@ -1033,6 +1035,11 @@ static size_t ttf_build_glyf(size_t offset)
 			if (head_ymax < y)
 				head_ymax = y;
 		}
+
+		if (xmin > xmax)
+			xmin = 0;
+		if (ymin > ymax)
+			ymin = 0;
 
 		if (i < ttf_hmtx_points) {
 			ttf_hmtx_array[i].xmin = xmin;
@@ -1139,6 +1146,35 @@ static size_t ttf_build_glyf(size_t offset)
 		return 0;
 	}
 
+	if (head_xmin > head_xmax || head_ymin > head_ymax) {
+		fputs("Error: bounding box not set\n", stderr);
+		return 0;
+	}
+
+	/*
+	 * Normalize advance widths and left side bearings.
+	 */
+	for (i = 0; i < ttf_hmtx_points; i++) {
+		unsigned long width = ttf_hmtx_array[i].width;
+		long xmin = ttf_hmtx_array[i].xmin;
+		long xmax = ttf_hmtx_array[i].xmax;
+		long xlen = xmax - xmin;
+
+		if (xlen < 0 || xmin < 0 || xmax >= (long)ttf_head_em) {
+			fputs("Error: hmtx table inconsistency\n", stderr);
+			return 0;
+		}
+
+		if (xmax > (long)width)
+			width = (unsigned long)xmax + 1;
+
+		if (width > ttf_head_em)
+			width = ttf_head_em;
+
+		ttf_hmtx_array[i].width = width;
+		ttf_hmtx_array[i].lsb = (xlen > 0) ? xmin : 0L;
+	}
+
 	ttf_head_xmin = head_xmin;
 	ttf_head_ymin = head_ymin;
 	ttf_head_xmax = head_xmax;
@@ -1218,6 +1254,11 @@ static size_t ttf_build_hhea(size_t offset)
 		long xmin = ttf_hmtx_array[i].xmin;
 		long xmax = ttf_hmtx_array[i].xmax;
 		long rsb = (long)width - lsb - (xmax - xmin);
+
+		if (lsb < 0 || rsb < 0) {
+			fputs("Error: hmtx table inconsistency\n", stderr);
+			return 0;
+		}
 
 		if (maxwid < width)
 			maxwid = width;
