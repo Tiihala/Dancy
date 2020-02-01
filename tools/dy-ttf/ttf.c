@@ -978,6 +978,8 @@ static size_t ttf_build_glyf(size_t offset)
 {
 	long head_xmin = 0, head_ymin = 0, head_xmax = 0, head_ymax = 0;
 	unsigned long maxp_points = 0, maxp_contours = 0;
+	long ymin_limit = -((long)ttf_head_em / 4L);
+	long ymax_limit = (long)ttf_head_em - ((long)ttf_head_em / 4L);
 
 	unsigned char *p = &output_data[offset];
 	size_t total_size = 0;
@@ -996,9 +998,22 @@ static size_t ttf_build_glyf(size_t offset)
 		for (j = 0; j < ttf_glyf_points; j++) {
 			long x = ttf_glyf_array[j].x;
 			long y = ttf_glyf_array[j].y;
+			int skip = 0;
 
 			if ((ttf_glyf_array[j].flag & 0x0100) != 0)
 				contours += 1;
+
+			if (x < 0 || x >= (long)ttf_head_em)
+				skip = 1;
+			if (y < ymin_limit || y >= ymax_limit)
+				skip = 1;
+
+			if (skip) {
+				xmin = 0, xmax = 0;
+				ttf_glyf_points = 0;
+				contours = 0;
+				break;
+			}
 
 			if (xmin > x)
 				xmin = x;
