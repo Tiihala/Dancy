@@ -22,22 +22,13 @@
 static unsigned char *output_data;
 static size_t        output_size;
 
-static unsigned long ttf_head_size;
-static unsigned long ttf_head_flags;
 static unsigned long ttf_head_em;
 static signed long   ttf_head_xmin;
 static signed long   ttf_head_ymin;
 static signed long   ttf_head_xmax;
 static signed long   ttf_head_ymax;
-static unsigned long ttf_head_lowest;
 static unsigned long ttf_head_locfmt;
 
-static signed long   ttf_hhea_ascent;
-static signed long   ttf_hhea_descent;
-static signed long   ttf_hhea_linegap;
-static unsigned long ttf_hhea_maxwid;
-static signed long   ttf_hhea_minlsb;
-static signed long   ttf_hhea_minrsb;
 static unsigned long ttf_hhea_metrics;
 
 static unsigned long ttf_maxp_glyphs;
@@ -65,8 +56,6 @@ static int ttf_read_head(void)
 	if (table_find(TTF_TABLE_HEAD, &table, &size))
 		return 1;
 
-	ttf_head_size = (unsigned long)size;
-	ttf_head_flags = BE16(&table[16]);
 	ttf_head_em = BE16(&table[18]);
 
 	val = BE16(&table[36]);
@@ -81,7 +70,6 @@ static int ttf_read_head(void)
 	val = BE16(&table[42]);
 	ttf_head_ymax = BE16_TO_LONG(val);
 
-	ttf_head_lowest = BE16(&table[46]);
 	ttf_head_locfmt = BE16(&table[50]);
 
 	return 0;
@@ -90,31 +78,12 @@ static int ttf_read_head(void)
 static int ttf_read_hhea(void)
 {
 	unsigned char *table;
-	unsigned long val;
 	size_t size;
 
 	if (table_find(TTF_TABLE_HHEA, &table, &size))
 		return 1;
 
-	val = BE16(&table[4]);
-	ttf_hhea_ascent = BE16_TO_LONG(val);
-
-	val = BE16(&table[6]);
-	ttf_hhea_descent = BE16_TO_LONG(val);
-
-	val = BE16(&table[8]);
-	ttf_hhea_linegap = BE16_TO_LONG(val);
-
-	ttf_hhea_maxwid = BE16(&table[10]);
-
-	val = BE16(&table[12]);
-	ttf_hhea_minlsb = BE16_TO_LONG(val);
-
-	val = BE16(&table[14]);
-	ttf_hhea_minrsb = BE16_TO_LONG(val);
-
 	ttf_hhea_metrics = BE16(&table[34]);
-
 	return 0;
 }
 
@@ -1250,13 +1219,13 @@ static size_t ttf_build_hhea(size_t offset)
 
 	W_BE16(&p[0], 0x0001);
 
-	val = LONG_TO_UNSIGNED(ttf_hhea_ascent);
+	val = LONG_TO_UNSIGNED((long)ttf_head_em - ((long)ttf_head_em / 4L));
 	W_BE16(&p[4], val);
 
-	val = LONG_TO_UNSIGNED(ttf_hhea_descent);
+	val = LONG_TO_UNSIGNED(-((long)ttf_head_em / 4L));
 	W_BE16(&p[6],val);
 
-	val = LONG_TO_UNSIGNED(ttf_hhea_linegap);
+	val = LONG_TO_UNSIGNED((long)ttf_head_em / 32L);
 	W_BE16(&p[8], val);
 
 	W_BE16(&p[10], maxwid);
