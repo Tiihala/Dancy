@@ -33,6 +33,38 @@ static void put_name(const char *name, char *out)
 	out[j] = '\0';
 }
 
+static void put_name_sd(const char *dir_name, const char *name, char *out)
+{
+	const int dir_name_limit = 16;
+	const char *ptr;
+	int i;
+
+	ptr = dir_name;
+	for (i = 0; /* void */; i++) {
+		char c = dir_name[i];
+		if (c == '\0')
+			break;
+		if (c == '\\' || c == '/')
+			ptr = &dir_name[i + 1];
+	}
+	for (i = 0; i < dir_name_limit; i++) {
+		char c = ptr[i];
+		if (c == '\0' || c == '.')
+			break;
+		*out++ = c;
+	}
+	ptr = name;
+	for (i = 0; /* void */; i++) {
+		char c = name[i];
+		if (c == '\0')
+			break;
+		if (c == '\\' || c == '/')
+			ptr = &name[i + 1];
+	}
+	*out++ = '/';
+	put_name(ptr, out);
+}
+
 static int check_name(const char *name)
 {
 	char buf[128];
@@ -72,6 +104,7 @@ static int create_output(struct options *opt, struct state *zip)
 		return fputs("Error: not enough memory\n", stderr), 1;
 
 	for (i = 0; i < zip->fnum; i++) {
+		const char *name = opt->operands[i];
 		unsigned long ul;
 		size_t len;
 
@@ -82,7 +115,11 @@ static int create_output(struct options *opt, struct state *zip)
 			fputs("Error: too many input files\n", stderr);
 			return 1;
 		}
-		put_name(opt->operands[i], (char *)&out[off + 46]);
+
+		if (opt->single_dir)
+			put_name_sd(opt->arg_o, name, (char *)&out[off + 46]);
+		else
+			put_name(name, (char *)&out[off + 46]);
 
 		/*
 		 * File name length.
@@ -472,8 +509,10 @@ int program(struct options *opt)
 			buf[1] = (char)tolower((int)o[1]);
 			buf[7] = (char)tolower((int)o[7]);
 			buf[8] = (char)tolower((int)o[8]);
-			if (!strcmp(&buf[0], "db_000.at"))
+			if (!strcmp(&buf[0], "db_000.at")) {
+				opt->single_dir = 0;
 				zip.split = 1;
+			}
 		}
 		if (opt->verbose && zip.split)
 			fputs("Using split mode\n", stdout);

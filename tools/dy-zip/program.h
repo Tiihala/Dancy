@@ -44,6 +44,7 @@ struct options {
 	const char *error;
 	const char *arg_o;
 	const char *arg_t;
+	int single_dir;
 	int verbose;
 };
 

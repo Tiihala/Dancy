@@ -25,6 +25,7 @@ static const char *help_str =
 	"\nOptions:\n"
 	"  -o output     output\n"
 	"  -t timestamp  YYYY-MM-DDThh:mm:ss\n"
+	"  --single-dir  single directory for all files\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -79,6 +80,10 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "single-dir")) {
+				opts.single_dir = 1;
 				continue;
 			}
 			help("unknown long option \"%s\"", arg);
