@@ -53,5 +53,13 @@ LOADER_FILE=-t 2019-03-03T08:58:39 --read-only
 	$(DY_MCOPY) -i $@ ./LOADER.512 ::LOADER.512 $(LDR512_FILE)
 	$(DY_MCOPY) -i $@ ./LOADER.AT ::LOADER.AT $(LOADER_FILE)
 
-./release/dancy.zip: $(DANCY_TARGET_IMAGES) README VERSION
-	$(DY_ZIP) -o $@ ./release/dancy.iso ./README ./VERSION
+##############################################################################
+
+DANCY_ZIP_FILES= \
+ ./README \
+ ./release/dancy.iso \
+ ./release/fdd1440.img \
+ ./release/usbtiny.img
+
+./release/dancy.zip: $(DANCY_TARGET_IMAGES) ./README
+	$(DY_ZIP) -o $@ --single-dir $(DANCY_ZIP_FILES)
