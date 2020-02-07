@@ -81,6 +81,16 @@ struct options {
 #define LONG_TO_UNSIGNED(a) \
 	((((a) < 0) ? ~((unsigned)(-(a))) + 1u : (unsigned)(a)) & 0xFFFFu)
 
+#define DANCY_BLOB(a,b,c,d,e,f,g,h) \
+	(unsigned)(a) >> 8 & 0xFFu, (unsigned)(a) & 0xFFu, \
+	(unsigned)(b) >> 8 & 0xFFu, (unsigned)(b) & 0xFFu, \
+	(unsigned)(c) >> 8 & 0xFFu, (unsigned)(c) & 0xFFu, \
+	(unsigned)(d) >> 8 & 0xFFu, (unsigned)(d) & 0xFFu, \
+	(unsigned)(e) >> 8 & 0xFFu, (unsigned)(e) & 0xFFu, \
+	(unsigned)(f) >> 8 & 0xFFu, (unsigned)(f) & 0xFFu, \
+	(unsigned)(g) >> 8 & 0xFFu, (unsigned)(g) & 0xFFu, \
+	(unsigned)(h) >> 8 & 0xFFu, (unsigned)(h) & 0xFFu
+
 /*
  * The required TTF tables.
  */
@@ -149,6 +159,12 @@ int table_find(unsigned long name, unsigned char **table, size_t *size);
 int table_init(unsigned char *data, size_t size);
 unsigned table_log2(unsigned num);
 unsigned table_power_of_two(unsigned num);
+
+/*
+ * template.c
+ */
+extern unsigned char template_font[];
+size_t template_size;
 
 /*
  * ttf.c
