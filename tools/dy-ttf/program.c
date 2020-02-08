@@ -21,11 +21,10 @@
 
 static size_t input_size;
 static unsigned char *input_file;
-static int input_is_file;
 
 static void free_files(void)
 {
-	if (input_is_file && input_file) {
+	if (input_file) {
 		free(input_file);
 		input_size = 0;
 		input_file = NULL;
@@ -36,9 +35,10 @@ int program(struct options *opt)
 {
 	int ret;
 
-	input_is_file = (!opt->operands[0]) ? 0 : 1;
+	if (!opt->operands[0])
+		return opt->error = "no input", 1;
 
-	if (!input_is_file && opt->render) {
+	if (opt->render) {
 		if (!opt->arg_o)
 			return opt->error = "no output", 1;
 		if (!opt->operands[1])
@@ -49,26 +49,20 @@ int program(struct options *opt)
 			return opt->error = "invalid code point", 1;
 	}
 
-	if (!input_is_file && opt->operands[(opt->render ? 2 : 1)])
+	if (opt->operands[(opt->render ? 2 : 1)])
 		return opt->error = "too many operands", 1;
 
-	if (input_is_file) {
-		if (read_file(opt->operands[0], &input_file, &input_size))
-			return free_files(), 1;
+	if (read_file(opt->operands[0], &input_file, &input_size))
+		return free_files(), 1;
 
-		if (opt->verbose) {
-			const char *fmt = "Read file %s, %u bytes\n";
-			printf(fmt, opt->operands[0], (unsigned)input_size);
-		}
-	} else {
-		input_size = template_size;
-		input_file = &template_font[0];
+	if (opt->verbose) {
+		const char *fmt = "Read file %s, %u bytes\n";
+		printf(fmt, opt->operands[0], (unsigned)input_size);
 	}
 
 	/*
 	 * Make sure that input_size is 4-byte aligned. It is safe
 	 * to extend the buffer (see read_file and the chunk sizes).
-	 * Template font is always properly aligned.
 	 */
 	if (input_size != 0 && (input_size % 4) != 0) {
 		size_t bytes_to_clear = (input_size % 4);
