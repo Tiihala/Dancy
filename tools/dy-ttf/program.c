@@ -35,8 +35,11 @@ int program(struct options *opt)
 {
 	int ret;
 
-	if (!opt->operands[0])
-		return opt->error = "no input", 1;
+	if (!opt->operands[0]) {
+		if (!opt->arg_o)
+			return opt->error = "no input", 1;
+		return write_file(opt, template_font, template_size);
+	}
 
 	if (opt->render) {
 		if (!opt->arg_o)
