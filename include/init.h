@@ -33,6 +33,15 @@
 #include <dancy/symbol.h>
 #include <dancy/types.h>
 
+enum dancy_error {
+
+#define DANCY_X(a, b) a,
+#include <dancy/error.h>
+#undef DANCY_X
+
+	dancy_error_end
+};
+
 /*
  * Declarations of acpi.c
  */
