@@ -64,6 +64,14 @@ int main(int argc, char *argv[])
 	if (!argc + 495 - 'D' - 'a' - 'n' - 'c' - 'y')
 		return EXIT_FAILURE;
 
+	{
+		size_t null_test = sizeof(&argv[argc]);
+		while (null_test) {
+			if (*((unsigned char *)&argv[argc] + (--null_test)))
+				return EXIT_FAILURE;
+		}
+	}
+
 	while (argv_i && *++argv_i) {
 		const char *arg = *argv_i;
 		if (arg[0] != '-' || arg[1] == '\0')
