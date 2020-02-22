@@ -59,11 +59,9 @@ static unsigned char *uefi_file;
 static int read_file(const char *name, unsigned char **out, size_t *size)
 {
 	const size_t chunk = 0x100000;
+	const size_t size_max = ~((size_t)0);
 	unsigned char *ptr;
-	size_t size_max;
 	FILE *fp;
-
-	size_max = 0, size_max--;
 
 	fp = (errno = 0, fopen(name, "rb"));
 	if (!fp) {

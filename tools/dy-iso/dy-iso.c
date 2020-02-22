@@ -417,12 +417,10 @@ static int create_iso(int uefi)
 static int read_file(const char *name, unsigned char **out, size_t *size)
 {
 	const size_t chunk = 0x100000;
+	const size_t size_max = ~((size_t)0);
 	FILE *fp = stdin;
 	int is_stdin = 1;
 	unsigned char *ptr;
-	size_t size_max;
-
-	size_max = 0, size_max--;
 
 	if (strcmp(name, "-")) {
 		fp = (errno = 0, fopen(name, "rb"));

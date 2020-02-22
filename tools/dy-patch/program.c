@@ -49,12 +49,10 @@ int program(struct options *opt)
 int read_file(const char *name, unsigned char **out, size_t *size)
 {
 	size_t chunk = 0x1000;
+	const size_t size_max = ~((size_t)0);
 	FILE *fp = stdin;
 	int is_stdin = 1;
 	unsigned char *ptr;
-	size_t size_max;
-
-	size_max = 0, size_max--;
 
 	if (strcmp(name, "-")) {
 		fp = (errno = 0, fopen(name, "rb"));

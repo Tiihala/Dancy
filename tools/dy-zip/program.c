@@ -231,11 +231,9 @@ static int create_output(struct options *opt, struct state *zip)
 static int read_file(const char *name, unsigned char **out, size_t *size)
 {
 	size_t chunk = 0x1000;
+	const size_t size_max = ~((size_t)0);
 	unsigned char *ptr;
-	size_t size_max;
 	FILE *fp;
-
-	size_max = 0, size_max--;
 
 	fp = (errno = 0, fopen(name, "rb"));
 	if (!fp) {
@@ -478,12 +476,10 @@ static int write_output(struct options *opt, struct state *zip)
 
 int program(struct options *opt)
 {
+	const size_t size_max = ~((size_t)0);
 	struct state zip;
 	size_t total_size = 0;
-	size_t size_max;
 	int i;
-
-	size_max = 0, size_max--;
 
 	memset(&zip, 0, sizeof(zip));
 	if (opt->operands[0] == NULL)
