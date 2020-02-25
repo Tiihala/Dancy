@@ -53,7 +53,7 @@ static int hex_string_to_byte(const char *in, unsigned char *out)
 	return (out[0] = 0), 1;
 }
 
-int program(struct options *opt)
+static int program(struct options *opt)
 {
 	unsigned char buf[512];
 	unsigned char guid[16];

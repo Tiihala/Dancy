@@ -115,7 +115,7 @@ static int set_header(unsigned char type, unsigned char *buf, size_t size)
 	return 0;
 }
 
-int program(struct options *opt)
+static int program(struct options *opt)
 {
 	unsigned char type = 0x00;
 

@@ -230,7 +230,7 @@ static int create(struct options *opt)
 	return 0;
 }
 
-int program(struct options *opt)
+static int program(struct options *opt)
 {
 	const unsigned char *vbr = &vbrchs_bin[0];
 	unsigned char buf[512];

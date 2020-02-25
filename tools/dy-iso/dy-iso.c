@@ -544,7 +544,7 @@ static int parse_time(const char *time, struct tm *out)
 	return 0;
 }
 
-int program(struct options *opt)
+static int program(struct options *opt)
 {
 	if (opt->arg_t) {
 		if (parse_time(opt->arg_t, &iso_tm_arg))

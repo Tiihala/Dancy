@@ -141,7 +141,7 @@ static int create_config_file(struct options *opt)
 	return write_file(opt, &out[0], 128);
 }
 
-int program(struct options *opt)
+static int program(struct options *opt)
 {
 	int i, j;
 

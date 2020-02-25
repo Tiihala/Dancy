@@ -58,7 +58,7 @@ struct options {
 	int verbose;
 };
 
-int program(struct options *opt)
+static int program(struct options *opt)
 {
 	FILE *fp;
 	int is_stdout = 0;

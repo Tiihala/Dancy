@@ -198,7 +198,7 @@ static int uefi(struct options *opt)
 	return free(outbuf), 0;
 }
 
-int program(struct options *opt)
+static int program(struct options *opt)
 {
 	if (!*opt->operands || *(opt->operands + 1))
 		return opt->error = "missing/unsupported arguments", 1;

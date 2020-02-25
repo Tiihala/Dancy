@@ -41,7 +41,7 @@ struct options {
 	int verbose;
 };
 
-int program(struct options *opt)
+static int program(struct options *opt)
 {
 	unsigned char buf[512];
 	FILE *fp;

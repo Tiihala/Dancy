@@ -37,7 +37,7 @@ struct options {
 	int verbose;
 };
 
-int program(struct options *opt)
+static int program(struct options *opt)
 {
 	const char *path = getenv("PATH");
 	size_t len;
