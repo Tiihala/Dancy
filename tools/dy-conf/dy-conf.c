@@ -91,7 +91,7 @@ static int write_file(struct options *opt, unsigned char *out, size_t size)
 	*((a) + 2) = (unsigned char)(((unsigned long)(d) >> 16) & 0xFFul), \
 	*((a) + 3) = (unsigned char)(((unsigned long)(d) >> 24) & 0xFFul))
 
-int create_config_file(struct options *opt)
+static int create_config_file(struct options *opt)
 {
 	static const unsigned char file_header[16] = {
 		0x8D, 0x41, 0x54, 0x0D, 0x0A, 0x73, 0x74, 0x64,
