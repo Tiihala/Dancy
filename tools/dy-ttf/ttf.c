@@ -1579,7 +1579,7 @@ int ttf_main(struct options *opt)
 
 	if (output_data == NULL) {
 		fputs("Error: not enough memory\n", stderr);
-		return 1;
+		return ttf_free(), 1;
 	}
 
 	memset(output_data, 0, output_size);
