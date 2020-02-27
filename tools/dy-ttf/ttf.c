@@ -1171,7 +1171,7 @@ static size_t ttf_build_glyf(size_t offset)
 		long xmax = ttf_hmtx_array[i].xmax;
 		long xlen = xmax - xmin;
 
-		if (xlen < 0 || xmin < 0 || xmax >= (long)ttf_head_em) {
+		if (xlen < 0 || xmin < 0 || xmax > (long)ttf_head_em) {
 			fputs("Error: hmtx table inconsistency\n", stderr);
 			return 0;
 		}
