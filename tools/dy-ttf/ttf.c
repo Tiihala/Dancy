@@ -1001,11 +1001,8 @@ static size_t ttf_build_glyf(size_t offset)
 		 * The master outline resolution is decreased.
 		 */
 		for (j = 0; j < ttf_glyf_points; j++) {
-			long x = ttf_glyf_array[j].x;
-			long y = ttf_glyf_array[j].y;
-
-			x = ((x % 8) >= 4) ? ((x + 1) / 8) : (x / 8);
-			y = ((y % 8) >= 4) ? ((y + 1) / 8) : (y / 8);
+			long x = ttf_glyf_array[j].x / 8;
+			long y = ttf_glyf_array[j].y / 8;
 
 			ttf_glyf_array[j].x = x * 8;
 			ttf_glyf_array[j].y = y * 8;
