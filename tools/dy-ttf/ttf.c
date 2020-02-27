@@ -997,6 +997,20 @@ static size_t ttf_build_glyf(size_t offset)
 			return 0;
 		}
 
+		/*
+		 * The master outline resolution is decreased.
+		 */
+		for (j = 0; j < ttf_glyf_points; j++) {
+			long x = ttf_glyf_array[j].x;
+			long y = ttf_glyf_array[j].y;
+
+			x = ((x % 8) >= 4) ? ((x + 1) / 8) : (x / 8);
+			y = ((y % 8) >= 4) ? ((y + 1) / 8) : (y / 8);
+
+			ttf_glyf_array[j].x = x * 8;
+			ttf_glyf_array[j].y = y * 8;
+		}
+
 		for (j = 0; j < ttf_glyf_points; j++) {
 			long x = ttf_glyf_array[j].x;
 			long y = ttf_glyf_array[j].y;
@@ -1546,6 +1560,14 @@ int ttf_main(struct options *opt)
 	if (opt->render) {
 		ret = ttf_render(opt);
 		return ttf_free(), ret;
+	}
+
+	/*
+	 * Dancy-compatible .ttf file requires a specific "em" size.
+	 */
+	if (ttf_head_em != 2048) {
+		fputs("Error: the em size is not 2048\n", stderr);
+		return ttf_free(), 1;
 	}
 
 	/*
