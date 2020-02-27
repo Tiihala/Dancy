@@ -1016,9 +1016,9 @@ static size_t ttf_build_glyf(size_t offset)
 			if ((ttf_glyf_array[j].flag & 0x0100) != 0)
 				contours += 1;
 
-			if (x < 0 || x >= (long)ttf_head_em)
+			if (x < 0 || x > (long)ttf_head_em)
 				skip = 1;
-			if (y < ymin_limit || y >= ymax_limit)
+			if (y < ymin_limit || y > ymax_limit)
 				skip = 1;
 
 			if (skip) {
