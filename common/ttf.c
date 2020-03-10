@@ -677,10 +677,10 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 	if (width != NULL)
 		*width = (adv_width * em_value) / 2048;
 
-	if (this_ttf->bitmap_size == 0)
+	if (size < 2 || this_ttf->bitmap_size == 0)
 		return 0;
 
-	if (size < 2 || (contours = BE16(&glyph[0])) >= 0x8000ul)
+	if ((contours = BE16(&glyph[0])) >= 0x8000ul)
 		return 1;
 	if (size < (12 + contours * 2))
 		return 1;
