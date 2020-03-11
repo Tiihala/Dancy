@@ -257,21 +257,22 @@ static int handle_cmap(void *ttf, size_t size, const unsigned char *table)
 	if (cmap_points == 0)
 		return free(cmap_array), 1;
 
-	size = cmap_points * sizeof(struct ttf_glyph);
+	size = (cmap_points + 1) * sizeof(struct ttf_glyph);
 
 	this_ttf->glyph_array = malloc(size);
 	if (this_ttf->glyph_array == NULL)
 		return free(cmap_array), 1;
 
 	memset(this_ttf->glyph_array, 0, size);
+	this_ttf->glyph_array[0].data = NULL;
 
 	for (i = 0; i < cmap_points; i++) {
-		this_ttf->glyph_array[i].code_pnt = cmap_array[i].pnt;
-		this_ttf->glyph_array[i].loca_idx = cmap_array[i].idx;
-		this_ttf->glyph_array[i].data = NULL;
+		this_ttf->glyph_array[i + 1].code_pnt = cmap_array[i].pnt;
+		this_ttf->glyph_array[i + 1].loca_idx = cmap_array[i].idx;
+		this_ttf->glyph_array[i + 1].data = NULL;
 	}
 
-	this_ttf->glyph_entries = cmap_points;
+	this_ttf->glyph_entries = cmap_points + 1;
 	return free(cmap_array), 0;
 }
 
@@ -662,7 +663,7 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 	size = this_ttf->glyph_array[0].size;
 	adv_width = this_ttf->glyph_array[0].adv_width;
 
-	for (i = 0; i < glyph_entries; i++) {
+	for (i = 1; i < glyph_entries; i++) {
 		if (this_ttf->glyph_array[i].code_pnt == code_point) {
 			glyph = this_ttf->glyph_array[i].data;
 			size = this_ttf->glyph_array[i].size;
