@@ -757,26 +757,27 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 
 		for (i = 0; i < points; i++) {
 			unsigned char *px, *py;
+			unsigned int wx, wy;
 
 			px = glyph + (offset + (points * 1) + (i * 2));
-			x = (x + BE16(&px[0])) & 0xFFFFu;
+			wx = x = (x + BE16(&px[0])) & 0xFFFFu;
 
 			py = glyph + (offset + (points * 3) + (i * 2));
-			y = (y + BE16(&py[0])) & 0xFFFFu;
+			wy = y = (y + BE16(&py[0])) & 0xFFFFu;
 
 			if ((x & 0xF807u) != 0) {
 				if (x != 2048)
-					return 1;
-				x = 2040;
+					return glyph[offset] = 0x7F, 1;
+				wx = 2040;
 			}
 			if ((y & 0xF807u) != 0) {
 				if (y != 2048)
-					return 1;
-				y = 2040;
+					return glyph[offset] = 0x7F, 1;
+				wy = 2040;
 			}
 
-			W_BE16(px, x);
-			W_BE16(py, y);
+			W_BE16(px, wx);
+			W_BE16(py, wy);
 		}
 	}
 
