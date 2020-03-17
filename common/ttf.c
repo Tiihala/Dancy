@@ -215,7 +215,7 @@ static int handle_cmap(void *ttf, size_t size, const unsigned char *table)
 				return 1;
 
 			add = (t2 - t1) + 1;
-			if (!(cmap_points < ULONG_MAX - add))
+			if (!(cmap_points < UINT_MAX - add))
 				return 1;
 
 			cmap_points += add;
@@ -291,7 +291,7 @@ static int handle_glyf(void *ttf, size_t size, const unsigned char *table)
 static int handle_loca(void *ttf, size_t size, const unsigned char *table)
 {
 	unsigned char *glyf = this_ttf->glyf;
-	unsigned int glyf_size = this_ttf->glyf_size;
+	size_t glyf_size = this_ttf->glyf_size;
 
 	unsigned int glyph_entries = this_ttf->glyph_entries;
 	unsigned int loca_entries = (unsigned int)(size / 4);
@@ -415,7 +415,7 @@ int ttf_set_bitmap(void *ttf, size_t size, void *bitmap)
 		if (em_value * em_value == size) {
 			this_ttf->bitmap = bitmap;
 			this_ttf->bitmap_size = size;
-			this_ttf->em_value = em_value;
+			this_ttf->em_value = (unsigned int)em_value;
 			return 0;
 		}
 	}
