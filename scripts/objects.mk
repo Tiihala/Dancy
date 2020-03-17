@@ -8,6 +8,9 @@
 ./o32/common/crc32c.o: ./common/crc32c.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/crc32c.c
 
+./o32/common/ttf.o: ./common/ttf.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./common/ttf.c
+
 ./o32/acpios/a32/glblock.o: ./kernel/acpios/a32/glblock.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/acpios/a32/glblock.asm
 
@@ -88,6 +91,9 @@
 
 ./o64/common/crc32c.o: ./common/crc32c.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/crc32c.c
+
+./o64/common/ttf.o: ./common/ttf.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./common/ttf.c
 
 ./o64/acpios/a64/glblock.o: ./kernel/acpios/a64/glblock.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/acpios/a64/glblock.asm
