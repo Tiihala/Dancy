@@ -93,7 +93,7 @@ void init(void)
 		}
 
 		if (ttf_open(ttf, ttf_size, ttf_data)) {
-			b_print("Error: ttf_create (%s)\n", ttf_name);
+			b_print("Error: ttf_open (%s)\n", ttf_name);
 			return;
 		}
 
