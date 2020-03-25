@@ -19,6 +19,8 @@
 
 #include <init.h>
 
+void *ttf;
+
 void init(void)
 {
 	const uint32_t log_mem = 0x00080000;
@@ -68,6 +70,34 @@ void init(void)
 		 */
 		if (vi.mode == B_MODE_VGA || vi.mode == B_MODE_PALETTE)
 			vga_set_palette();
+	}
+
+	/*
+	 * Load dancy.ttf and create a ttf object.
+	 */
+	{
+		static const char *ttf_name = "data/fonts/dancy.ttf";
+		unsigned char *ttf_data;
+		size_t ttf_size;
+
+		int r = db_read(ttf_name, &ttf_data, &ttf_size);
+
+		if (r != 0) {
+			b_print("%s error: %s\n", ttf_name, db_read_error(r));
+			return;
+		}
+
+		if (ttf_create(&ttf)) {
+			b_print("Error: ttf_create\n");
+			return;
+		}
+
+		if (ttf_open(ttf, ttf_size, ttf_data)) {
+			b_print("Error: ttf_create (%s)\n", ttf_name);
+			return;
+		}
+
+		free(ttf_data);
 	}
 
 	/*
