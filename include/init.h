@@ -114,6 +114,16 @@ const char *db_read_error(int retval);
 
 
 /*
+ * Declarations of gui.c
+ */
+int gui_init(void);
+int gui_create_window(const char *name, int x1, int y1, int x2, int y2);
+int gui_delete_window(void);
+void gui_print(const char *format, ...);
+void gui_refresh(void);
+
+
+/*
  * Declarations of huffman.c
  */
 struct huffman {

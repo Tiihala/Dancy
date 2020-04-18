@@ -101,9 +101,20 @@ void init(void)
 	}
 
 	/*
+	 * Initialize graphical user interface while boot services
+	 * are still available. The actual GUI does not require them.
+	 */
+	if (gui_init()) {
+		b_print("*****************************************\n");
+		b_print("**** Graphical Mode is not supported ****\n");
+		b_print("*****************************************\n\n");
+	}
+
+	/*
 	 * Temporary code for testing purposes.
 	 */
 	{
+		int x1, y1, x2, y2;
 		size_t i;
 
 		for (i = 0; i < boot_log_size; i++) {
@@ -116,7 +127,53 @@ void init(void)
 				break;
 		}
 
-		b_output_string(boot_log, (unsigned)boot_log_size);
+		x1 = 40;
+		y1 = 10;
+		x2 = (int)(vi.width / 2);
+		y2 = (int)(vi.height - 10);
+
+		gui_create_window("Memory Map", x1, y1, x2, y2);
+		memory_print_map(gui_print);
+
+		x1 = x1 + (int)(vi.width / 3);
+		y1 = y1 + 40;
+		x2 = x1 + 320;
+		y2 = y1 + 200;
+
+		for (i = 0; /* void */; i++) {
+			const char *name = "Dancy Operating System";
+			unsigned second = UINT_MAX;
+			int mov = (int)vi.height / 2 - 60;
+
+			gui_create_window(name, x1, y1, x2, y2);
+			gui_print("https://github.com/Tiihala/Dancy\n\n");
+
+			for (;;) {
+				rtc_read(&bt);
+
+				gui_print("\r%04u-%02u-%02u %02u:%02u:%02u",
+					bt.year, bt.month, bt.day,
+					bt.hour, bt.minute, bt.second);
+
+				if (second != bt.second) {
+					second = bt.second;
+					gui_refresh();
+				}
+
+				if ((bt.second % 10) == 9) {
+					while ((bt.second % 10) == 9)
+						rtc_read(&bt);
+					break;
+				}
+			}
+
+			gui_delete_window();
+
+			if ((i % 2) == 0)
+				y1 += mov, y2 += mov;
+			else
+				y1 -= mov, y2 -= mov;
+		}
 	}
 }
 
