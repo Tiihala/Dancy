@@ -70,6 +70,8 @@ align 16
         ; void cpu_rdtsc_delay(uint32_t a, uint32_t d)
 cpu_rdtsc_delay:
         push rbx                        ; save register rbx
+        test edx, edx                   ; test highest bit (input d)
+        js short .end
         mov r8d, ecx                    ; r8d = a
         mov r9d, edx                    ; r9d = d
         rdtsc                           ; read time-stamp counter
@@ -81,7 +83,7 @@ cpu_rdtsc_delay:
         sub eax, r8d                    ; compare to input a
         sbb edx, r9d                    ; compare to input d
         jc short .spin
-        pop rbx                         ; restore register rbx
+.end:   pop rbx                         ; restore register rbx
         ret
 
 align 16

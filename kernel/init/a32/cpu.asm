@@ -76,6 +76,8 @@ align 16
         ; void cpu_rdtsc_delay(uint32_t a, uint32_t d)
 _cpu_rdtsc_delay:
         push ebx                        ; save register ebx
+        test dword [esp+12], 0x80000000 ; test highest bit (input d)
+        jnz short .end
         rdtsc                           ; read time-stamp counter
         mov ecx, eax                    ; ecx = counter (low dword)
         mov ebx, edx                    ; ebx = counter (high dword)
@@ -85,7 +87,7 @@ _cpu_rdtsc_delay:
         sub eax, [esp+8]                ; compare to input a
         sbb edx, [esp+12]               ; compare to input d
         jc short .spin
-        pop ebx                         ; restore register ebx
+.end:   pop ebx                         ; restore register ebx
         ret
 
 align 16
