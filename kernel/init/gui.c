@@ -507,6 +507,47 @@ int gui_delete_window(void)
 	return 0;
 }
 
+int gui_move_window(int x, int y)
+{
+	struct gui_window *win = gui_window_stack;
+	unsigned i, j;
+
+	if (!gui_window_stack)
+		return 1;
+
+	if (x < 0 || (unsigned)x + win->win_width > vi.width)
+		return 1;
+
+	if (y < 0 || (unsigned)y + win->win_height > vi.height)
+		return 1;
+
+	for (i = 0; i < win->win_height; i++) {
+		unsigned behind = i * win->win_width;
+		unsigned buffer = i * vi.width;
+
+		for (j = 0; j < win->win_width; j++) {
+			unsigned char tmp = win->win_behind[behind];
+			win->win_behind[behind++] = win->win_buffer[buffer];
+			win->win_buffer[buffer++] = tmp;
+		}
+	}
+
+	win->win_buffer = back_buffer + (y * (int)vi.width) + x;
+
+	for (i = 0; i < win->win_height; i++) {
+		unsigned behind = i * win->win_width;
+		unsigned buffer = i * vi.width;
+
+		for (j = 0; j < win->win_width; j++) {
+			unsigned char tmp = win->win_behind[behind];
+			win->win_behind[behind++] = win->win_buffer[buffer];
+			win->win_buffer[buffer++] = tmp;
+		}
+	}
+
+	return 0;
+}
+
 static void handle_newline(void)
 {
 	unsigned win_width = gui_window_stack->win_width - 2;
