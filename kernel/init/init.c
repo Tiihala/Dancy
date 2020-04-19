@@ -129,7 +129,7 @@ void init(void)
 
 		x1 = 40;
 		y1 = 10;
-		x2 = (int)(vi.width / 2);
+		x2 = (int)(vi.width - vi.width / 3);
 		y2 = (int)(vi.height - 10);
 
 		gui_create_window("Memory Map", x1, y1, x2, y2);
@@ -140,13 +140,12 @@ void init(void)
 		x2 = x1 + 320;
 		y2 = y1 + 200;
 
+		gui_create_window("Dancy Operating System", x1, y1, x2, y2);
+		gui_print("https://github.com/Tiihala/Dancy\n\n");
+
 		for (i = 0; /* void */; i++) {
-			const char *name = "Dancy Operating System";
 			unsigned second = UINT_MAX;
 			int mov = (int)vi.height / 2 - 60;
-
-			gui_create_window(name, x1, y1, x2, y2);
-			gui_print("https://github.com/Tiihala/Dancy\n\n");
 
 			for (;;) {
 				rtc_read(&bt);
@@ -167,12 +166,12 @@ void init(void)
 				}
 			}
 
-			gui_delete_window();
-
 			if ((i % 2) == 0)
-				y1 += mov, y2 += mov;
+				y1 += mov;
 			else
-				y1 -= mov, y2 -= mov;
+				y1 -= mov;
+
+			gui_move_window(x1, y1);
 		}
 	}
 }
