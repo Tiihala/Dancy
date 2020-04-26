@@ -22,22 +22,22 @@
 #define VGA_COLORS 16
 
 static const uint32_t vga_colors[VGA_COLORS] = {
-	0x00000000, /* 0x00 */
-	0x00AA0000, /* 0x01 */
-	0x0000AA00, /* 0x02 */
-	0x00AAAA00, /* 0x03 */
-	0x000000AA, /* 0x04 */
-	0x00AA00AA, /* 0x05 */
-	0x000055AA, /* 0x06 */
-	0x00AAAAAA, /* 0x07 */
-	0x00555555, /* 0x08 */
-	0x00FF5555, /* 0x09 */
-	0x0055FF55, /* 0x0A */
-	0x00FFFF55, /* 0x0B */
-	0x005555FF, /* 0x0C */
-	0x00FF55FF, /* 0x0D */
-	0x0055FFFF, /* 0x0E */
-	0x00FFFFFF  /* 0x0F */
+	DANCY_PALETTE_0,
+	DANCY_PALETTE_1,
+	DANCY_PALETTE_2,
+	DANCY_PALETTE_3,
+	DANCY_PALETTE_4,
+	DANCY_PALETTE_5,
+	DANCY_PALETTE_6,
+	DANCY_PALETTE_7,
+	DANCY_PALETTE_8,
+	DANCY_PALETTE_9,
+	DANCY_PALETTE_A,
+	DANCY_PALETTE_B,
+	DANCY_PALETTE_C,
+	DANCY_PALETTE_D,
+	DANCY_PALETTE_E,
+	DANCY_PALETTE_F
 };
 
 void vga_set_palette(void)
@@ -80,9 +80,9 @@ void vga_set_palette(void)
 	 */
 	for (i = 0; i < 256; i++) {
 		uint32_t color = vga_colors[i % VGA_COLORS];
-		int red   = (int)((color >> 2)  & 63u) - (i / VGA_COLORS * 3);
-		int green = (int)((color >> 10) & 63u) - (i / VGA_COLORS * 3);
-		int blue  = (int)((color >> 18) & 63u) - (i / VGA_COLORS * 3);
+		int red   = (int)((color >> 2)  & 63u);
+		int green = (int)((color >> 10) & 63u);
+		int blue  = (int)((color >> 18) & 63u);
 
 		/*
 		 * Select the color index.
