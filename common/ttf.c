@@ -797,7 +797,7 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 		int y_em = (int)em_value;
 
 		int s1 = (int)(256u / em_value) / 4;
-		int s2 = s1 * 2;
+		int s2 = s1 * 3;
 
 		int x0, x1, x2;
 		int y0, y1, y2;
