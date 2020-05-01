@@ -24,9 +24,9 @@ static struct b_video_info vi;
 
 extern void *ttf;
 static size_t ttf_height = 16;
-static unsigned char ttf_bitmap[4096];
 
-static size_t title_height = 20;
+static size_t ttf_bitmap_size;
+static unsigned char *ttf_bitmap;
 
 static const uint32_t colors[16] = {
 	DANCY_PALETTE_0,
@@ -465,6 +465,14 @@ int gui_init(void)
 	if (!size)
 		return 1;
 
+	ttf_bitmap_size = ttf_height * ttf_height;
+	ttf_bitmap = malloc(ttf_bitmap_size);
+
+	if (!ttf_bitmap) {
+		memset(&vi, 0, sizeof(vi));
+		return 1;
+	}
+
 	back_buffer = aligned_alloc(4096, size);
 
 	switch (vi.mode) {
@@ -504,6 +512,7 @@ int gui_init(void)
 	}
 
 	if (!back_buffer) {
+		free(ttf_bitmap), ttf_bitmap = NULL;
 		memset(&vi, 0, sizeof(vi));
 		return 1;
 	}
@@ -566,7 +575,7 @@ int gui_create_window(const char *name, int x1, int y1, int x2, int y2)
 			dst[x] = src[x];
 	}
 
-	for (y = 0; y < title_height; y++) {
+	for (y = 0; y < ttf_height; y++) {
 		for (x = 0; x < win_width; x++)
 			win_buffer[x + y * vi.width] = ttf_colors_window[0];
 	}
@@ -578,18 +587,17 @@ int gui_create_window(const char *name, int x1, int y1, int x2, int y2)
 		unsigned char *ptr = win_buffer + vi.width + 4;
 		unsigned total_width = 0;
 		unsigned width = 0;
-		size_t ttf_size = title_height * title_height;
 
-		ttf_set_bitmap(ttf, ttf_size, ttf_bitmap);
+		ttf_set_bitmap(ttf, ttf_bitmap_size, ttf_bitmap);
 
 		while (*name != '\0')  {
 			ttf_render(ttf, (unsigned)*name++, &width);
-			ttf_antialias(title_height, &ttf_colors_window[0]);
+			ttf_antialias(ttf_height, &ttf_colors_window[0]);
 
-			for (y = 0; y < title_height - 1; y++) {
+			for (y = 0; y < ttf_height - 1; y++) {
 				for (x = 0; x < width; x++) {
 					unsigned char c;
-					c = ttf_bitmap[x + y * title_height];
+					c = ttf_bitmap[x + y * ttf_height];
 					ptr[x + y * vi.width] = c;
 				}
 			}
@@ -600,7 +608,7 @@ int gui_create_window(const char *name, int x1, int y1, int x2, int y2)
 		}
 	}
 
-	for (y = (unsigned)title_height; y < win_height - 1; y++) {
+	for (y = (unsigned)ttf_height; y < win_height - 1; y++) {
 		win_buffer[0 + y * vi.width] = ttf_colors_window[0];
 		for (x = 1; x < win_width - 1; x++)
 			win_buffer[x + y * vi.width] = ttf_colors[0];
@@ -684,7 +692,7 @@ static void handle_newline(void)
 {
 	unsigned win_width = gui_window_stack->win_width - 2;
 	unsigned win_height = gui_window_stack->win_height - 3;
-	size_t y_limit = win_height - title_height - ttf_height;
+	size_t y_limit = win_height - (2 * ttf_height);
 
 	gui_window_stack->y += (unsigned)ttf_height;
 
@@ -693,10 +701,10 @@ static void handle_newline(void)
 		unsigned char *src;
 		size_t x, y;
 
-		dst += (title_height + 2) * vi.width + 1;
+		dst += (ttf_height + 2) * vi.width + 1;
 		src = dst + (ttf_height * vi.width);
 
-		for (y = title_height + ttf_height; y < win_height; y++) {
+		for (y = (2 * ttf_height); y < win_height; y++) {
 			for (x = 0; x < win_width; x++)
 				dst[x] = src[x];
 			src += vi.width;
@@ -728,13 +736,13 @@ void gui_print(const char *format, ...)
 	ret = vsnprintf(buf, sizeof(buf), format, va);
 	va_end(va);
 
-	if (ttf_set_bitmap(ttf, ttf_height * ttf_height, ttf_bitmap))
+	if (ttf_set_bitmap(ttf, ttf_bitmap_size, ttf_bitmap))
 		return;
 
 	dst_buffer = gui_window_stack->win_buffer;
 	win_width = gui_window_stack->win_width - 2;
 
-	dst_buffer += (title_height + 2) * vi.width + 2;
+	dst_buffer += (ttf_height + 2) * vi.width + 2;
 
 	for (i = 0; i < ret; i++) {
 		unsigned char *src = ttf_bitmap;
