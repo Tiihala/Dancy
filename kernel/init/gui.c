@@ -440,8 +440,11 @@ static void ttf_antialias(size_t height, const unsigned char *indices)
 	for (y = 0; y < height; y++) {
 		unsigned char *row = &ttf_bitmap[y * height];
 
-		for (x = 0; x < height; x++)
-			row[x] = indices[row[x] >> 5];
+		for (x = 0; x < height; x++) {
+			p = row[x];
+			p = (p == 1) ? 7u : (p >> 5);
+			row[x] = indices[p];
+		}
 	}
 }
 
