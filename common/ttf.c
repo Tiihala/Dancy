@@ -796,15 +796,30 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 		int x_em = (int)(adv_width * em_value) / 2048;
 		int y_em = (int)em_value;
 
-		unsigned int x_off, y_off;
+		int s1 = (int)(256u / em_value) / 4;
+		int s2 = s1 * 2;
+
+		int x0, x1, x2;
+		int y0, y1, y2;
 		int x, y;
 
 		for (y = y_em - 1; y >= 0; y--) {
-			for (x = 0; x < x_em; x++) {
-				x_off = ((unsigned int)x * 256) / em_value;
-				y_off = ((unsigned int)y * 256) / em_value;
+			y0 = (y * 256) / y_em;
+			y1 = (y0 + s1) * 256;
+			y2 = (y0 + s2) * 256;
 
-				if (src[x_off + y_off * 256] != 0)
+			for (x = 0; x < x_em; x++) {
+				x0 = (x * 256) / y_em;
+				x1 = x0 + s1;
+				x2 = x0 + s2;
+
+				if (src[x1 + y1] != 0)
+					dst[x] = 1;
+				if (src[x2 + y1] != 0)
+					dst[x] = 1;
+				if (src[x1 + y2] != 0)
+					dst[x] = 1;
+				if (src[x2 + y2] != 0)
 					dst[x] = 1;
 			}
 			dst += em_value;
