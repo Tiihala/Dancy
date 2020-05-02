@@ -256,7 +256,14 @@ unsigned long b_pause(void)
 
 unsigned long b_exit(void)
 {
+	extern void pic_delay_beg(void);
+	extern void pic_delay_end(void);
+	extern void pic_init(void);
 	EFI_STATUS s;
+
+	pic_delay_beg();
+	gSystemTable->BootServices->Stall(1000);
+	pic_delay_end();
 
 	if (memory_update_map() || memory_export_map(1))
 		syscall_halt();
@@ -268,6 +275,8 @@ unsigned long b_exit(void)
 		u_print("\nExitBootServices: error %016llX\n", s);
 		syscall_halt();
 	}
+
+	pic_init();
 
 	return syscall_exit();
 }

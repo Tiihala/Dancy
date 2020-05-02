@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2019 Antti Tiihala
+;; Copyright (c) 2019, 2020 Antti Tiihala
 ;;
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -271,7 +271,7 @@ syscall_halt:
 align 16
         ; unsigned long syscall_exit(void)
 syscall_exit:
-        cli                             ; disable interrupts
+        lidt [null_idt]                 ; use IDT with zero entries
         xor eax, eax                    ; rax = 0
         xor edx, edx                    ; rdx = 0
         ret
@@ -281,4 +281,10 @@ section .data
 
 align 8
 syscall_stack:
+        dq 0
+
+null_idt_align:
+        dw 0, 0, 0
+null_idt:
+        dw 0
         dq 0
