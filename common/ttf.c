@@ -73,6 +73,7 @@ struct ttf_instance {
 	unsigned int em_value;
 	unsigned int glyph_entries;
 	unsigned int maxp_glyphs;
+	unsigned int square;
 };
 
 #define this_ttf ((struct ttf_instance *)(ttf))
@@ -80,7 +81,7 @@ struct ttf_instance {
 int ttf_create(void **instance)
 {
 	struct ttf_instance *ttf;
-	const size_t buffer_size = 65536;
+	const size_t buffer_size = 131072;
 	unsigned char *buffer;
 
 	ttf = malloc(sizeof(*ttf));
@@ -416,6 +417,7 @@ int ttf_set_bitmap(void *ttf, size_t size, void *bitmap)
 			this_ttf->bitmap = bitmap;
 			this_ttf->bitmap_size = size;
 			this_ttf->em_value = (unsigned int)em_value;
+			this_ttf->square = 256;
 			return 0;
 		}
 	}
@@ -423,11 +425,13 @@ int ttf_set_bitmap(void *ttf, size_t size, void *bitmap)
 	this_ttf->bitmap = NULL;
 	this_ttf->bitmap_size = 0;
 	this_ttf->em_value = 0;
+	this_ttf->square = 0;
 	return 1;
 }
 
 static void bresenham(void *ttf, int x0, int y0, int x1, int y1, int y_dir)
 {
+	unsigned int square = this_ttf->square;
 	unsigned int color = ((y_dir == 0) ? 4u : ((y_dir < 0) ? 5u : 6u));
 	int dx, dy;
 	int sx, sy;
@@ -448,7 +452,7 @@ static void bresenham(void *ttf, int x0, int y0, int x1, int y1, int y_dir)
 	for (;;) {
 		unsigned int x = (unsigned int)x0 / 8u;
 		unsigned int y = (unsigned int)y0 / 8u;
-		unsigned int offset = (x + (y * 256u)) & 0xFFFFu;
+		unsigned int offset = (x + (y * square)) & 0x1FFFFu;
 		unsigned int c = this_ttf->buffer[offset];
 
 		this_ttf->buffer[offset] = (unsigned char)(c | color);
@@ -516,6 +520,7 @@ static void bezier(void *ttf, int x0, int y0, int x1, int y1, int x2, int y2)
 
 static int draw_glyph(void *ttf, int points, const unsigned char *p)
 {
+	unsigned int square = this_ttf->square;
 	const unsigned char *px = p + points;
 	const unsigned char *py = p + (points * 3);
 
@@ -523,7 +528,7 @@ static int draw_glyph(void *ttf, int points, const unsigned char *p)
 	int x0, y0, x1, y1, x2, y2;
 	int i, j;
 
-	memset(this_ttf->buffer, 0, 65536);
+	memset(this_ttf->buffer, 0, (size_t)(square * square));
 
 	for (i = 0; i < points; i++) {
 		unsigned int flag = p[i];
@@ -581,30 +586,31 @@ static int draw_glyph(void *ttf, int points, const unsigned char *p)
 
 static void fill_contours(void *ttf)
 {
+	unsigned int square = this_ttf->square;
 	unsigned int i, j, k;
 
-	for (i = 0; i < 256; i++) {
-		unsigned char *line = this_ttf->buffer + (i * 256);
+	for (i = 0; i < square; i++) {
+		unsigned char *line = this_ttf->buffer + (i * square);
 
-		for (j = 0; j < 256; j++) {
+		for (j = 0; j < square; j++) {
 			if (line[j] != 0)
 				break;
 		}
 
-		while (j < 256) {
+		while (j < square) {
 			unsigned int size = 1;
 
 			if (line[j] == 0) {
 				unsigned int color = 0;
 				int add = 0, state = 0;
 
-				for (k = j + 1; k < 256; k++) {
+				for (k = j + 1; k < square; k++) {
 					if (line[k] != 0)
 						break;
 					size += 1;
 				}
 
-				for (k = j + 1; k < 256; k++) {
+				for (k = j + 1; k < square; k++) {
 					if (color != 0 && line[k] == 0) {
 						if (add != 0x7FFF) {
 							if (add < 0)
@@ -734,14 +740,6 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 	 * point coordinates. If X or Y is exactly 2048, it is changed to
 	 * 2040 so that the range is from 0 to 2040 and when divided by 8,
 	 * the ranges are from 0 to 255.
-	 *
-	 * If x = 255 and y = 255,
-	 *
-	 *     buffer[x   + (y   * 256)] = value
-	 *     buffer[255 + (255 * 256)] = value
-	 *
-	 *     buffer[0xFFFF] = value
-	 *
 	 */
 	if (is_processed == 0) {
 		unsigned int points = last_point + 1;
@@ -793,10 +791,12 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 		const unsigned char *src = this_ttf->buffer;
 		unsigned char *dst = this_ttf->bitmap;
 
+		int square = (int)this_ttf->square;
+
 		int x_em = (int)(adv_width * em_value) / 2048;
 		int y_em = (int)em_value;
 
-		int s1 = (int)(256u / em_value) / 4;
+		int s1 = (square / y_em) / 4;
 		int s2 = s1 * 3;
 
 		int x0, x1, x2;
@@ -804,12 +804,12 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 		int x, y;
 
 		for (y = y_em - 1; y >= 0; y--) {
-			y0 = (y * 256) / y_em;
-			y1 = (y0 + s1) * 256;
-			y2 = (y0 + s2) * 256;
+			y0 = (y * square) / y_em;
+			y1 = (y0 + s1) * square;
+			y2 = (y0 + s2) * square;
 
 			for (x = 0; x < x_em; x++) {
-				x0 = (x * 256) / y_em;
+				x0 = (x * square) / y_em;
 				x1 = x0 + s1;
 				x2 = x0 + s2;
 
