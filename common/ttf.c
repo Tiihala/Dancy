@@ -410,14 +410,22 @@ int ttf_open(void *ttf, size_t size, const void *ttf_file)
 
 int ttf_set_bitmap(void *ttf, size_t size, void *bitmap)
 {
-	size_t em_value;
+	size_t em_scale, em_value, square;
 
-	for (em_value = 16; em_value <= 2048; em_value++) {
+	for (em_value = 16; em_value <= 256; em_value++) {
 		if (em_value * em_value == size) {
 			this_ttf->bitmap = bitmap;
 			this_ttf->bitmap_size = size;
 			this_ttf->em_value = (unsigned int)em_value;
-			this_ttf->square = 256;
+
+			for (em_scale = 1; em_scale <= 32; em_scale++) {
+				square = em_value * em_scale;
+				if ((square * square) >= 131072)
+					break;
+				this_ttf->square = (unsigned int)square;
+				if (square >= 256)
+					break;
+			}
 			return 0;
 		}
 	}
@@ -520,7 +528,7 @@ static void bezier(void *ttf, int x0, int y0, int x1, int y1, int x2, int y2)
 
 static int draw_glyph(void *ttf, int points, const unsigned char *p)
 {
-	unsigned int square = this_ttf->square;
+	int square = (int)this_ttf->square;
 	const unsigned char *px = p + points;
 	const unsigned char *py = p + (points * 3);
 
@@ -567,6 +575,13 @@ static int draw_glyph(void *ttf, int points, const unsigned char *p)
 				y2 = y1 + ((y2 - y1) / 2);
 			}
 
+			x0 = (square * x0) / 256;
+			y0 = (square * y0) / 256;
+			x1 = (square * x1) / 256;
+			y1 = (square * y1) / 256;
+			x2 = (square * x2) / 256;
+			y2 = (square * y2) / 256;
+
 			bezier(ttf, x0, y0, x1, y1, x2, y2);
 
 		} else if ((p[next] & 0x01u) != 0) {
@@ -576,6 +591,11 @@ static int draw_glyph(void *ttf, int points, const unsigned char *p)
 			y0 = (int)BE16(&py[i * 2]);
 			x1 = (int)BE16(&px[next * 2]);
 			y1 = (int)BE16(&py[next * 2]);
+
+			x0 = (square * x0) / 256;
+			y0 = (square * y0) / 256;
+			x1 = (square * x1) / 256;
+			y1 = (square * y1) / 256;
 
 			y_dir = (y0 == y1) ? 0 : ((y0 < y1) ? -1 : 1);
 			bresenham(ttf, x0, y0, x1, y1, y_dir);
@@ -796,8 +816,8 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 		int x_em = (int)(adv_width * em_value) / 2048;
 		int y_em = (int)em_value;
 
-		int s1 = (square / y_em) / 4;
-		int s2 = s1 * 3;
+		int s1 = (7 * (square / y_em)) / 16;
+		int s2 = (s1 == 0) ? 0 : (square / y_em) - s1;
 
 		int x0, x1, x2;
 		int y0, y1, y2;
