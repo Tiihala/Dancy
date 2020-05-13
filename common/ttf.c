@@ -81,7 +81,7 @@ struct ttf_instance {
 int ttf_create(void **instance)
 {
 	struct ttf_instance *ttf;
-	const size_t buffer_size = 131072;
+	const size_t buffer_size = 262144;
 	unsigned char *buffer;
 
 	ttf = malloc(sizeof(*ttf));
@@ -418,13 +418,11 @@ int ttf_set_bitmap(void *ttf, size_t size, void *bitmap)
 			this_ttf->bitmap_size = size;
 			this_ttf->em_value = (unsigned int)em_value;
 
-			for (em_scale = 1; em_scale <= 32; em_scale++) {
+			for (em_scale = 2; em_scale <= 32; em_scale++) {
 				square = em_value * em_scale;
-				if ((square * square) >= 131072)
+				if ((square * square) > 262144)
 					break;
 				this_ttf->square = (unsigned int)square;
-				if (square >= 256)
-					break;
 			}
 			return 0;
 		}
@@ -460,7 +458,7 @@ static void bresenham(void *ttf, int x0, int y0, int x1, int y1, int y_dir)
 	for (;;) {
 		unsigned int x = (unsigned int)x0 / 8u;
 		unsigned int y = (unsigned int)y0 / 8u;
-		unsigned int offset = (x + (y * square)) & 0x1FFFFu;
+		unsigned int offset = (x + (y * square)) & 0x3FFFFu;
 		unsigned int c = this_ttf->buffer[offset];
 
 		this_ttf->buffer[offset] = (unsigned char)(c | color);
@@ -698,13 +696,13 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 		}
 	}
 
-	if (adv_width > 2048 || em_value == 0 || em_value > 2048)
+	if (adv_width > 2048 || em_value == 0 || em_value > 256)
 		return 1;
 
 	if (width != NULL)
 		*width = (adv_width * em_value) / 2048;
 
-	if (size < 2 || this_ttf->bitmap_size == 0)
+	if (size < 2 || this_ttf->bitmap_size == 0 || this_ttf->square < 256)
 		return 0;
 
 	if ((contours = BE16(&glyph[0])) >= 0x8000ul)
@@ -816,12 +814,16 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 		int x_em = (int)(adv_width * em_value) / 2048;
 		int y_em = (int)em_value;
 
-		int s1 = (7 * (square / y_em)) / 16;
-		int s2 = (s1 == 0) ? 0 : (square / y_em) - s1;
+		int s0 = (square / y_em);
+		int s1 = ((s0 % 2) == 1) ? (s0 / 2) : ((s0 / 2) - 1);
+		int s2 = ((s0 % 2) == 0) ? (s0 / 2) : s1;
 
 		int x0, x1, x2;
 		int y0, y1, y2;
 		int x, y;
+
+		if (s0 < 2)
+			return 1;
 
 		for (y = y_em - 1; y >= 0; y--) {
 			y0 = (y * square) / y_em;
