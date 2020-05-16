@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2020 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -100,6 +100,29 @@ void vga_set_palette(void)
 		cpu_rdtsc_delay(delay_low, delay_high);
 
 		cpu_out8(0x03C9, (uint8_t)(blue >= 0 ? blue : 0));
+		cpu_rdtsc_delay(delay_low, delay_high);
+	}
+
+	/*
+	 * Set the palette indices.
+	 */
+	for (i = -1; i < 16; i++) {
+		uint8_t dat;
+
+		if (i >= 0) {
+			dat = cpu_in8(0x03C0);
+			cpu_rdtsc_delay(delay_low, delay_high);
+
+			cpu_out8(0x03C0, (uint8_t)i);
+			cpu_rdtsc_delay(delay_low, delay_high);
+
+			cpu_out8(0x03C0, (uint8_t)i);
+			cpu_rdtsc_delay(delay_low, delay_high);
+
+			cpu_out8(0x03C0, dat);
+			cpu_rdtsc_delay(delay_low, delay_high);
+		}
+		cpu_in8(0x03DA);
 		cpu_rdtsc_delay(delay_low, delay_high);
 	}
 
