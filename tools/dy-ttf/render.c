@@ -288,61 +288,6 @@ static void midpoint(long x0, long y0, long x1, long y1, long *x, long *y)
 	*y = y0 + ((y1 - y0) / 2);
 }
 
-static void process_image(long glyph_divisor)
-{
-	unsigned long width, height, offset;
-	unsigned long threshold;
-	unsigned long i, j;
-
-	for (i = 0; i < raw_size; i++) {
-		if (raw_data[i] != 0)
-			raw_data[i] = 1;
-	}
-
-	width = raw_width / (unsigned long)glyph_divisor;
-	width = (width > 0) ? width : 1;
-
-	height = raw_height / (unsigned long)glyph_divisor;
-	height = (height > 0) ? height : 1;
-
-	offset = (unsigned long)glyph_divisor;
-	threshold = (offset > 1) ? ((offset * offset) / 2) : 1;
-
-	for (i = 0; i < height; i++) {
-		unsigned char *line = raw_data + ((i * offset) * raw_width);
-
-		for (j = 0; j < width; j++) {
-			unsigned char *p = line + (j * offset);
-			unsigned long pixels_set = 0;
-			unsigned long x, y;
-
-			for (y = 0; y < offset; y++) {
-				for (x = 0; x < offset; x++) {
-					if ((p[x] & 1u) != 0)
-						pixels_set += 1;
-				}
-				p += raw_width;
-			}
-
-			if (pixels_set >= threshold) {
-				p = raw_data + (i * width) + j;
-				*p = (unsigned char)(((unsigned)*p) | 2u);
-			}
-		}
-	}
-
-	raw_width = width;
-	raw_height = height;
-	raw_size = (size_t)(raw_width * raw_height);
-
-	for (i = 0; i < raw_size; i++) {
-		if (raw_data[i] > 1)
-			raw_data[i] = 7;
-		else
-			raw_data[i] = 0;
-	}
-}
-
 int render_glyph(struct options *opt, struct render *glyph)
 {
 	struct glyf *array = glyph->array;
@@ -499,22 +444,20 @@ int render_glyph(struct options *opt, struct render *glyph)
 	/*
 	 * Draw "on-curve" and control points.
 	 */
-	if (opt->arg_s == NULL) {
-		for (i = 0; i < points; i++) {
-			long x = x_off + array[i].x;
-			long y = y_off + array[i].y;
+	for (i = 0; i < points; i++) {
+		long x = x_off + array[i].x;
+		long y = y_off + array[i].y;
 
-			if ((array[i].flag & 1) != 0)
-				draw_point_bold(x, y, 2);
-			else
-				draw_point_bold(x, y, 4);
-		}
+		if ((array[i].flag & 1) != 0)
+			draw_point_bold(x, y, 2);
+		else
+			draw_point_bold(x, y, 4);
 	}
 
 	/*
 	 * Draw the y reference line.
 	 */
-	if (opt->arg_s == NULL && glyph->head_ymin <= 0) {
+	if (glyph->head_ymin <= 0) {
 		size_t offset;
 
 		offset = (unsigned long)(-(glyph->head_ymin)) * raw_width;
@@ -526,11 +469,6 @@ int render_glyph(struct options *opt, struct render *glyph)
 					raw_data[offset + i] = 14;
 			}
 		}
-	}
-
-	if (opt->arg_s != NULL) {
-		long d = glyph->glyph_divisor >= 1 ? glyph->glyph_divisor : 1;
-		process_image(d);
 	}
 
 	if ((ret = write_bmp_file(opt)) != 0)

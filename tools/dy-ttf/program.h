@@ -40,7 +40,6 @@ struct options {
 	char **operands;
 	const char *error;
 	const char *arg_o;
-	const char *arg_s;
 	unsigned long code_point;
 	int render;
 	int verbose;
@@ -129,7 +128,6 @@ struct loca {
 struct render {
 	struct glyf *array;
 	unsigned long points;
-	signed long glyph_divisor;
 	signed long head_ymin;
 	signed long head_ymax;
 	unsigned long advance;

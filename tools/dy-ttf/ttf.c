@@ -707,7 +707,6 @@ static const void *ttf_read_name(int id, size_t *length)
 static int ttf_render(struct options *opt)
 {
 	unsigned long i = ttf_search_cmap(opt->code_point);
-	long glyph_divisor = 1;
 	struct render glyph;
 	int ret;
 
@@ -731,18 +730,6 @@ static int ttf_render(struct options *opt)
 	glyph.head_ymax = ttf_head_ymax;
 	glyph.advance = ttf_hmtx_array[i].width;
 	glyph.lsb = ttf_hmtx_array[i].lsb;
-
-	if (opt->arg_s) {
-		unsigned long gd = strtoul(opt->arg_s, NULL, 0);
-
-		if (gd == 0 || gd > 128) {
-			fputs("Warning: invalid scale divisor\n", stderr);
-			return 1;
-		}
-		glyph_divisor = (long)gd;
-	}
-
-	glyph.glyph_divisor = glyph_divisor;
 
 	return render_glyph(opt, &glyph);
 }
