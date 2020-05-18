@@ -984,6 +984,63 @@ static size_t ttf_build_glyf(size_t offset)
 			return 0;
 		}
 
+		for (j = 0; j < ttf_glyf_points; j++) {
+			long x = ttf_glyf_array[j].x;
+			long y = ttf_glyf_array[j].y;
+
+			if (xmin > x)
+				xmin = x;
+			if (xmax < x)
+				xmax = x;
+			if (ymin > y)
+				ymin = y;
+			if (ymax < y)
+				ymax = y;
+		}
+
+		/*
+		 * Scale the x-axis if slightly below zero.
+		 */
+		if (xmin < 0 && xmax >= (8 * (-xmin))) {
+			for (j = 0; j < ttf_glyf_points; j++) {
+				long x = ttf_glyf_array[j].x;
+
+				x += (-xmin);
+				x *= (xmax + (-xmin));
+				x /= (xmax + (-xmin) + (-xmin));
+				ttf_glyf_array[j].x = x;
+			}
+		}
+
+		/*
+		 * Scale the y-axis if needed.
+		 */
+		{
+			long y_mul = 1, y_div = 1;
+
+			if (ymin < ymin_limit) {
+				y_mul = (-ymin_limit);
+				y_div = (-ymin);
+			}
+
+			if (ymax > ymax_limit) {
+				y_mul = ymax_limit;
+				y_div = ymax;
+			}
+
+			if (y_mul != 1) {
+				for (j = 0; j < ttf_glyf_points; j++) {
+					long y = ttf_glyf_array[j].y;
+
+					y *= y_mul;
+					y /= y_div;
+					ttf_glyf_array[j].y = y;
+				}
+			}
+		}
+
+		xmin = LONG_MAX, ymin = LONG_MAX, xmax = 0, ymax = 0;
+
 		/*
 		 * The master outline resolution is decreased.
 		 */
