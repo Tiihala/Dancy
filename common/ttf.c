@@ -25,6 +25,7 @@ int ttf_delete(void *ttf);
 
 int ttf_open(void *ttf, size_t size, const void *ttf_file);
 int ttf_set_bitmap(void *ttf, size_t size, void *bitmap);
+int ttf_set_shades(void *ttf, unsigned int number);
 int ttf_render(void *ttf, unsigned int code_point, unsigned int *width);
 
 extern void free(void *ptr);
@@ -73,6 +74,7 @@ struct ttf_instance {
 	unsigned int em_value;
 	unsigned int glyph_entries;
 	unsigned int maxp_glyphs;
+	unsigned int shades;
 	unsigned int square;
 };
 
@@ -433,6 +435,15 @@ int ttf_set_bitmap(void *ttf, size_t size, void *bitmap)
 	this_ttf->em_value = 0;
 	this_ttf->square = 0;
 	return 1;
+}
+
+int ttf_set_shades(void *ttf, unsigned int number)
+{
+	if (number < 2 || number > 256)
+		return 1;
+
+	this_ttf->shades = number;
+	return 0;
 }
 
 static void bresenham(void *ttf, int x0, int y0, int x1, int y1, int y_dir)
@@ -802,10 +813,13 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 
 	fill_contours(ttf);
 
+	if (this_ttf->shades < 2 || this_ttf->shades > 256)
+		this_ttf->shades = 2;
+
 	/*
-	 * Copy the glyph image.
+	 * Copy the glyph image (monochrome).
 	 */
-	{
+	if (this_ttf->shades == 2) {
 		const unsigned char *src = this_ttf->buffer;
 		unsigned char *dst = this_ttf->bitmap;
 
@@ -847,5 +861,47 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 			dst += em_value;
 		}
 	}
+
+	/*
+	 * Copy the glyph image ("anti-aliasing").
+	 */
+	if (this_ttf->shades > 2) {
+		const unsigned char *src = this_ttf->buffer;
+		unsigned char *dst = this_ttf->bitmap;
+
+		int square = (int)this_ttf->square;
+
+		int x_em = (int)(adv_width * em_value) / 2048;
+		int y_em = (int)em_value;
+
+		int s0 = (int)this_ttf->shades - 1;
+		int s1 = (square / y_em);
+		int s2 = (s1 * s1);
+
+		int x0, x1;
+		int y0, y1;
+		int c, x, y;
+
+		for (y = y_em - 1; y >= 0; y--) {
+			y0 = ((y * square) / y_em) * square;
+
+			for (x = 0; x < x_em; x++) {
+				x0 = (x * square) / y_em;
+				src = &src[x0 + y0];
+
+				for (c = 0, y1 = 0; y1 < s1; y1++) {
+					for (x1 = 0; x1 < s1; x1++) {
+						if (src[x1] != 0)
+							c += 1;
+					}
+					src += square;
+				}
+				src = this_ttf->buffer;
+				dst[x] = (unsigned char)((c * s0) / s2);
+			}
+			dst += em_value;
+		}
+	}
+
 	return 0;
 }
