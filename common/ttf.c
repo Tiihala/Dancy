@@ -420,11 +420,13 @@ int ttf_set_bitmap(void *ttf, size_t size, void *bitmap)
 			this_ttf->bitmap_size = size;
 			this_ttf->em_value = (unsigned int)em_value;
 
-			for (em_scale = 2; em_scale <= 32; em_scale++) {
+			for (em_scale = 2; em_scale <= 32; em_scale += 2) {
 				square = em_value * em_scale;
 				if ((square * square) > 262144)
 					break;
 				this_ttf->square = (unsigned int)square;
+				if (square >= 256)
+					break;
 			}
 			return 0;
 		}
@@ -814,7 +816,7 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width)
 	fill_contours(ttf);
 
 	if (this_ttf->shades < 2 || this_ttf->shades > 256)
-		this_ttf->shades = 2;
+		this_ttf->shades = 256;
 
 	/*
 	 * Copy the glyph image (monochrome).
