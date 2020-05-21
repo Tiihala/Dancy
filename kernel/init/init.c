@@ -69,7 +69,7 @@ void init(void)
 		 * accessed if mode is B_MODE_VGA or B_MODE_PALETTE.
 		 */
 		if (vi.mode == B_MODE_VGA || vi.mode == B_MODE_PALETTE)
-			vga_set_palette();
+			vga_set_palette(&vi);
 	}
 
 	/*

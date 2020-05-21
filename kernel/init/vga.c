@@ -40,7 +40,7 @@ static const uint32_t vga_colors[VGA_COLORS] = {
 	DANCY_PALETTE_F
 };
 
-void vga_set_palette(void)
+void vga_set_palette(const struct b_video_info *vi)
 {
 
 	uint32_t delay_low, delay_high;
@@ -53,6 +53,20 @@ void vga_set_palette(void)
 	 */
 	if (boot_loader_type != BOOT_LOADER_TYPE_BIOS)
 		return;
+
+	/*
+	 * Clear the screen (B_MODE_PALETTE).
+	 */
+	if (vi->mode == B_MODE_PALETTE) {
+		unsigned char *dst = (unsigned char *)vi->framebuffer;
+		unsigned x, y;
+
+		for (y = 0; y < vi->height; y++) {
+			for (x = 0; x < vi->width; x++)
+				dst[x] = 0;
+			dst += vi->stride;
+		}
+	}
 
 	/*
 	 * Disable IRQs.
@@ -68,6 +82,28 @@ void vga_set_palette(void)
 	cpu_rdtsc(&delay_low, &delay_high);
 	cpu_out8(0xA1, 0xFF), cpu_out8(0x21, 0xFF);
 	cpu_rdtsc_diff(&delay_low, &delay_high);
+
+	/*
+	 * Clear the screen (B_MODE_VGA).
+	 */
+	if (vi->mode == B_MODE_VGA) {
+		unsigned char *dst = (unsigned char *)vi->framebuffer;
+		const size_t size = 38400;
+
+		cpu_out8(0x03C4, 0x02);
+		cpu_rdtsc_delay(delay_low, delay_high);
+
+		cpu_out8(0x03C5, 0x0F);
+		cpu_rdtsc_delay(delay_low, delay_high);
+
+		/*
+		 * Enable IRQs when clearing the screen
+		 * and then disable them again.
+		 */
+		cpu_out8(0x21, pic1), cpu_out8(0xA1, pic2);
+		memset(dst, 0, size);
+		cpu_out8(0xA1, 0xFF), cpu_out8(0x21, 0xFF);
+	}
 
 	/*
 	 * Use the correct mask.

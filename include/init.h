@@ -218,6 +218,6 @@ int ttf_render(void *ttf, unsigned int code_point, unsigned int *width);
 /*
  * Declarations of vga.c
  */
-void vga_set_palette(void);
+void vga_set_palette(const struct b_video_info *vi);
 
 #endif
