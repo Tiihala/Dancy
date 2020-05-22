@@ -48,6 +48,8 @@ static unsigned long ttf_loca_points;
 static struct glyf   *ttf_glyf_array;
 static unsigned long ttf_glyf_points;
 
+static int ttf_created;
+
 static unsigned long ttf_em_mul = 2048;
 static unsigned long ttf_em_div = 2048;
 
@@ -1300,6 +1302,9 @@ static size_t ttf_build_head(size_t offset)
 	W_BE16(&p[18], 2048);
 	memcpy(&p[20], &table[20], 16);
 
+	if (ttf_created)
+		memcpy(&p[20], &table[28], 8);
+
 	val = LONG_TO_UNSIGNED(ttf_head_xmin);
 	W_BE16(&p[36], val);
 
@@ -1657,6 +1662,8 @@ int ttf_main(struct options *opt)
 
 	memset(output_data, 0, output_size);
 	offset = 0;
+
+	ttf_created = opt->created;
 
 	/*
 	 * Write to the output buffer.

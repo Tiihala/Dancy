@@ -24,6 +24,7 @@ static const char *help_str =
 	" [-o output] input-file [code-point]\n"
 	"\nOptions:\n"
 	"  -o output     output file\n"
+	"  --created     unify created and modified timestamps\n"
 	"  --render      render code point\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
@@ -87,6 +88,10 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "created")) {
+				opts.created = 1;
 				continue;
 			}
 			if (!strcmp(arg + 2, "render")) {
