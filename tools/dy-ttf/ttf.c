@@ -27,6 +27,7 @@ static signed long   ttf_head_xmin;
 static signed long   ttf_head_ymin;
 static signed long   ttf_head_xmax;
 static signed long   ttf_head_ymax;
+static unsigned long ttf_head_style;
 static unsigned long ttf_head_locfmt;
 
 static unsigned long ttf_hhea_metrics;
@@ -70,6 +71,7 @@ static int ttf_read_head(void)
 	val = BE16(&table[42]);
 	ttf_head_ymax = BE16_TO_LONG(val);
 
+	ttf_head_style = BE16(&table[44]);
 	ttf_head_locfmt = BE16(&table[50]);
 
 	return 0;
@@ -1284,6 +1286,11 @@ static size_t ttf_build_head(size_t offset)
 
 	val = LONG_TO_UNSIGNED(ttf_head_ymax);
 	W_BE16(&p[42], val);
+
+	/*
+	 * Set 'bold' and 'italic' bits.
+	 */
+	W_BE16(&p[44], (ttf_head_style & 3ul));
 
 	W_BE16(&p[46], 16);
 	W_BE16(&p[50], 1);
