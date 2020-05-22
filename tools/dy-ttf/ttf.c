@@ -484,7 +484,7 @@ static int ttf_read_loca(void)
 			t2 = BE16(&p2[0]) * 2;
 		}
 
-		if (t1 > t2 || t1 >= glyf_size || t2 > glyf_size)
+		if (t1 > t2 || t2 > glyf_size)
 			return 1;
 
 		ttf_loca_array[i - 1].glyph = glyf_table + t1;
