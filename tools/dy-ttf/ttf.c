@@ -48,6 +48,9 @@ static unsigned long ttf_loca_points;
 static struct glyf   *ttf_glyf_array;
 static unsigned long ttf_glyf_points;
 
+static unsigned long ttf_em_mul = 2048;
+static unsigned long ttf_em_div = 2048;
+
 static int ttf_read_head(void)
 {
 	unsigned char *table;
@@ -58,6 +61,9 @@ static int ttf_read_head(void)
 		return 1;
 
 	ttf_head_em = BE16(&table[18]);
+
+	if (ttf_head_em < 64 || ttf_head_em > 16384)
+		return 1;
 
 	val = BE16(&table[36]);
 	ttf_head_xmin = BE16_TO_LONG(val);
@@ -986,9 +992,21 @@ static size_t ttf_build_glyf(size_t offset)
 			return 0;
 		}
 
+		/*
+		 * Scale the "em" size and get min and max values.
+		 */
 		for (j = 0; j < ttf_glyf_points; j++) {
 			long x = ttf_glyf_array[j].x;
 			long y = ttf_glyf_array[j].y;
+
+			x *= (long)ttf_em_mul;
+			x /= (long)ttf_em_div;
+
+			y *= (long)ttf_em_mul;
+			y /= (long)ttf_em_div;
+
+			ttf_glyf_array[j].x = x;
+			ttf_glyf_array[j].y = y;
 
 			if (xmin > x)
 				xmin = x;
@@ -1099,6 +1117,12 @@ static size_t ttf_build_glyf(size_t offset)
 			ymin = 0;
 
 		if (i < ttf_hmtx_points) {
+			unsigned long width = ttf_hmtx_array[i].width;
+
+			width *= ttf_em_mul;
+			width /= ttf_em_div;
+
+			ttf_hmtx_array[i].width = width;
 			ttf_hmtx_array[i].xmin = xmin;
 			ttf_hmtx_array[i].xmax = xmax;
 		}
@@ -1273,7 +1297,8 @@ static size_t ttf_build_head(size_t offset)
 	 */
 	W_BE16(&p[16], 0x000B);
 
-	memcpy(&p[18], &table[18], 18);
+	W_BE16(&p[18], 2048);
+	memcpy(&p[20], &table[20], 16);
 
 	val = LONG_TO_UNSIGNED(ttf_head_xmin);
 	W_BE16(&p[36], val);
@@ -1614,8 +1639,8 @@ int ttf_main(struct options *opt)
 	 * Dancy-compatible .ttf file requires a specific "em" size.
 	 */
 	if (ttf_head_em != 2048) {
-		fputs("Error: the em size is not 2048\n", stderr);
-		return ttf_free(), 1;
+		ttf_em_div = ttf_head_em;
+		ttf_head_em = 2048;
 	}
 
 	/*
