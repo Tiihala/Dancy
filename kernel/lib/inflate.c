@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2020 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,11 +13,11 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * init/inflate.c
- *      Uncompress database files
+ * lib/inflate.c
+ *      Uncompress Deflate stream
  */
 
-#include <init.h>
+#include <dancy/lib.h>
 
 struct bit_code {
 	unsigned extra;
@@ -122,7 +122,7 @@ static int inflate_init(struct huffman **h_code, struct huffman **h_dist)
 	return 0;
 }
 
-int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size)
+int inflate(struct bitarray *b, unsigned char *out, size_t *size)
 {
 	static int init = 0;
 	static struct huffman *h_code;

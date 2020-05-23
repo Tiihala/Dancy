@@ -215,7 +215,7 @@ int db_read(const char *name, unsigned char **buf, size_t *size)
 				}
 				out_size = (size_t)pk_size_uncompressed;
 			} else {
-				if (inflate_uncompress(&b, out, &out_size))
+				if (inflate(&b, out, &out_size))
 					return free(out), 3;
 			}
 

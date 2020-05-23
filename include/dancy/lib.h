@@ -54,4 +54,9 @@ int huffman_init(struct huffman *h, unsigned *symbols, int n);
 int huffman_fetch(struct huffman *h, struct bitarray *b);
 int huffman_table(struct huffman *h, unsigned *table, int n);
 
+/*
+ * Declarations of inflate.c
+ */
+int inflate(struct bitarray *b, unsigned char *out, size_t *size);
+
 #endif
