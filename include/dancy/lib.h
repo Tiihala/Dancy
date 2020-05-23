@@ -20,4 +20,25 @@
 #ifndef DANCY_LIB_H
 #define DANCY_LIB_H
 
+#include <dancy/types.h>
+
+/*
+ * Declarations of bitarray.c
+ */
+struct bitarray {
+	unsigned char *data;
+	size_t size;
+	unsigned state[2];
+	size_t written;
+	int (*callback)(struct bitarray *b);
+};
+
+void bitarray_init(struct bitarray *b, unsigned char *data, size_t size);
+void bitarray_callback(struct bitarray *b, int (*func)(struct bitarray *b));
+void bitarray_clear(struct bitarray *b);
+long bitarray_aligned_fetch(struct bitarray *b, unsigned bits, void **data);
+long bitarray_fetch(struct bitarray *b, unsigned bits);
+int bitarray_shove(struct bitarray *b, unsigned bits, unsigned val);
+int bitarray_written(struct bitarray *b, size_t *written);
+
 #endif

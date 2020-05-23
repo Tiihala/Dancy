@@ -8,7 +8,6 @@ DANCY_START_OBJECTS_32= \
  ./o32/init/a32/ld.o \
  ./o32/init/a32/start.o \
  ./o32/init/a32/syscall.o \
- ./o32/init/bitarray.o \
  ./o32/init/db.o \
  ./o32/init/huffman.o \
  ./o32/init/inflate.o \
@@ -18,6 +17,7 @@ DANCY_START_OBJECTS_32= \
  ./o32/init/start.o \
  ./o32/lib/a32/dark.o \
  ./o32/lib/a32/string.o \
+ ./o32/lib/bitarray.o \
  ./o32/lib/snprintf.o \
  ./o32/lib/string.o
 
@@ -27,7 +27,6 @@ DANCY_START_OBJECTS_64= \
  ./o64/init/a64/ld.o \
  ./o64/init/a64/start.o \
  ./o64/init/a64/syscall.o \
- ./o64/init/bitarray.o \
  ./o64/init/db.o \
  ./o64/init/huffman.o \
  ./o64/init/inflate.o \
@@ -37,6 +36,7 @@ DANCY_START_OBJECTS_64= \
  ./o64/init/start.o \
  ./o64/lib/a64/dark.o \
  ./o64/lib/a64/string.o \
+ ./o64/lib/bitarray.o \
  ./o64/lib/snprintf.o \
  ./o64/lib/string.o
 

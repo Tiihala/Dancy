@@ -13,11 +13,11 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * init/bitarray.c
+ * lib/bitarray.c
  *      Handle bit arrays
  */
 
-#include <init.h>
+#include <dancy/lib.h>
 
 static int default_callback(struct bitarray *b)
 {
