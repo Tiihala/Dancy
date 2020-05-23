@@ -107,20 +107,6 @@ void gui_refresh(void);
 
 
 /*
- * Declarations of huffman.c
- */
-struct huffman {
-	unsigned lengths[16];
-	unsigned *symbols;
-	unsigned completed;
-};
-
-int huffman_init(struct huffman *h, unsigned *symbols, int n);
-int huffman_fetch(struct huffman *h, struct bitarray *b);
-int huffman_table(struct huffman *h, unsigned *table, int n);
-
-
-/*
  * Declarations of inflate.c
  */
 int inflate_uncompress(struct bitarray *b, unsigned char *out, size_t *size);

@@ -38,9 +38,6 @@
 ./o32/init/gui.o: ./kernel/init/gui.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/gui.c
 
-./o32/init/huffman.o: ./kernel/init/huffman.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/huffman.c
-
 ./o32/init/inflate.o: ./kernel/init/inflate.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/inflate.c
 
@@ -79,6 +76,9 @@
 
 ./o32/lib/ctype.o: ./kernel/lib/ctype.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/ctype.c
+
+./o32/lib/huffman.o: ./kernel/lib/huffman.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/lib/huffman.c
 
 ./o32/lib/snprintf.o: ./kernel/lib/snprintf.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/snprintf.c
@@ -125,9 +125,6 @@
 ./o64/init/gui.o: ./kernel/init/gui.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/gui.c
 
-./o64/init/huffman.o: ./kernel/init/huffman.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/huffman.c
-
 ./o64/init/inflate.o: ./kernel/init/inflate.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/inflate.c
 
@@ -166,6 +163,9 @@
 
 ./o64/lib/ctype.o: ./kernel/lib/ctype.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/ctype.c
+
+./o64/lib/huffman.o: ./kernel/lib/huffman.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/lib/huffman.c
 
 ./o64/lib/snprintf.o: ./kernel/lib/snprintf.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/snprintf.c

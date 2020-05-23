@@ -13,11 +13,11 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * init/huffman.c
+ * lib/huffman.c
  *      Huffman coding scheme
  */
 
-#include <init.h>
+#include <dancy/lib.h>
 
 int huffman_init(struct huffman *h, unsigned *symbols, int n)
 {

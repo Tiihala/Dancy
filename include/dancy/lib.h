@@ -41,4 +41,17 @@ long bitarray_fetch(struct bitarray *b, unsigned bits);
 int bitarray_shove(struct bitarray *b, unsigned bits, unsigned val);
 int bitarray_written(struct bitarray *b, size_t *written);
 
+/*
+ * Declarations of huffman.c
+ */
+struct huffman {
+	unsigned lengths[16];
+	unsigned *symbols;
+	unsigned completed;
+};
+
+int huffman_init(struct huffman *h, unsigned *symbols, int n);
+int huffman_fetch(struct huffman *h, struct bitarray *b);
+int huffman_table(struct huffman *h, unsigned *table, int n);
+
 #endif
