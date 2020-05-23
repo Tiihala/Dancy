@@ -77,6 +77,7 @@ DANCY_HEADERS= \
  ./include/dancy/ctype.h \
  ./include/dancy/error.h \
  ./include/dancy/keys.h \
+ ./include/dancy/lib.h \
  ./include/dancy/limits.h \
  ./include/dancy/palette.h \
  ./include/dancy/stdarg.h \

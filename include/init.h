@@ -25,6 +25,7 @@
 #include <dancy/crc.h>
 #include <dancy/ctype.h>
 #include <dancy/keys.h>
+#include <dancy/lib.h>
 #include <dancy/limits.h>
 #include <dancy/palette.h>
 #include <dancy/stdarg.h>
