@@ -354,17 +354,20 @@ int ttf_open(void *ttf, size_t size, const void *ttf_file)
 	const unsigned char *p = ttf_file;
 	struct {
 		unsigned int name;
+		unsigned int required;
 		int (*func)(void *, size_t, const unsigned char *);
 	} tables[] = {
-		{ TTF_TABLE_HEAD, handle_head },
-		{ TTF_TABLE_MAXP, handle_maxp },
-		{ TTF_TABLE_HHEA, handle_hhea },
-		{ TTF_TABLE_CMAP, handle_cmap },
-		{ TTF_TABLE_GLYF, handle_glyf },
-		{ TTF_TABLE_LOCA, handle_loca },
-		{ TTF_TABLE_HMTX, handle_hmtx }
+		{ TTF_TABLE_HEAD, 1, handle_head },
+		{ TTF_TABLE_MAXP, 1, handle_maxp },
+		{ TTF_TABLE_HHEA, 1, handle_hhea },
+		{ TTF_TABLE_CMAP, 1, handle_cmap },
+		{ TTF_TABLE_GLYF, 1, handle_glyf },
+		{ TTF_TABLE_LOCA, 1, handle_loca },
+		{ TTF_TABLE_HMTX, 1, handle_hmtx }
 	};
-	int handled = 0;
+	const unsigned int required_tables = 7;
+	unsigned int handled_tables = 0;
+	size_t dir_end;
 	size_t i, j;
 
 	if (this_ttf->glyph_array != NULL)
@@ -379,14 +382,19 @@ int ttf_open(void *ttf, size_t size, const void *ttf_file)
 	this_ttf->glyf = NULL;
 	this_ttf->glyf_size = 0;
 
-	if (size < 156 || p == NULL)
+	if (size < 12 || p == NULL)
 		return this_ttf->glyph_entries = 0, 1;
 
-	if (BE32(&p[0]) != 0x00010000 || BE16(&p[4]) != 0x0009)
+	if (BE32(&p[0]) != 0x00010000)
+		return this_ttf->glyph_entries = 0, 1;
+
+	dir_end = (size_t)((BE16(&p[4]) * 16) + 12);
+
+	if (size < dir_end)
 		return this_ttf->glyph_entries = 0, 1;
 
 	for (i = 0; i < sizeof(tables) / sizeof(tables[0]); i++) {
-		for (j = 12; j < 156; j++) {
+		for (j = 12; j < dir_end; j++) {
 			if (BE32(&p[j]) == tables[i].name) {
 				unsigned int off = BE32(&p[j + 8]);
 				unsigned int len = BE32(&p[j + 12]);
@@ -399,13 +407,13 @@ int ttf_open(void *ttf, size_t size, const void *ttf_file)
 				if (tables[i].func(ttf, (size_t)len, p + off))
 					return this_ttf->glyph_entries = 0, 2;
 
-				handled += 1;
+				handled_tables += tables[i].required;
 				break;
 			}
 		}
 	}
 
-	if (handled != (int)(sizeof(tables) / sizeof(tables[0])))
+	if (handled_tables != required_tables)
 		return this_ttf->glyph_entries = 0, 3;
 	return 0;
 }
