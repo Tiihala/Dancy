@@ -33,6 +33,7 @@ static struct {
 	{ TTF_TABLE_HEAD, 0, NULL, 54 },
 	{ TTF_TABLE_HHEA, 0, NULL, 36 },
 	{ TTF_TABLE_HMTX, 0, NULL, 0  },
+	{ TTF_TABLE_KERN, 0, NULL, 0  },
 	{ TTF_TABLE_LOCA, 0, NULL, 0  },
 	{ TTF_TABLE_MAXP, 0, NULL, 6  },
 	{ TTF_TABLE_NAME, 0, NULL, 6  },

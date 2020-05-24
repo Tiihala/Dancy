@@ -89,13 +89,14 @@ struct options {
 	(unsigned)(h) >> 8 & 0xFFu, (unsigned)(h) & 0xFFu
 
 /*
- * The required TTF tables.
+ * The recognized TTF tables.
  */
 #define TTF_TABLE_CMAP (0x636D6170ul)
 #define TTF_TABLE_GLYF (0x676C7966ul)
 #define TTF_TABLE_HEAD (0x68656164ul)
 #define TTF_TABLE_HHEA (0x68686561ul)
 #define TTF_TABLE_HMTX (0x686D7478ul)
+#define TTF_TABLE_KERN (0x6B65726Eul)
 #define TTF_TABLE_LOCA (0x6C6F6361ul)
 #define TTF_TABLE_MAXP (0x6D617870ul)
 #define TTF_TABLE_NAME (0x6E616D65ul)
@@ -155,12 +156,6 @@ int table_find(unsigned long name, unsigned char **table, size_t *size);
 int table_init(unsigned char *data, size_t size);
 unsigned table_log2(unsigned num);
 unsigned table_power_of_two(unsigned num);
-
-/*
- * template.c
- */
-extern unsigned char template_font[];
-size_t template_size;
 
 /*
  * ttf.c

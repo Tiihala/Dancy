@@ -1419,6 +1419,141 @@ static size_t ttf_build_hmtx(size_t offset)
 	return size;
 }
 
+static size_t ttf_build_kern(size_t offset)
+{
+	unsigned char *p = &output_data[offset];
+	unsigned char *table;
+	size_t empty_size = 18;
+	unsigned long i, pairs, subtable_size;
+	size_t size;
+
+	if (output_size - offset < empty_size) {
+		fputs("Error: kern table overflow\n", stderr);
+		return 0;
+	}
+
+	memset(&p[0], 0, empty_size);
+	W_BE16(&p[2], 1);
+	W_BE16(&p[6], 14);
+	W_BE16(&p[8], 1);
+
+	if (table_find(TTF_TABLE_KERN, &table, &size)) {
+		/*
+		 * Kern table is optional. Use table version 0
+		 * and number of subtables 0 if not found.
+		 */
+		return empty_size;
+	}
+
+	if (output_size - offset < size) {
+		fputs("Error: kern table overflow\n", stderr);
+		return 0;
+	}
+
+	if (size < 8)
+		return empty_size;
+
+	/*
+	 * Subtable format 0 is supported.
+	 */
+	if (BE16(&table[0]) != 0)
+		return empty_size;
+	if (BE16(&table[2]) != 1)
+		return empty_size;
+	if (BE16(&table[4]) != 0)
+		return empty_size;
+
+	subtable_size = BE16(&table[6]);
+
+	if (subtable_size != (unsigned long)(size - 4))
+		return empty_size;
+	if (subtable_size < 14)
+		return empty_size;
+
+	if (BE16(&table[8]) != 1)
+		return empty_size;
+
+	pairs = BE16(&table[10]);
+
+	if (subtable_size != (pairs * 6) + 14)
+		return empty_size;
+
+	/*
+	 * searchRange, entrySelector, and rangeShift.
+	 */
+	{
+		unsigned long val;
+
+		val = 6 * table_power_of_two((unsigned)pairs);
+		if (BE16(&table[12]) != val)
+			return empty_size;
+
+		val = table_log2((unsigned)(val / 6));
+		if (BE16(&table[14]) != val)
+			return empty_size;
+
+		val = (pairs * 6) - BE16(&table[12]);
+		if (BE16(&table[16]) != val)
+			return empty_size;
+	}
+
+	/*
+	 * Check that pairs are numerically ordered.
+	 */
+	for (i = 1; i < pairs; i++) {
+		unsigned char *p1 = table + ((i - 1) * 6) + 18;
+		unsigned char *p2 = table + ((i - 0) * 6) + 18;
+		unsigned long v1 = BE32(&p1[0]);
+		unsigned long v2 = BE32(&p2[0]);
+
+		if (v1 == v2 || v1 > v2)
+			return empty_size;
+	}
+
+	/*
+	 * Check that indices are within the bounds.
+	 */
+	for (i = 0; i < pairs; i++) {
+		unsigned char *pair = table + (i * 6) + 18;
+		unsigned long v1 = BE16(&pair[0]);
+		unsigned long v2 = BE16(&pair[2]);
+
+		if (v1 >= ttf_maxp_glyphs)
+			return empty_size;
+		if (v2 >= ttf_maxp_glyphs)
+			return empty_size;
+	}
+
+	if (ttf_maxp_glyphs != ttf_hmtx_points)
+		return empty_size;
+
+	memcpy(&p[0], &table[0], size);
+
+	/*
+	 * Scale the kerning values and check reasonable limits.
+	 */
+	for (i = 0; i < pairs; i++) {
+		unsigned char *pair = p + (i * 6) + 18;
+		long width = (long)ttf_hmtx_array[BE16(&pair[0])].width;
+		unsigned long val_u = BE16(&pair[4]);
+		long val = BE16_TO_LONG(val_u);
+
+		val *= (long)ttf_em_mul;
+		val /= (long)ttf_em_div;
+
+		if ((width + val) < 0)
+			val = -width;
+
+		if ((width + val) > (long)ttf_head_em)
+			val = (long)ttf_head_em - width;
+
+		val_u = LONG_TO_UNSIGNED(val);
+		W_BE16(&pair[4], val_u);
+	}
+
+	return size;
+}
+
 static size_t ttf_build_loca(size_t offset)
 {
 	unsigned char *p = &output_data[offset];
@@ -1680,6 +1815,7 @@ int ttf_main(struct options *opt)
 			{ TTF_TABLE_HEAD, 0, 0, ttf_build_head },
 			{ TTF_TABLE_HHEA, 0, 0, ttf_build_hhea },
 			{ TTF_TABLE_HMTX, 0, 0, ttf_build_hmtx },
+			{ TTF_TABLE_KERN, 0, 0, ttf_build_kern },
 			{ TTF_TABLE_LOCA, 0, 0, ttf_build_loca },
 			{ TTF_TABLE_MAXP, 0, 0, ttf_build_maxp },
 			{ TTF_TABLE_NAME, 0, 0, ttf_build_name },
