@@ -23,6 +23,7 @@
 int ttf_create(void **instance);
 int ttf_delete(void *ttf);
 
+int ttf_get_kerning(void *ttf, const unsigned int code_points[2], int *value);
 int ttf_open(void *ttf, size_t size, const void *ttf_file);
 int ttf_set_bitmap(void *ttf, size_t size, void *bitmap);
 int ttf_set_shades(void *ttf, unsigned int number);
@@ -45,11 +46,15 @@ extern void *memset(void *s, int c, size_t n);
 	*((a) + 1) = (unsigned char)(((unsigned int)(d) >> 0) & 0xFFu), \
 	*((a) + 0) = (unsigned char)(((unsigned int)(d) >> 8) & 0xFFu))
 
+#define BE16_TO_INT(a) \
+	(((a) >= 0x8000u) ? -((int)((~(a) + 1u) & 0xFFFFu)) : (int)(a))
+
 #define TTF_TABLE_CMAP (0x636D6170u)
 #define TTF_TABLE_GLYF (0x676C7966u)
 #define TTF_TABLE_HEAD (0x68656164u)
 #define TTF_TABLE_HHEA (0x68686561u)
 #define TTF_TABLE_HMTX (0x686D7478u)
+#define TTF_TABLE_KERN (0x6B65726Eu)
 #define TTF_TABLE_LOCA (0x6C6F6361u)
 #define TTF_TABLE_MAXP (0x6D617870u)
 
@@ -67,6 +72,7 @@ struct ttf_instance {
 	unsigned char *bitmap;
 	unsigned char *buffer;
 	unsigned char *glyf;
+	unsigned char *kern;
 
 	size_t bitmap_size;
 	size_t glyf_size;
@@ -101,6 +107,7 @@ int ttf_create(void **instance)
 	ttf->bitmap = NULL;
 	ttf->buffer = buffer;
 	ttf->glyf = NULL;
+	ttf->kern = NULL;
 
 	return 0;
 }
@@ -113,6 +120,7 @@ int ttf_delete(void *ttf)
 	free(this_ttf->glyph_array);
 	free(this_ttf->buffer);
 	free(this_ttf->glyf);
+	free(this_ttf->kern);
 
 	free(ttf);
 	return 0;
@@ -327,6 +335,44 @@ static int handle_loca(void *ttf, size_t size, const unsigned char *table)
 	return 0;
 }
 
+static int handle_kern(void *ttf, size_t size, const unsigned char *table)
+{
+	unsigned int pairs, subtable_size;
+
+	if (size < 18)
+		return 1;
+
+	if (BE16(&table[0]) != 0)
+		return 1;
+	if (BE16(&table[2]) != 1)
+		return 1;
+	if (BE16(&table[4]) != 0)
+		return 1;
+
+	subtable_size = BE16(&table[6]);
+
+	if (subtable_size != (unsigned long)(size - 4))
+		return 1;
+	if (subtable_size < 14)
+		return 1;
+
+	if (BE16(&table[8]) != 1)
+		return 1;
+
+	pairs = BE16(&table[10]);
+
+	if (subtable_size != (pairs * 6) + 14)
+		return 1;
+
+	this_ttf->kern = malloc(size);
+	if (this_ttf->kern == NULL)
+		return 1;
+
+	memcpy(this_ttf->kern, table, size);
+
+	return 0;
+}
+
 static int handle_hmtx(void *ttf, size_t size, const unsigned char *table)
 {
 	unsigned int glyph_entries = this_ttf->glyph_entries;
@@ -349,6 +395,67 @@ static int handle_hmtx(void *ttf, size_t size, const unsigned char *table)
 	return 0;
 }
 
+int ttf_get_kerning(void *ttf, const unsigned int code_points[2], int *value)
+{
+	const unsigned char *kern = this_ttf->kern;
+	unsigned int glyph_entries = this_ttf->glyph_entries;
+	unsigned int c0 = code_points[0], c1 = code_points[1];
+	unsigned int i0 = UINT_MAX, i1 = UINT_MAX;
+	unsigned int adv_width = 0;
+	unsigned int i, pairs;
+
+	if (value != NULL)
+		*value = 0;
+
+	if (kern == NULL)
+		return 1;
+
+	for (i = 1; i < glyph_entries; i++) {
+		unsigned int code_pnt = this_ttf->glyph_array[i].code_pnt;
+
+		if (code_pnt == c0) {
+			adv_width = this_ttf->glyph_array[i].adv_width;
+			i0 = this_ttf->glyph_array[i].loca_idx;
+		}
+		if (code_pnt == c1) {
+			i1 = this_ttf->glyph_array[i].loca_idx;
+		}
+		if (i0 != UINT_MAX && i1 != UINT_MAX)
+			break;
+	}
+
+	if (i0 == UINT_MAX || i1 == UINT_MAX || adv_width > 2048)
+		return 2;
+
+	pairs = BE16(&kern[10]);
+	kern += 18;
+
+	for (i = 0; i < pairs; i++) {
+		unsigned int k = BE16(&kern[0]);
+
+		if (k == i0 && BE16(&kern[2]) == i1) {
+			unsigned int u = BE16(&kern[4]);
+			int v = BE16_TO_INT(u);
+
+			if (((int)adv_width + v) < 0)
+				return 2;
+			if (((int)adv_width + v) > 2048)
+				return 2;
+
+			if (value != NULL) {
+				int em_value = (int)this_ttf->em_value;
+				*value = (v * em_value) / 2048;
+			}
+			return 0;
+		}
+		if (k > i0)
+			break;
+		kern += 6;
+	}
+
+	return 2;
+}
+
 int ttf_open(void *ttf, size_t size, const void *ttf_file)
 {
 	const unsigned char *p = ttf_file;
@@ -363,6 +470,7 @@ int ttf_open(void *ttf, size_t size, const void *ttf_file)
 		{ TTF_TABLE_CMAP, 1, handle_cmap },
 		{ TTF_TABLE_GLYF, 1, handle_glyf },
 		{ TTF_TABLE_LOCA, 1, handle_loca },
+		{ TTF_TABLE_KERN, 0, handle_kern },
 		{ TTF_TABLE_HMTX, 1, handle_hmtx }
 	};
 	const unsigned int required_tables = 7;
@@ -378,8 +486,11 @@ int ttf_open(void *ttf, size_t size, const void *ttf_file)
 
 	if (this_ttf->glyf != NULL)
 		free(this_ttf->glyf);
+	if (this_ttf->kern != NULL)
+		free(this_ttf->kern);
 
 	this_ttf->glyf = NULL;
+	this_ttf->kern = NULL;
 	this_ttf->glyf_size = 0;
 
 	if (size < 12 || p == NULL)
