@@ -495,22 +495,34 @@ int gui_create_window(const char *name, int x1, int y1, int x2, int y2)
 		unsigned char *ptr = win_buffer + vi.width + 4;
 		unsigned total_width = 0;
 		unsigned width = 0;
+		unsigned code_points[2] = { 0, 0 };
 
 		ttf_set_bitmap(ttf, ttf_bitmap_size, ttf_bitmap);
 		ttf_set_shades(ttf, 8);
 
 		while (*name != '\0')  {
+			int kerning = 0;
+
+			code_points[0] = code_points[1];
+			code_points[1] = (unsigned)*name;
+
 			ttf_render(ttf, (unsigned)*name++, &width);
 			ttf_set_colors(&ttf_colors_window[0]);
+
+			if (code_points[0])
+				ttf_get_kerning(ttf, code_points, &kerning);
+			ptr += kerning;
 
 			for (y = 0; y < ttf_height - 1; y++) {
 				for (x = 0; x < width; x++) {
 					unsigned char c;
 					c = ttf_bitmap[x + y * ttf_height];
-					ptr[x + y * vi.width] = c;
+					if (ttf_colors_window[0] != c)
+						ptr[x + y * vi.width] = c;
 				}
 			}
 			total_width += width;
+			total_width = (unsigned)((int)total_width + kerning);
 			if (total_width + ttf_height >= win_width)
 				break;
 			ptr += width;
@@ -634,6 +646,8 @@ void gui_print(const char *format, ...)
 	unsigned char *dst_buffer;
 	unsigned win_width;
 
+	unsigned code_points[2] = { 0, 0 };
+
 	char buf[4096];
 	int ret, i;
 
@@ -661,33 +675,44 @@ void gui_print(const char *format, ...)
 
 		unsigned c = (unsigned)buf[i];
 		unsigned width = 0;
+		int kerning = 0;
 		unsigned x, y;
 
+		code_points[0] = code_points[1];
+		code_points[1] = c;
+
 		if (c == 0x0D) {
+			code_points[1] = 0;
 			gui_window_stack->x = 0;
 			continue;
 		}
 		if (c == 0x0A) {
+			code_points[1] = 0;
 			handle_newline();
 			continue;
 		}
 
-		if (ttf_render(ttf, c, &width))
-			continue;
-
+		ttf_render(ttf, c, &width);
 		ttf_set_colors(&ttf_colors[0]);
+
+		if (code_points[0])
+			ttf_get_kerning(ttf, code_points, &kerning);
 
 		dst += gui_window_stack->x;
 		dst += (gui_window_stack->y * vi.width);
+		dst += kerning;
 
 		for (y = 0; y < ttf_height; y++) {
-			for (x = 0; x < width; x++)
-				dst[x] = src[x];
+			for (x = 0; x < width; x++) {
+				if (kerning == 0 || ttf_colors[0] != src[x])
+					dst[x] = src[x];
+			}
 			src += ttf_height;
 			dst += vi.width;
 		}
 
-		gui_window_stack->x += width;
+		x = gui_window_stack->x + width;
+		gui_window_stack->x = (unsigned)((int)x + kerning);
 
 		if (gui_window_stack->x + ttf_height >= win_width)
 			handle_newline();
