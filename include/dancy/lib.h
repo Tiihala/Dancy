@@ -59,4 +59,16 @@ int huffman_table(struct huffman *h, unsigned *table, int n);
  */
 int inflate(struct bitarray *b, unsigned char *out, size_t *size);
 
+/*
+ * Declarations of ttf.c
+ */
+int ttf_create(void **instance);
+int ttf_delete(void *ttf);
+
+int ttf_get_kerning(void *ttf, const unsigned int code_points[2], int *value);
+int ttf_open(void *ttf, size_t size, const void *ttf_file);
+int ttf_set_bitmap(void *ttf, size_t size, void *bitmap);
+int ttf_set_shades(void *ttf, unsigned int number);
+int ttf_render(void *ttf, unsigned int code_point, unsigned int *width);
+
 #endif

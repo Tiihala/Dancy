@@ -165,18 +165,6 @@ void start_init(void *map);
 
 
 /*
- * Declarations of ttf.c
- */
-int ttf_create(void **instance);
-int ttf_delete(void *ttf);
-
-int ttf_open(void *ttf, size_t size, const void *ttf_file);
-int ttf_set_bitmap(void *ttf, size_t size, void *bitmap);
-int ttf_set_shades(void *ttf, unsigned int number);
-int ttf_render(void *ttf, unsigned int code_point, unsigned int *width);
-
-
-/*
  * Declarations of vga.c
  */
 void vga_set_palette(const struct b_video_info *vi);
