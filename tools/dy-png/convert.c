@@ -309,7 +309,7 @@ static int write_png_file(struct options *opt)
 	adler = adler32(&idat[10], size);
 
 	if (deflate_compress(&idat[10], &size)) {
-		fputs("Error: deflate bigger than uncomressed\n", stderr);
+		fputs("Error: deflate bigger than uncompressed\n", stderr);
 		return free(out), 1;
 	}
 
