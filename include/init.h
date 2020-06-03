@@ -101,6 +101,7 @@ const char *db_read_error(int retval);
 int gui_init(void);
 int gui_create_window(const char *name, int x1, int y1, int x2, int y2);
 int gui_delete_window(void);
+int gui_draw(unsigned char *png, size_t size, int x1, int y1, int x2, int y2);
 int gui_move_window(int x, int y);
 void gui_print(const char *format, ...);
 void gui_refresh(void);
