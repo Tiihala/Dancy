@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2019 Antti Tiihala
+ * Copyright (c) 2017, 2019, 2020 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -33,6 +33,9 @@
 #define B8(a,b,c) (((unsigned long)((a)[(b)]) & 0xFFul) << (c))
 #define LE16(a) (B8((a),0,0) | B8((a),1,8))
 #define LE32(a) (B8((a),0,0) | B8((a),1,8) | B8((a),2,16) | B8((a),3,24))
+
+#define BE16(a) (B8((a),0,8) | B8((a),1,0))
+#define BE32(a) (B8((a),0,24) | B8((a),1,16) | B8((a),2,8) | B8((a),3,0))
 
 #define W_LE16(a,d) ( \
 *((a) + 0) = (unsigned char)(((unsigned)(d) >> 0) & 0xFFu), \
