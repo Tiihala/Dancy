@@ -24,8 +24,8 @@ static const char *help_str =
 	" [-o output] bmp-file\n"
 	"\nOptions:\n"
 	"  -o output     output file\n"
-	"  --bmp         normalized bmp file\n"
-	"  --vga         indexed colors\n"
+	"  -p gpl-file   use GIMP Palette file\n"
+	"  --bmp         normalized BMP file\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -94,10 +94,6 @@ int main(int argc, char *argv[])
 				opts.bmp = 1;
 				continue;
 			}
-			if (!strcmp(arg + 2, "vga")) {
-				opts.vga = 1;
-				continue;
-			}
 			help("unknown long option \"%s\"", arg);
 		}
 		do {
@@ -112,6 +108,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'o':
 				optarg = &opts.arg_o;
+				break;
+			case 'p':
+				optarg = &opts.arg_p;
 				break;
 			case 'v':
 				opts.verbose = 1;

@@ -40,9 +40,10 @@ struct options {
 	char **operands;
 	const char *error;
 	const char *arg_o;
+	const char *arg_p;
 	int bmp;
-	int vga;
 	int verbose;
+	int pl_ncolors;
 };
 
 #define B8(a,b,c) (((unsigned long)((a)[(b)]) & 0xFFul) << (c))
@@ -114,16 +115,17 @@ int huffman_fetch(struct huffman *h, struct bitarray *b);
 int huffman_table(struct huffman *h, unsigned *table, int n);
 
 /*
+ * palette.c
+ */
+void pl_color(int i, unsigned char *r, unsigned char *g, unsigned char *b);
+unsigned pl_find_color(unsigned char r, unsigned char g, unsigned char b);
+int pl_init(struct options *opt);
+
+/*
  * program.c
  */
 int program(struct options *opt);
 int read_file(const char *name, unsigned char **out, size_t *size);
 int write_file(struct options *opt, unsigned char *out, size_t size);
-
-/*
- * vga.c
- */
-void vga_color(int i, unsigned char *r, unsigned char *g, unsigned char *b);
-unsigned vga_find_color(unsigned char r, unsigned char g, unsigned char b);
 
 #endif

@@ -114,8 +114,8 @@ DY_PNG_OBJECTS= \
  ./tools/dy-png/convert.obj \
  ./tools/dy-png/deflate.obj \
  ./tools/dy-png/huffman.obj \
+ ./tools/dy-png/palette.obj \
  ./tools/dy-png/program.obj \
- ./tools/dy-png/vga.obj \
  ./common/crc32.obj
 DY_PNG_HEADERS= \
  ./tools/dy-png/program.h
@@ -288,11 +288,11 @@ DY_ZIP_OBJECTS= \
 ./tools/dy-png/main.obj: ./tools/dy-png/main.c $(DY_PNG_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/main.c
 
+./tools/dy-png/palette.obj: ./tools/dy-png/palette.c $(DY_PNG_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/palette.c
+
 ./tools/dy-png/program.obj: ./tools/dy-png/program.c $(DY_PNG_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/program.c
-
-./tools/dy-png/vga.obj: ./tools/dy-png/vga.c $(DY_PNG_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./tools/dy-png/vga.c
 
 ./tools/dy-ttf/main.obj: ./tools/dy-ttf/main.c $(DY_TTF_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-ttf/main.c

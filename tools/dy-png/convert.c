@@ -248,7 +248,7 @@ static int write_png_file(struct options *opt)
 	W_BE32(&out[0x10], (unsigned long)raw_width);
 	W_BE32(&out[0x14], (unsigned long)raw_height);
 
-	if (opt->vga)
+	if (opt->pl_ncolors)
 		W_BE16(&out[0x18], 0x0803ul);
 	else
 		W_BE16(&out[0x18], 0x0806ul);
@@ -258,15 +258,15 @@ static int write_png_file(struct options *opt)
 
 	ptr = &out[0x21];
 
-	if (opt->vga) {
-		const unsigned long colors = 16;
+	if (opt->pl_ncolors) {
+		unsigned long colors = (unsigned long)opt->pl_ncolors;
 
 		W_BE32(&ptr[0], (colors * 3));
 		W_BE32(&ptr[4], 0x504C5445ul);
 
 		for (i = 0; i < colors; i++) {
 			unsigned char *p = ptr + (i * 3) + 8;
-			vga_color((int)i, &p[0], &p[1], &p[2]);
+			pl_color((int)i, &p[0], &p[1], &p[2]);
 		}
 
 		crc = crc32(&ptr[4], (size_t)((colors * 3) + 4));
@@ -282,13 +282,13 @@ static int write_png_file(struct options *opt)
 
 	ptr = &idat[10];
 
-	if (opt->vga) {
+	if (opt->pl_ncolors) {
 		for (i = raw_height; i > 0; i--) {
 			unsigned char *s = raw_data + (row_size * (i - 1));
 
 			*ptr++ = 0x00;
 			for (j = 0; j < raw_width; j++) {
-				unsigned c = vga_find_color(s[0], s[1], s[2]);
+				unsigned c = pl_find_color(s[0], s[1], s[2]);
 
 				*ptr++ = (unsigned char)c;
 				s += 4;
@@ -338,6 +338,9 @@ static int write_png_file(struct options *opt)
 int convert(struct options *opt, unsigned char *bmp_file, size_t bmp_size)
 {
 	int ret;
+
+	if (pl_init(opt))
+		return 1;
 
 	if (validate_bmp(bmp_file, bmp_size))
 		return 1;
