@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2020 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -35,29 +35,12 @@ int memory_init(void *map)
 	const size_t max = (2048 - 512);
 	uint32_t continuous_normal = 0;
 	unsigned memory_types = 0;
-	int check_run = 0;
 	size_t i;
 
 	/*
-	 * This function should be called with "map == NULL" when the init
-	 * procedures have been finished. It will be an extra check to make
-	 * sure that any memory map modifications (see malloc and others)
-	 * do not make the map corrupted. In theory, this could detect some
-	 * physical memory errors (but it is very unlikely).
+	 * This memory_init function is the only one in this module that
+	 * uses boot loader services.
 	 *
-	 * This can also be used for checking that there are still enough
-	 * continuous free memory areas available for the kernel.
-	 */
-	if (map == NULL) {
-		err = "Error: the memory map is corrupted";
-		memory = map = memory_map;
-		check_run = 1;
-	} else {
-		memory_free_end = 0, memory_entries = 0;
-		memory_map = NULL;
-	}
-
-	/*
 	 * The boot loader is responsible for providing a valid memory map.
 	 * There are no error recovery strategies because the whole computer
 	 * state is unknown if we cannot trust the memory map.
@@ -80,8 +63,7 @@ int memory_init(void *map)
 			uint32_t size = (uint32_t)(e - b);
 			if (size > continuous_normal) {
 				continuous_normal = size;
-				if (!check_run)
-					memory_free_end = i + 1;
+				memory_free_end = i + 1;
 			}
 
 		} else if (t == B_MEM_BOOT_LOADER) {
@@ -117,9 +99,6 @@ int memory_init(void *map)
 	}
 
 	if (memory[i].base)
-		return b_print("%s\n", err), 1;
-
-	if (check_run && memory_entries != i)
 		return b_print("%s\n", err), 1;
 
 	memory_entries = i;
