@@ -166,6 +166,35 @@ void memory_print_map(void (*print)(const char *, ...))
 	(*print)("\n    Total free: %zd KiB\n\n", total / 1024);
 }
 
+size_t memory_sum_alloc(void)
+{
+	return memory_sum_range(B_MEM_INIT_ALLOC_MIN, B_MEM_INIT_ALLOC_MAX);
+}
+
+size_t memory_sum_free(void)
+{
+	return memory_sum_range(B_MEM_NORMAL, B_MEM_NORMAL);
+}
+
+size_t memory_sum_range(uint32_t min_type, uint32_t max_type)
+{
+	const struct b_mem *memory = memory_map;
+	uint64_t total = 0;
+	size_t i;
+
+	for (i = 0; i == 0 || memory[i].base; i++) {
+		uint32_t t = memory[i].type;
+		uint64_t add;
+
+		if (t < min_type || t > max_type)
+			continue;
+
+		add = (uint64_t)(memory[i + 1].base - memory[i].base);
+		total += add;
+	}
+	return (size_t)((total < SIZE_MAX) ? total : SIZE_MAX);
+}
+
 static void fix_memory_map(void)
 {
 	struct b_mem_raw *memory = memory_map;
