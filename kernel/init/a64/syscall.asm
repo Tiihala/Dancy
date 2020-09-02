@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2019 Antti Tiihala
+;; Copyright (c) 2019, 2020 Antti Tiihala
 ;;
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -41,7 +41,8 @@ section .text
 align 16
         ; unsigned long b_output_string(const char *, unsigned int)
 b_output_string:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (0 * 8)                ; syscall offset
@@ -58,7 +59,8 @@ b_output_string:
 align 16
         ; unsigned long b_output_string_hl(const char *, unsigned int)
 b_output_string_hl:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (1 * 8)                ; syscall offset
@@ -75,7 +77,8 @@ b_output_string_hl:
 align 16
         ; unsigned long b_output_control(unsigned int, unsigned int)
 b_output_control:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (2 * 8)                ; syscall offset
@@ -92,7 +95,8 @@ b_output_control:
 align 16
         ; unsigned long b_get_keycode(void)
 b_get_keycode:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (3 * 8)                ; syscall offset
@@ -105,7 +109,8 @@ b_get_keycode:
 align 16
         ; unsigned long b_get_byte_com1(void)
 b_get_byte_com1:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (4 * 8)                ; syscall offset
@@ -120,7 +125,8 @@ b_get_byte_com1:
 align 16
         ; unsigned long b_put_byte_com1(unsigned char)
 b_put_byte_com1:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (5 * 8)                ; syscall offset
@@ -139,7 +145,8 @@ b_put_byte_com1:
 align 16
         ; unsigned long b_get_byte_com2(void)
 b_get_byte_com2:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (6 * 8)                ; syscall offset
@@ -154,7 +161,8 @@ b_get_byte_com2:
 align 16
         ; unsigned long b_put_byte_com2(unsigned char)
 b_put_byte_com2:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (7 * 8)                ; syscall offset
@@ -173,7 +181,8 @@ b_put_byte_com2:
 align 16
         ; unsigned long b_get_parameter(unsigned int)
 b_get_parameter:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (8 * 8)                ; syscall offset
@@ -190,7 +199,8 @@ b_get_parameter:
 align 16
         ; unsigned long b_get_structure(void *, unsigned int)
 b_get_structure:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (9 * 8)                ; syscall offset
@@ -207,7 +217,8 @@ b_get_structure:
 align 16
         ; unsigned long b_set_read_buffer(void *, unsigned int)
 b_set_read_buffer:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (10 * 8)               ; syscall offset
@@ -224,7 +235,8 @@ b_set_read_buffer:
 align 16
         ; unsigned long b_read_blocks(unsigned int, unsigned int)
 b_read_blocks:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (11 * 8)               ; syscall offset
@@ -241,7 +253,8 @@ b_read_blocks:
 align 16
         ; unsigned long b_set_write_buffer(void *, unsigned int)
 b_set_write_buffer:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (12 * 8)               ; syscall offset
@@ -258,7 +271,8 @@ b_set_write_buffer:
 align 16
         ; unsigned long b_write_blocks(unsigned int, unsigned int)
 b_write_blocks:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (13 * 8)               ; syscall offset
@@ -275,7 +289,8 @@ b_write_blocks:
 align 16
         ; unsigned long b_pause(void)
 b_pause:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (14 * 8)               ; syscall offset
@@ -288,7 +303,8 @@ b_pause:
 align 16
         ; unsigned long b_exit(void)
 b_exit:
-        mov eax, [uefi_syscalls]        ; get the uefi syscall offset
+        mov eax, uefi_syscalls          ; get the uefi syscall address
+        mov eax, [rax]                  ; get the uefi syscall offset
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (15 * 8)               ; syscall offset
