@@ -158,8 +158,7 @@ struct b_uefi_info {
 #define B_MEM_NOT_REPORTED      (0xFFFFFFFF)
 
 #define B_FLAG_VALID_ENTRY      (1u << 0)
-#define B_FLAG_VALID_LEGACY     (1u << 1)
-#define B_FLAG_UEFI             (1u << 2)
+#define B_FLAG_BIOS_LOADER      (1u << 1)
 #define B_FLAG_NO_INIT_ALLOC    (1u << 16)
 
 #define B_A20_INT15H            (0x01)
