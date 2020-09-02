@@ -273,10 +273,7 @@ int memory_export_map(int finalize)
 	 * Set the proper memory map entry flags.
 	 */
 	for (i = 0; i < entries; i++) {
-		native_map[i].flags = (B_FLAG_VALID_ENTRY | B_FLAG_UEFI);
-
-		if (native_map[i].base <= 0x100000000ull)
-			native_map[i].flags |= B_FLAG_VALID_LEGACY;
+		native_map[i].flags = B_FLAG_VALID_ENTRY;
 
 		if (native_map[i].type == B_MEM_NORMAL && finalize == 0) {
 			if (native_map[i].base != Allocations[1].Memory)

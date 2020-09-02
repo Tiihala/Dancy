@@ -81,13 +81,8 @@ int memory_init(void *map)
 			memory_types |= TYPE_INIT;
 		}
 
-		if (e - 1 == 0xFFFFFFFFul) {
+		if (e - 1 == 0xFFFFFFFFul)
 			memory_types |= TYPE_LOW_END;
-			if ((memory[i + 1].flags & B_FLAG_VALID_LEGACY) == 0)
-				return b_print("%s\n", err), 1;
-			if ((memory[i + 2].flags & B_FLAG_VALID_LEGACY) != 0)
-				return b_print("%s\n", err), 1;
-		}
 	}
 
 	if (memory_types != TYPE_ALL)
@@ -256,8 +251,6 @@ void *aligned_alloc(size_t alignment, size_t size)
 			continue;
 		if (memory[i - 1].flags & B_FLAG_NO_INIT_ALLOC)
 			continue;
-		if (!(memory[i - 1].flags & B_FLAG_VALID_LEGACY))
-			continue;
 
 		if (alignment)
 			remainder = (e - size) % alignment;
@@ -364,7 +357,7 @@ void free(void *ptr)
 	if (ptr == NULL)
 		return;
 
-	for (i = 1; (memory[i].flags & B_FLAG_VALID_LEGACY); i++) {
+	for (i = 1; (memory[i].flags & B_FLAG_VALID_ENTRY); i++) {
 		if (memory[i].base != addr)
 			continue;
 		t = memory[i].type;
