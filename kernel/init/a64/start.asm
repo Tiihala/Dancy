@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2018, 2019 Antti Tiihala
+;; Copyright (c) 2018, 2019, 2020 Antti Tiihala
 ;;
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -38,16 +38,16 @@ start:
         add ebx, 0x00010000             ; rbx = "address of memory map"
         mov ecx, ebx                    ; "void start_init(void *)"
 
-        test byte [ebx+4], 4            ; test uefi bit
-        jz short .L2
-        mov byte [boot_loader_type], 1  ; set the boot loader type
+        test byte [ebx+4], 2            ; test bios loader bit
+        jnz short .L2
+        mov edx, boot_loader_type       ; address of "boot_loader_type"
+        mov byte [rdx], 1               ; set the boot loader type (uefi)
 .L1:    lea ebx, [ebx+32]               ; next entry
-        test byte [ebx+4], 2            ; test B_FLAG_VALID_LEGACY
-        jz short .halt
         cmp dword [ebx], 0x80000005     ; test B_MEM_UEFI_SYSCALLS
         jne short .L1
         mov eax, [ebx+8]                ; eax = base
-        mov [uefi_syscalls], eax        ; modify the uefi_syscalls variable
+        mov edx, uefi_syscalls          ; address of "uefi_syscalls"
+        mov [rdx], eax                  ; modify the uefi_syscalls variable
 .L2:    ; nop
 
         xor ebx, ebx                    ; rbx = 0
