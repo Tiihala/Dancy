@@ -75,7 +75,9 @@ syscall_jump:
         sub rbp, 32                     ; rbp = stack for syscalls
         test rbp, 0x0000000F            ; (extra check)
         jnz short .err
-        mov [syscall_stack], rbp        ; 16-byte alignment + shadow space
+
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov [rax], rbp                  ; 16-byte alignment + shadow space
 
         lea rsp, [rcx+0xFFF0]           ; set the new stack (in_x64.at)
         lea rcx, [rcx+32]               ; rcx = start address
@@ -106,7 +108,8 @@ align 16
 sys_0:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_output_string            ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -116,7 +119,8 @@ align 16
 sys_1:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_output_string_hl         ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -126,7 +130,8 @@ align 16
 sys_2:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_output_control           ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -136,7 +141,8 @@ align 16
 sys_3:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_get_keycode              ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -146,7 +152,8 @@ align 16
 sys_4:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_get_byte_com1            ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -156,7 +163,8 @@ align 16
 sys_5:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_put_byte_com1            ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -166,7 +174,8 @@ align 16
 sys_6:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_get_byte_com2            ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -176,7 +185,8 @@ align 16
 sys_7:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_put_byte_com2            ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -186,7 +196,8 @@ align 16
 sys_8:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_get_parameter            ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -196,7 +207,8 @@ align 16
 sys_9:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_get_structure            ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -206,7 +218,8 @@ align 16
 sys_10:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_set_read_buffer          ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -216,7 +229,8 @@ align 16
 sys_11:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_read_blocks              ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -226,7 +240,8 @@ align 16
 sys_12:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_set_write_buffer         ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -236,7 +251,8 @@ align 16
 sys_13:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_write_blocks             ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -246,7 +262,8 @@ align 16
 sys_14:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_pause                    ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -256,7 +273,8 @@ align 16
 sys_15:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
-        mov rsp, [syscall_stack]        ; set stack (alignment + shadow space)
+        mov eax, syscall_stack          ; address of "syscall_stack"
+        mov rsp, [rax]                  ; set stack (alignment + shadow space)
         call b_exit                     ; call the syscall function
         mov rsp, rbp                    ; restore stack pointer
         pop rbp                         ; restore register rbp
@@ -271,7 +289,8 @@ syscall_halt:
 align 16
         ; unsigned long syscall_exit(void)
 syscall_exit:
-        lidt [null_idt]                 ; use IDT with zero entries
+        mov eax, null_idt               ; address of "null_idt"
+        lidt [rax]                      ; use IDT with zero entries
         xor eax, eax                    ; rax = 0
         xor edx, edx                    ; rdx = 0
         ret

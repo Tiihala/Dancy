@@ -35,8 +35,10 @@ pic_delay:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
 
-        mov rcx, [delay_low]            ; rcx = value of "delay_low"
-        mov rdx, [delay_high]           ; rdx = value of "delay_high"
+        mov eax, delay_low              ; rax = address of "delay_low"
+        mov rcx, [rax]                  ; rcx = value of "delay_low"
+        mov eax, delay_high             ; rax = address of "delay_high"
+        mov rdx, [rax]                  ; rdx = value of "delay_high"
         call cpu_rdtsc_delay            ; delay
 
         pop rbp                         ; restore register rbp
@@ -48,8 +50,8 @@ pic_delay_beg:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
 
-        mov rcx, delay_low              ; rcx = address of "delay_low"
-        mov rdx, delay_high             ; rdx = address of "delay_high"
+        mov ecx, delay_low              ; rcx = address of "delay_low"
+        mov edx, delay_high             ; rdx = address of "delay_high"
         call cpu_rdtsc                  ; initial value
 
         pop rbp                         ; restore register rbp
@@ -61,8 +63,8 @@ pic_delay_end:
         push rbp                        ; save register rbp
         mov rbp, rsp                    ; rbp = current stack pointer
 
-        mov rcx, delay_low              ; rcx = address of "delay_low"
-        mov rdx, delay_high             ; rdx = address of "delay_high"
+        mov ecx, delay_low              ; rcx = address of "delay_low"
+        mov edx, delay_high             ; rdx = address of "delay_high"
         call cpu_rdtsc_diff             ; diff value
 
         pop rbp                         ; restore register rbp
