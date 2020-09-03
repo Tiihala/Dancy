@@ -263,6 +263,25 @@ void *aligned_alloc(size_t alignment, size_t size)
 	if (addr == 0 || memory_entries <= i || memory_entries >= 2040)
 		return NULL;
 
+	/*
+	 * The allocated memory must not be too far away from the init
+	 * module. This guarantees that dynamically linked modules work.
+	 */
+	{
+		phys_addr_t memory_map_addr = (phys_addr_t)memory_map;
+		size_t addr_diff;
+
+		if (addr < memory_map_addr) {
+			addr_diff = (size_t)(memory_map_addr - addr);
+		} else {
+			addr_diff = (size_t)(addr - memory_map_addr);
+			addr_diff += size;
+		}
+
+		if (addr_diff > 0x7FFFFFFFul)
+			return NULL;
+	}
+
 	size = sizeof(struct b_mem) * (memory_entries - i);
 	memmove(&memory[i + 1], &memory[i], size);
 	memmove(&memory[i], &memory[i - 1], sizeof(struct b_mem));
