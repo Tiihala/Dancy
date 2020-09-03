@@ -278,7 +278,7 @@ void *aligned_alloc(size_t alignment, size_t size)
 			addr_diff += size;
 		}
 
-		if (addr_diff > 0x7FFFFFFFul)
+		if (addr_diff > 0x7F000000ul)
 			return NULL;
 	}
 
