@@ -343,7 +343,7 @@ static int read_bios_parameter_block(void *fat, int id)
 			return 1;
 	} else if (buf[0] == 0xE9) {
 		val = LE16(&buf[1]);
-		if (val < 0x3C || (val >= 0x1FE && val != 0xFFFE))
+		if (val < 0x3C || (val >= 0x1FD && val != 0xFFFD))
 			return 1;
 	} else {
 		return 1;
@@ -1763,6 +1763,12 @@ int fat_open(void *fat, int fd, const char *name, const char *mode)
 			truncate_data = 1;
 
 		/*
+		 * Do not modify system or read-only files.
+		 */
+		if ((record[11] & 0x05) != 0)
+			return FAT_READ_ONLY_FILE;
+
+		/*
 		 * Directories are not truncated.
 		 */
 		if ((record[11] & 0x10) != 0)
@@ -1772,6 +1778,8 @@ int fat_open(void *fat, int fd, const char *name, const char *mode)
 		 * Delete the existing file data.
 		 */
 		if (truncate_data) {
+			record[11] = (unsigned char)(record[11] | 0x20);
+
 			cluster = (LE16(&record[20]) << 16);
 			cluster |= LE16(&record[26]);
 
@@ -2016,7 +2024,7 @@ int fat_remove(void *fat, const char *name)
 	record = get_record(fat, fd);
 	cluster = (LE16(&record[20]) << 16) | LE16(&record[26]);
 
-	if ((record[11] & 0x0D) != 0)
+	if ((record[11] & 0x0C) != 0)
 		return FAT_READ_ONLY_RECORD;
 
 	/*
@@ -2516,6 +2524,7 @@ int fat_write(void *fat, int fd, size_t *size, const void *buf)
 		if (file_size < fd_entry->offset + written_bytes)
 			file_size = fd_entry->offset + written_bytes;
 
+		record[11] = (unsigned char)(record[11] | 0x20);
 		W_LE32(&record[28], file_size);
 	}
 
