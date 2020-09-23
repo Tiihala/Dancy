@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * dy-mcopy/main.c
- *      Program for adding files into FAT12/FAT16 file system images
+ *      Program for adding files into FAT file system images
  */
 
 #include "program.h"
@@ -26,7 +26,6 @@ static const char *help_str =
 	"  -i image      image file\n"
 	"  -t timestamp  YYYY-MM-DDThh:mm:ss\n"
 	"  --db          special mode for Dancy databases\n"
-	"  --random      allocate clusters randomly\n"
 	"  --read-only   set read only flag\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
@@ -94,10 +93,6 @@ int main(int argc, char *argv[])
 			}
 			if (!strcmp(arg + 2, "db")) {
 				opts.db_mode = 1;
-				continue;
-			}
-			if (!strcmp(arg + 2, "random")) {
-				opts.random = 1;
 				continue;
 			}
 			if (!strcmp(arg + 2, "read-only")) {

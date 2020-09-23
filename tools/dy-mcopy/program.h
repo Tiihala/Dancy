@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * dy-mcopy/program.h
- *      Program for adding files into FAT12/FAT16 file system images
+ *      Program for adding files into FAT file system images
  */
 
 #ifndef PROGRAM_H
@@ -43,8 +43,8 @@ struct options {
 	const char *arg_t;
 	int db_mode;
 	int read_only;
-	int random;
 	int verbose;
+	void *fat;
 };
 
 #define B8(a,b,c) (((unsigned long)((a)[(b)]) & 0xFFul) << (c))
@@ -62,8 +62,40 @@ struct options {
 	*((a) + 3) = (unsigned char)(((unsigned long)(d) >> 24) & 0xFFul))
 
 /*
+ * fat.c
+ */
+int fat_create(void **instance, int id);
+int fat_delete(void *fat);
+
+int fat_close(void *fat, int fd);
+int fat_control(void *fat, int fd, int write, unsigned char record[32]);
+int fat_eof(void *fat, int fd);
+int fat_open(void *fat, int fd, const char *name, const char *mode);
+int fat_read(void *fat, int fd, size_t *size, void *buf);
+int fat_remove(void *fat, const char *name);
+int fat_rename(void *fat, const char *old_name, const char *new_name);
+int fat_seek(void *fat, int fd, int offset, int whence);
+int fat_tell(void *fat, int fd, unsigned int *offset);
+int fat_write(void *fat, int fd, size_t *size, const void *buf);
+
+/*
+ * mcopy.c
+ */
+int mcopy(struct options *opt);
+
+/*
  * program.c
  */
+extern size_t source_file_size;
+extern unsigned char *source_file;
+
+void fat_error(int r);
+
+int fat_get_size(int id, size_t *block_size, size_t *block_total);
+int fat_get_time(char iso_8601_format[19]);
+int fat_io_read(int id, size_t lba, size_t *size, void *buf);
+int fat_io_write(int id, size_t lba, size_t *size, const void *buf);
+
 int program(struct options *opt);
 
 #endif
