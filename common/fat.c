@@ -1795,7 +1795,7 @@ int fat_open(void *fat, int fd, const char *name, const char *mode)
 		}
 
 		if (this_fat->type_32) {
-			if (this_fat->fs_info_modified) {
+			if (this_fat->fs_info_modified == 0) {
 				write_fs_info(fat);
 				this_fat->fs_info_modified = 1;
 			}
