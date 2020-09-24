@@ -27,12 +27,19 @@ static FILE *image_file;
 static struct tm *fat_tm;
 static struct tm fat_tm_buf;
 
+size_t fat_block_size = 512;
+size_t fat_block_total = 0;
+
 int fat_get_size(int id, size_t *block_size, size_t *block_total)
 {
 	(void)id;
 
-	*block_size = 512;
-	*block_total = 0x7FFFFF;
+	*block_size = fat_block_size;
+
+	if (fat_block_total < 0xFFFFFFFF)
+		*block_total = fat_block_total;
+	else
+		*block_total = 0xFFFFFFFF;
 
 	return 0;
 }
@@ -63,10 +70,10 @@ int fat_io_read(int id, size_t lba, size_t *size, void *buf)
 
 	(void)id;
 
-	if (lba > 0x7FFFFF)
+	if (lba > fat_block_total)
 		return *size = 0, 1;
 
-	offset = (long)lba * 512L;
+	offset = (long)(lba * fat_block_size);
 
 	if ((errno = 0, fseek(image_file, offset, SEEK_SET)) != 0) {
 		perror("Read image file");
@@ -87,10 +94,10 @@ int fat_io_write(int id, size_t lba, size_t *size, const void *buf)
 
 	(void)id;
 
-	if (lba > 0x7FFFFF)
+	if (lba > fat_block_total)
 		return *size = 0, 1;
 
-	offset = (long)lba * 512L;
+	offset = (long)(lba * fat_block_size);
 
 	if ((errno = 0, fseek(image_file, offset, SEEK_SET)) != 0) {
 		perror("Write image file");
@@ -323,19 +330,15 @@ int program(struct options *opt)
 {
 	int r;
 
+	fat_block_total = (~((size_t)0)) / fat_block_size;
+	if (fat_block_total > (unsigned long)(LONG_MAX / fat_block_size))
+		fat_block_total = (size_t)(LONG_MAX / fat_block_size);
+
 	if ((errno = 0, atexit(free_files)))
 		return perror("atexit error"), 1;
 
 	if (!opt->arg_i)
 		return opt->error = "missing image file", 1;
-
-	image_file = (errno = 0, fopen(opt->arg_i, "rb+"));
-	if (!image_file) {
-		const char *fmt = "Error: opening file \"%s\" (%s)\n";
-		fprintf(stderr, fmt, opt->arg_i, strerror(errno));
-		return 1;
-	}
-
 	if (!opt->operands[0])
 		return opt->error = "missing source-file", 1;
 	if (!opt->operands[1])
@@ -350,32 +353,52 @@ int program(struct options *opt)
 		fat_tm = &fat_tm_buf;
 	}
 
+	image_file = (errno = 0, fopen(opt->arg_i, "rb+"));
+	if (!image_file) {
+		const char *fmt = "Error: opening file \"%s\" (%s)\n";
+		fprintf(stderr, fmt, opt->arg_i, strerror(errno));
+		return 1;
+	}
+
 	if (fat_create(&opt->fat, 0)) {
 		fputs("Error: file system is not supported\n", stderr);
+		(void)fclose(image_file);
 		return 1;
 	}
 
 	if (opt->db_mode) {
 		r = db_files(opt);
-		if ((errno = 0, fclose(image_file))) {
-			perror("Error");
-			r = 1;
-		}
-		return (void)fat_delete(opt->fat), r;
+
+		(void)fat_delete(opt->fat);
+
+		if ((errno = 0, fclose(image_file)))
+			return perror("Error"), 1;
+
+		return r;
 	}
 
 	if (opt->operands[2]) {
 		opt->error = "too many operands";
-		return (void)fat_delete(opt->fat), 1;
+
+		(void)fat_delete(opt->fat);
+		(void)fclose(image_file);
+
+		return 1;
 	}
-	if (read_file(opt->operands[0], &source_file, &source_file_size))
-		return (void)fat_delete(opt->fat), 1;
+
+	if (read_file(opt->operands[0], &source_file, &source_file_size)) {
+		(void)fat_delete(opt->fat);
+		(void)fclose(image_file);
+
+		return 1;
+	}
 
 	r = mcopy(opt);
-	if ((errno = 0, fclose(image_file))) {
-		perror("Error");
-		r = 1;
-	}
 
-	return (void)fat_delete(opt->fat), r;
+	(void)fat_delete(opt->fat);
+
+	if ((errno = 0, fclose(image_file)))
+		return perror("Error"), 1;
+
+	return r;
 }
