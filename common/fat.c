@@ -926,6 +926,20 @@ static void delete_extra_clusters(void *fat, int fd)
 		if (!(i + 1 < clusters)) {
 			if (set_table_value(fat, cluster, 0x0FFFFFFF))
 				return;
+
+			if ((file_size % cluster_size) != 0) {
+				unsigned char *buf = this_fat->cluster_buffer;
+				unsigned int used;
+				size_t size;
+
+				used = file_size % cluster_size;
+				size = (size_t)(cluster_size - used);
+
+				if (read_cluster(fat, cluster, 0) == 0) {
+					memset(&buf[used], 0, size);
+					(void)write_cluster(fat);
+				}
+			}
 		}
 		cluster = next;
 	}
