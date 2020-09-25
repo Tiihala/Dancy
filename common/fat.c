@@ -96,7 +96,7 @@ struct fat_fd {
 	int opened;
 	unsigned int mode;
 
-	unsigned char *record_buffer;
+	unsigned char record[32];
 	unsigned int record_offset;
 	unsigned int record_sector;
 
@@ -122,7 +122,6 @@ struct fat_instance {
 	unsigned int cluster_sector;
 	unsigned char *cluster_buffer;
 
-	unsigned char *record_buffers;
 	unsigned char *table_buffer;
 	unsigned char *table_sectors;
 
@@ -162,36 +161,63 @@ struct fat_instance {
 
 static int check_fd(void *fat, int fd, int opened)
 {
-	if (fd < 0 || (unsigned int)fd >= this_fat->fd_entries)
+	const int maximum_fd_entries = 65536;
+	int fd_entries = (int)this_fat->fd_entries;
+
+	if (fd < 0 || fd >= maximum_fd_entries)
 		return 1;
+
+	/*
+	 * Allocate more file descriptor entries if needed.
+	 */
+	if (fd >= fd_entries) {
+		int new_fd_entries = fd + 2;
+		size_t size;
+		void *buf;
+
+		if (new_fd_entries - fd_entries < 8)
+			new_fd_entries = fd_entries + 8;
+
+		if (new_fd_entries > (maximum_fd_entries + 1))
+			new_fd_entries = (maximum_fd_entries + 1);
+
+		size = (size_t)new_fd_entries * sizeof(struct fat_fd);
+
+		buf = malloc(size);
+		if (buf == NULL)
+			return 1;
+
+		memset(buf, 0, size);
+
+		/*
+		 * Do not copy the special entry.
+		 */
+		size = (size_t)fd_entries * sizeof(struct fat_fd);
+		memcpy(buf, this_fat->fd, size);
+
+		free(this_fat->fd);
+		this_fat->fd = buf;
+
+		/*
+		 * Reserve the last fd_entry.
+		 */
+		this_fat->fd_entries = (unsigned int)(new_fd_entries - 1);
+		this_fat->fd_special = this_fat->fd_entries;
+	}
 
 	return ((this_fat->fd[fd].opened != 0) != (opened != 0));
 }
 
 static void *get_record(void *fat, int fd)
 {
-	unsigned int record_offset = this_fat->fd[fd].record_offset;
-
-	return &this_fat->fd[fd].record_buffer[record_offset];
+	return &this_fat->fd[fd].record[0];
 }
 
 static void init_fat_fd(void *fat, int fd)
 {
-	struct fat_fd *fd_entry = &this_fat->fd[fd];
+	void *fd_entry = &this_fat->fd[fd];
 
-	fd_entry->opened = 0;
-	fd_entry->mode = 0;
-
-	/*
-	 * The record buffer address is not changed.
-	 */
-	fd_entry->record_offset = 0;
-	fd_entry->record_sector = 0;
-
-	fd_entry->eof = 0;
-	fd_entry->offset = 0;
-	fd_entry->cluster_idx = 0;
-	fd_entry->cluster_val = 0;
+	memset(fd_entry, 0, sizeof(struct fat_fd));
 }
 
 static int fat_strncmp(const char *s1, const char *s2, size_t n)
@@ -232,7 +258,7 @@ static void write_timestamps(unsigned char *entry, int created, int modified)
 {
 	char iso_8601_format[19];
 	int year, mon, day, hour, min, sec;
-	unsigned fat_date, fat_time;
+	unsigned int fat_date, fat_time;
 	int err = 0;
 
 	memset(&iso_8601_format[0], 0, 19);
@@ -744,9 +770,14 @@ static int write_cluster(void *fat)
 static int write_record_buffer(void *fat, int fd)
 {
 	struct fat_fd *fd_entry = &this_fat->fd[fd];
-	unsigned char *record_buffer = fd_entry->record_buffer;
+	unsigned char *block_buffer = this_fat->block_buffer;
+	unsigned char *record = &fd_entry->record[0];
+	unsigned int record_offset = fd_entry->record_offset;
 	unsigned int record_sector = fd_entry->record_sector;
 	size_t lba, size;
+
+	if (record_offset > this_fat->fs_bytes_per_sector)
+		return FAT_INCONSISTENT_STATE;
 
 	if (record_sector <= this_fat->fs_last_table_sector)
 		return FAT_INCONSISTENT_STATE;
@@ -755,7 +786,12 @@ static int write_record_buffer(void *fat, int fd)
 	lba *= this_fat->io_mul;
 	size = this_fat->fs_bytes_per_sector;
 
-	if (fat_io_write(this_fat->id, lba, &size, record_buffer))
+	if (fat_io_read(this_fat->id, lba, &size, block_buffer))
+		return FAT_BLOCK_READ_ERROR;
+
+	memcpy(&block_buffer[record_offset], record, 32);
+
+	if (fat_io_write(this_fat->id, lba, &size, block_buffer))
 		return FAT_BLOCK_WRITE_ERROR;
 
 	return 0;
@@ -884,8 +920,15 @@ static void delete_extra_clusters(void *fat, int fd)
 	/*
 	 * Find the last cluster according to the file size.
 	 */
-	for (i = 0; i < clusters; i++)
-		cluster = get_table_value(fat, cluster);
+	for (i = 0; i < clusters; i++) {
+		unsigned int next = get_table_value(fat, cluster);
+
+		if (!(i + 1 < clusters)) {
+			if (set_table_value(fat, cluster, 0x0FFFFFFF))
+				return;
+		}
+		cluster = next;
+	}
 
 	if (cluster >= 2 && cluster < 0x0FFFFFF8)
 		delete_clusters(fat, cluster);
@@ -1059,7 +1102,8 @@ static int fill_path_buffer(void *fat, const char *name)
 static int iterate_fixed_root_dir(void *fat, int fd, int find_empty)
 {
 	struct fat_fd *fd_entry = &this_fat->fd[fd];
-	unsigned char *buf = fd_entry->record_buffer;
+	unsigned char *buf = this_fat->block_buffer;
+	unsigned char *record = &fd_entry->record[0];
 	const struct fat_name *path = this_fat->path_buffer;
 	unsigned int fs_bytes_per_sector = this_fat->fs_bytes_per_sector;
 	unsigned int fs_directory_sectors = this_fat->fs_directory_sectors;
@@ -1083,6 +1127,7 @@ static int iterate_fixed_root_dir(void *fat, int fd, int find_empty)
 		for (j = 0; j < fs_bytes_per_sector; j += 32) {
 			if (find_empty) {
 				if (buf[j] == 0 || buf[j] == 0xE5) {
+					memcpy(record, &buf[j], 32);
 					fd_entry->record_offset = j;
 					fd_entry->record_sector = sector;
 					return 0;
@@ -1103,6 +1148,7 @@ static int iterate_fixed_root_dir(void *fat, int fd, int find_empty)
 					record_found = 0;
 
 				if (record_found) {
+					memcpy(record, &buf[j], 32);
 					fd_entry->record_offset = j;
 					fd_entry->record_sector = sector;
 					return 0;
@@ -1136,23 +1182,18 @@ static int iterate_dir(void *fat, int fd, int path_i, unsigned int cluster)
 			return r;
 
 		for (j = 0; j < cluster_size; j += 32) {
-			unsigned char *src, *dst;
+			unsigned char *record;
 			unsigned int offset, sector;
 
 			if (find_empty) {
 				if (buf[j] == 0 || buf[j] == 0xE5) {
-					size_t size = fs_bytes_per_sector;
-
 					offset = j % fs_bytes_per_sector;
 					sector = j / fs_bytes_per_sector;
-
-					dst = fd_entry->record_buffer;
-					src = this_fat->cluster_buffer;
-					src += (sector * fs_bytes_per_sector);
-
 					sector += this_fat->cluster_sector;
 
-					memcpy(dst, src, size);
+					record = &fd_entry->record[0];
+
+					memcpy(record, &buf[j], 32);
 					fd_entry->record_offset = offset;
 					fd_entry->record_sector = sector;
 					return 0;
@@ -1173,18 +1214,13 @@ static int iterate_dir(void *fat, int fd, int path_i, unsigned int cluster)
 					record_found = 0;
 
 				if (record_found) {
-					size_t size = fs_bytes_per_sector;
-
 					offset = j % fs_bytes_per_sector;
 					sector = j / fs_bytes_per_sector;
-
-					dst = fd_entry->record_buffer;
-					src = this_fat->cluster_buffer;
-					src += (sector * fs_bytes_per_sector);
-
 					sector += this_fat->cluster_sector;
 
-					memcpy(dst, src, size);
+					record = &fd_entry->record[0];
+
+					memcpy(record, &buf[j], 32);
 					fd_entry->record_offset = offset;
 					fd_entry->record_sector = sector;
 					return 0;
@@ -1572,7 +1608,6 @@ int fat_create(void **instance, int id)
 	fat->fd = NULL;
 	fat->block_buffer = NULL;
 	fat->cluster_buffer = NULL;
-	fat->record_buffers = NULL;
 	fat->table_buffer = NULL;
 	fat->table_sectors = NULL;
 	fat->path_buffer = NULL;
@@ -1597,23 +1632,6 @@ int fat_create(void **instance, int id)
 		return !fat_delete(fat);
 	if (read_table(fat, id))
 		return !fat_delete(fat);
-
-	{
-		size_t size = fat->fs_bytes_per_sector * fat->fd_entries;
-		unsigned char *record_buffers;
-		unsigned int i;
-
-		if ((record_buffers = malloc(size)) == NULL)
-			return !fat_delete(fat);
-
-		memset(record_buffers, 0, size);
-		fat->record_buffers = record_buffers;
-
-		for (i = 0; i < fat->fd_entries; i++) {
-			fat->fd[i].record_buffer = record_buffers;
-			record_buffers += fat->fs_bytes_per_sector;
-		}
-	}
 
 	/*
 	 * Reserve the last fd_entry.
@@ -1640,7 +1658,6 @@ int fat_delete(void *fat)
 	free(this_fat->fd);
 	free(this_fat->block_buffer);
 	free(this_fat->cluster_buffer);
-	free(this_fat->record_buffers);
 	free(this_fat->table_buffer);
 	free(this_fat->table_sectors);
 	free(this_fat->path_buffer);
@@ -1703,6 +1720,25 @@ int fat_control(void *fat, int fd, int write, unsigned char record[32])
 
 	if (write_record_buffer(fat, fd))
 		return FAT_BLOCK_WRITE_ERROR;
+
+	/*
+	 * The file size can be truncated.
+	 */
+	if ((record_ptr[11] & 0x10) == 0) {
+		unsigned int old_size = LE32(&record_ptr[28]);
+		unsigned int new_size = LE32(&record[28]);
+
+		if (new_size < old_size) {
+			W_LE32(&record_ptr[28], new_size);
+
+			if (write_record_buffer(fat, fd)) {
+				W_LE32(&record_ptr[28], old_size);
+				return FAT_BLOCK_WRITE_ERROR;
+			}
+
+			delete_extra_clusters(fat, fd);
+		}
+	}
 
 	return 0;
 }
