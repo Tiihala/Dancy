@@ -19,13 +19,13 @@ LOADER_FILE=-t 2019-03-03T08:58:39 --read-only
 	$(DY_ISO) --uefi -o $@ $@
 
 ./release/fdd160.img: $(DANCY_TARGET_SYSTEM)
-	$(DY_VBR) -t floppy $@ 160
+	$(DY_VBR) -t floppy $@ 160 --fixed-dl
 	$(DY_MCOPY) -i $@ ./system/IN_IA16.AT ::system/IN_IA16.AT
 	$(DY_MCOPY) -i $@ ./LOADER.512 ::LOADER.512 $(LDR512_FILE)
 	$(DY_MCOPY) -i $@ ./LOADER.AT ::LOADER.AT $(LOADER_FILE)
 
 ./release/fdd720.img: $(DANCY_TARGET_SYSTEM)
-	$(DY_VBR) -t floppy $@ 720
+	$(DY_VBR) -t floppy $@ 720 --fixed-dl
 	$(DY_MCOPY) -i $@ ./system/CONFIG.AT ::system/CONFIG.AT
 	$(DY_MCOPY) -i $@ ./system/DB_000.AT 8 --db
 	$(DY_MCOPY) -i $@ ./system/IN_IA16.AT ::system/IN_IA16.AT

@@ -44,6 +44,7 @@ struct options {
 	const char *arg_o;
 	const char *arg_t;
 	long blocks;
+	int fixed_dl;
 	int sector_size;
 	int verbose;
 };
@@ -305,6 +306,28 @@ static int program(struct options *opt)
 		memcpy(&buf[0x0000], &vbr[0x0000], 3);
 		memcpy(&buf[0x003E], &vbr[0x003E], 450);
 
+		/*
+		 * Modify the boot sector code if using the fixed dl.
+		 *
+		 * 0x70  FB 88 56 24 FC F6 C2 80  (Original code)
+		 *          ^^
+		 *          mov [bp+0x24], dl     (Write the dl value to BPB)
+		 *
+		 * 0x70  FB 8A 56 24 FC F6 C2 80  (Modified code)
+		 *          ^^
+		 *          mov dl, [bp+0x24]     (Read the dl value from BPB)
+		 */
+		if (opt->fixed_dl) {
+			const unsigned char original_code[8] = {
+				0xFB, 0x88, 0x56, 0x24, 0xFC, 0xF6, 0xC2, 0x80
+			};
+
+			if (!memcmp(&buf[0x0070], &original_code[0], 8))
+				buf[0x0071] = 0x8A;
+			else
+				fputs("Warning: fixed-dl not used\n", stderr);
+		}
+
 		if ((errno = 0, fwrite(&buf[0], 1, 512, fp)) != 512)
 			return perror("Error"), (void)fclose(fp), 1;
 		if ((errno = 0, fclose(fp)))
@@ -325,6 +348,7 @@ static const char *help_str =
 	"  -o file       write loader.512 file\n"
 	"  -t type       volume boot record type\n"
 	"                floppy, chs (default), or lba\n"
+	"  --fixed-dl    fixed register dl value\n"
 	"  --512         512-byte sectors (default)\n"
 	"  --1024        1024-byte sectors\n"
 	"  --2048        2048-byte sectors\n"
@@ -391,6 +415,10 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "fixed-dl")) {
+				opts.fixed_dl = 1;
 				continue;
 			}
 			if (!strcmp(arg + 2, "512")) {
