@@ -130,7 +130,12 @@ static void try_create_dirs(const char *name)
 		buf[len + 7] = '\"';
 		buf[len + 8] = '\0';
 
-		(void)system(&buf[0]);
+		if (system(&buf[0])) {
+			/*
+			 * Handle warn_unused_result attribute.
+			 */
+			buf[len + 9] = '\0';
+		}
 	}
 }
 
