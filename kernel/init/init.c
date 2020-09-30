@@ -101,6 +101,18 @@ void init(void)
 	}
 
 	/*
+	 * Modify the boot file system.
+	 */
+	if (!fs_init()) {
+		if (!fs_update_config_at(&vi))
+			fs_write_logs();
+		fs_free();
+	} else {
+		b_print("Error: fs_init\n");
+		b_pause();
+	}
+
+	/*
 	 * Initialize graphical user interface while boot services
 	 * are still available. The actual GUI does not require them.
 	 */
@@ -116,16 +128,6 @@ void init(void)
 	{
 		int x1, y1, x2, y2;
 		size_t i;
-
-		for (i = 0; i < boot_log_size; i++) {
-			if (!b_put_byte_com1((unsigned char)boot_log[i]))
-				break;
-		}
-
-		for (i = 0; i < boot_log_size; i++) {
-			if (!b_put_byte_com2((unsigned char)boot_log[i]))
-				break;
-		}
 
 		x1 = 40;
 		y1 = 10;

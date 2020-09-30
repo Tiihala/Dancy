@@ -42,6 +42,37 @@ int bitarray_shove(struct bitarray *b, unsigned bits, unsigned val);
 int bitarray_written(struct bitarray *b, size_t *written);
 
 /*
+ * Declarations of fat.c
+ */
+int fat_create(void **instance, int id);
+int fat_delete(void *fat);
+
+int fat_close(void *fat, int fd);
+int fat_control(void *fat, int fd, int write, unsigned char record[32]);
+int fat_eof(void *fat, int fd);
+int fat_open(void *fat, int fd, const char *name, const char *mode);
+int fat_read(void *fat, int fd, size_t *size, void *buf);
+int fat_remove(void *fat, const char *name);
+int fat_rename(void *fat, const char *old_name, const char *new_name);
+int fat_seek(void *fat, int fd, int offset, int whence);
+int fat_tell(void *fat, int fd, unsigned int *offset);
+int fat_write(void *fat, int fd, size_t *size, const void *buf);
+
+#define FAT_BLOCK_READ_ERROR      (0x10)  /* "block read error"         */
+#define FAT_BLOCK_WRITE_ERROR     (0x11)  /* "block write error"        */
+#define FAT_DIRECTORY_NOT_EMPTY   (0x12)  /* "directory not empty"      */
+#define FAT_FILE_ALREADY_OPEN     (0x13)  /* "file already open"        */
+#define FAT_FILE_NOT_FOUND        (0x14)  /* "file not found"           */
+#define FAT_INCONSISTENT_STATE    (0x15)  /* "inconsistent file system" */
+#define FAT_INVALID_FILE_NAME     (0x16)  /* "invalid file name"        */
+#define FAT_INVALID_PARAMETERS    (0x17)  /* "invalid parameters"       */
+#define FAT_NOT_ENOUGH_SPACE      (0x18)  /* "not enough space"         */
+#define FAT_NOT_READY             (0x19)  /* "file system not ready"    */
+#define FAT_READ_ONLY_FILE        (0x1A)  /* "read-only file"           */
+#define FAT_READ_ONLY_RECORD      (0x1B)  /* "read-only record"         */
+#define FAT_SEEK_ERROR            (0x1C)  /* "seek error"               */
+
+/*
  * Declarations of huffman.c
  */
 struct huffman {

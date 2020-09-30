@@ -8,6 +8,9 @@
 ./o32/common/crc32c.o: ./common/crc32c.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/crc32c.c
 
+./o32/common/fat.o: ./common/fat.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./common/fat.c
+
 ./o32/common/ttf.o: ./common/ttf.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/ttf.c
 
@@ -34,6 +37,9 @@
 
 ./o32/init/db.o: ./kernel/init/db.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/db.c
+
+./o32/init/fs.o: ./kernel/init/fs.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/fs.c
 
 ./o32/init/gui.o: ./kernel/init/gui.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/gui.c
@@ -95,6 +101,9 @@
 ./o64/common/crc32c.o: ./common/crc32c.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/crc32c.c
 
+./o64/common/fat.o: ./common/fat.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./common/fat.c
+
 ./o64/common/ttf.o: ./common/ttf.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/ttf.c
 
@@ -121,6 +130,9 @@
 
 ./o64/init/db.o: ./kernel/init/db.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/db.c
+
+./o64/init/fs.o: ./kernel/init/fs.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/fs.c
 
 ./o64/init/gui.o: ./kernel/init/gui.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/gui.c

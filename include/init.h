@@ -96,6 +96,21 @@ const char *db_read_error(int retval);
 
 
 /*
+ * Declarations of fs.c
+ */
+int fat_get_size(int id, size_t *block_size, size_t *block_total);
+int fat_get_time(char iso_8601_format[19]);
+int fat_io_read(int id, size_t lba, size_t *size, void *buf);
+int fat_io_write(int id, size_t lba, size_t *size, const void *buf);
+
+int fs_init(void);
+void fs_free(void);
+void fs_print_error(int r, const char *name);
+int fs_update_config_at(struct b_video_info *vi);
+void fs_write_logs(void);
+
+
+/*
  * Declarations of gui.c
  */
 int gui_init(void);
