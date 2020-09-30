@@ -1838,6 +1838,7 @@ int fat_open(void *fat, int fd, const char *name, const char *mode)
 			W_LE32(&record[28], 0);
 
 			if (cluster != 0) {
+				write_timestamps(record, 0, 1);
 				if (write_record_buffer(fat, fd))
 					return FAT_BLOCK_WRITE_ERROR;
 				delete_clusters(fat, cluster);
