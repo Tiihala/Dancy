@@ -427,10 +427,6 @@ int gui_init(void)
 
 	memset(back_buffer, 0x02, size);
 
-	b_log("Graphical User Interface\n");
-	b_log("\tBack buffer set at %p\n", back_buffer);
-	b_log("\n");
-
 	return 0;
 }
 
