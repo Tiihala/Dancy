@@ -151,7 +151,7 @@ int ld_validate(const char *name, unsigned char *obj, size_t size);
 extern char *boot_log;
 extern size_t boot_log_size;
 int b_log_init(size_t max_size);
-void b_log_close(void);
+void b_log_free(void);
 void b_log(const char *format, ...);
 
 

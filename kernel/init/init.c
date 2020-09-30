@@ -112,6 +112,8 @@ void init(void)
 		b_pause();
 	}
 
+	b_log_free();
+
 	/*
 	 * Initialize graphical user interface while boot services
 	 * are still available. The actual GUI does not require them.

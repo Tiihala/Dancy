@@ -39,16 +39,13 @@ int b_log_init(size_t max_size)
 	return 0;
 }
 
-void b_log_close(void)
+void b_log_free(void)
 {
-	void *new_ptr;
-
-	log_max_size = boot_log_size;
+	log_max_size = 0;
 	log_column = 0;
 
-	new_ptr = realloc(boot_log, boot_log_size);
-	if (new_ptr != NULL)
-		boot_log = new_ptr;
+	free(boot_log);
+	boot_log = NULL;
 }
 
 void b_log(const char *format, ...)
