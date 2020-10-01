@@ -109,43 +109,43 @@ void fs_print_error(int r, const char *name)
 	const char *err = "unknown error";
 
 	switch (r) {
-	case 0x10:
+	case FAT_BLOCK_READ_ERROR:
 		err = "block read error";
 		break;
-	case 0x11:
+	case FAT_BLOCK_WRITE_ERROR:
 		err = "block write error";
 		break;
-	case 0x12:
+	case FAT_DIRECTORY_NOT_EMPTY:
 		err = "directory not empty";
 		break;
-	case 0x13:
+	case FAT_FILE_ALREADY_OPEN:
 		err = "file already open";
 		break;
-	case 0x14:
+	case FAT_FILE_NOT_FOUND:
 		err = "file not found";
 		break;
-	case 0x15:
+	case FAT_INCONSISTENT_STATE:
 		err = "inconsistent file system";
 		break;
-	case 0x16:
+	case FAT_INVALID_FILE_NAME:
 		err = "invalid file name";
 		break;
-	case 0x17:
+	case FAT_INVALID_PARAMETERS:
 		err = "invalid parameters";
 		break;
-	case 0x18:
+	case FAT_NOT_ENOUGH_SPACE:
 		err = "not enough space";
 		break;
-	case 0x19:
+	case FAT_NOT_READY:
 		err = "file system not ready";
 		break;
-	case 0x1A:
+	case FAT_READ_ONLY_FILE:
 		err = "read-only file";
 		break;
-	case 0x1B:
+	case FAT_READ_ONLY_RECORD:
 		err = "read-only record";
 		break;
-	case 0x1C:
+	case FAT_SEEK_ERROR:
 		err = "seek error";
 		break;
 	default:
@@ -252,14 +252,14 @@ void fs_write_logs(void)
 	size_t size;
 	int r;
 
-	name = "system/log_init.txt";
+	name = "system/logs/log_init.txt";
 	if ((r = fat_open(fat, fd_init, name, "wb")) != 0) {
 		fs_print_error(r, name);
 		return;
 	}
 
 	if (boot_loader_type == BOOT_LOADER_TYPE_UEFI) {
-		name = "system/log_uefi.txt";
+		name = "system/logs/log_uefi.txt";
 		if ((r = fat_open(fat, fd_uefi, name, "wb")) != 0) {
 			fs_print_error(r, name);
 
