@@ -170,9 +170,6 @@ void b_log(const char *format, ...);
  */
 int memory_init(void *map);
 void memory_print_map(void (*print)(const char *, ...));
-size_t memory_sum_alloc(void);
-size_t memory_sum_free(void);
-size_t memory_sum_range(uint32_t min_type, uint32_t max_type);
 
 
 /*
