@@ -30,10 +30,23 @@ void init(void)
 	if (b_log_init(log_mem))
 		return;
 
+	b_log("Init Module (Dancy Operating System)\n\n");
+
 	memory_print_map(b_log);
 
 	if (cpu_test_features())
 		return;
+
+	/*
+	 * Read ACPI information. For older computers, the ACPI
+	 * information is not necessarily available.
+	 */
+	if (!acpi_get_information()) {
+		if (boot_loader_type != BOOT_LOADER_TYPE_BIOS) {
+			b_print("Error: acpi_get_information\n");
+			return;
+		}
+	}
 
 	if (rtc_read(&bt)) {
 		/*

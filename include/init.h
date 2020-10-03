@@ -60,9 +60,19 @@ struct acpi_information {
 	phys_addr_t xsdt_addr;
 	phys_addr_t fadt_addr;
 	phys_addr_t madt_addr;
+	phys_addr_t mcfg_addr;
 
 	unsigned rtc_century_idx;
 	unsigned iapc_boot_arch;
+
+	phys_addr_t local_apic_base;
+	int dual_8259_setup;
+
+	unsigned num_cpu_core;
+	unsigned num_io_apic;
+
+	unsigned max_apic_id;
+	unsigned max_io_apic_id;
 };
 
 struct acpi_information *acpi_get_information(void);

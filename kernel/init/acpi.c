@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2020 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -156,6 +156,13 @@ struct acpi_information *acpi_get_information(void)
 		if (!memcmp(table, "APIC", 4))
 			information.madt_addr = addr;
 
+		/*
+		 * Signature for PCI Express memory mapped configuration
+		 * space base address Description Table is 'MCFG'.
+		 */
+		if (!memcmp(table, "MCFG", 4))
+			information.mcfg_addr = addr;
+
 		if ((char)table[0] >= 'A' && (char)table[0] <= 'Z') {
 			const char *m = "\t%.4s found at %08X\n";
 			b_log(m, (const char *)table, (unsigned)addr);
@@ -168,6 +175,8 @@ struct acpi_information *acpi_get_information(void)
 	if (information.fadt_addr) {
 		const uint8_t *fadt = (const uint8_t *)information.fadt_addr;
 		length = (uint32_t)LE32(fadt + 4);
+
+		b_log("\n\t---- FADT ----\n");
 
 		if (length >= 45 + 1) {
 			static const char *pm_prof[9] = {
@@ -211,6 +220,147 @@ struct acpi_information *acpi_get_information(void)
 				b_log("\tCMOS RTC is not present\n");
 		}
 	}
+
+	/*
+	 * Find values from MADT table.
+	 */
+	if (information.madt_addr) {
+		const uint8_t *madt = (const uint8_t *)information.madt_addr;
+		length = (uint32_t)LE32(madt + 4);
+
+		b_log("\n\t---- MADT ----\n");
+
+		if (length >= 44) {
+			uint32_t a = (unsigned)LE32(&madt[36]);
+
+			b_log("\tLocal Interrupt Controller at %08X\n", a);
+			information.local_apic_base = a;
+
+			if ((madt[40] & 1) != 0) {
+				b_log("\tPC-AT Dual-8259 Setup\n");
+				information.dual_8259_setup = 1;
+			}
+
+			madt += 44;
+			length -= 44;
+		} else {
+			length = 0;
+		}
+
+		while (length >= 2) {
+			unsigned type = (unsigned)madt[0];
+			unsigned len = (unsigned)madt[1];
+
+			if (len > length)
+				break;
+
+			switch (type) {
+			case 0:
+				if (len < 8)
+					break;
+				b_log("\tProcessor Local APIC (");
+				b_log("UID %02X, ", (unsigned)madt[2]);
+				b_log("ID %02X, ", (unsigned)madt[3]);
+
+				if ((madt[4] & 1) != 0)
+					b_log("Enabled)\n");
+				else
+					b_log("Disabled)\n");
+
+				information.num_cpu_core += 1;
+				if (information.max_apic_id < madt[3])
+					information.max_apic_id = madt[3];
+				break;
+			case 1:
+				if (len < 12)
+					break;
+				b_log("\tI/O APIC (");
+				b_log("ID %02X, ", (unsigned)madt[2]);
+				b_log("Addr %08lX, ", LE32(&madt[4]));
+				b_log("Base %08lX)\n", LE32(&madt[8]));
+
+				information.num_io_apic += 1;
+				if (information.max_io_apic_id < madt[2])
+					information.max_io_apic_id = madt[2];
+				break;
+			case 2:
+				if (len < 10)
+					break;
+				b_log("\tInterrupt Override (");
+				b_log("Source %02X, ", (unsigned)madt[3]);
+				b_log("Global %08lX, ", LE32(&madt[4]));
+				b_log("Flags %04lX)\n", LE16(&madt[8]));
+				break;
+			case 3:
+				if (len < 8)
+					break;
+				b_log("\tNMI Source (");
+				b_log("Flags %04lX, ", LE16(&madt[2]));
+				b_log("Global %08lX)\n", LE32(&madt[4]));
+				break;
+			case 4:
+				if (len < 6)
+					break;
+				b_log("\tLocal APIC NMI (");
+				b_log("UID %02X, ", (unsigned)madt[2]);
+				b_log("Flags %04lX, ", LE16(&madt[3]));
+				b_log("LINT# %02X)\n", (unsigned)madt[5]);
+				break;
+			case 5:
+				if (len < 12)
+					break;
+				b_log("\tLocal APIC Override (");
+				b_log("Address %08lX", LE32(&madt[8]));
+				b_log("%08lX)\n", LE32(&madt[4]));
+#ifdef DANCY_64
+				{
+					phys_addr_t a = LE32(&madt[4]);
+					phys_addr_t b = LE32(&madt[8]);
+					phys_addr_t c = (a + (b << 32));
+
+					information.local_apic_base = c;
+				}
+#endif
+				break;
+			default:
+				b_log("\tType %02X, Length %u\n", type, len);
+				break;
+			}
+
+			madt += len;
+			length -= len;
+		}
+	}
+
+	/*
+	 * Find values from MCFG table.
+	 */
+	if (information.mcfg_addr) {
+		const uint8_t *mcfg = (const uint8_t *)information.mcfg_addr;
+		length = (uint32_t)LE32(mcfg + 4);
+
+		b_log("\n\t---- MCFG ----\n");
+
+		if (length >= 44) {
+			mcfg += 44;
+			length -= 44;
+		} else {
+			length = 0;
+		}
+
+		while (length >= 16) {
+			b_log("\tBase %08lX", LE32(&mcfg[4]));
+			b_log("%08lX ", LE32(&mcfg[0]));
+
+			b_log("Group %04X ", LE16(&mcfg[8]));
+			b_log("Start %02X ", (unsigned)mcfg[10]);
+			b_log("End %02X\n", (unsigned)mcfg[11]);
+
+			mcfg += 16;
+			length -= 16;
+		}
+	}
+
 	b_log("\n");
 	return (init = 1), &information;
 }
