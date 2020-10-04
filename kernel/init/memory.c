@@ -124,6 +124,7 @@ void memory_print_map(void (*print)(const char *, ...))
 		uint32_t t = memory[i].type;
 		phys_addr_t b = memory[i].base;
 		phys_addr_t e = memory[i + 1].base - 1;
+		phys_addr_t size = (e + 1) - b;
 		const char *desc = "(Unknown)";
 
 		for (j = 0; j < sizeof(names) / sizeof(names[0]); j++) {
@@ -136,20 +137,39 @@ void memory_print_map(void (*print)(const char *, ...))
 		if (t == B_MEM_NORMAL)
 			total += memory[i + 1].base - b;
 
+		(*print)("    %p %p  ", b, e);
+
+		if (size < 1024 || (size < 4096 && (size % 1024) != 0))
+			(*print)("%4d B  ", (int)size);
+		else if ((size /= 1024) < 4096)
+			(*print)("%4d KiB", (int)size);
+		else if ((size /= 1024) <= 9999)
+			(*print)("%4d MiB", (int)size);
+		else if ((size /= 1024) <= 9999)
+			(*print)("%4d GiB", (int)size);
+		else
+			(*print)("%8s", " ");
+
 		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
 			unsigned a = (unsigned)t & 0x0000FFFFu;
-			(*print)("    %p %p  Allocated (#%u)\n", b, e, a);
+			(*print)("  Allocated (#%u)\n", a);
 			continue;
 		}
 
 		if (t >= B_MEM_DATABASE_MIN && t <= B_MEM_DATABASE_MAX) {
 			unsigned db = (unsigned)t & 0x0000FFFFu;
-			(*print)("    %p %p  Database (#%u)\n", b, e, db);
+			(*print)("  Database (#%u)\n", db);
 		} else {
-			(*print)("    %p %p  %s\n", b, e, desc);
+			(*print)("  %s\n", desc);
 		}
 	}
-	(*print)("\n    Total free: %zd KiB\n\n", total / 1024);
+
+	(*print)("\n    Total free: ");
+
+	if ((total /= 1024) < 65536)
+		(*print)("%zd KiB\n\n", total);
+	else
+		(*print)("%zd MiB\n\n", (total / 1024));
 }
 
 static void fix_memory_map(void)
