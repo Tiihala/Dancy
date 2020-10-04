@@ -537,6 +537,11 @@ int memory_init(void)
 			u_print("AllocatePages: invalid memory address\n");
 			return memory_free(), 1;
 		}
+
+		if (Allocations[1].Memory >= Allocations[0].Memory) {
+			u_print("AllocatePages: invalid memory layout\n");
+			return memory_free(), 1;
+		}
 	}
 
 	if (memory_update_map())
