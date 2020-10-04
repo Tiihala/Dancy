@@ -146,14 +146,6 @@ void init(void)
 
 		x1 = 40;
 		y1 = 10;
-		x2 = (int)(vi.width - vi.width / 3);
-		y2 = (int)(vi.height - 10);
-
-		gui_create_window("Memory Map", x1, y1, x2, y2);
-		memory_print_map(gui_print);
-
-		x1 = x1 + (int)(vi.width / 3);
-		y1 = y1 + 40;
 		x2 = x1 + 320;
 		y2 = y1 + 200;
 
