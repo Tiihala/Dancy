@@ -585,6 +585,20 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	}
 
 	/*
+	 * Delete all static symbols that do not have relocation
+	 * entries pointing to them.
+	 */
+	for (i = 0; i < (int)LE32(&obj[12]); /* void */) {
+		unsigned char *sym = obj + symtab + (i * 18);
+
+		if ((unsigned)sym[16] == 3u) {
+			if (!delete_record(obj, i))
+				continue;
+		}
+		i += 1;
+	}
+
+	/*
 	 * Insert section symbols.
 	 */
 	{
