@@ -133,7 +133,9 @@ struct fat_instance {
 	unsigned int fs_directory_entries;
 	unsigned int fs_directory_sectors;
 	unsigned int fs_total_sectors;
+
 	unsigned int fs_table_sectors;
+	unsigned int fs_table_size;
 
 	unsigned int fs_data_sectors;
 	unsigned int fs_clusters;
@@ -458,6 +460,11 @@ static int read_bios_parameter_block(void *fat, int id)
 		return 1;
 
 	/*
+	 * Single FAT size (reserved space on disk) in bytes.
+	 */
+	this_fat->fs_table_size = this_fat->fs_table_sectors * val;
+
+	/*
 	 * Number of data sectors and clusters.
 	 */
 	{
@@ -505,6 +512,18 @@ static int read_bios_parameter_block(void *fat, int id)
 	if (this_fat->type_12 == 1 || this_fat->type_16 == 1) {
 		if (this_fat->fs_directory_entries == 0)
 			return 1;
+
+		if (this_fat->fs_table_size > 0x20000)
+			return 1;
+
+		if (this_fat->type_12 == 1)
+			val = (((this_fat->fs_clusters + 2) * 3) + 1) / 2;
+		else
+			val = (this_fat->fs_clusters + 2) * 2;
+
+		if (this_fat->fs_table_size < val)
+			return 1;
+
 	} else {
 		if (this_fat->fs_directory_entries != 0)
 			return 1;
@@ -524,6 +543,11 @@ static int read_bios_parameter_block(void *fat, int id)
 			return 1;
 
 		if (this_fat->fs_clusters + 2 > 0x0FFFFFF8)
+			return 1;
+
+		val = (this_fat->fs_clusters + 2) * 4;
+
+		if (this_fat->fs_table_size < val)
 			return 1;
 
 		this_fat->fs_info_sector = LE16(&buf[48]);
@@ -554,20 +578,13 @@ static int read_bios_parameter_block(void *fat, int id)
 	return 0;
 }
 
-static int read_table(void *fat, int id)
+static int read_table(void *fat)
 {
-	unsigned int fs_bytes_per_sector = this_fat->fs_bytes_per_sector;
 	unsigned int fs_table_sectors = this_fat->fs_table_sectors;
 	size_t lba = this_fat->io_mul * (size_t)this_fat->fs_reserved_sectors;
-	size_t size = (size_t)(fs_bytes_per_sector * fs_table_sectors);
+	size_t size = (size_t)this_fat->fs_table_size;
 
-	if (this_fat->table_buffer != NULL)
-		free(this_fat->table_buffer);
-
-	if (this_fat->table_sectors != NULL)
-		free(this_fat->table_sectors);
-
-	this_fat->table_buffer = malloc(size + 4);
+	this_fat->table_buffer = malloc(size);
 	if (this_fat->table_buffer == NULL)
 		return 1;
 
@@ -577,10 +594,10 @@ static int read_table(void *fat, int id)
 		return 1;
 	}
 
-	memset(this_fat->table_buffer, 0, size + 4);
+	memset(this_fat->table_buffer, 0, size);
 	memset(this_fat->table_sectors, 0, (size_t)fs_table_sectors);
 
-	if (fat_io_read(id, lba, &size, this_fat->table_buffer))
+	if (fat_io_read(this_fat->id, lba, &size, this_fat->table_buffer))
 		return 1;
 
 	return 0;
@@ -727,7 +744,7 @@ static int read_cluster(void *fat, unsigned int cluster, int skip_io)
 	unsigned int fs_data_sectors = this_fat->fs_data_sectors;
 	size_t lba, size;
 
-	if ((cluster - 2) >= (this_fat->fs_clusters - 2))
+	if ((cluster - 2) >= this_fat->fs_clusters)
 		return FAT_INCONSISTENT_STATE;
 
 	lba = (size_t)(fs_total_sectors - fs_data_sectors);
@@ -1644,7 +1661,7 @@ int fat_create(void **instance, int id)
 
 	if (read_bios_parameter_block(fat, id))
 		return !fat_delete(fat);
-	if (read_table(fat, id))
+	if (read_table(fat))
 		return !fat_delete(fat);
 
 	/*
