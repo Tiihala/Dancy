@@ -125,6 +125,10 @@ struct fat_instance {
 	unsigned char *table_buffer;
 	unsigned char *table_sectors;
 
+	unsigned int table_buffer_size;
+	unsigned int table_entries;
+	unsigned int table_offset;
+
 	unsigned int fs_bytes_per_sector;
 	unsigned int fs_cluster_sectors;
 	unsigned int fs_reserved_sectors;
@@ -562,9 +566,6 @@ static int read_bios_parameter_block(void *fat, int id)
 	val += (this_fat->fs_tables * this_fat->fs_table_sectors);
 	this_fat->fs_last_table_sector = val - 1;
 
-	if (this_fat->cluster_buffer != NULL)
-		free(this_fat->cluster_buffer);
-
 	/*
 	 * Allocate the cluster buffer.
 	 */
@@ -578,48 +579,27 @@ static int read_bios_parameter_block(void *fat, int id)
 	return 0;
 }
 
-static int read_table(void *fat)
-{
-	unsigned int fs_table_sectors = this_fat->fs_table_sectors;
-	size_t lba = this_fat->io_mul * (size_t)this_fat->fs_reserved_sectors;
-	size_t size = (size_t)this_fat->fs_table_size;
-
-	this_fat->table_buffer = malloc(size);
-	if (this_fat->table_buffer == NULL)
-		return 1;
-
-	this_fat->table_sectors = malloc((size_t)fs_table_sectors);
-	if (this_fat->table_sectors == NULL) {
-		free(this_fat->table_buffer);
-		return 1;
-	}
-
-	memset(this_fat->table_buffer, 0, size);
-	memset(this_fat->table_sectors, 0, (size_t)fs_table_sectors);
-
-	if (fat_io_read(this_fat->id, lba, &size, this_fat->table_buffer))
-		return 1;
-
-	return 0;
-}
-
 static int write_table(void *fat)
 {
 	unsigned char *table_sectors = this_fat->table_sectors;
 	unsigned int fs_bytes_per_sector = this_fat->fs_bytes_per_sector;
 	unsigned int fs_reserved_sectors = this_fat->fs_reserved_sectors;
 	unsigned int fs_table_sectors = this_fat->fs_table_sectors;
+	unsigned int table_entries = this_fat->table_entries;
 	unsigned char *buffer;
 	size_t lba, size;
 	unsigned int i;
 
-	for (i = 0; i < fs_table_sectors; i++) {
+	for (i = 0; i < table_entries; i++) {
 		if (table_sectors[i] == 0)
 			continue;
+
+		table_sectors[i] = 0;
 
 		buffer = this_fat->table_buffer + (i * fs_bytes_per_sector);
 
 		lba = (size_t)(fs_reserved_sectors + i);
+		lba += (size_t)(this_fat->table_offset / fs_bytes_per_sector);
 		lba *= this_fat->io_mul;
 		size = fs_bytes_per_sector;
 
@@ -636,13 +616,113 @@ static int write_table(void *fat)
 			continue;
 
 		lba = (size_t)(fs_reserved_sectors + i + fs_table_sectors);
+		lba += (size_t)(this_fat->table_offset / fs_bytes_per_sector);
 		lba *= this_fat->io_mul;
 		size = fs_bytes_per_sector;
 
 		(void)fat_io_write(this_fat->id, lba, &size, buffer);
-
-		table_sectors[i] = 0;
 	}
+
+	return 0;
+}
+
+static int read_full_table(void *fat)
+{
+	size_t table_sectors = this_fat->fs_table_sectors;
+	size_t lba = this_fat->io_mul * (size_t)this_fat->fs_reserved_sectors;
+	size_t size = (size_t)this_fat->fs_table_size;
+
+	this_fat->table_buffer = malloc(size);
+	if (this_fat->table_buffer == NULL)
+		return 1;
+
+	this_fat->table_sectors = malloc(table_sectors);
+	if (this_fat->table_sectors == NULL) {
+		free(this_fat->table_buffer);
+		this_fat->table_buffer = NULL;
+		return 1;
+	}
+
+	memset(this_fat->table_buffer, 0, size);
+	memset(this_fat->table_sectors, 0, table_sectors);
+
+	this_fat->table_entries = (unsigned int)table_sectors;
+
+	if (fat_io_read(this_fat->id, lba, &size, this_fat->table_buffer))
+		return 1;
+
+	return 0;
+}
+
+static int read_table_buffer(void *fat, unsigned int *table_offset)
+{
+	const size_t table_buffer_size = 0x00020000;
+	const unsigned int table_mask1 = 0x0001FFFF;
+	const unsigned int table_mask2 = 0xFFFE0000;
+	unsigned int fs_bytes_per_sector;
+	unsigned int off1, off2;
+	size_t table_sectors;
+	size_t lba, size;
+
+	off1 = (*table_offset & table_mask1);
+	off2 = (*table_offset & table_mask2);
+
+	*table_offset = off1;
+
+	if (this_fat->table_offset == off2)
+		return 0;
+
+	fs_bytes_per_sector = this_fat->fs_bytes_per_sector;
+	table_sectors = (size_t)(table_buffer_size / fs_bytes_per_sector);
+
+	if (this_fat->table_buffer == NULL) {
+		this_fat->table_buffer = malloc(table_buffer_size);
+		if (this_fat->table_buffer == NULL)
+			return FAT_INCONSISTENT_STATE;
+
+		this_fat->table_sectors = malloc(table_sectors);
+		if (this_fat->table_sectors == NULL) {
+			free(this_fat->table_buffer);
+			this_fat->table_buffer = NULL;
+			return FAT_INCONSISTENT_STATE;
+		}
+
+		memset(this_fat->table_buffer, 0, table_buffer_size);
+		memset(this_fat->table_sectors, 0, table_sectors);
+
+		this_fat->table_buffer_size = (unsigned int)table_buffer_size;
+		this_fat->table_entries = (unsigned int)table_sectors;
+		this_fat->table_offset = 0;
+
+	} else {
+		if (write_table(fat)) {
+			memset(this_fat->table_buffer, 0, table_buffer_size);
+			memset(this_fat->table_sectors, 0, table_sectors);
+			return FAT_BLOCK_WRITE_ERROR;
+		}
+	}
+
+	this_fat->table_offset = off2;
+
+	lba = (size_t)this_fat->fs_reserved_sectors;
+	lba += (size_t)(this_fat->table_offset / fs_bytes_per_sector);
+	lba *= this_fat->io_mul;
+	size = table_buffer_size;
+
+	if ((this_fat->table_offset + size) > this_fat->fs_table_size) {
+		memset(this_fat->table_buffer, 0, table_buffer_size);
+
+		size = (size_t)(this_fat->table_offset + size);
+		size -= (size_t)this_fat->fs_table_size;
+
+		if (table_buffer_size < size)
+			return this_fat->ready = 0, FAT_INCONSISTENT_STATE;
+
+		size = table_buffer_size - size;
+	}
+
+	if (fat_io_read(this_fat->id, lba, &size, this_fat->table_buffer))
+		return this_fat->ready = 0, FAT_BLOCK_READ_ERROR;
 
 	return 0;
 }
@@ -653,7 +733,7 @@ static unsigned int get_table_value(void *fat, unsigned int off)
 	unsigned int ret_val;
 
 	if (off >= this_fat->fs_clusters + 2)
-		return 0;
+		return 1;
 
 	if (this_fat->type_12) {
 		table_buffer += (off + (off >> 1));
@@ -675,12 +755,17 @@ static unsigned int get_table_value(void *fat, unsigned int off)
 	}
 
 	if (this_fat->type_32) {
-		table_buffer += (off << 2);
+		unsigned int add = (off << 2);
+
+		if (read_table_buffer(fat, &add))
+			return 1;
+
+		table_buffer += add;
 		ret_val = LE32(&table_buffer[0]) & 0x0FFFFFFF;
 		return ret_val;
 	}
 
-	return 0;
+	return 1;
 }
 
 static int set_table_value(void *fat, unsigned int off, unsigned int val)
@@ -725,6 +810,10 @@ static int set_table_value(void *fat, unsigned int off, unsigned int val)
 
 	if (this_fat->type_32) {
 		unsigned int add = (off << 2);
+		int r;
+
+		if ((r = read_table_buffer(fat, &add)) != 0)
+			return r;
 
 		table_buffer += add;
 		table_sectors[add / fs_bytes_per_sector] = 1;
@@ -1521,13 +1610,19 @@ static int read_fixed_root_dir(void *fat, int fd, size_t *size, void *buf)
 
 static void compute_fs_info(void *fat)
 {
-	const unsigned char *table_pointer = this_fat->table_buffer + 8;
-	unsigned int fs_clusters = this_fat->fs_clusters;
+	unsigned char *ptr, *table_buffer = this_fat->table_buffer;
+	unsigned int table_buffer_size = this_fat->table_buffer_size;
+	unsigned int table_entries = this_fat->fs_clusters + 2;
 	unsigned int fs_info_free = 0, fs_info_next = 0xFFFFFFFF;
+	unsigned int offset = 0, total_offset = 0;
 	unsigned int i, val, prev = 0;
 
-	for (i = 0; i < fs_clusters; i++) {
-		val = (LE32(&table_pointer[0]) & 0x0FFFFFFF);
+	if (read_table_buffer(fat, &offset))
+		return;
+
+	for (i = 0; i < table_entries; i++) {
+		ptr = &table_buffer[offset];
+		val = (LE32(&ptr[0]) & 0x0FFFFFFF);
 
 		if (val == 0) {
 			fs_info_free += 1;
@@ -1536,8 +1631,17 @@ static void compute_fs_info(void *fat)
 					fs_info_next = (i + 2) - 1;
 			}
 		}
-		table_pointer += 4;
+
+		offset += 4;
+		total_offset += 4;
+
 		prev = val;
+
+		if (offset >= table_buffer_size) {
+			offset = total_offset;
+			if (read_table_buffer(fat, &offset))
+				return;
+		}
 	}
 
 	this_fat->fs_info_free = fs_info_free;
@@ -1661,8 +1765,19 @@ int fat_create(void **instance, int id)
 
 	if (read_bios_parameter_block(fat, id))
 		return !fat_delete(fat);
-	if (read_table(fat))
-		return !fat_delete(fat);
+
+	if (fat->type_32 != 0) {
+		unsigned int table_offset = 0;
+
+		fat->table_offset = 0xF0000000;
+
+		if (read_table_buffer(fat, &table_offset))
+			return !fat_delete(fat);
+
+	} else {
+		if (read_full_table(fat))
+			return !fat_delete(fat);
+	}
 
 	/*
 	 * Reserve the last fd_entry.
