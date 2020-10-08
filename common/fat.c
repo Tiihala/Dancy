@@ -158,7 +158,10 @@ struct fat_instance {
 	unsigned int path_entries;
 	struct fat_name *path_buffer;
 
+	size_t block_buffer_lba;
+	size_t cluster_buffer_lba;
 	size_t io_mul;
+
 	unsigned int maximum_file_size;
 	unsigned int last_allocated;
 };
@@ -826,6 +829,51 @@ static int set_table_value(void *fat, unsigned int off, unsigned int val)
 	return FAT_NOT_READY;
 }
 
+static int read_block(void *fat, size_t lba)
+{
+	size_t size = (size_t)this_fat->block_size;
+
+	if (lba == 0)
+		return 1;
+	if (this_fat->block_buffer_lba == lba)
+		return 0;
+
+	/*
+	 * Check if the same lba content is in the cluster buffer.
+	 */
+	if (this_fat->cluster_buffer_lba == lba) {
+		const void *src = this_fat->cluster_buffer;
+		void *dst = this_fat->block_buffer;
+
+		memcpy(dst, src, size);
+		return 0;
+	}
+
+	if (fat_io_read(this_fat->id, lba, &size, this_fat->block_buffer)) {
+		this_fat->block_buffer_lba = 0;
+		return 1;
+	}
+
+	this_fat->block_buffer_lba = lba;
+
+	return 0;
+}
+
+static int write_block(void *fat, size_t lba)
+{
+	size_t size = (size_t)this_fat->block_size;
+
+	/*
+	 * Invalidate the cluster buffer when writing block data.
+	 */
+	this_fat->cluster_buffer_lba = 0;
+
+	if (fat_io_write(this_fat->id, lba, &size, this_fat->block_buffer))
+		return 1;
+
+	return 0;
+}
+
 static int read_cluster(void *fat, unsigned int cluster, int skip_io)
 {
 	unsigned char *cluster_buffer = this_fat->cluster_buffer;
@@ -847,10 +895,16 @@ static int read_cluster(void *fat, unsigned int cluster, int skip_io)
 	lba *= this_fat->io_mul;
 	size = this_fat->cluster_size;
 
+	if (this_fat->cluster_buffer_lba == lba)
+		return 0;
+
 	if (fat_io_read(this_fat->id, lba, &size, cluster_buffer)) {
 		memset(cluster_buffer, 0, (size_t)this_fat->cluster_size);
+		this_fat->cluster_buffer_lba = 0;
 		return FAT_BLOCK_READ_ERROR;
 	}
+
+	this_fat->cluster_buffer_lba = lba;
 
 	return 0;
 }
@@ -867,6 +921,11 @@ static int write_cluster(void *fat)
 	lba *= this_fat->io_mul;
 	size = this_fat->cluster_size;
 
+	/*
+	 * Invalidate the block buffer when writing cluster data.
+	 */
+	this_fat->block_buffer_lba = 0;
+
 	if (fat_io_write(this_fat->id, lba, &size, cluster_buffer))
 		return FAT_BLOCK_WRITE_ERROR;
 
@@ -880,7 +939,7 @@ static int write_record_buffer(void *fat, int fd)
 	unsigned char *record = &fd_entry->record[0];
 	unsigned int record_offset = fd_entry->record_offset;
 	unsigned int record_sector = fd_entry->record_sector;
-	size_t lba, size;
+	size_t lba;
 
 	if (record_offset > this_fat->fs_bytes_per_sector)
 		return FAT_INCONSISTENT_STATE;
@@ -890,14 +949,13 @@ static int write_record_buffer(void *fat, int fd)
 
 	lba = record_sector;
 	lba *= this_fat->io_mul;
-	size = this_fat->fs_bytes_per_sector;
 
-	if (fat_io_read(this_fat->id, lba, &size, block_buffer))
+	if (read_block(fat, lba))
 		return FAT_BLOCK_READ_ERROR;
 
 	memcpy(&block_buffer[record_offset], record, 32);
 
-	if (fat_io_write(this_fat->id, lba, &size, block_buffer))
+	if (write_block(fat, lba))
 		return FAT_BLOCK_WRITE_ERROR;
 
 	return 0;
@@ -1236,12 +1294,9 @@ static int iterate_fixed_root_dir(void *fat, int fd, int find_empty)
 	sector += (this_fat->fs_tables * this_fat->fs_table_sectors);
 
 	for (i = 0; i < fs_directory_sectors; i++) {
-		size_t lba, size;
+		size_t lba = (size_t)(sector * this_fat->io_mul);
 
-		lba = (size_t)(sector * this_fat->io_mul);
-		size = fs_bytes_per_sector;
-
-		if (fat_io_read(this_fat->id, lba, &size, buf))
+		if (read_block(fat, lba))
 			return FAT_BLOCK_READ_ERROR;
 
 		for (j = 0; j < fs_bytes_per_sector; j += 32) {
@@ -1430,6 +1485,11 @@ static int fill_record_buffer(void *fat, int fd)
 		if (create_record) {
 			unsigned int new_cluster = 0;
 
+			/*
+			 * Set mode bit 31 if created.
+			 */
+			fd_entry->mode |= 0x80000000;
+
 			if (path[i].is_dir) {
 				const unsigned int end = 0x0FFFFFFF;
 				unsigned char *dir = this_fat->cluster_buffer;
@@ -1561,7 +1621,6 @@ static int read_fixed_root_dir(void *fat, int fd, size_t *size, void *buf)
 	 * Read the data. The destination buffer can be NULL.
 	 */
 	while (read_bytes < read_bytes_limit) {
-		int id = this_fat->id;
 		size_t lba = (size_t)sector * this_fat->io_mul;
 		size_t sector_size = this_fat->fs_bytes_per_sector;
 
@@ -1570,7 +1629,7 @@ static int read_fixed_root_dir(void *fat, int fd, size_t *size, void *buf)
 			break;
 		}
 
-		if (fat_io_read(id, lba, &sector_size, block_buffer)) {
+		if (read_block(fat, lba)) {
 			r = FAT_BLOCK_READ_ERROR;
 			break;
 		}
@@ -1652,7 +1711,6 @@ static void write_fs_info(void *fat)
 {
 	unsigned char *buf = this_fat->block_buffer;
 	size_t lba = (size_t)this_fat->fs_info_sector * this_fat->io_mul;
-	size_t size = (size_t)this_fat->fs_bytes_per_sector;
 
 	unsigned int val_free = this_fat->fs_info_free;
 	unsigned int val_next = this_fat->fs_info_next;
@@ -1660,10 +1718,8 @@ static void write_fs_info(void *fat)
 	this_fat->fs_info_free = 0xFFFFFFFF;
 	this_fat->fs_info_next = 0xFFFFFFFF;
 
-	if (fat_io_read(this_fat->id, lba, &size, buf))
+	if (read_block(fat, lba))
 		return;
-
-	size = (size_t)this_fat->fs_bytes_per_sector;
 
 	if (LE32(&buf[0]) != 0x41615252)
 		return;
@@ -1675,7 +1731,7 @@ static void write_fs_info(void *fat)
 	W_LE32(&buf[488], val_free);
 	W_LE32(&buf[492], val_next);
 
-	(void)fat_io_write(this_fat->id, lba, &size, buf);
+	(void)write_block(fat, lba);
 }
 
 static int parse_mode(void *fat, int fd, const char *mode)
@@ -1925,6 +1981,13 @@ int fat_open(void *fat, int fd, const char *name, const char *mode)
 		this_fat->fd[fd].mode = MODE_ROOT_DIR;
 	}
 
+	if ((this_fat->fd[fd].mode & MODE_MODIFY) != 0) {
+		if (this_fat->type_32 && !this_fat->fs_info_modified) {
+			write_fs_info(fat);
+			this_fat->fs_info_modified = 1;
+		}
+	}
+
 	/*
 	 * Fill the record buffer if the requested name
 	 * is not the root directory.
@@ -1957,6 +2020,12 @@ int fat_open(void *fat, int fd, const char *name, const char *mode)
 			truncate_data = 0;
 
 		/*
+		 * For new files, do not update record values again.
+		 */
+		if ((this_fat->fd[fd].mode & 0x80000000) != 0)
+			truncate_data = 0;
+
+		/*
 		 * Delete the existing file data.
 		 */
 		if (truncate_data) {
@@ -1969,19 +2038,13 @@ int fat_open(void *fat, int fd, const char *name, const char *mode)
 			W_LE16(&record[26], 0);
 			W_LE32(&record[28], 0);
 
-			if (cluster != 0) {
-				write_timestamps(record, 0, 1);
-				if (write_record_buffer(fat, fd))
-					return FAT_BLOCK_WRITE_ERROR;
-				delete_clusters(fat, cluster);
-			}
-		}
+			write_timestamps(record, 0, 1);
 
-		if (this_fat->type_32) {
-			if (this_fat->fs_info_modified == 0) {
-				write_fs_info(fat);
-				this_fat->fs_info_modified = 1;
-			}
+			if (write_record_buffer(fat, fd))
+				return FAT_BLOCK_WRITE_ERROR;
+
+			if (cluster != 0)
+				delete_clusters(fat, cluster);
 		}
 	}
 
