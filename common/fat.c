@@ -593,11 +593,14 @@ static int write_table(void *fat)
 	size_t lba, size;
 	unsigned int i;
 
-	for (i = 0; i < table_entries; i++) {
-		if (table_sectors[i] == 0)
+	/*
+	 * The primary table.
+	 */
+	for (i = 0; i < table_entries; /* void */) {
+		if (table_sectors[i] == 0) {
+			i += 1;
 			continue;
-
-		table_sectors[i] = 0;
+		}
 
 		buffer = this_fat->table_buffer + (i * fs_bytes_per_sector);
 
@@ -606,25 +609,55 @@ static int write_table(void *fat)
 		lba *= this_fat->io_mul;
 		size = fs_bytes_per_sector;
 
-		if (fat_io_write(this_fat->id, lba, &size, buffer)) {
-			/*
-			 * It is hard to guarantee that everything is
-			 * consistent. Prevent subsequent calls.
-			 */
-			this_fat->ready = 0;
-			return FAT_INCONSISTENT_STATE;
+		i += 1;
+
+		while (i < table_entries) {
+			if (table_sectors[i] == 0)
+				break;
+
+			i += 1;
+			size += fs_bytes_per_sector;
 		}
 
-		if (this_fat->fs_tables < 2)
+		if (fat_io_write(this_fat->id, lba, &size, buffer))
+			return this_fat->ready = 0, FAT_BLOCK_WRITE_ERROR;
+	}
+
+	if (this_fat->fs_tables < 2) {
+		memset(table_sectors, 0, (size_t)table_entries);
+		return 0;
+	}
+
+	/*
+	 * The secondary table.
+	 */
+	for (i = 0; i < table_entries; /* void */) {
+		if (table_sectors[i] == 0) {
+			i += 1;
 			continue;
+		}
+
+		buffer = this_fat->table_buffer + (i * fs_bytes_per_sector);
 
 		lba = (size_t)(fs_reserved_sectors + i + fs_table_sectors);
 		lba += (size_t)(this_fat->table_offset / fs_bytes_per_sector);
 		lba *= this_fat->io_mul;
 		size = fs_bytes_per_sector;
 
+		i += 1;
+
+		while (i < table_entries) {
+			if (table_sectors[i] == 0)
+				break;
+
+			i += 1;
+			size += fs_bytes_per_sector;
+		}
+
 		(void)fat_io_write(this_fat->id, lba, &size, buffer);
 	}
+
+	memset(table_sectors, 0, (size_t)table_entries);
 
 	return 0;
 }
