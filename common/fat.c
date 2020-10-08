@@ -923,7 +923,7 @@ static int read_cluster(void *fat, unsigned int cluster, int skip_io)
 	this_fat->cluster_sector = (unsigned int)lba;
 
 	if (skip_io)
-		return 0;
+		return (int)(this_fat->cluster_buffer_lba = 0);
 
 	lba *= this_fat->io_mul;
 	size = this_fat->cluster_size;
