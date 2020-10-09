@@ -114,12 +114,10 @@ struct fat_instance {
 	unsigned int fd_special;
 	struct fat_fd *fd;
 
-	unsigned int block_size;
-	unsigned int block_total;
-	unsigned char *block_buffer;
-
 	unsigned int cluster_size;
 	unsigned int cluster_sector;
+
+	unsigned char *block_buffer;
 	unsigned char *cluster_buffer;
 
 	unsigned char *table_buffer;
@@ -355,9 +353,6 @@ static int read_bios_parameter_block(void *fat, int id)
 		return 1;
 	if (!(block_total <= 0xFFFFFFFF))
 		return 1;
-
-	this_fat->block_size = (unsigned int)block_size;
-	this_fat->block_total = (unsigned int)block_total;
 
 	{
 		size_t size = block_size;
