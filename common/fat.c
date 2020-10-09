@@ -846,6 +846,7 @@ static int set_table_value(void *fat, unsigned int off, unsigned int val)
 
 	if (this_fat->type_32) {
 		unsigned int add = (off << 2);
+		unsigned int old_val;
 		int r;
 
 		if ((r = read_table_buffer(fat, &add)) != 0)
@@ -853,8 +854,22 @@ static int set_table_value(void *fat, unsigned int off, unsigned int val)
 
 		table_buffer += add;
 		table_sectors[add / fs_bytes_per_sector] = 1;
-		val &= 0x0FFFFFFF;
-		val |= (LE32(&table_buffer[0]) & 0xF0000000);
+
+		old_val = LE32(&table_buffer[0]);
+
+		if (this_fat->fs_info_free != 0xFFFFFFFF) {
+			if ((old_val & 0x0FFFFFFF) == 0) {
+				if (val != 0)
+					this_fat->fs_info_free -= 1;
+			} else {
+				if (val == 0)
+					this_fat->fs_info_free += 1;
+			}
+			if (val != 0)
+				this_fat->fs_info_next = off;
+		}
+
+		val = (val & 0x0FFFFFFF) | (old_val & 0xF0000000);
 		W_LE32(&table_buffer[0], val);
 		return 0;
 	}
@@ -1747,6 +1762,7 @@ static void write_fs_info(void *fat)
 
 	unsigned int val_free = this_fat->fs_info_free;
 	unsigned int val_next = this_fat->fs_info_next;
+	unsigned int old_free, old_next;
 
 	this_fat->fs_info_free = 0xFFFFFFFF;
 	this_fat->fs_info_next = 0xFFFFFFFF;
@@ -1760,6 +1776,24 @@ static void write_fs_info(void *fat)
 		return;
 	if (LE32(&buf[508]) != 0xAA550000)
 		return;
+
+	old_free = LE32(&buf[488]);
+	old_next = LE32(&buf[492]);
+
+	if (old_free != 0 && old_free <= this_fat->fs_clusters) {
+		if (old_next >= 2 && old_next < this_fat->fs_clusters + 2) {
+			this_fat->fs_info_free = old_free;
+			this_fat->fs_info_next = old_next;
+		}
+	}
+
+	while (val_next > 2 && val_next < this_fat->fs_clusters + 2) {
+		unsigned int val = get_table_value(fat, val_next);
+
+		if (val >= 2 && val <= 0x0FFFFFEF)
+			break;
+		val_next -= 1;
+	}
 
 	W_LE32(&buf[488], val_free);
 	W_LE32(&buf[492], val_next);
@@ -1886,7 +1920,8 @@ int fat_delete(void *fat)
 		return 1;
 
 	if (this_fat->fs_info_modified) {
-		compute_fs_info(fat);
+		if (this_fat->fs_info_free == 0xFFFFFFFF)
+			compute_fs_info(fat);
 		write_fs_info(fat);
 	}
 
