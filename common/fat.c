@@ -879,7 +879,7 @@ static int set_table_value(void *fat, unsigned int off, unsigned int val)
 
 static int read_block(void *fat, size_t lba)
 {
-	size_t size = (size_t)this_fat->block_size;
+	size_t size = (size_t)this_fat->fs_bytes_per_sector;
 
 	if (lba == 0)
 		return 1;
@@ -909,7 +909,7 @@ static int read_block(void *fat, size_t lba)
 
 static int write_block(void *fat, size_t lba)
 {
-	size_t size = (size_t)this_fat->block_size;
+	size_t size = (size_t)this_fat->fs_bytes_per_sector;
 
 	/*
 	 * Invalidate the cluster buffer when writing block data.
