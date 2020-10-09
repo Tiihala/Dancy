@@ -1953,6 +1953,79 @@ int fat_control(void *fat, int fd, int write, unsigned char record[32])
 	if (this_fat->ready != FAT_READY)
 		return FAT_NOT_READY;
 
+	/*
+	 * Volume Information
+	 *
+	 *   Offset  Size  Description
+	 *    0x00    11    Volume Label
+	 *    0x0B     1    0x00
+	 *    0x0C     4    Volume ID
+	 *    0x10     4    Sector Size
+	 *    0x14     4    Cluster Size
+	 *    0x18     4    Used Clusters
+	 *    0x1C     4    Total Clusters
+	 */
+	if (fd == -1 && write == 0) {
+		unsigned char *buf = this_fat->block_buffer;
+		unsigned int fs_clusters = this_fat->fs_clusters;
+		unsigned int val = this_fat->fs_bytes_per_sector;
+		size_t size = (size_t)val;
+		unsigned int i;
+
+		this_fat->block_buffer_lba = 0;
+
+		if (fat_io_read(this_fat->id, 0, &size, buf)) {
+			memset(&record[0], 0, 32);
+			return FAT_BLOCK_READ_ERROR;
+		}
+
+		if (this_fat->type_32 == 0) {
+			memcpy(&record[0x00], &buf[0x2B], 11);
+			memcpy(&record[0x0C], &buf[0x27], 4);
+		} else {
+			memcpy(&record[0x00], &buf[0x47], 11);
+			memcpy(&record[0x0C], &buf[0x43], 4);
+		}
+
+		for (i = 0; i < 11; i++) {
+			unsigned char c = record[i];
+
+			if (c < 0x20 || c > 0x7E)
+				record[i] = 0x20;
+		}
+
+		record[0x0B] = 0;
+		W_LE32(&record[0x10], val);
+
+		val = this_fat->cluster_size;
+		W_LE32(&record[0x14], val);
+
+		if (this_fat->type_32 == 0) {
+			unsigned int table_entries = fs_clusters + 2;
+
+			for (i = 2, val = 0; i < table_entries; i++)
+				if (get_table_value(fat, i) == 0)
+					val += 1;
+		} else {
+			if (this_fat->fs_info_free == 0xFFFFFFFF)
+				compute_fs_info(fat);
+			val = this_fat->fs_info_free;
+		}
+
+		if (val > fs_clusters) {
+			memset(&record[0], 0, 32);
+			return FAT_INCONSISTENT_STATE;
+		}
+
+		val = fs_clusters - val;
+		W_LE32(&record[0x18], val);
+
+		val = fs_clusters;
+		W_LE32(&record[0x1C], val);
+
+		return 0;
+	}
+
 	if (check_fd(fat, fd, 1) != 0)
 		return FAT_INVALID_PARAMETERS;
 
