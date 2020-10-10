@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2019 Antti Tiihala
+;; Copyright (c) 2019, 2020 Antti Tiihala
 ;;
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -37,6 +37,8 @@ section .text
         global _b_write_blocks
         global _b_pause
         global _b_exit
+
+syscall_text_start:
 
 align 16
         ; unsigned long b_output_string(const char *, unsigned int)
@@ -200,6 +202,24 @@ align 16
 _b_exit:
         mov ah, 0xAF                    ; ah = syscall number
         int 0x20                        ; boot loader syscall
+
+        ; Replace above .text section with "int3" instructions.
+        ; Boot loader services must not be called after b_exit.
+
+syscall_text_end:
+        push edi                        ; save register edi
+        mov al, 0xCC                    ; al = int3 instruction
+
+        ; ecx = instructions to write
+        ; edi = destination address
+
+        mov ecx, (syscall_text_end - syscall_text_start)
+        mov edi, syscall_text_start
+
+        cld                             ; clear direction flag
+        rep stosb                       ; write int3 instructions
+        xor eax, eax                    ; eax = 0x00000000
+        pop edi                         ; restore register edi
         ret
 
 

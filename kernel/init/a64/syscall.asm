@@ -38,6 +38,8 @@ section .text
         global b_pause
         global b_exit
 
+syscall_text_start:
+
 align 16
         ; unsigned long b_output_string(const char *, unsigned int)
 b_output_string:
@@ -308,12 +310,32 @@ b_exit:
         test eax, eax                   ; test zero
         jz short .bios_boot_loader
         add eax, (15 * 8)               ; syscall offset
-        jmp [rax]                       ; jump into the boot loader
+        sub rsp, 0x28                   ; shadow space + alignment
+        call [rax]                      ; call the boot loader
+        add rsp, 0x28                   ; restore stack
+        jmp short syscall_text_end
 .bios_boot_loader:
         mov ah, 0xAF                    ; ah = syscall number
         int 0x20                        ; boot loader syscall
-        ret
 
+        ; Replace above .text section with "int3" instructions.
+        ; Boot loader services must not be called after b_exit.
+
+syscall_text_end:
+        push rdi                        ; save register rdi
+        mov al, 0xCC                    ; al = int3 instruction
+
+        ; ecx = instructions to write
+        ; edi = destination address (edi == rdi)
+
+        mov ecx, (syscall_text_end - syscall_text_start)
+        mov edi, syscall_text_start
+
+        cld                             ; clear direction flag
+        rep stosb                       ; write int3 instructions
+        xor eax, eax                    ; rax = 0x00000000
+        pop rdi                         ; restore register rdi
+        ret
 
 section .data
 
