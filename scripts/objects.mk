@@ -20,6 +20,9 @@
 ./o32/init/a32/cpu.o: ./kernel/init/a32/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/cpu.asm
 
+./o32/init/a32/gdt.o: ./kernel/init/a32/gdt.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/init/a32/gdt.asm
+
 ./o32/init/a32/ld.o: ./kernel/init/a32/ld.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/ld.asm
 
@@ -112,6 +115,9 @@
 
 ./o64/init/a64/cpu.o: ./kernel/init/a64/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/cpu.asm
+
+./o64/init/a64/gdt.o: ./kernel/init/a64/gdt.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/init/a64/gdt.asm
 
 ./o64/init/a64/ld.o: ./kernel/init/a64/ld.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/ld.asm

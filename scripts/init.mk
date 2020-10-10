@@ -46,6 +46,7 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/common/fat.o \
  ./o32/common/ttf.o \
  ./o32/init/a32/cpu.o \
+ ./o32/init/a32/gdt.o \
  ./o32/init/acpi.o \
  ./o32/init/cpu.o \
  ./o32/init/fs.o \
@@ -59,6 +60,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/common/fat.o \
  ./o64/common/ttf.o \
  ./o64/init/a64/cpu.o \
+ ./o64/init/a64/gdt.o \
  ./o64/init/acpi.o \
  ./o64/init/cpu.o \
  ./o64/init/fs.o \

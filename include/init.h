@@ -97,6 +97,12 @@ void cpu_out32(uint16_t port, uint32_t value);
 
 
 /*
+ * Declarations of gdt.asm
+ */
+void gdt_init(void);
+
+
+/*
  * Declarations of db.c
  */
 int db_init(struct b_mem *map);
