@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2019 Antti Tiihala
+;; Copyright (c) 2019, 2020 Antti Tiihala
 ;;
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -22,6 +22,7 @@
 section .text
 
         global _cpu_id
+        global _cpu_halt
         global _cpu_rdtsc
         global _cpu_rdtsc_delay
         global _cpu_rdtsc_diff
@@ -60,6 +61,19 @@ _cpu_id:
 
         pop esi                         ; restore register esi
         pop ebx                         ; restore register ebx
+        ret
+
+align 16
+        ; void cpu_halt(uint32_t counter)
+_cpu_halt:
+        mov ecx, [esp+4]                ; ecx = counter
+        test ecx, ecx                   ; zero is infinite
+        jnz short .spin2
+.spin1: hlt                             ; halt instruction
+        jmp short .spin1
+.spin2: hlt                             ; halt instruction
+        dec ecx                         ; decrement counter
+        jnz short .spin2
         ret
 
 align 16

@@ -79,10 +79,11 @@ struct acpi_information *acpi_get_information(void);
 
 
 /*
- * Declarations of cpu.c
+ * Declarations of cpu.asm and cpu.c
  */
 int cpu_test_features(void);
 void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b);
+void cpu_halt(uint32_t counter);
 void cpu_rdtsc(uint32_t *a, uint32_t *d);
 void cpu_rdtsc_delay(uint32_t a, uint32_t d);
 void cpu_rdtsc_diff(uint32_t *a, uint32_t *d);
