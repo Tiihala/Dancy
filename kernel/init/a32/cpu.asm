@@ -23,6 +23,7 @@ section .text
 
         global _cpu_id
         global _cpu_halt
+        global _cpu_ints
         global _cpu_rdtsc
         global _cpu_rdtsc_delay
         global _cpu_rdtsc_diff
@@ -74,6 +75,20 @@ _cpu_halt:
 .spin2: hlt                             ; halt instruction
         dec ecx                         ; decrement counter
         jnz short .spin2
+        ret
+
+align 16
+        ; int cpu_ints(int enable)
+_cpu_ints:
+        pushfd                          ; push eflags
+        mov eax, [esp]                  ; eax = eflags
+        and eax, 0x00000200             ; eax = current interrupt flag << 9
+        shr eax, 9                      ; eax = current interrupt flag
+        or dword [esp], 0x00000200      ; set interrupt flag
+        cmp dword [esp+8], 0            ; check input
+        jne short .end
+        xor dword [esp], 0x00000200     ; clear interrupt flag
+.end:   popfd                           ; pop eflags
         ret
 
 align 16
