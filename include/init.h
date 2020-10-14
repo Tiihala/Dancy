@@ -142,6 +142,15 @@ void gui_refresh(void);
 
 
 /*
+ * Declarations of idt.asm and idt.c
+ */
+void idt_init(void);
+void idt_handler(unsigned num, unsigned err_code, const void *stack);
+void idt_load_null(void);
+void idt_restore(void);
+
+
+/*
  * Declarations of init.c
  */
 void init(void);
