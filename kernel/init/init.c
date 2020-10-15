@@ -138,6 +138,34 @@ void init(void)
 	}
 
 	/*
+	 * Terminate all boot loader services. If using the UEFI boot
+	 * loader, this will internally call
+	 *
+	 *     EFI_BOOT_SERVICES.ExitBootServices()
+	 *
+	 * After b_exit, the PICs (if available) have been programmed
+	 * so that IRQs start from vector 32 and all of them have been
+	 * disabled. The boot processor is at ring 0. Other processors
+	 * have not been configured by the boot loader.
+	 */
+	b_exit();
+
+	/*
+	 * Load the Global Descriptor Table.
+	 */
+	gdt_init();
+
+	/*
+	 * Initialize the interrupt management.
+	 */
+	idt_init();
+
+	/*
+	 * Enable interrupts.
+	 */
+	cpu_ints(1);
+
+	/*
 	 * Temporary code for testing purposes.
 	 */
 	{
