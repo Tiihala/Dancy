@@ -118,7 +118,7 @@ idt_common:
         ;   [rsp+72]   instruction pointer
         ;   [rsp+64]   error code
         ;   [rsp+56]   register rax
-        ;   [rsp+48]   register rcx (interrupt number)
+        ;   [rsp+48]   register rcx
         ;   [rsp+40]   register rdx
         ;   [rsp+32]   register rbx
         ;   [rsp+24]   register r8

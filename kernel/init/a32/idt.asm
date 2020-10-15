@@ -114,7 +114,7 @@ idt_common:
         ;   [esp+20]   instruction pointer
         ;   [esp+16]   error code
         ;   [esp+12]   register eax
-        ;   [esp+8]    register ecx (interrupt number)
+        ;   [esp+8]    register ecx
         ;   [esp+4]    register edx
         ;   [esp+0]    register ebx
 
