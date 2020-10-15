@@ -142,7 +142,6 @@ void init(void)
 	 */
 	{
 		int x1, y1, x2, y2;
-		size_t i;
 
 		x1 = 40;
 		y1 = 10;
@@ -151,37 +150,7 @@ void init(void)
 
 		gui_create_window("Dancy Operating System", x1, y1, x2, y2);
 		gui_print("https://github.com/Tiihala/Dancy\n\n");
-
-		for (i = 0; /* void */; i++) {
-			unsigned second = UINT_MAX;
-			int mov = (int)vi.height / 2 - 60;
-
-			for (;;) {
-				rtc_read(&bt);
-
-				gui_print("\r%04u-%02u-%02u %02u:%02u:%02u",
-					bt.year, bt.month, bt.day,
-					bt.hour, bt.minute, bt.second);
-
-				if (second != bt.second) {
-					second = bt.second;
-					gui_refresh();
-				}
-
-				if ((bt.second % 10) == 9) {
-					while ((bt.second % 10) == 9)
-						rtc_read(&bt);
-					break;
-				}
-			}
-
-			if ((i % 2) == 0)
-				y1 += mov;
-			else
-				y1 -= mov;
-
-			gui_move_window(x1, y1);
-		}
+		gui_refresh();
 	}
 }
 
