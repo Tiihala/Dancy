@@ -77,6 +77,27 @@ struct acpi_information {
 
 struct acpi_information *acpi_get_information(void);
 
+struct acpi_apic {
+	uint32_t id;
+	int enabled;
+};
+
+struct acpi_irq_override {
+	uint32_t global_int;
+	uint32_t flags;
+};
+
+struct acpi_io_apic {
+	uint32_t id;
+	uint32_t base_int;
+	phys_addr_t addr;
+
+	struct acpi_irq_override irq[16];
+};
+
+int acpi_get_apic(unsigned idx, struct acpi_apic *apic);
+int acpi_get_io_apic(unsigned idx, struct acpi_io_apic *io_apic);
+
 
 /*
  * Declarations of cpu.asm and cpu.c

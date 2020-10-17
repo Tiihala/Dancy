@@ -364,3 +364,115 @@ struct acpi_information *acpi_get_information(void)
 	b_log("\n");
 	return (init = 1), &information;
 }
+
+int acpi_get_apic(unsigned idx, struct acpi_apic *apic)
+{
+	const uint8_t *madt = (const uint8_t *)information.madt_addr;
+	uint32_t length;
+	unsigned i;
+
+	memset(apic, 0, sizeof(*apic));
+
+	if (!madt)
+		return 1;
+
+	length = (uint32_t)LE32(madt + 4);
+	if (length < 44)
+		return 1;
+
+	madt += 44;
+	length -= 44;
+
+	for (i = 0; length >= 2; /* void */) {
+		unsigned type = (unsigned)madt[0];
+		unsigned len = (unsigned)madt[1];
+
+		if (len > length)
+			break;
+
+		/*
+		 * Processor Local APIC Structure.
+		 */
+		if (type == 0 && len >= 8) {
+			if (i == idx) {
+				apic->id = (uint32_t)madt[3];
+				apic->enabled = (int)(madt[4] & 1);
+				return 0;
+			}
+			i += 1;
+		}
+
+		madt += len;
+		length -= len;
+	}
+
+	return 1;
+}
+
+int acpi_get_io_apic(unsigned idx, struct acpi_io_apic *io_apic)
+{
+	const uint8_t *madt = (const uint8_t *)information.madt_addr;
+	uint32_t length;
+	unsigned i;
+	int r = 1;
+
+	memset(io_apic, 0, sizeof(*io_apic));
+
+	if (!madt)
+		return 1;
+
+	length = (uint32_t)LE32(madt + 4);
+	if (length < 44)
+		return 1;
+
+	madt += 44;
+	length -= 44;
+
+	/*
+	 * Identity-mapped IRQs unless overridden.
+	 */
+	for (i = 0; i < 16; i++) {
+		io_apic->irq[i].global_int = i;
+		io_apic->irq[i].flags = 0;
+	}
+
+	for (i = 0; length >= 2; /* void */) {
+		unsigned type = (unsigned)madt[0];
+		unsigned len = (unsigned)madt[1];
+
+		if (len > length)
+			break;
+
+		/*
+		 * I/O APIC Structure.
+		 */
+		if (type == 1 && len >= 12) {
+			if (i == idx) {
+				io_apic->id = (uint32_t)madt[2];
+				io_apic->base_int = (uint32_t)LE32(&madt[8]);
+				io_apic->addr = (phys_addr_t)LE32(&madt[4]);
+				r = 0;
+			}
+			i += 1;
+		}
+
+		/*
+		 * Interrupt Source Override Structure.
+		 */
+		if (type == 2 && len >= 10) {
+			unsigned src = (unsigned)madt[3];
+			struct acpi_irq_override *irq;
+
+			if (src < 16) {
+				irq = &io_apic->irq[src];
+				irq->global_int = (uint32_t)LE32(&madt[4]);
+				irq->flags = (uint32_t)LE16(&madt[8]);
+			}
+		}
+
+		madt += len;
+		length -= len;
+	}
+
+	return r;
+}
