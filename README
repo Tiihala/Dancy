@@ -1,6 +1,80 @@
 Dancy Operating System
 Copyright (c) 2018, 2019, 2020 Antti Tiihala
 
+
 Introduction
 
   An operating system for x86 and x86_64 platforms.
+
+
+Build Instructions (Unix/Linux)
+
+  1. Install the following packages (this may require root privileges)
+
+     gcc, g++, make, git
+
+  2. Use a proper current directory
+
+  3. Run the following commands (normal user privileges)
+
+     git clone https://github.com/tiihala/dancy.git
+     cd dancy
+     make
+
+     The scripts will build a cross-compiler and Nasm and this is time
+     consuming. All these files are put in an ./external/ subdirectory.
+
+     If cleaning the source tree with "make clean", the external tools
+     are not deleted. The "make distclean" will delete these if needed.
+
+
+Build Instructions (Windows)
+
+  If you are uncertain about these steps, I highly recommend setting up a
+  virtual Linux computer and follow the "Build Instructions (Unix/Linux)"
+  guide. Installing new software is always a risk (stability, security)!
+
+  1. Install Visual Studio Community
+  2. Install Git
+  3. Install Nasm
+  4. Install Clang
+  5. Open "Developer Command Prompt for VS"
+
+     The PATH environment variable must include "git.exe", "nasm.exe" and
+     "clang.exe". This can be done without system-wide changes, e.g.
+
+       set PATH=%PATH%;C:\Installation\Path\To\GIT\cmd
+       set PATH=%PATH%;C:\Installation\Path\To\NASM
+       set PATH=%PATH%;C:\Installation\Path\To\LLVM\bin
+
+     I recommend setting up a customized "Command Prompt for Dancy". The
+     above lines must not be copy-pasted. The path names must be checked.
+
+  6. Use a proper current directory
+
+  7. Run the following commands
+
+     git.exe clone https://github.com/tiihala/dancy.git
+     cd dancy
+     nmake
+
+
+Disk Images
+
+  ./release/dancy.iso
+  ./release/fdd1440.img
+  ./release/usbtiny.img
+
+
+Build with ACPICA
+
+  The "make" or "nmake" commands need the following options
+
+    make ACPICA_O32_AT=./o32/acpica.at ACPICA_O64_AT=./o64/acpica.at
+
+
+Disclaimer
+
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+
+  More information: https://en.wikipedia.org/wiki/ISC_license
