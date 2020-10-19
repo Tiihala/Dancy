@@ -126,7 +126,7 @@ idt_common:
         ;   [rsp+8]    register r10
         ;   [rsp+0]    register r11
 
-        and rsp, 0xFFFFFFE0             ; align stack
+        and rsp, -32                    ; align stack
         sub rsp, 32                     ; shadow space
 
         ; void idt_handler(unsigned num, unsigned err_code, const void *stack)
