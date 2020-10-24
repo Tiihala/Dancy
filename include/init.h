@@ -207,6 +207,9 @@ void b_log(const char *format, ...);
 /*
  * Declarations of memory.c
  */
+extern size_t memory_entries;
+extern void *memory_map;
+
 int memory_init(void *map);
 void memory_print_map(void (*print)(const char *, ...));
 

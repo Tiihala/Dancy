@@ -19,8 +19,8 @@
 
 #include <init.h>
 
-static size_t memory_entries;
-static void *memory_map;
+size_t memory_entries;
+void *memory_map;
 
 #define TYPE_BOOT       (0x01u)
 #define TYPE_INIT       (0x02u)
