@@ -44,6 +44,14 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 			return;
 		}
 
+		/*
+		 * Page-Fault Exception.
+		 */
+		if (num == 14 && pg_handler() == 0) {
+			idt_restore();
+			return;
+		}
+
 		cpu_halt(0);
 	}
 

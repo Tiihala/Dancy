@@ -215,6 +215,19 @@ void memory_print_map(void (*print)(const char *, ...));
 
 
 /*
+ * Declarations of pg.asm and pg.c
+ */
+extern volatile uint32_t pg_fault_counter;
+extern volatile uint32_t pg_tables_size;
+
+int pg_init(void);
+int pg_handler(void);
+void pg_get_current(phys_addr_t *addr);
+void pg_get_fault(phys_addr_t *addr);
+void pg_switch(phys_addr_t addr);
+
+
+/*
  * Declarations of print.c
  */
 void b_print(const char *format, ...);

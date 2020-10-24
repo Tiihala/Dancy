@@ -161,6 +161,14 @@ void init(void)
 	idt_init();
 
 	/*
+	 * Enable new paging tables.
+	 */
+	if (pg_init()) {
+		idt_load_null();
+		return;
+	}
+
+	/*
 	 * Enable interrupts.
 	 */
 	cpu_ints(1);
