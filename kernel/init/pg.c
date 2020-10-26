@@ -92,10 +92,13 @@ static phys_addr_t map_unit = 0x400000;
 static int identity_map(phys_addr_t addr)
 {
 	const uint64_t page_bits = 0x23;
-	uint64_t pml4e_offset = (uint64_t)((addr >> 39) & 0x1FF);
+	uint64_t pml4e_offset = (uint64_t)(addr >> 39);
 	uint64_t pdpe_offset = (uint64_t)((addr >> 30) & 0x1FF);
 	uint64_t pde_offset = (uint64_t)((addr >> 21) & 0x1FF);
 	uint64_t i = 0, page, *ptr;
+
+	if (pml4e_offset > 0x1FF)
+		return 1;
 
 	/*
 	 * Page-map-level-4 table.
