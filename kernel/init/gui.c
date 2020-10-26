@@ -911,6 +911,55 @@ void gui_print(const char *format, ...)
 	}
 }
 
+void gui_print_alert(const char *message)
+{
+	const unsigned char warning_color = 15;
+	struct gui_window *current_stack = gui_window_stack;
+	struct gui_window alert_win;
+	unsigned off_x, off_y, x, y;
+
+	if (!back_buffer)
+		return;
+
+	memset(&alert_win, 0, sizeof(alert_win));
+
+	for (y = 0; y < vi.height; y++) {
+		unsigned char *line = back_buffer + (y * vi.width);
+
+		for (x = 0; x < vi.width; x++)
+			line[x] = (unsigned char)(line[x] / 2);
+	}
+
+	alert_win.win_width = 480;
+	alert_win.win_height = 320;
+
+	off_x = (unsigned)((vi.width / 2) - (alert_win.win_width / 2));
+	off_y = (unsigned)((vi.height / 2) - (alert_win.win_height / 2));
+
+	alert_win.win_buffer = back_buffer + (off_y * vi.width) + off_x;
+
+	for (y = 0; y < alert_win.win_height; y++) {
+		unsigned char *line = alert_win.win_buffer + (y * vi.width);
+		unsigned char color = ttf_colors[0];
+
+		if ((y < 12 && (y % 3) != 2) || y == alert_win.win_height - 1)
+			color = warning_color;
+
+		line[0] = warning_color;
+
+		for (x = 1; x < alert_win.win_width - 1; x++)
+			line[x] = color;
+
+		line[x] = warning_color;
+	}
+
+	gui_window_stack = &alert_win;
+	gui_print("%s\n", message);
+
+	gui_window_stack = current_stack;
+	blit();
+}
+
 void gui_refresh(void)
 {
 	if (back_buffer)
