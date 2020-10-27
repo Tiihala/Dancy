@@ -33,6 +33,12 @@ section .text
         global _cpu_out8
         global _cpu_out16
         global _cpu_out32
+        global _cpu_read8
+        global _cpu_read16
+        global _cpu_read32
+        global _cpu_write8
+        global _cpu_write16
+        global _cpu_write32
 
 align 16
         ; void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b)
@@ -176,4 +182,51 @@ _cpu_out32:
         mov edx, [esp+4]                ; dx = port
         mov eax, [esp+8]                ; eax = value
         out dx, eax                     ; output to port
+        ret
+
+align 16
+        ; uint8_t cpu_read8(const void *address)
+_cpu_read8:
+        mov ecx, [esp+4]                ; ecx = address
+        mov al, [ecx]                   ; al = value
+        and eax, 0xFF                   ; clear upper bits
+        ret
+
+align 16
+        ; uint16_t cpu_read16(const void *address)
+_cpu_read16:
+        mov ecx, [esp+4]                ; ecx = address
+        mov ax, [ecx]                   ; ax = value
+        and eax, 0xFFFF                 ; clear upper bits
+        ret
+
+align 16
+        ; uint32_t cpu_read32(const void *address)
+_cpu_read32:
+        mov ecx, [esp+4]                ; ecx = address
+        mov eax, [ecx]                  ; eax = value
+        ret
+
+align 16
+        ; void cpu_write8(void *address, uint8_t value)
+_cpu_write8:
+        mov ecx, [esp+4]                ; ecx = address
+        mov dl, [esp+8]                 ; dl = value
+        mov [ecx], dl                   ; write
+        ret
+
+align 16
+        ; void cpu_write16(void *address, uint16_t value)
+_cpu_write16:
+        mov ecx, [esp+4]                ; ecx = address
+        mov dx, [esp+8]                 ; dx = value
+        mov [ecx], dx                   ; write
+        ret
+
+align 16
+        ; void cpu_write32(void *address, uint32_t value)
+_cpu_write32:
+        mov ecx, [esp+4]                ; ecx = address
+        mov edx, [esp+8]                ; edx = value
+        mov [ecx], edx                  ; write
         ret

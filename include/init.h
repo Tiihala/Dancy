@@ -119,6 +119,14 @@ void cpu_out8(uint16_t port, uint8_t value);
 void cpu_out16(uint16_t port, uint16_t value);
 void cpu_out32(uint16_t port, uint32_t value);
 
+uint8_t cpu_read8(const void *address);
+uint16_t cpu_read16(const void *address);
+uint32_t cpu_read32(const void *address);
+
+void cpu_write8(void *address, uint8_t value);
+void cpu_write16(void *address, uint16_t value);
+void cpu_write32(void *address, uint32_t value);
+
 
 /*
  * Declarations of gdt.asm

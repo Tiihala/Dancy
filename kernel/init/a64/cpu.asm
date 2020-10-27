@@ -33,6 +33,12 @@ section .text
         global cpu_out8
         global cpu_out16
         global cpu_out32
+        global cpu_read8
+        global cpu_read16
+        global cpu_read32
+        global cpu_write8
+        global cpu_write16
+        global cpu_write32
 
 align 16
         ; void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b)
@@ -171,4 +177,42 @@ cpu_out32:
         mov eax, edx                    ; eax = value
         mov edx, ecx                    ; dx = port
         out dx, eax                     ; output to port
+        ret
+
+align 16
+        ; uint8_t cpu_read8(const void *address)
+cpu_read8:
+        mov al, [rcx]                   ; al = value
+        and eax, 0xFF                   ; clear upper bits
+        ret
+
+align 16
+        ; uint16_t cpu_read16(const void *address)
+cpu_read16:
+        mov ax, [rcx]                   ; ax = value
+        and eax, 0xFFFF                 ; clear upper bits
+        ret
+
+align 16
+        ; uint32_t cpu_read32(const void *address)
+cpu_read32:
+        mov eax, [rcx]                  ; eax = value
+        ret
+
+align 16
+        ; void cpu_write8(void *address, uint8_t value)
+cpu_write8:
+        mov [rcx], dl                   ; write
+        ret
+
+align 16
+        ; void cpu_write16(void *address, uint16_t value)
+cpu_write16:
+        mov [rcx], dx                   ; write
+        ret
+
+align 16
+        ; void cpu_write32(void *address, uint32_t value)
+cpu_write32:
+        mov [rcx], edx                  ; write
         ret
