@@ -27,6 +27,8 @@ section .text
         global cpu_rdtsc
         global cpu_rdtsc_delay
         global cpu_rdtsc_diff
+        global cpu_rdmsr
+        global cpu_wrmsr
         global cpu_in8
         global cpu_in16
         global cpu_in32
@@ -130,6 +132,23 @@ cpu_rdtsc_diff:
         pop rax                         ; restore register rdx to rax
         sbb edx, [rax]                  ; edx -= *d
         mov [rax], edx                  ; *d = edx
+        ret
+
+align 16
+        ; void cpu_rdmsr(uint32_t msr, uint32_t *a, uint32_t *d)
+cpu_rdmsr:
+        mov r9, rdx                     ; r9 = a
+        rdmsr                           ; read the register (ecx = msr)
+        mov [r9], eax                   ; *a = eax
+        mov [r8], edx                   ; *d = edx
+        ret
+
+align 16
+        ; void cpu_wrmsr(uint32_t msr, uint32_t a, uint32_t d)
+cpu_wrmsr:
+        mov eax, edx                    ; eax = a
+        mov edx, r8d                    ; edx = d
+        wrmsr                           ; write the register (ecx = msr)
         ret
 
 align 16
