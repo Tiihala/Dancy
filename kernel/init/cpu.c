@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2020 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -37,16 +37,21 @@ int cpu_test_features(void)
 	else
 		eax = 0, ecx = 0, edx = 0, ebx = 0, ret = 1;
 
-	if (edx & (1u << 4)) {
+	if ((edx & (1u << 4)) != 0) {
 		b_log("\tTime Stamp Counter (TSC)\n");
 	} else {
 		b_print("Error: Time Stamp Counter (TSC) is required.\n");
 		ret = 1;
 	}
 
-	if (edx & (1u << 9))
+	if ((edx & (1u << 9)) != 0) {
 		b_log("\tAPIC On-Chip\n");
-	if (edx & (1u << 13))
+	} else {
+		b_print("Error: APIC On-Chip is required.\n");
+		ret = 1;
+	}
+
+	if ((edx & (1u << 13)) != 0)
 		b_log("\tPage Global Bit\n");
 
 	b_log("\n");
