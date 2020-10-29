@@ -86,6 +86,9 @@
 ./o32/lib/a32/dark.o: ./kernel/lib/a32/dark.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/dark.asm
 
+./o32/lib/a32/spin.o: ./kernel/lib/a32/spin.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/lib/a32/spin.asm
+
 ./o32/lib/a32/string.o: ./kernel/lib/a32/string.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/string.asm
 
@@ -193,6 +196,9 @@
 
 ./o64/lib/a64/dark.o: ./kernel/lib/a64/dark.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/dark.asm
+
+./o64/lib/a64/spin.o: ./kernel/lib/a64/spin.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/lib/a64/spin.asm
 
 ./o64/lib/a64/string.o: ./kernel/lib/a64/string.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/string.asm

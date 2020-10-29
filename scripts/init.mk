@@ -14,6 +14,7 @@ DANCY_START_OBJECTS_32= \
  ./o32/init/print.o \
  ./o32/init/start.o \
  ./o32/lib/a32/dark.o \
+ ./o32/lib/a32/spin.o \
  ./o32/lib/a32/string.o \
  ./o32/lib/bitarray.o \
  ./o32/lib/huffman.o \
@@ -33,6 +34,7 @@ DANCY_START_OBJECTS_64= \
  ./o64/init/print.o \
  ./o64/init/start.o \
  ./o64/lib/a64/dark.o \
+ ./o64/lib/a64/spin.o \
  ./o64/lib/a64/string.o \
  ./o64/lib/bitarray.o \
  ./o64/lib/huffman.o \

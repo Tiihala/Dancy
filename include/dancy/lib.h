@@ -91,6 +91,12 @@ int huffman_table(struct huffman *h, unsigned *table, int n);
 int inflate(struct bitarray *b, unsigned char *out, size_t *size);
 
 /*
+ * Declarations of spin.asm
+ */
+void spin_lock(int *lock);
+void spin_unlock(int *lock);
+
+/*
  * Declarations of ttf.c
  */
 int ttf_create(void **instance);
