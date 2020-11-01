@@ -68,6 +68,9 @@
 ./o32/init/memory.o: ./kernel/init/memory.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/memory.c
 
+./o32/init/panic.o: ./kernel/init/panic.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/panic.c
+
 ./o32/init/pg.o: ./kernel/init/pg.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/pg.c
 
@@ -178,6 +181,9 @@
 
 ./o64/init/memory.o: ./kernel/init/memory.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/memory.c
+
+./o64/init/panic.o: ./kernel/init/panic.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/panic.c
 
 ./o64/init/pg.o: ./kernel/init/pg.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/pg.c

@@ -227,6 +227,14 @@ void memory_print_map(void (*print)(const char *, ...));
 
 
 /*
+ * Declarations of panic.c
+ */
+extern volatile int panic_lock;
+
+void panic(const char *message);
+
+
+/*
  * Declarations of pg.asm and pg.c
  */
 extern volatile uint32_t pg_fault_counter;
