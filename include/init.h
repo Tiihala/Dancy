@@ -190,6 +190,9 @@ void gui_refresh(void);
 /*
  * Declarations of idt.asm and idt.c
  */
+extern volatile unsigned idt_irq0;
+extern volatile unsigned idt_irq8;
+
 void idt_init(void);
 void idt_handler(unsigned num, unsigned err_code, const void *stack);
 void idt_load_null(void);

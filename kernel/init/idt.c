@@ -19,6 +19,9 @@
 
 #include <init.h>
 
+volatile unsigned idt_irq0;
+volatile unsigned idt_irq8;
+
 static void idt_panic(unsigned num, unsigned err_code, const void *stack)
 {
 	static const char *names[] = {
@@ -76,9 +79,21 @@ static void idt_panic(unsigned num, unsigned err_code, const void *stack)
 	gui_print_alert(&message[0]);
 }
 
+static void end(unsigned irq)
+{
+	if (pic_8259_mode) {
+		if (irq >= 8)
+			cpu_out8(0xA0, 0x20);
+		cpu_out8(0x20, 0x20);
+	} else {
+		apic_eoi();
+	}
+}
+
 void idt_handler(unsigned num, unsigned err_code, const void *stack)
 {
 	const unsigned pic_irq_base = 32;
+	unsigned irq;
 
 	/*
 	 * Nested exceptions are not allowed. If an exception
@@ -105,6 +120,33 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 
 		idt_panic(num, err_code, stack);
 		cpu_halt(0);
+	}
+
+	/*
+	 * Translate num to irq. Unsigned integer modulo wrapping is defined.
+	 */
+	irq = pic_8259_mode ? (num - pic_irq_base) : (num - ioapic_irq_base);
+
+	/*
+	 * Timer interrupt (IRQ 0).
+	 */
+	if (irq == 0) {
+		idt_irq0 += 1;
+		end(irq);
+		return;
+	}
+
+	/*
+	 * Real Time Clock interrupt (IRQ 8).
+	 */
+	if (irq == 8) {
+		idt_irq8 += 1;
+
+		cpu_out8(0x70, 0x0C);
+		(void)cpu_in8(0x71);
+
+		end(irq);
+		return;
 	}
 
 	/*
