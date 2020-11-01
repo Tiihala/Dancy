@@ -121,6 +121,12 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 		return;
 	}
 
+	/*
+	 * Spurious APIC interrupt.
+	 */
+	if (num == apic_spurious_vector)
+		return;
+
 	idt_panic(num, err_code, stack);
 	cpu_halt(0);
 }

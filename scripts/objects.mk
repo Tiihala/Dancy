@@ -41,6 +41,9 @@
 ./o32/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/acpi.c
 
+./o32/init/apic.o: ./kernel/init/apic.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/apic.c
+
 ./o32/init/cpu.o: ./kernel/init/cpu.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/cpu.c
 
@@ -154,6 +157,9 @@
 
 ./o64/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/acpi.c
+
+./o64/init/apic.o: ./kernel/init/apic.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/apic.c
 
 ./o64/init/cpu.o: ./kernel/init/cpu.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/cpu.c

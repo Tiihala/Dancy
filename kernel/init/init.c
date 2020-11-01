@@ -169,6 +169,16 @@ void init(void)
 	}
 
 	/*
+	 * Initialize Local Advanced Programmable Interrupt Controller.
+	 */
+	apic_init(0);
+
+	/*
+	 * Initialize I/O Advanced Programmable Interrupt Controller(s).
+	 */
+	ioapic_init();
+
+	/*
 	 * Enable interrupts.
 	 */
 	cpu_ints(1);
