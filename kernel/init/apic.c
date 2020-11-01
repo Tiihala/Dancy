@@ -31,10 +31,15 @@ void apic_init(unsigned cpu_core)
 	phys_addr_t local_apic_base = apic_base;
 	unsigned flags;
 
+	if (acpi == NULL || acpi->num_io_apic == 0) {
+		pic_8259_mode = 1;
+		return;
+	}
+
 	/*
 	 * Read the APIC base from the ACPI.
 	 */
-	if (cpu_core == 0 && acpi != NULL) {
+	if (cpu_core == 0) {
 		local_apic_base = acpi->local_apic_base;
 		if ((local_apic_base & 0xFFF) != 0)
 			local_apic_base = 0;
