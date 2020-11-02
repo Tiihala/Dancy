@@ -19,7 +19,7 @@
 
 #include <init.h>
 
-int pic_8259_mode;
+int pic_8259_mode = 1;
 const unsigned apic_spurious_vector = 0xFF;
 const unsigned ioapic_irq_base = 0x40;
 
@@ -31,9 +31,23 @@ void apic_init(unsigned cpu_core)
 	phys_addr_t local_apic_base = apic_base;
 	unsigned flags;
 
-	if (acpi == NULL || acpi->num_io_apic == 0) {
-		pic_8259_mode = 1;
+	/*
+	 * The ACPI tables and I/O APIC must be available
+	 * if using the local APIC on this system.
+	 */
+	if (acpi == NULL || acpi->num_io_apic == 0)
 		return;
+
+	/*
+	 * Check that APIC On-Chip is available.
+	 */
+	{
+		uint32_t a, c, d, b;
+
+		cpu_id((a = 0, &a), &c, &d, &b);
+
+		if ((d & (1u << 9)) == 0)
+			return;
 	}
 
 	/*
@@ -58,13 +72,25 @@ void apic_init(unsigned cpu_core)
 		local_apic_msr = a | (((d & d_mask) << 16) << 16);
 
 		flags = (unsigned)(local_apic_msr & flags_mask);
+
+		/*
+		 * The global enable bit must be set.
+		 */
+		if ((flags & (1u << 11)) == 0) {
+			pic_8259_mode = 1;
+			return;
+		}
+
 		local_apic_msr &= (~flags_mask);
 
 		if (local_apic_base == 0)
 			local_apic_base = local_apic_msr;
 #ifdef DANCY_32
+		/*
+		 * Do not allow high addresses on 32-bit systems.
+		 */
 		if ((d & d_mask) != 0)
-			unexpected_error = 1;
+			return;
 #endif
 		if (local_apic_base != local_apic_msr)
 			unexpected_error = 1;
@@ -101,25 +127,6 @@ void apic_init(unsigned cpu_core)
 	}
 
 	/*
-	 * Clear the software enable bit.
-	 */
-	{
-		void *r = (void *)(apic_base + 0xF0);
-
-		cpu_write32(r, (uint32_t)apic_spurious_vector);
-	}
-
-	/*
-	 * Set the global enable bit.
-	 */
-	{
-		uint32_t a, d, enable_bit = 0x800;
-
-		cpu_rdmsr(0x1B, &a, &d);
-		cpu_wrmsr(0x1B, (a | enable_bit), d);
-	}
-
-	/*
 	 * Set the spurious vector and software enable bit.
 	 */
 	{
@@ -127,6 +134,8 @@ void apic_init(unsigned cpu_core)
 
 		cpu_write32(r, (uint32_t)(apic_spurious_vector | 0x100));
 	}
+
+	pic_8259_mode = 0;
 }
 
 void apic_eoi(void)
@@ -142,10 +151,8 @@ void ioapic_init(void)
 	uint32_t bsc_apic_id;
 	uint32_t i, j;
 
-	if (acpi == NULL || acpi->num_io_apic == 0) {
-		pic_8259_mode = 1;
+	if (pic_8259_mode)
 		return;
-	}
 
 	/*
 	 * Get the APIC ID.
