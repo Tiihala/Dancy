@@ -44,12 +44,8 @@ int cpu_test_features(void)
 		ret = 1;
 	}
 
-	if ((edx & (1u << 9)) != 0) {
+	if ((edx & (1u << 9)) != 0)
 		b_log("\tAPIC On-Chip\n");
-	} else {
-		b_print("Error: APIC On-Chip is required.\n");
-		ret = 1;
-	}
 
 	if ((edx & (1u << 13)) != 0)
 		b_log("\tPage Global Bit\n");
