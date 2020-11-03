@@ -44,7 +44,7 @@ void apic_init(unsigned cpu_core)
 	{
 		uint32_t a, c, d, b;
 
-		cpu_id((a = 0, &a), &c, &d, &b);
+		cpu_id((a = 1, &a), &c, &d, &b);
 
 		if ((d & (1u << 9)) == 0)
 			return;
