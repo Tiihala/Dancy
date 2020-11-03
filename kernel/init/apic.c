@@ -76,10 +76,8 @@ void apic_init(unsigned cpu_core)
 		/*
 		 * The global enable bit must be set.
 		 */
-		if ((flags & (1u << 11)) == 0) {
-			pic_8259_mode = 1;
+		if ((flags & (1u << 11)) == 0)
 			return;
-		}
 
 		local_apic_msr &= (~flags_mask);
 
