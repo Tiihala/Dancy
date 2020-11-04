@@ -279,7 +279,7 @@ void ioapic_enable(unsigned isa_irq)
 	const struct acpi_information *acpi = acpi_get_information();
 	uint32_t i, j;
 
-	if (!apic_mode && isa_irq >= 16)
+	if (!apic_mode || isa_irq >= 16)
 		return;
 
 	/*
