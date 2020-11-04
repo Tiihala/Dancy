@@ -116,6 +116,91 @@ int apic_init(void)
 	apic_base = local_apic_base;
 
 	/*
+	 * Task Priority Register (TPR).
+	 */
+	{
+		void *r = (void *)(apic_base + 0x80);
+
+		cpu_write32(r, 0x00000000);
+	}
+
+	/*
+	 * Logical Destination Register.
+	 */
+	{
+		void *r = (void *)(apic_base + 0xD0);
+
+		cpu_write32(r, 0x00000000);
+	}
+
+	/*
+	 * Destination Format Register.
+	 */
+	{
+		void *r = (void *)(apic_base + 0xE0);
+
+		cpu_write32(r, 0xFFFFFFFF);
+	}
+
+	/*
+	 * LVT Timer Register.
+	 */
+	{
+		void *r = (void *)(apic_base + 0x320);
+
+		cpu_write32(r, 0x00010000);
+	}
+
+	/*
+	 * LVT LINT0 Register.
+	 */
+	{
+		void *r = (void *)(apic_base + 0x350);
+		unsigned bsp_bit = (flags >> 8) & 1;
+
+		if (!bsp_bit)
+			cpu_write32(r, 0x00010000);
+	}
+
+	/*
+	 * LVT LINT1 Register.
+	 */
+	{
+		void *r = (void *)(apic_base + 0x360);
+		unsigned bsp_bit = (flags >> 8) & 1;
+
+		if (!bsp_bit)
+			cpu_write32(r, 0x00010000);
+	}
+
+	/*
+	 * LVT Error Register.
+	 */
+	{
+		void *r = (void *)(apic_base + 0x370);
+
+		cpu_write32(r, 0x00010000);
+	}
+
+	/*
+	 * Initial Count Register (Timer).
+	 */
+	{
+		void *r = (void *)(apic_base + 0x380);
+
+		cpu_write32(r, 0x7FFFFFFF);
+	}
+
+	/*
+	 * Divide Configuration Register (Timer).
+	 */
+	{
+		void *r = (void *)(apic_base + 0x3E0);
+
+		cpu_write32(r, 0x00000000);
+	}
+
+	/*
 	 * Set the spurious vector and software enable bit.
 	 */
 	{
