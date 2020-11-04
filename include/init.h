@@ -102,11 +102,11 @@ int acpi_get_io_apic(unsigned idx, struct acpi_io_apic *io_apic);
 /*
  * Declarations of apic.c
  */
-extern int pic_8259_mode;
+extern int apic_mode;
 extern const unsigned apic_spurious_vector;
 extern const unsigned ioapic_irq_base;
 
-void apic_init(unsigned cpu_core);
+int apic_init(void);
 void apic_eoi(void);
 void ioapic_init(void);
 void ioapic_enable(unsigned isa_irq);

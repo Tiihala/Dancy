@@ -171,7 +171,7 @@ void init(void)
 	/*
 	 * Initialize Local Advanced Programmable Interrupt Controller.
 	 */
-	apic_init(0);
+	apic_init();
 
 	/*
 	 * Initialize I/O Advanced Programmable Interrupt Controller(s).
@@ -186,12 +186,12 @@ void init(void)
 	/*
 	 * Allow IRQ 0 and IRQ 8.
 	 */
-	if (pic_8259_mode) {
-		cpu_out8(0xA1, 0xFE);
-		cpu_out8(0x21, 0xFA);
-	} else {
+	if (apic_mode) {
 		ioapic_enable(0);
 		ioapic_enable(8);
+	} else {
+		cpu_out8(0xA1, 0xFE);
+		cpu_out8(0x21, 0xFA);
 	}
 
 	/*
@@ -224,7 +224,7 @@ void init(void)
 		}
 
 		gui_print("Using %s\n\n",
-			(pic_8259_mode != 0) ? "PIC 8259" : "I/O APIC");
+			(apic_mode == 0) ? "PIC 8259" : "I/O APIC");
 
 		for (;;) {
 			gui_print("\rPIT (IRQ 0): %08X", idt_irq0);

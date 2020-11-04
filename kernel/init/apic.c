@@ -19,13 +19,13 @@
 
 #include <init.h>
 
-int pic_8259_mode = 1;
+int apic_mode = 0;
 const unsigned apic_spurious_vector = 0xFF;
 const unsigned ioapic_irq_base = 0x40;
 
 static phys_addr_t apic_base;
 
-void apic_init(unsigned cpu_core)
+int apic_init(void)
 {
 	const struct acpi_information *acpi = acpi_get_information();
 	phys_addr_t local_apic_base = apic_base;
@@ -36,7 +36,7 @@ void apic_init(unsigned cpu_core)
 	 * if using the local APIC on this system.
 	 */
 	if (acpi == NULL || acpi->num_io_apic == 0)
-		return;
+		return 1;
 
 	/*
 	 * Check that APIC On-Chip is available.
@@ -47,13 +47,13 @@ void apic_init(unsigned cpu_core)
 		cpu_id((a = 1, &a), &c, &d, &b);
 
 		if ((d & (1u << 9)) == 0)
-			return;
+			return 1;
 	}
 
 	/*
 	 * Read the APIC base from the ACPI.
 	 */
-	if (cpu_core == 0) {
+	if (local_apic_base == 0) {
 		local_apic_base = acpi->local_apic_base;
 		if ((local_apic_base & 0xFFF) != 0)
 			local_apic_base = 0;
@@ -77,7 +77,7 @@ void apic_init(unsigned cpu_core)
 		 * The global enable bit must be set.
 		 */
 		if ((flags & (1u << 11)) == 0)
-			return;
+			return 1;
 
 		local_apic_msr &= (~flags_mask);
 
@@ -88,7 +88,7 @@ void apic_init(unsigned cpu_core)
 		 * Do not allow high addresses on 32-bit systems.
 		 */
 		if ((d & d_mask) != 0)
-			return;
+			return 1;
 #endif
 		if (local_apic_base != local_apic_msr)
 			unexpected_error = 1;
@@ -97,10 +97,11 @@ void apic_init(unsigned cpu_core)
 			unexpected_error = 1;
 
 		if (unexpected_error) {
+			unsigned bsp_bit = (flags >> 8) & 1;
 			char message[128];
 
-			if (cpu_core != 0)
-				return;
+			if (!bsp_bit)
+				return 1;
 
 			snprintf(&message[0], sizeof(message),
 				"Unexpected Addresses\n\n"
@@ -115,16 +116,6 @@ void apic_init(unsigned cpu_core)
 	apic_base = local_apic_base;
 
 	/*
-	 * Check the Boot Strap CPU bit.
-	 */
-	if (cpu_core == 0) {
-		unsigned bsc_bit = (flags >> 8) & 1;
-
-		if (bsc_bit == 0)
-			panic("APIC BSC Bit 8");
-	}
-
-	/*
 	 * Set the spurious vector and software enable bit.
 	 */
 	{
@@ -133,7 +124,7 @@ void apic_init(unsigned cpu_core)
 		cpu_write32(r, (uint32_t)(apic_spurious_vector | 0x100));
 	}
 
-	pic_8259_mode = 0;
+	return apic_mode = 1, 0;
 }
 
 void apic_eoi(void)
@@ -149,7 +140,7 @@ void ioapic_init(void)
 	uint32_t bsc_apic_id;
 	uint32_t i, j;
 
-	if (pic_8259_mode)
+	if (!apic_mode)
 		return;
 
 	/*
@@ -203,7 +194,7 @@ void ioapic_enable(unsigned isa_irq)
 	const struct acpi_information *acpi = acpi_get_information();
 	uint32_t i, j;
 
-	if (pic_8259_mode && isa_irq >= 16)
+	if (!apic_mode && isa_irq >= 16)
 		return;
 
 	/*

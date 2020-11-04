@@ -81,13 +81,17 @@ static void idt_panic(unsigned num, unsigned err_code, const void *stack)
 
 static void end(unsigned irq)
 {
-	if (pic_8259_mode) {
-		if (irq >= 8)
-			cpu_out8(0xA0, 0x20);
-		cpu_out8(0x20, 0x20);
-	} else {
+	if (apic_mode) {
 		apic_eoi();
+		return;
 	}
+
+	/*
+	 * PIC 8259 End Of Interrupt.
+	 */
+	if (irq >= 8)
+		cpu_out8(0xA0, 0x20);
+	cpu_out8(0x20, 0x20);
 }
 
 void idt_handler(unsigned num, unsigned err_code, const void *stack)
@@ -125,7 +129,7 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 	/*
 	 * Translate num to irq. Unsigned integer modulo wrapping is defined.
 	 */
-	irq = pic_8259_mode ? (num - pic_irq_base) : (num - ioapic_irq_base);
+	irq = apic_mode ? (num - ioapic_irq_base) : (num - pic_irq_base);
 
 	/*
 	 * Timer interrupt (IRQ 0).
