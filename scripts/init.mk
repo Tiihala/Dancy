@@ -61,6 +61,7 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/log.o \
  ./o32/init/panic.o \
  ./o32/init/pg.o \
+ ./o32/init/pit.o \
  ./o32/init/rtc.o \
  ./o32/init/vga.o
 
@@ -81,6 +82,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/log.o \
  ./o64/init/panic.o \
  ./o64/init/pg.o \
+ ./o64/init/pit.o \
  ./o64/init/rtc.o \
  ./o64/init/vga.o
 

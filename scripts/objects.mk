@@ -77,6 +77,9 @@
 ./o32/init/pg.o: ./kernel/init/pg.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/pg.c
 
+./o32/init/pit.o: ./kernel/init/pit.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/pit.c
+
 ./o32/init/print.o: ./kernel/init/print.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/print.c
 
@@ -193,6 +196,9 @@
 
 ./o64/init/pg.o: ./kernel/init/pg.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/pg.c
+
+./o64/init/pit.o: ./kernel/init/pit.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/pit.c
 
 ./o64/init/print.o: ./kernel/init/print.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/print.c

@@ -264,6 +264,12 @@ void pg_switch(phys_addr_t addr);
 
 
 /*
+ * Declarations of pit.c
+ */
+void pit_init(void);
+
+
+/*
  * Declarations of print.c
  */
 void b_print(const char *format, ...);
