@@ -163,6 +163,12 @@ struct acpi_information *acpi_get_information(void)
 		if (!memcmp(table, "MCFG", 4))
 			information.mcfg_addr = addr;
 
+		/*
+		 * Signature for HPET (High Precision Event Timer).
+		 */
+		if (!memcmp(table, "HPET", 4))
+			information.hpet_addr = addr;
+
 		if ((char)table[0] >= 'A' && (char)table[0] <= 'Z') {
 			const char *m = "\t%.4s found at %08X\n";
 			b_log(m, (const char *)table, (unsigned)addr);
@@ -358,6 +364,44 @@ struct acpi_information *acpi_get_information(void)
 
 			mcfg += 16;
 			length -= 16;
+		}
+	}
+
+	/*
+	 * Find values from HPET table.
+	 */
+	if (information.hpet_addr) {
+		const uint8_t *hpet = (const uint8_t *)information.hpet_addr;
+		length = (uint32_t)LE32(hpet + 4);
+
+		b_log("\n\t---- HPET ----\n");
+
+		if (length >= 54) {
+			uint32_t a, b;
+			phys_addr_t c;
+
+			a = (unsigned)LE32(&hpet[36]);
+			b_log("\tEvent Timer Block ID %08X\n", a);
+			information.hpet_block_id = a;
+
+			a = (unsigned)LE16(&hpet[53]);
+			b_log("\tMinimum Clock Tick %04X\n", a);
+			information.hpet_min_tick = a;
+
+			a = (unsigned)LE32(&hpet[44]);
+			b = (unsigned)LE32(&hpet[48]);
+			b_log("\tBase %08X%08X\n", b, a);
+
+			c = (((phys_addr_t)b << 16) << 16) | (phys_addr_t)a;
+			information.hpet_base = c;
+#ifdef DANCY_32
+			if (b) {
+				information.hpet_addr = 0;
+				information.hpet_base = 0;
+				information.hpet_block_id = 0;
+				information.hpet_min_tick = 0;
+			}
+#endif
 		}
 	}
 

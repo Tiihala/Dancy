@@ -61,6 +61,7 @@ struct acpi_information {
 	phys_addr_t fadt_addr;
 	phys_addr_t madt_addr;
 	phys_addr_t mcfg_addr;
+	phys_addr_t hpet_addr;
 
 	unsigned rtc_century_idx;
 	unsigned iapc_boot_arch;
@@ -73,6 +74,10 @@ struct acpi_information {
 
 	unsigned max_apic_id;
 	unsigned max_io_apic_id;
+
+	phys_addr_t hpet_base;
+	unsigned hpet_block_id;
+	unsigned hpet_min_tick;
 };
 
 struct acpi_information *acpi_get_information(void);
