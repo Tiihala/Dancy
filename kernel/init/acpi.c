@@ -164,10 +164,17 @@ struct acpi_information *acpi_get_information(void)
 			information.mcfg_addr = addr;
 
 		/*
-		 * Signature for HPET (High Precision Event Timer).
+		 * Signature for HPET (High Precision Event Timer). Use the
+		 * first table if there are many, and prefer HPET Number 0.
 		 */
-		if (!memcmp(table, "HPET", 4))
-			information.hpet_addr = addr;
+		if (!memcmp(table, "HPET", 4)) {
+			if (information.hpet_addr) {
+				if (table_length >= 56 && table[52] == 0)
+					information.hpet_addr = addr;
+			} else {
+				information.hpet_addr = addr;
+			}
+		}
 
 		if ((char)table[0] >= 'A' && (char)table[0] <= 'Z') {
 			const char *m = "\t%.4s found at %08X\n";
@@ -376,7 +383,7 @@ struct acpi_information *acpi_get_information(void)
 
 		b_log("\n\t---- HPET ----\n");
 
-		if (length >= 54) {
+		if (length >= 56) {
 			uint32_t a, b;
 			phys_addr_t c;
 
