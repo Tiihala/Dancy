@@ -56,6 +56,9 @@
 ./o32/init/gui.o: ./kernel/init/gui.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/gui.c
 
+./o32/init/hpet.o: ./kernel/init/hpet.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/hpet.c
+
 ./o32/init/idt.o: ./kernel/init/idt.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/idt.c
 
@@ -175,6 +178,9 @@
 
 ./o64/init/gui.o: ./kernel/init/gui.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/gui.c
+
+./o64/init/hpet.o: ./kernel/init/hpet.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/hpet.c
 
 ./o64/init/idt.o: ./kernel/init/idt.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/idt.c

@@ -193,6 +193,14 @@ void gui_refresh(void);
 
 
 /*
+ * Declarations of hpet.c
+ */
+extern int hpet_mode;
+
+void hpet_init(void);
+
+
+/*
  * Declarations of idt.asm and idt.c
  */
 extern volatile unsigned idt_irq0;
