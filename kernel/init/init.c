@@ -179,6 +179,18 @@ void init(void)
 	ioapic_init();
 
 	/*
+	 * Initialize High Precision Event Timer (HPET).
+	 */
+	hpet_init();
+
+	/*
+	 * Initialize Programmable Interval Timer ("8254" PIT) if HPET is
+	 * not available. The computer should have the PIT in that case.
+	 */
+	if (!hpet_mode)
+		pit_init();
+
+	/*
 	 * Enable interrupts.
 	 */
 	cpu_ints(1);
@@ -226,9 +238,12 @@ void init(void)
 		gui_print("Using %s\n\n",
 			(apic_mode == 0) ? "PIC 8259" : "I/O APIC");
 
+		if (hpet_mode)
+			gui_print("Using High Precision Event Timer\n\n");
+
 		for (;;) {
-			gui_print("\rPIT (IRQ 0): %08X", idt_irq0);
-			gui_print("  RTC (IRQ 8): %08X", idt_irq8);
+			gui_print("\rIRQ 0: %08X", idt_irq0);
+			gui_print("  IRQ 8: %08X", idt_irq8);
 			gui_refresh();
 			cpu_halt(128);
 		}
