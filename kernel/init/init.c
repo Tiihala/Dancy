@@ -211,6 +211,7 @@ void init(void)
 	 */
 	{
 		int x1, y1, x2, y2;
+		unsigned prev = 0, next;
 
 		x1 = 40;
 		y1 = 10;
@@ -221,31 +222,20 @@ void init(void)
 		gui_print("https://github.com/Tiihala/Dancy\n\n");
 		gui_refresh();
 
-		/*
-		 * Quick and temporary way to enable IRQ 8.
-		 */
-		if (!(acpi_get_information()->iapc_boot_arch & (1u << 5))) {
-			uint8_t val;
-
-			cpu_ints(0);
-			cpu_out8(0x70, 0x0B);
-			val = cpu_in8(0x71);
-			cpu_out8(0x70, 0x0B);
-			cpu_out8(0x71, (val | 0x40));
-			cpu_ints(1);
-		}
+		if (hpet_mode)
+			gui_print("Using High Precision Event Timer\n");
 
 		gui_print("Using %s\n\n",
 			(apic_mode == 0) ? "PIC 8259" : "I/O APIC");
 
-		if (hpet_mode)
-			gui_print("Using High Precision Event Timer\n\n");
-
 		for (;;) {
-			gui_print("\rIRQ 0: %08X", idt_irq0);
-			gui_print("  IRQ 8: %08X", idt_irq8);
+			while (prev == (next = idt_irq0 / 1000))
+				cpu_halt(1);
+
+			gui_print("\rUptime (seconds): %u", next);
 			gui_refresh();
-			cpu_halt(128);
+
+			prev = next;
 		}
 	}
 }
