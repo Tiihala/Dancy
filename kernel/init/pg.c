@@ -85,7 +85,7 @@ static int identity_map(phys_addr_t addr, int cached, int single_page)
 		}
 
 	} else {
-		uint32_t offset = (uint32_t)((addr >> 12) & 0x3FF);
+		int offset = (int)((addr >> 12) & 0x3FF);
 
 		page = (uint32_t)(addr & 0xFFFFF000);
 		ptr[offset] = page | page_bits;
@@ -163,9 +163,9 @@ static int identity_map(phys_addr_t addr, int cached, int single_page)
 		}
 
 	} else {
-		uint32_t offset = (uint32_t)((addr >> 12) & 0x1FF);
+		int offset = (int)((addr >> 12) & 0x1FF);
 
-		page = (uint32_t)(addr & 0xFFFFFFFFFFFFF000ull);
+		page = (uint64_t)(addr & 0xFFFFFFFFFFFFF000ull);
 		ptr[offset] = page | page_bits;
 	}
 
