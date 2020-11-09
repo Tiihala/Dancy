@@ -171,12 +171,12 @@ int pg_init(void)
 		return 1;
 
 	while (addr < high_addr) {
-		if (identity_map(addr, 0))
+		if (identity_map(addr, 1))
 			return 1;
 		addr += map_unit;
 	}
 
-	if (identity_map(high_addr, 0))
+	if (identity_map(high_addr, 1))
 		return 1;
 
 	pg_switch(pg_addr);
@@ -191,7 +191,7 @@ int pg_handler(void)
 	pg_fault_counter += 1;
 	pg_get_fault(&addr);
 
-	if (addr < 0x1000 || identity_map(addr, 0))
+	if (addr < 0x1000 || identity_map(addr, 1))
 		return 1;
 
 	pg_switch(pg_addr);
@@ -199,12 +199,12 @@ int pg_handler(void)
 	return 0;
 }
 
-void pg_map_cached(void *addr)
+void pg_map_uncached(void *addr)
 {
 	if ((phys_addr_t)addr < 0x1000)
 		return;
 
-	identity_map((phys_addr_t)addr, 1);
+	identity_map((phys_addr_t)addr, 0);
 
 	pg_switch(pg_addr);
 }
