@@ -271,6 +271,8 @@ extern volatile uint32_t pg_tables_size;
 
 int pg_init(void);
 int pg_handler(void);
+
+void pg_map_cached(void *addr);
 void pg_get_current(phys_addr_t *addr);
 void pg_get_fault(phys_addr_t *addr);
 void pg_switch(phys_addr_t addr);

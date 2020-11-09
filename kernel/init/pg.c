@@ -49,9 +49,9 @@ static phys_addr_t alloc_table_page(void)
 
 #ifdef DANCY_32
 
-static int identity_map(phys_addr_t addr)
+static int identity_map(phys_addr_t addr, int cached)
 {
-	const uint32_t page_bits = 0x23;
+	uint32_t page_bits = 0x23;
 	uint32_t page_dir_offset = (uint32_t)(addr >> 22);
 	uint32_t i = 0, page, *ptr;
 
@@ -75,6 +75,9 @@ static int identity_map(phys_addr_t addr)
 	if (page_dir_offset == 0)
 		i = 1, page += 0x1000;
 
+	if (!cached)
+		page_bits |= 0x18;
+
 	while (i < 1024) {
 		ptr[i++] = page | page_bits;
 		page += 0x1000;
@@ -89,9 +92,9 @@ static phys_addr_t map_unit = 0x400000;
 
 #ifdef DANCY_64
 
-static int identity_map(phys_addr_t addr)
+static int identity_map(phys_addr_t addr, int cached)
 {
-	const uint64_t page_bits = 0x23;
+	uint64_t page_bits = 0x23;
 	uint64_t pml4e_offset = (uint64_t)(addr >> 39);
 	uint64_t pdpe_offset = (uint64_t)((addr >> 30) & 0x1FF);
 	uint64_t pde_offset = (uint64_t)((addr >> 21) & 0x1FF);
@@ -142,6 +145,9 @@ static int identity_map(phys_addr_t addr)
 	if (pde_offset == 0 && pdpe_offset == 0 && pml4e_offset == 0)
 		i = 1, page += 0x1000;
 
+	if (!cached)
+		page_bits |= 0x18;
+
 	while (i < 512) {
 		ptr[i++] = page | page_bits;
 		page += 0x1000;
@@ -165,12 +171,12 @@ int pg_init(void)
 		return 1;
 
 	while (addr < high_addr) {
-		if (identity_map(addr))
+		if (identity_map(addr, 0))
 			return 1;
 		addr += map_unit;
 	}
 
-	if (identity_map(high_addr))
+	if (identity_map(high_addr, 0))
 		return 1;
 
 	pg_switch(pg_addr);
@@ -185,10 +191,20 @@ int pg_handler(void)
 	pg_fault_counter += 1;
 	pg_get_fault(&addr);
 
-	if (addr < 0x1000 || identity_map(addr))
+	if (addr < 0x1000 || identity_map(addr, 0))
 		return 1;
 
 	pg_switch(pg_addr);
 
 	return 0;
+}
+
+void pg_map_cached(void *addr)
+{
+	if ((phys_addr_t)addr < 0x1000)
+		return;
+
+	identity_map((phys_addr_t)addr, 1);
+
+	pg_switch(pg_addr);
 }
