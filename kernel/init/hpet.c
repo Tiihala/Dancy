@@ -42,6 +42,8 @@ void hpet_init(void)
 	if (hpet_base == 0 || (hpet_base & 7) != 0)
 		panic("HPET: Base Address");
 
+	pg_map_uncached((void *)hpet_base);
+
 	/*
 	 * Read General Capabilities and ID Register.
 	 */

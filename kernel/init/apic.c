@@ -115,6 +115,9 @@ int apic_init(void)
 
 	apic_base = local_apic_base;
 
+	if (!apic_mode)
+		pg_map_uncached((void *)apic_base);
+
 	/*
 	 * Task Priority Register (TPR).
 	 */
@@ -250,6 +253,8 @@ void ioapic_init(void)
 			panic("I/O APIC: MADT");
 
 		addr = io_apic.addr;
+
+		pg_map_uncached((void *)addr);
 
 		/*
 		 * Read I/O APIC Version.
