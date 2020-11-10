@@ -23,6 +23,7 @@ volatile uint32_t pg_fault_counter;
 volatile uint32_t pg_tables_size;
 
 static phys_addr_t pg_addr;
+static int pg_lock;
 
 static phys_addr_t alloc_table_page(void)
 {
@@ -80,7 +81,9 @@ static int identity_map(phys_addr_t addr, int cached, int single_page)
 
 	if (!single_page) {
 		while (i < 1024) {
-			ptr[i++] = page | page_bits;
+			uint32_t prev_bits = ptr[i] & 0xFFF;
+
+			ptr[i++] = page | page_bits | prev_bits;
 			page += 0x1000;
 		}
 
@@ -158,7 +161,9 @@ static int identity_map(phys_addr_t addr, int cached, int single_page)
 
 	if (!single_page) {
 		while (i < 512) {
-			ptr[i++] = page | page_bits;
+			uint64_t prev_bits = ptr[i] & 0xFFF;
+
+			ptr[i++] = page | page_bits | prev_bits;
 			page += 0x1000;
 		}
 
@@ -203,16 +208,19 @@ int pg_init(void)
 int pg_handler(void)
 {
 	phys_addr_t addr;
+	int r = 0;
 
+	spin_lock(&pg_lock);
 	pg_fault_counter += 1;
 	pg_get_fault(&addr);
 
 	if (addr < 0x1000 || identity_map(addr, 1, 0))
-		return 1;
+		r = 1;
 
 	pg_switch(pg_addr);
+	spin_unlock(&pg_lock);
 
-	return 0;
+	return r;
 }
 
 void pg_map_uncached(void *addr)
@@ -220,7 +228,9 @@ void pg_map_uncached(void *addr)
 	if ((phys_addr_t)addr < 0x1000)
 		return;
 
+	spin_lock(&pg_lock);
 	identity_map((phys_addr_t)addr, 0, 1);
 
 	pg_switch(pg_addr);
+	spin_unlock(&pg_lock);
 }
