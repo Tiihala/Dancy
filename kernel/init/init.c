@@ -207,6 +207,19 @@ void init(void)
 	}
 
 	/*
+	 * Wait for the delay function calibration.
+	 */
+	while (delay_ready == 0) {
+		if (delay_error != 0) {
+			const char *e = "Error: delay calibration";
+			char msg[64];
+
+			snprintf(&msg[0], 64, "%s (%d)", e, delay_error);
+			panic(&msg[0]);
+		}
+	}
+
+	/*
 	 * Temporary code for testing purposes.
 	 */
 	{
@@ -227,6 +240,20 @@ void init(void)
 
 		gui_print("Using %s\n\n",
 			(apic_mode == 0) ? "PIC 8259" : "I/O APIC");
+
+		gui_print("TSC: %4u.%03u Mhz\n\n",
+			(unsigned)(delay_tsc_hz / 1000000),
+			(unsigned)((delay_tsc_hz % 1000000) / 1000));
+
+		for (next = 0; next <= 10; next++) {
+			unsigned delay_calls = 10;
+
+			while (delay_calls--)
+				delay(100000000);
+
+			gui_print("\rDelay: %u/10", next);
+			gui_refresh();
+		}
 
 		for (;;) {
 			while (prev == (next = idt_irq0 / 1000))

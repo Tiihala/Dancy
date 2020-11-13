@@ -136,6 +136,10 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 	 */
 	if (irq == 0) {
 		idt_irq0 += 1;
+
+		if (!delay_ready)
+			delay_calibrate();
+
 		end(irq);
 		return;
 	}

@@ -165,6 +165,17 @@ const char *db_read_error(int retval);
 
 
 /*
+ * Declarations of delay.c
+ */
+extern volatile int delay_ready;
+extern volatile int delay_error;
+extern volatile uint64_t delay_tsc_hz;
+
+void delay_calibrate(void);
+void delay(uint32_t nanoseconds);
+
+
+/*
  * Declarations of fs.c
  */
 int fat_get_size(int id, size_t *block_size, size_t *block_total);

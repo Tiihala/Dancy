@@ -50,6 +50,9 @@
 ./o32/init/db.o: ./kernel/init/db.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/db.c
 
+./o32/init/delay.o: ./kernel/init/delay.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/delay.c
+
 ./o32/init/fs.o: ./kernel/init/fs.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/fs.c
 
@@ -172,6 +175,9 @@
 
 ./o64/init/db.o: ./kernel/init/db.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/db.c
+
+./o64/init/delay.o: ./kernel/init/delay.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/delay.c
 
 ./o64/init/fs.o: ./kernel/init/fs.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/fs.c
