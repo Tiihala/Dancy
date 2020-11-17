@@ -38,6 +38,12 @@
 ./o32/init/a32/syscall.o: ./kernel/init/a32/syscall.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/syscall.asm
 
+./o32/init/smp/smp.o: ./kernel/init/smp/smp.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/smp/smp.c
+
+./o32/init/smp/start32.o: ./kernel/init/smp/start32.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/smp/start32.c
+
 ./o32/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/acpi.c
 
@@ -163,6 +169,12 @@
 
 ./o64/init/a64/syscall.o: ./kernel/init/a64/syscall.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/syscall.asm
+
+./o64/init/smp/smp.o: ./kernel/init/smp/smp.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/smp/smp.c
+
+./o64/init/smp/start64.o: ./kernel/init/smp/start64.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/smp/start64.c
 
 ./o64/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/acpi.c

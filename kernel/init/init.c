@@ -232,6 +232,11 @@ void init(void)
 	}
 
 	/*
+	 * Enable Symmetric Multiprocessing (SMP).
+	 */
+	smp_init();
+
+	/*
 	 * Temporary code for testing purposes.
 	 */
 	{
@@ -267,6 +272,8 @@ void init(void)
 			gui_refresh();
 		}
 
+		gui_print("\rNumber of APs started: %u\n\n", smp_ap_count);
+
 		for (;;) {
 			while (prev == (next = idt_irq0 / 1000))
 				cpu_halt(1);
@@ -277,6 +284,20 @@ void init(void)
 			prev = next;
 		}
 	}
+}
+
+void init_ap(uint32_t id)
+{
+	/*
+	 * Load the Global Descriptor Table.
+	 */
+	gdt_init();
+
+	/*
+	 * Nothing to do at the moment.
+	 */
+	(void)id;
+	cpu_halt(0);
 }
 
 DANCY_SYMBOL(init);

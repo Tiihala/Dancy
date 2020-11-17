@@ -230,6 +230,7 @@ void idt_restore(void);
  * Declarations of init.c
  */
 void init(void);
+void init_ap(uint32_t id);
 
 
 /*
@@ -308,6 +309,15 @@ void b_print(const char *format, ...);
  * Declarations of rtc.c
  */
 int rtc_read(struct b_time *bt);
+
+
+/*
+ * Declarations of smp.c and trampoline code.
+ */
+extern volatile uint32_t smp_ap_count;
+extern const unsigned char smp_trampoline[512];
+
+void smp_init(void);
 
 
 /*
