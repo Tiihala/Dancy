@@ -138,6 +138,11 @@ void init(void)
 	}
 
 	/*
+	 * Create the first GUI window.
+	 */
+	gui_create_window("Dancy Operating System", 20, 20, 620, 460);
+
+	/*
 	 * Terminate all boot loader services. If using the UEFI boot
 	 * loader, this will internally call
 	 *
@@ -167,6 +172,13 @@ void init(void)
 		idt_load_null();
 		return;
 	}
+
+	/*
+	 * Refresh the GUI. Otherwise panic() may fail later because the
+	 * framebuffer would not be identity mapped. Normally page faults
+	 * will map the pages but panic() does not allow exceptions.
+	 */
+	gui_refresh();
 
 	/*
 	 * Initialize Local Advanced Programmable Interrupt Controller.
@@ -227,7 +239,7 @@ void init(void)
 		unsigned prev = 0, next;
 
 		x1 = 40;
-		y1 = 10;
+		y1 = 80;
 		x2 = x1 + 320;
 		y2 = y1 + 200;
 
