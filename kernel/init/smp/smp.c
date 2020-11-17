@@ -85,7 +85,7 @@ void smp_init(void)
 	size_t ap_array_size;
 	unsigned cpu_count, i, j;
 
-	if (acpi == NULL || acpi->num_cpu_core < 1)
+	if (acpi == NULL || acpi->num_cpu_core < 2)
 		return;
 
 	cpu_count = (acpi->num_cpu_core < 256) ? acpi->num_cpu_core : 256u;
