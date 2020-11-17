@@ -222,6 +222,33 @@ void apic_eoi(void)
 	cpu_write32(eoi, 0);
 }
 
+uint32_t apic_id(void)
+{
+	const void *id = (const void *)(apic_base + 0x20);
+
+	return (cpu_read32(id) >> 24);
+}
+
+void apic_send(uint32_t icr_low, uint32_t icr_high)
+{
+	void *icr_300 = (void *)(apic_base + 0x300);
+	void *icr_310 = (void *)(apic_base + 0x310);
+
+	unsigned wait_delivery_status = 100;
+
+	while (wait_delivery_status--) {
+		const uint32_t delivery_status_bit = (1u << 12);
+
+		if ((cpu_read32(icr_300) & delivery_status_bit) == 0)
+			break;
+
+		delay(1000000);
+	}
+
+	cpu_write32(icr_310, icr_high);
+	cpu_write32(icr_300, icr_low);
+}
+
 void ioapic_init(void)
 {
 	const struct acpi_information *acpi = acpi_get_information();

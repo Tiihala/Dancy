@@ -113,6 +113,9 @@ extern const unsigned ioapic_irq_base;
 
 int apic_init(void);
 void apic_eoi(void);
+uint32_t apic_id(void);
+void apic_send(uint32_t icr_low, uint32_t icr_high);
+
 void ioapic_init(void);
 void ioapic_enable(unsigned isa_irq);
 
