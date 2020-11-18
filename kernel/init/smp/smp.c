@@ -23,27 +23,23 @@ volatile uint32_t smp_ap_count = 0;
 
 static void *get_trampoline_addr(void)
 {
+	const uint32_t top = 0x98000;
 	const struct b_mem_raw *map = memory_map;
 	uint32_t addr;
 
 	for (addr = 0; map->base_high == 0; map++) {
 		uint32_t type = map[0].type;
+		uint32_t b1 = map[0].base_low;
+		uint32_t b2 = map[1].base_low;
+
+		if (b1 > top)
+			break;
 
 		if (type == B_MEM_NORMAL) {
-			const uint32_t top = 0x98000;
+			uint32_t a = ((b2 < top) ? b2 : top) & 0xFFFFF000u;
 
-			uint32_t b1 = map[0].base_low;
-			uint32_t b2 = map[1].base_low;
-
-			if (b1 > top)
-				break;
-			if (b2 > top)
-				b2 = top;
-
-			if (b2 < b1 || (b2 - b1) < 0x2000)
-				break;
-
-			addr = (b2 & 0xFFFFF000u) - 0x1000;
+			if (a > b1 && (a - b1) >= 0x1000)
+				addr = a - 0x1000;
 		}
 	}
 
