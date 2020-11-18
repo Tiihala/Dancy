@@ -235,6 +235,7 @@ _cpu_write8:
         mov ecx, [esp+4]                ; ecx = address
         mov dl, [esp+8]                 ; dl = value
         mov [ecx], dl                   ; write
+        wbinvd                          ; flush internal caches
         ret
 
 align 16
@@ -243,6 +244,7 @@ _cpu_write16:
         mov ecx, [esp+4]                ; ecx = address
         mov dx, [esp+8]                 ; dx = value
         mov [ecx], dx                   ; write
+        wbinvd                          ; flush internal caches
         ret
 
 align 16
@@ -251,4 +253,5 @@ _cpu_write32:
         mov ecx, [esp+4]                ; ecx = address
         mov edx, [esp+8]                ; edx = value
         mov [ecx], edx                  ; write
+        wbinvd                          ; flush internal caches
         ret

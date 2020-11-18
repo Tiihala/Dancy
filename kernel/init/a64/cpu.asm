@@ -222,16 +222,19 @@ align 16
         ; void cpu_write8(void *address, uint8_t value)
 cpu_write8:
         mov [rcx], dl                   ; write
+        wbinvd                          ; flush internal caches
         ret
 
 align 16
         ; void cpu_write16(void *address, uint16_t value)
 cpu_write16:
         mov [rcx], dx                   ; write
+        wbinvd                          ; flush internal caches
         ret
 
 align 16
         ; void cpu_write32(void *address, uint32_t value)
 cpu_write32:
         mov [rcx], edx                  ; write
+        wbinvd                          ; flush internal caches
         ret
