@@ -42,6 +42,12 @@ int bitarray_shove(struct bitarray *b, unsigned bits, unsigned val);
 int bitarray_written(struct bitarray *b, size_t *written);
 
 /*
+ * Declarations of crc32.c and crc32c.c
+ */
+unsigned long crc32(const void *obj, size_t len);
+unsigned long crc32c(const void *obj, size_t len);
+
+/*
  * Declarations of fat.c
  */
 int fat_create(void **instance, int id);

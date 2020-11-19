@@ -73,7 +73,6 @@ DANCY_TARGET_RELEASE= \
 DANCY_HEADERS= \
  ./include/dancy/blob.h \
  ./include/dancy/boot.h \
- ./include/dancy/crc.h \
  ./include/dancy/ctype.h \
  ./include/dancy/error.h \
  ./include/dancy/keys.h \

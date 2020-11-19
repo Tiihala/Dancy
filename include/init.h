@@ -22,7 +22,6 @@
 
 #include <dancy/blob.h>
 #include <dancy/boot.h>
-#include <dancy/crc.h>
 #include <dancy/ctype.h>
 #include <dancy/keys.h>
 #include <dancy/lib.h>
