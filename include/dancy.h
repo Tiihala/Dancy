@@ -24,7 +24,6 @@
 
 #if defined(DANCY_32) || defined(DANCY_64)
 
-#include <dancy/boot.h>
 #include <dancy/ctype.h>
 #include <dancy/keys.h>
 #include <dancy/lib.h>

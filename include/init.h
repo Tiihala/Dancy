@@ -21,7 +21,6 @@
 #define DANCY_INIT_H
 
 #include <dancy/blob.h>
-#include <dancy/boot.h>
 #include <dancy/ctype.h>
 #include <dancy/keys.h>
 #include <dancy/lib.h>
@@ -33,6 +32,8 @@
 #include <dancy/string.h>
 #include <dancy/symbol.h>
 #include <dancy/types.h>
+
+#include <init/boot.h>
 
 enum dancy_error {
 

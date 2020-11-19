@@ -25,7 +25,6 @@
 #endif
 
 #include <dancy/blob.h>
-#include <dancy/boot.h>
 #include <dancy/ctype.h>
 #include <dancy/keys.h>
 #include <dancy/limits.h>
@@ -33,6 +32,8 @@
 #include <dancy/stdlib.h>
 #include <dancy/string.h>
 #include <dancy/types.h>
+
+#include <init/boot.h>
 
 unsigned long crc32c(const void *obj, size_t len);
 
