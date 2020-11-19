@@ -35,14 +35,6 @@
 #include <init/boot.h>
 #include <init/palette.h>
 
-enum dancy_error {
-
-#define DANCY_X(a, b) a,
-#include <dancy/error.h>
-#undef DANCY_X
-
-	dancy_error_end
-};
 
 /*
  * Declarations of acpi.c
