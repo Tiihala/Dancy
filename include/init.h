@@ -25,7 +25,6 @@
 #include <dancy/keys.h>
 #include <dancy/lib.h>
 #include <dancy/limits.h>
-#include <dancy/palette.h>
 #include <dancy/stdarg.h>
 #include <dancy/stdio.h>
 #include <dancy/stdlib.h>
@@ -34,6 +33,7 @@
 #include <dancy/types.h>
 
 #include <init/boot.h>
+#include <init/palette.h>
 
 enum dancy_error {
 

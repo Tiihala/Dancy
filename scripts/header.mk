@@ -77,7 +77,6 @@ DANCY_HEADERS= \
  ./include/dancy/keys.h \
  ./include/dancy/lib.h \
  ./include/dancy/limits.h \
- ./include/dancy/palette.h \
  ./include/dancy/stdarg.h \
  ./include/dancy/stdio.h \
  ./include/dancy/stdlib.h \
@@ -85,6 +84,7 @@ DANCY_HEADERS= \
  ./include/dancy/symbol.h \
  ./include/dancy/types.h \
  ./include/init/boot.h \
+ ./include/init/palette.h \
  ./include/dancy.h \
  ./include/init.h \
  ./include/uefi.h
