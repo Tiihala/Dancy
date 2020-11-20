@@ -266,56 +266,56 @@
 ./o64/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/string.c
 
-./o64/uefi/a64/cpu.o: ./kernel/uefi/a64/cpu.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/uefi/a64/cpu.asm
+./o64/uefi/a64/cpu.o: ./boot/uefi/a64/cpu.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/uefi/a64/cpu.asm
 
-./o64/uefi/a64/file.o: ./kernel/uefi/a64/file.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/uefi/a64/file.asm
+./o64/uefi/a64/file.o: ./boot/uefi/a64/file.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/uefi/a64/file.asm
 
-./o64/uefi/a64/font7x9.o: ./kernel/uefi/a64/font7x9.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/uefi/a64/font7x9.asm
+./o64/uefi/a64/font7x9.o: ./boot/uefi/a64/font7x9.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/uefi/a64/font7x9.asm
 
-./o64/uefi/a64/memory.o: ./kernel/uefi/a64/memory.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/uefi/a64/memory.asm
+./o64/uefi/a64/memory.o: ./boot/uefi/a64/memory.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/uefi/a64/memory.asm
 
-./o64/uefi/a64/pic.o: ./kernel/uefi/a64/pic.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/uefi/a64/pic.asm
+./o64/uefi/a64/pic.o: ./boot/uefi/a64/pic.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/uefi/a64/pic.asm
 
-./o64/uefi/a64/start.o: ./kernel/uefi/a64/start.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/uefi/a64/start.asm
+./o64/uefi/a64/start.o: ./boot/uefi/a64/start.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/uefi/a64/start.asm
 
-./o64/uefi/a64/syscall.o: ./kernel/uefi/a64/syscall.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/uefi/a64/syscall.asm
+./o64/uefi/a64/syscall.o: ./boot/uefi/a64/syscall.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/uefi/a64/syscall.asm
 
-./o64/uefi/block.o: ./kernel/uefi/block.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/block.c
+./o64/uefi/block.o: ./boot/uefi/block.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/block.c
 
-./o64/uefi/file.o: ./kernel/uefi/file.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/file.c
+./o64/uefi/file.o: ./boot/uefi/file.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/file.c
 
-./o64/uefi/key.o: ./kernel/uefi/key.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/key.c
+./o64/uefi/key.o: ./boot/uefi/key.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/key.c
 
-./o64/uefi/log.o: ./kernel/uefi/log.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/log.c
+./o64/uefi/log.o: ./boot/uefi/log.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/log.c
 
-./o64/uefi/memory.o: ./kernel/uefi/memory.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/memory.c
+./o64/uefi/memory.o: ./boot/uefi/memory.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/memory.c
 
-./o64/uefi/misc.o: ./kernel/uefi/misc.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/misc.c
+./o64/uefi/misc.o: ./boot/uefi/misc.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/misc.c
 
-./o64/uefi/print.o: ./kernel/uefi/print.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/print.c
+./o64/uefi/print.o: ./boot/uefi/print.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/print.c
 
-./o64/uefi/serial.o: ./kernel/uefi/serial.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/serial.c
+./o64/uefi/serial.o: ./boot/uefi/serial.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/serial.c
 
-./o64/uefi/syscall.o: ./kernel/uefi/syscall.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/syscall.c
+./o64/uefi/syscall.o: ./boot/uefi/syscall.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/syscall.c
 
-./o64/uefi/uefi.o: ./kernel/uefi/uefi.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/uefi.c
+./o64/uefi/uefi.o: ./boot/uefi/uefi.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/uefi.c
 
-./o64/uefi/video.o: ./kernel/uefi/video.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/uefi/video.c
+./o64/uefi/video.o: ./boot/uefi/video.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/uefi/video.c
