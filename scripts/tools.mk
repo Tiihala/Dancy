@@ -6,7 +6,7 @@ DY_BLOB_OBJECTS= \
  ./tools/dy-blob/dy-blob.obj \
  ./boot/cd/eltorito.obj \
  ./boot/fat/ldr512.obj \
- ./loader/loader.obj
+ ./boot/loader.obj
 
 ./bin/dy-blob$(DANCY_EXE): $(DY_BLOB_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_BLOB_OBJECTS)
@@ -197,6 +197,9 @@ DY_ZIP_OBJECTS= \
 ./boot/mbr/mbr.obj: ./boot/mbr/mbr.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/mbr/mbr.c
 
+./boot/loader.obj: ./boot/loader.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./boot/loader.c
+
 ./common/crc32.obj: ./common/crc32.c
 	$(DANCY_HOST_OBJECT)$@ ./common/crc32.c
 
@@ -205,9 +208,6 @@ DY_ZIP_OBJECTS= \
 
 ./common/fat.obj: ./common/fat.c
 	$(DANCY_HOST_OBJECT)$@ ./common/fat.c
-
-./loader/loader.obj: ./loader/loader.c $(DANCY_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./loader/loader.c
 
 ./tools/dy-blob/dy-blob.obj: ./tools/dy-blob/dy-blob.c
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-blob/dy-blob.c
