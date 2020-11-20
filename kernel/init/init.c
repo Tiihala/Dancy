@@ -89,7 +89,7 @@ void init(void)
 	 * Load dancy.ttf and create a ttf object.
 	 */
 	{
-		static const char *ttf_name = "data/fonts/dancy.ttf";
+		static const char *ttf_name = "system/fonts/dancy.ttf";
 		unsigned char *ttf_data;
 		size_t ttf_size;
 

@@ -3,7 +3,7 @@
 ##############################################################################
 
 DANCY_DB_FILES= \
- ./data/fonts/dancy.ttf \
+ ./system/fonts/dancy.ttf \
  $(ACPICA_O32_AT) \
  ./o32/init.at \
  $(ACPICA_O64_AT) \
