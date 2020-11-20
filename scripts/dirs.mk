@@ -29,5 +29,4 @@
 	@mkdir "o64/uefi"
 	@mkdir "o64/uefi/a64"
 	@mkdir "release"
-	@mkdir "system"
 	$(DANCY_MK)
