@@ -77,6 +77,7 @@ void smp_init(void)
 {
 	const struct acpi_information *acpi = acpi_get_information();
 	uint32_t ap_entry_addr = (uint32_t)((addr_t)(smp_ap_entry));
+	uint32_t ap_started = 0;
 	unsigned char *addr, *ap_array;
 	size_t ap_array_size;
 	unsigned cpu_count, i, j;
@@ -96,6 +97,8 @@ void smp_init(void)
 		panic("SMP: out of memory");
 
 	memset(ap_array, 0, ap_array_size);
+
+	spin_lock(&ap_lock);
 
 	for (i = 0; i < cpu_count; i++) {
 		unsigned ap_offset = i * 4096;
@@ -253,5 +256,26 @@ void smp_init(void)
 
 			delay(100000);
 		}
+
+		ap_started += 1;
+	}
+
+	/*
+	 * All APs should wait for the spinlock. Ready, steady, go!
+	 */
+	spin_unlock(&ap_lock);
+
+	/*
+	 * Make sure that everything really worked and APs are running
+	 * the smp_ap_entry function. Wait about one second at most.
+	 */
+	for (i = 0; /* void */; i++) {
+		if (smp_ap_count == ap_started)
+			break;
+
+		if (i == 10000)
+			panic("SMP: synchronization failure");
+
+		delay(100000);
 	}
 }
