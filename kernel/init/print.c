@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2020 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,12 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * init/print.c
- *      Use boot loader services to display text on screen
+ *      Display text on screen
  */
 
 #include <init.h>
 
-void b_print(const char *format, ...)
+static void loader_print(const char *format, ...)
 {
 	char buf[4096];
 	char *ptr = &buf[0];
@@ -53,3 +53,5 @@ void b_print(const char *format, ...)
 	if (size)
 		b_output_string(ptr, size);
 }
+
+void (*b_print)(const char *format, ...) = loader_print;

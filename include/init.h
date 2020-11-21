@@ -294,7 +294,7 @@ void pit_init(void);
 /*
  * Declarations of print.c
  */
-void b_print(const char *format, ...);
+extern void (*b_print)(const char *format, ...);
 
 
 /*

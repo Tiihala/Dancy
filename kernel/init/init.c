@@ -143,6 +143,11 @@ void init(void)
 	gui_create_window("Dancy Operating System", 20, 20, 620, 460);
 
 	/*
+	 * Use gui_print instead of the loader provided service.
+	 */
+	b_print = gui_print;
+
+	/*
 	 * Terminate all boot loader services. If using the UEFI boot
 	 * loader, this will internally call
 	 *
