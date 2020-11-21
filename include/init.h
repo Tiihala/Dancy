@@ -230,8 +230,11 @@ void init_ap(uint32_t id);
  */
 struct global_symbol {
 	uint32_t value;
-	char name[28];
+	char name[36];
 };
+
+extern struct global_symbol *global_symbols;
+extern size_t global_symbols_size;
 
 int ld_init(size_t symbols);
 int ld_add(const struct global_symbol *symbol);

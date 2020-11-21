@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2020 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,6 +25,9 @@ static const unsigned obj_magic = 0x014C;
 static const unsigned obj_magic = 0x8664;
 #endif
 
+struct global_symbol *global_symbols;
+size_t global_symbols_size;
+
 static struct global_symbol *symtab, *symtab_end, *symtab_ptr;
 
 static int ld_error(const char *name, const char *msg)
@@ -42,6 +45,7 @@ int ld_init(size_t symbols)
 
 	symtab_end = &symtab[symbols - 1];
 	symtab_ptr = &symtab[0];
+
 	return 0;
 }
 
@@ -52,6 +56,10 @@ int ld_add(const struct global_symbol *symbol)
 
 	memcpy(symtab_ptr, symbol, sizeof(symbol[0]));
 	symtab_ptr += 1;
+
+	global_symbols = symtab;
+	global_symbols_size += sizeof(symbol[0]);
+
 	return 0;
 }
 
@@ -72,6 +80,9 @@ void ld_free(void)
 	symtab = NULL;
 	symtab_end = NULL;
 	symtab_ptr = NULL;
+
+	global_symbols = NULL;
+	global_symbols_size = 0;
 }
 
 int ld_link(const char *name, unsigned char *obj)
