@@ -188,7 +188,15 @@ void init(void)
 	/*
 	 * Initialize Local Advanced Programmable Interrupt Controller.
 	 */
-	apic_init();
+	if (apic_init()) {
+		const struct acpi_information *acpi = acpi_get_information();
+
+		/*
+		 * On SMP computers, the APIC initialization must work.
+		 */
+		if (acpi != NULL && acpi->num_cpu_core > 1)
+			panic("APIC initialization failed");
+	}
 
 	/*
 	 * Initialize I/O Advanced Programmable Interrupt Controller(s).
