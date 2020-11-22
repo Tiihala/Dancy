@@ -98,7 +98,7 @@ void start_init(void *map)
 		}
 	}
 
-	if (ld_link("init.at", buf))
+	if (ld_link("init.at", buf, NULL))
 		return;
 
 	/*
