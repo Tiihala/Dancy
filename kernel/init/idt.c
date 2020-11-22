@@ -122,8 +122,31 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 			return;
 		}
 
+		if (apic_bsp_id != apic_id()) {
+			uint32_t e =  (uint32_t)(num + 256);
+
+			cpu_write32((uint32_t *)&init_ap_error, e);
+			cpu_halt(0);
+		}
+
 		idt_panic(num, err_code, stack);
 		cpu_halt(0);
+	}
+
+	/*
+	 * Ignore AP interrupts.
+	 */
+	if (apic_bsp_id != apic_id())
+		return;
+
+	/*
+	 * Check for AP errors on BSP.
+	 */
+	if (init_ap_error) {
+		char message[32];
+
+		snprintf(&message[0], 32, "AP Error: %08X", init_ap_error);
+		panic(&message[0]);
 	}
 
 	/*

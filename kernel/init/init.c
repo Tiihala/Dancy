@@ -299,12 +299,32 @@ void init(void)
 	}
 }
 
+volatile uint32_t init_ap_error = 0;
+
 void init_ap(uint32_t id)
 {
 	/*
 	 * Load the Global Descriptor Table.
 	 */
 	gdt_init();
+
+	/*
+	 * Load the Interrupt Descriptor Table.
+	 */
+	idt_restore();
+
+	/*
+	 * Initialize Local Advanced Programmable Interrupt Controller.
+	 */
+	if (apic_init()) {
+		cpu_write32((uint32_t *)&init_ap_error, 1);
+		cpu_halt(0);
+	}
+
+	/*
+	 * Enable interrupts.
+	 */
+	cpu_ints(1);
 
 	/*
 	 * Nothing to do at the moment.
