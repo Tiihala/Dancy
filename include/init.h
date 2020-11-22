@@ -102,6 +102,7 @@ int acpi_get_io_apic(unsigned idx, struct acpi_io_apic *io_apic);
 extern int apic_mode;
 extern const unsigned apic_spurious_vector;
 extern const unsigned ioapic_irq_base;
+extern uint32_t apic_bsp_id;
 
 int apic_init(void);
 void apic_eoi(void);

@@ -23,13 +23,15 @@ int apic_mode = 0;
 const unsigned apic_spurious_vector = 0xFF;
 const unsigned ioapic_irq_base = 0x40;
 
+uint32_t apic_bsp_id = 0xFFFFFFFF;
+
 static phys_addr_t apic_base;
 
 int apic_init(void)
 {
 	const struct acpi_information *acpi = acpi_get_information();
 	phys_addr_t local_apic_base = apic_base;
-	unsigned flags;
+	unsigned flags = 0;
 
 	/*
 	 * The ACPI tables and I/O APIC must be available
@@ -62,7 +64,7 @@ int apic_init(void)
 	/*
 	 * Read the APIC base from the MSR.
 	 */
-	{
+	if (!apic_mode) {
 		int unexpected_error = 0;
 		phys_addr_t local_apic_msr, flags_mask = 0xFFF;
 		uint32_t a, d, d_mask = 0xFFFFF;
@@ -111,12 +113,10 @@ int apic_init(void)
 
 			panic(&message[0]);
 		}
-	}
 
-	apic_base = local_apic_base;
-
-	if (!apic_mode)
+		apic_base = local_apic_base;
 		pg_map_uncached((void *)apic_base);
+	}
 
 	/*
 	 * Task Priority Register (TPR).
@@ -212,7 +212,15 @@ int apic_init(void)
 		cpu_write32(r, (uint32_t)(apic_spurious_vector | 0x100));
 	}
 
-	return apic_mode = 1, 0;
+	/*
+	 * Set apic_mode and BSP APIC ID.
+	 */
+	if (!apic_mode) {
+		apic_mode = 1;
+		apic_bsp_id = apic_id();
+	}
+
+	return 0;
 }
 
 void apic_eoi(void)
@@ -224,7 +232,12 @@ void apic_eoi(void)
 
 uint32_t apic_id(void)
 {
-	const void *id = (const void *)(apic_base + 0x20);
+	const void *id;
+
+	if (!apic_mode)
+		return apic_bsp_id;
+
+	id = (const void *)(apic_base + 0x20);
 
 	return (cpu_read32(id) >> 24);
 }
