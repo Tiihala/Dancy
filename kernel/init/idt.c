@@ -59,7 +59,7 @@ static void idt_panic(unsigned num, unsigned err_code, const void *stack)
 		add = snprintf(ptr, size, "Interrupt Vector %u\n\n", num);
 	ptr += ((add > 0) ? add : 0);
 
-	if (num == 14 && err_code != 0) {
+	if (num == 14 && (err_code & 8) == 0) {
 		phys_addr_t cr2;
 
 		pg_get_fault(&cr2);
