@@ -30,6 +30,8 @@
 #include <dancy/stdlib.h>
 #include <dancy/string.h>
 #include <dancy/symbol.h>
+#include <dancy/threads.h>
+#include <dancy/time.h>
 #include <dancy/types.h>
 
 #include <init/boot.h>
