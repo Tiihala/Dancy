@@ -21,8 +21,49 @@
 
 section .text
 
+        global spin_enter
+        global spin_leave
         global spin_lock
         global spin_unlock
+
+align 16
+        ; void spin_enter(void **lock_local)
+spin_enter:
+        pushfq                          ; push flags
+        mov eax, [rsp]                  ; eax = flags
+        and eax, 0x200                  ; eax = interrupt flag << 9
+        shr eax, 9                      ; eax = interrupt flag
+
+        mov rdx, rcx                    ; rdx = lock_local
+        mov rcx, [rdx]                  ; rcx = *lock_local
+        and rcx, -2                     ; rcx = "lock" for spin_lock
+
+        or rax, rcx                     ; rax = *lock_local + interrupt flag
+        mov [rdx], rax                  ; write updated value
+
+        cli                             ; disable interrupts
+        call spin_lock                  ; use spin_lock function
+        add rsp, 8                      ; pop flags
+        ret
+
+align 16
+        ; void spin_leave(void **lock_local)
+spin_leave:
+        push rbx                        ; save register rbx
+        mov rbx, rcx                    ; rbx = lock_local
+        mov rcx, [rbx]                  ; rcx = *lock_local
+        and rcx, -2                     ; rcx = "lock" for spin_unlock
+
+        call spin_unlock                ; use spin_unlock function
+        mov rax, [rbx]                  ; rax = *lock_local
+        test eax, 1                     ; test interrupt flag
+        jz short .L1
+
+        sti                             ; enable interrupts
+.L1:    and rax, -2                     ; clear interrupt flag
+        mov [rbx], rax                  ; write updated value
+        pop rbx                         ; restore register rbx
+        ret
 
 align 32
         ; void spin_lock(int *lock)

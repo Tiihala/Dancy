@@ -99,6 +99,9 @@ int inflate(struct bitarray *b, unsigned char *out, size_t *size);
 /*
  * Declarations of spin.asm
  */
+void spin_enter(void **lock_local);
+void spin_leave(void **lock_local);
+
 void spin_lock(int *lock);
 void spin_unlock(int *lock);
 

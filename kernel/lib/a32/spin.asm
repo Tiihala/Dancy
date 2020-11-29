@@ -21,8 +21,53 @@
 
 section .text
 
+        global _spin_enter
+        global _spin_leave
         global _spin_lock
         global _spin_unlock
+
+align 16
+        ; void spin_enter(void **lock_local)
+_spin_enter:
+        pushfd                          ; push flags
+        mov eax, [esp]                  ; eax = flags
+        and eax, 0x200                  ; eax = interrupt flag << 9
+        shr eax, 9                      ; eax = interrupt flag
+
+        mov edx, [esp+8]                ; edx = lock_local
+        mov ecx, [edx]                  ; ecx = *lock_local
+        and ecx, 0xFFFFFFFE             ; ecx = "lock" for spin_lock
+
+        or eax, ecx                     ; eax = *lock_local + interrupt flag
+        mov [edx], eax                  ; write updated value
+
+        cli                             ; disable interrupts
+        push ecx                        ; push "lock"
+        call _spin_lock                 ; use spin_lock function
+        add esp, 8                      ; pop "lock" and flags
+        ret
+
+align 16
+        ; void spin_leave(void **lock_local)
+_spin_leave:
+        push ebx                        ; save register ebx
+        mov ebx, [esp+8]                ; ebx = lock_local
+        mov ecx, [ebx]                  ; ecx = *lock_local
+        and ecx, 0xFFFFFFFE             ; ecx = "lock" for spin_unlock
+
+        push ecx                        ; push "lock"
+        call _spin_unlock               ; use spin_unlock function
+        add esp, 4                      ; pop "lock"
+
+        mov eax, [ebx]                  ; eax = *lock_local
+        test eax, 1                     ; test interrupt flag
+        jz short .L1
+
+        sti                             ; enable interrupts
+.L1:    and eax, 0xFFFFFFFE             ; clear interrupt flag
+        mov [ebx], eax                  ; write updated value
+        pop ebx                         ; restore register ebx
+        ret
 
 align 32
         ; void spin_lock(int *lock)
