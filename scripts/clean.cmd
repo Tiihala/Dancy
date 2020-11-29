@@ -14,6 +14,7 @@ RMDIR /S /Q o64 > NUL 2>&1
 RMDIR /S /Q release > NUL 2>&1
 
 DEL scripts\dancy.mk > NUL 2>&1
+DEL system\*.AT > NUL 2>&1
 DEL LOADER.512 > NUL 2>&1
 DEL LOADER.AT > NUL 2>&1
 
