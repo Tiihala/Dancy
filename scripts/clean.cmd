@@ -12,7 +12,6 @@ RMDIR /S /Q kernel\acpica > NUL 2>&1
 RMDIR /S /Q o32 > NUL 2>&1
 RMDIR /S /Q o64 > NUL 2>&1
 RMDIR /S /Q release > NUL 2>&1
-RMDIR /S /Q system > NUL 2>&1
 
 DEL scripts\dancy.mk > NUL 2>&1
 DEL LOADER.512 > NUL 2>&1
