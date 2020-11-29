@@ -38,6 +38,9 @@
 ./o32/init/a32/syscall.o: ./kernel/init/a32/syscall.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/init/a32/syscall.asm
 
+./o32/init/a32/thrd.o: ./kernel/init/a32/thrd.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/init/a32/thrd.asm
+
 ./o32/init/smp/smp.o: ./kernel/init/smp/smp.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/smp/smp.c
 
@@ -100,6 +103,9 @@
 
 ./o32/init/start.o: ./kernel/init/start.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/start.c
+
+./o32/init/thrd.o: ./kernel/init/thrd.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/thrd.c
 
 ./o32/init/vga.o: ./kernel/init/vga.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/vga.c
@@ -170,6 +176,9 @@
 ./o64/init/a64/syscall.o: ./kernel/init/a64/syscall.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/init/a64/syscall.asm
 
+./o64/init/a64/thrd.o: ./kernel/init/a64/thrd.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/init/a64/thrd.asm
+
 ./o64/init/smp/smp.o: ./kernel/init/smp/smp.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/smp/smp.c
 
@@ -232,6 +241,9 @@
 
 ./o64/init/start.o: ./kernel/init/start.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/start.c
+
+./o64/init/thrd.o: ./kernel/init/thrd.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/thrd.c
 
 ./o64/init/vga.o: ./kernel/init/vga.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/vga.c

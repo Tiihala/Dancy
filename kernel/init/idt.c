@@ -164,6 +164,11 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 			delay_calibrate();
 
 		end(irq);
+
+		/*
+		 * Simple threads for pre-kernel environment.
+		 */
+		thrd_yield();
 		return;
 	}
 
