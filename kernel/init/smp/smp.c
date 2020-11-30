@@ -73,6 +73,14 @@ void smp_ap_entry(void)
 	init_ap(id);
 }
 
+#ifdef DANCY_32
+static const uint32_t smp_max_apic_id = 0x0E;
+#endif
+
+#ifdef DANCY_64
+static const uint32_t smp_max_apic_id = 0xFE;
+#endif
+
 void smp_init(void)
 {
 	const struct acpi_information *acpi = acpi_get_information();
@@ -85,7 +93,7 @@ void smp_init(void)
 	if (acpi == NULL || acpi->num_cpu_core < 2)
 		return;
 
-	cpu_count = (acpi->num_cpu_core < 256) ? acpi->num_cpu_core : 256u;
+	cpu_count = acpi->num_cpu_core;
 
 	addr = get_trampoline_addr();
 	memcpy(addr, &smp_trampoline[0], 512);
@@ -113,6 +121,9 @@ void smp_init(void)
 		 * Skip the bootstrap processor.
 		 */
 		if (apic.id == apic_id())
+			continue;
+
+		if (apic.id > smp_max_apic_id)
 			continue;
 
 		if (apic.enabled == 0)
@@ -209,15 +220,15 @@ void smp_init(void)
 		}
 
 		/*
-		 * Send another Startup IPI.
+		 * Send another Startup IPI if needed.
 		 */
 		if ((ap_status = cpu_read32(&addr[0x1F8])) != 1) {
 			apic_send(icr_low, icr_high);
 
 			/*
-			 * Wait for the AP to wake up (about half a second).
+			 * Wait for the AP to wake up (about two seconds).
 			 */
-			for (j = 0; j < 5000; j++) {
+			for (j = 0; j < 20000; j++) {
 				ap_status = cpu_read32(&addr[0x1F8]);
 
 				if (ap_status == 1)
