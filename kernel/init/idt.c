@@ -20,7 +20,6 @@
 #include <init.h>
 
 volatile unsigned idt_irq0;
-volatile unsigned idt_irq8;
 
 static void idt_panic(unsigned num, unsigned err_code, const void *stack)
 {
@@ -107,14 +106,6 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 		idt_load_null();
 
 		/*
-		 * Debug Exception.
-		 */
-		if (num == 1) {
-			idt_restore();
-			return;
-		}
-
-		/*
 		 * Page-Fault Exception.
 		 */
 		if (num == 14 && pg_handler() == 0) {
@@ -169,19 +160,6 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 		 * Simple threads for pre-kernel environment.
 		 */
 		thrd_yield();
-		return;
-	}
-
-	/*
-	 * Real Time Clock interrupt (IRQ 8).
-	 */
-	if (irq == 8) {
-		idt_irq8 += 1;
-
-		cpu_out8(0x70, 0x0C);
-		(void)cpu_in8(0x71);
-
-		end(irq);
 		return;
 	}
 
