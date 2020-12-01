@@ -19,31 +19,31 @@
 
 #include <init.h>
 
-volatile int panic_lock;
+static int panic_lock;
 
 void panic(const char *message)
 {
-	const uint32_t bsc_bit = (1u << 8);
-	char buffer[2048];
-	uint32_t a, d;
+	void *panic_lock_local = &panic_lock;
 
-	spin_lock((int *)&panic_lock);
+	spin_enter(&panic_lock_local);
 
-	cpu_ints(0);
 	idt_load_null();
-
-	cpu_rdmsr(0x1B, &a, &d);
-
-	if (message == NULL || (a & bsc_bit) == 0)
-		cpu_halt(0);
 
 	/*
 	 * Print the message only on the boot processor.
 	 */
-	snprintf(&buffer[0], sizeof(buffer),
-		"   **** SYSTEM PANIC ****\n\n%s\n\n"
-		"Please restart the computer. Halted.", message);
+	if (message != NULL && apic_bsp_id == apic_id()) {
+		char buffer[2048];
 
-	gui_print_alert(&buffer[0]);
+		snprintf(&buffer[0], sizeof(buffer),
+			"   **** SYSTEM PANIC ****\n\n%s\n\n"
+			"Please restart the computer. Halted.", message);
+
+		gui_print_alert(&buffer[0]);
+	}
+
+	/*
+	 * This function does not return.
+	 */
 	cpu_halt(0);
 }
