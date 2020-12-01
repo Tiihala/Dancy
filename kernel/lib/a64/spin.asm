@@ -24,6 +24,7 @@ section .text
         global spin_enter
         global spin_leave
         global spin_lock
+        global spin_trylock
         global spin_unlock
 
 align 16
@@ -79,6 +80,18 @@ align 16
         je short .L1                    ; try again
         pause                           ; improve performance
         jmp short .L2
+
+align 16
+        ; int spin_trylock(int *lock)
+spin_trylock:
+        mov edx, 0x00000001             ; edx = 1
+        xor eax, eax                    ; eax = 0
+        lock cmpxchg [rcx], edx         ; try to acquire the lock
+        mov eax, edx                    ; eax = 1
+        jnz short .L1                   ; jump if already locked
+        ret
+.L1:    xor eax, eax                    ; eax = 0
+        ret
 
 align 16
         ; void spin_unlock(int *lock)

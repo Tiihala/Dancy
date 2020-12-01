@@ -103,6 +103,7 @@ void spin_enter(void **lock_local);
 void spin_leave(void **lock_local);
 
 void spin_lock(int *lock);
+int spin_trylock(int *lock);
 void spin_unlock(int *lock);
 
 /*
