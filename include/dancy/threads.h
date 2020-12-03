@@ -22,9 +22,16 @@
 
 #include <dancy/time.h>
 
+typedef void *mtx_t;
 typedef void *thrd_t;
 
 typedef int (*thrd_start_t)(void *);
+
+enum dancy_mtx_constants {
+	mtx_plain,
+	mtx_timed,
+	mtx_recursive
+};
 
 enum dancy_thrd_constants {
 	thrd_success,
@@ -33,6 +40,13 @@ enum dancy_thrd_constants {
 	thrd_nomem,
 	thrd_timedout
 };
+
+void mtx_destroy(mtx_t *mtx);
+int mtx_init(mtx_t *mtx, int type);
+int mtx_lock(mtx_t *mtx);
+int mtx_timedlock(mtx_t *mtx, const struct timespec *ts);
+int mtx_trylock(mtx_t *mtx);
+int mtx_unlock(mtx_t *mtx);
 
 int thrd_create(thrd_t *thr, thrd_start_t func, void *arg);
 thrd_t thrd_current(void);
