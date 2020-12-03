@@ -170,7 +170,6 @@ int mtx_init(mtx_t *mtx, int type)
 			m->lock = 0;
 			m->type = type;
 			m->count = 0;
-			m->thr = NULL;
 			break;
 		}
 	}
@@ -192,7 +191,8 @@ int mtx_lock(mtx_t *mtx)
 	while ((r = mtx_trylock(mtx)) != thrd_success) {
 		if (r != thrd_busy)
 			break;
-		thrd_yield();
+		if (apic_bsp_id == apic_id())
+			thrd_yield();
 	}
 
 	return r;
@@ -209,8 +209,9 @@ int mtx_trylock(mtx_t *mtx)
 	if (m->count == 0) {
 		m->count += 1;
 		m->thr = init_thrd_current;
+		m->apic_id = apic_id();
 	} else {
-		if (m->thr != init_thrd_current)
+		if (m->thr != init_thrd_current || m->apic_id != apic_id())
 			r = thrd_busy;
 		else if ((m->type & mtx_recursive) == 0)
 			r = thrd_error;
@@ -233,13 +234,12 @@ int mtx_unlock(mtx_t *mtx)
 
 	spin_enter(&lock_local);
 
-	if (m->count == 0 || m->thr != init_thrd_current)
+	if (m->count == 0)
+		r = thrd_error;
+	else if (m->thr != init_thrd_current || m->apic_id != apic_id())
 		r = thrd_error;
 	else
 		m->count -= 1;
-
-	if (m->count == 0)
-		m->thr = NULL;
 
 	spin_leave(&lock_local);
 
