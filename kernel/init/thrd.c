@@ -142,3 +142,106 @@ int thrd_join(thrd_t thr, int *res)
 
 	return thrd_error;
 }
+
+#define INIT_MTX_COUNT 8
+static struct init_mtx init_mtx_array[INIT_MTX_COUNT];
+static int init_mtx_lock;
+
+void mtx_destroy(mtx_t *mtx)
+{
+	((struct init_mtx *)(*mtx))->init = 0;
+}
+
+int mtx_init(mtx_t *mtx, int type)
+{
+	void *lock_local = &init_mtx_lock;
+	struct init_mtx *m = NULL;
+	int i;
+
+	if (type < 0 || (type & mtx_timed) != 0)
+		return thrd_error;
+
+	spin_enter(&lock_local);
+
+	for (i = 0; i < INIT_MTX_COUNT; i++) {
+		if (init_mtx_array[i].init == 0) {
+			m = &init_mtx_array[i];
+			m->init = 1;
+			m->lock = 0;
+			m->type = type;
+			m->count = 0;
+			m->thr = NULL;
+			break;
+		}
+	}
+
+	spin_leave(&lock_local);
+
+	if (!m)
+		return thrd_error;
+
+	*mtx = m;
+
+	return thrd_success;
+}
+
+int mtx_lock(mtx_t *mtx)
+{
+	int r;
+
+	while ((r = mtx_trylock(mtx)) != thrd_success) {
+		if (r != thrd_busy)
+			break;
+		thrd_yield();
+	}
+
+	return r;
+}
+
+int mtx_trylock(mtx_t *mtx)
+{
+	void *lock_local = &init_mtx_lock;
+	struct init_mtx *m = *mtx;
+	int r = thrd_success;
+
+	spin_enter(&lock_local);
+
+	if (m->count == 0) {
+		m->count += 1;
+		m->thr = init_thrd_current;
+	} else {
+		if (m->thr != init_thrd_current)
+			r = thrd_busy;
+		else if ((m->type & mtx_recursive) == 0)
+			r = thrd_error;
+		else if (m->count == UINT_MAX)
+			r = thrd_error;
+		else
+			m->count += 1;
+	}
+
+	spin_leave(&lock_local);
+
+	return r;
+}
+
+int mtx_unlock(mtx_t *mtx)
+{
+	void *lock_local = &init_mtx_lock;
+	struct init_mtx *m = *mtx;
+	int r = thrd_success;
+
+	spin_enter(&lock_local);
+
+	if (m->count == 0 || m->thr != init_thrd_current)
+		r = thrd_error;
+	else
+		m->count -= 1;
+
+	if (m->count == 0)
+		m->thr = NULL;
+
+	spin_leave(&lock_local);
+
+	return r;
+}

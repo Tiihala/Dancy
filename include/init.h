@@ -349,6 +349,14 @@ struct init_thrd {
 	int terminated;         /* DANCY_32: 16  DANCY_64: 24 */
 };
 
+struct init_mtx {
+	int init;
+	int lock;
+	int type;
+	unsigned count;
+	const void *thr;
+};
+
 extern struct init_thrd *init_thrd_current;
 extern const size_t init_thrd_size;
 
