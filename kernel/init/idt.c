@@ -76,6 +76,7 @@ static void idt_panic(unsigned num, unsigned err_code, const void *stack)
 
 	snprintf(ptr, size, "\nPlease restart the computer. Halted.");
 	gui_print_alert(&message[0]);
+	cpu_halt(0);
 }
 
 static void end(unsigned irq)
@@ -95,6 +96,7 @@ static void end(unsigned irq)
 
 void idt_handler(unsigned num, unsigned err_code, const void *stack)
 {
+	static unsigned idt_nmi;
 	const unsigned pic_irq_base = 32;
 	unsigned irq;
 
@@ -106,6 +108,15 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 		idt_load_null();
 
 		/*
+		 * Non-Maskable Interrupt (on BSP).
+		 */
+		if (num == 2 && apic_bsp_id == apic_id()) {
+			idt_nmi = 2;
+			idt_restore();
+			return;
+		}
+
+		/*
 		 * Page-Fault Exception.
 		 */
 		if (num == 14 && pg_handler() == 0) {
@@ -113,6 +124,12 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 			return;
 		}
 
+		/*
+		 * Application processors will set an error code. It
+		 * is known that there are "race conditions" and the
+		 * displayed error message is just one of the errors
+		 * if APs trigger exceptions at the same time.
+		 */
 		if (apic_bsp_id != apic_id()) {
 			uint32_t e =  (uint32_t)(num + 256);
 
@@ -121,7 +138,6 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 		}
 
 		idt_panic(num, err_code, stack);
-		cpu_halt(0);
 	}
 
 	/*
@@ -129,6 +145,12 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 	 */
 	if (apic_bsp_id != apic_id())
 		return;
+
+	/*
+	 * Check for Non-Maskable Interrupt.
+	 */
+	if (idt_nmi)
+		idt_panic(idt_nmi, err_code, stack);
 
 	/*
 	 * Check for AP errors on BSP.
@@ -184,5 +206,4 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 		return;
 
 	idt_panic(num, err_code, stack);
-	cpu_halt(0);
 }
