@@ -277,6 +277,10 @@ void b_log(const char *format, ...);
 extern size_t memory_entries;
 extern void *memory_map;
 
+extern mtx_t memory_mtx;
+extern int (*memory_mtx_lock)(mtx_t *);
+extern int (*memory_mtx_unlock)(mtx_t *);
+
 int memory_init(void *map);
 void memory_print_map(void (*print)(const char *, ...));
 
