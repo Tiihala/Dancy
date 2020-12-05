@@ -129,14 +129,12 @@ idt_common:
         and rsp, -32                    ; align stack
         sub rsp, 32                     ; shadow space
 
-        ; void idt_handler(unsigned num, unsigned err_code, const void *stack)
+        ; void idt_handler(unsigned num, const void *stack)
         ;
         ;   num        interrupt number (register rcx)
-        ;   err_code   error code
         ;   stack      stack at "instruction pointer"
 
-        mov rdx, [rbx+64]               ; rdx = error code
-        lea r8, [rbx+72]                ; r8 = stack at "instruction pointer"
+        lea rdx, [rbx+72]               ; rdx = stack at "instruction pointer"
         call idt_handler                ; call idt_handler
 
         mov rsp, rbx                    ; restore stack

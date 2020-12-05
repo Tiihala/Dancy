@@ -21,7 +21,7 @@
 
 volatile unsigned idt_irq0;
 
-static void idt_panic(unsigned num, unsigned err_code, const void *stack)
+static void idt_panic(unsigned num, const void *stack)
 {
 	static const char *names[] = {
 		"#DE - Divide-by-Zero Exception",
@@ -58,7 +58,7 @@ static void idt_panic(unsigned num, unsigned err_code, const void *stack)
 		add = snprintf(ptr, size, "Interrupt Vector %u\n\n", num);
 	ptr += ((add > 0) ? add : 0);
 
-	if (num == 14 && (err_code & 8) == 0) {
+	if (num == 14) {
 		phys_addr_t cr2;
 
 		pg_get_fault(&cr2);
@@ -94,7 +94,7 @@ static void end(unsigned irq)
 	cpu_out8(0x20, 0x20);
 }
 
-void idt_handler(unsigned num, unsigned err_code, const void *stack)
+void idt_handler(unsigned num, const void *stack)
 {
 	static unsigned idt_nmi;
 	const unsigned pic_irq_base = 32;
@@ -137,7 +137,7 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 			cpu_halt(0);
 		}
 
-		idt_panic(num, err_code, stack);
+		idt_panic(num, stack);
 	}
 
 	/*
@@ -150,7 +150,7 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 	 * Check for Non-Maskable Interrupt.
 	 */
 	if (idt_nmi)
-		idt_panic(idt_nmi, err_code, stack);
+		idt_panic(idt_nmi, stack);
 
 	/*
 	 * Check for AP errors on BSP.
@@ -205,5 +205,5 @@ void idt_handler(unsigned num, unsigned err_code, const void *stack)
 	if (num == apic_spurious_vector)
 		return;
 
-	idt_panic(num, err_code, stack);
+	idt_panic(num, stack);
 }

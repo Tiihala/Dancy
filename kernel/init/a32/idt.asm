@@ -122,15 +122,14 @@ idt_common:
         mov eax, [ebx+16]               ; eax = error code
         lea edx, [ebx+20]               ; edx = stack at "instruction pointer"
 
-        ; void idt_handler(unsigned num, unsigned err_code, const void *stack)
+        ; void idt_handler(unsigned num, const void *stack)
         ;
         ;   num        interrupt number
-        ;   err_code   error code
         ;   stack      stack at "instruction pointer"
 
         push 0                          ; push 0
+        push 0                          ; push 0
         push edx                        ; push "stack"
-        push eax                        ; push "err_code"
         push ecx                        ; push "num"
         call _idt_handler               ; call idt_handler
 

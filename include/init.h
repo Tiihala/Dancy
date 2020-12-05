@@ -215,7 +215,7 @@ void hpet_init(void);
 extern volatile unsigned idt_irq0;
 
 void idt_init(void);
-void idt_handler(unsigned num, unsigned err_code, const void *stack);
+void idt_handler(unsigned num, const void *stack);
 void idt_load_null(void);
 void idt_restore(void);
 
