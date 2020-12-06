@@ -365,8 +365,7 @@ struct init_mtx {
 	int lock;
 	int type;
 	unsigned count;
-	const void *thr;
-	uint32_t apic_id;
+	uint32_t id;
 };
 
 extern struct init_thrd *init_thrd_current;

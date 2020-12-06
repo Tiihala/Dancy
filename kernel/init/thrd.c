@@ -40,6 +40,16 @@ static int check_caller(void)
 	return 0;
 }
 
+static uint32_t get_current_id(void)
+{
+	uint32_t id = apic_id();
+
+	if (id == apic_bsp_id)
+		id += (uint32_t)((addr_t)init_thrd_current);
+
+	return id;
+}
+
 int thrd_create(thrd_t *thr, thrd_start_t func, void *arg)
 {
 	void *init_thrd_lock_local = &init_thrd_lock;
@@ -208,10 +218,9 @@ int mtx_trylock(mtx_t *mtx)
 
 	if (m->count == 0) {
 		m->count += 1;
-		m->thr = init_thrd_current;
-		m->apic_id = apic_id();
+		m->id = get_current_id();
 	} else {
-		if (m->thr != init_thrd_current || m->apic_id != apic_id())
+		if (m->id != get_current_id())
 			r = thrd_busy;
 		else if ((m->type & mtx_recursive) == 0)
 			r = thrd_error;
@@ -234,9 +243,7 @@ int mtx_unlock(mtx_t *mtx)
 
 	spin_enter(&lock_local);
 
-	if (m->count == 0)
-		r = thrd_error;
-	else if (m->thr != init_thrd_current || m->apic_id != apic_id())
+	if (m->count == 0 || m->id != get_current_id())
 		r = thrd_error;
 	else
 		m->count -= 1;
