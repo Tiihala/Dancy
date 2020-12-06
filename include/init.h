@@ -204,6 +204,9 @@ void gui_print(const char *format, ...);
 void gui_print_alert(const char *message);
 void gui_refresh(void);
 
+extern thrd_t gui_thr;
+int gui_thread(void *arg);
+
 
 /*
  * Declarations of hpet.c
