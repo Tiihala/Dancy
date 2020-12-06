@@ -193,6 +193,13 @@ void init(void)
 	memory_mtx_unlock = mtx_unlock;
 
 	/*
+	 * Make the GUI functions thread-safe.
+	 */
+	mtx_init(&gui_mtx, mtx_plain);
+	gui_mtx_lock = mtx_lock;
+	gui_mtx_unlock = mtx_unlock;
+
+	/*
 	 * Initialize Local Advanced Programmable Interrupt Controller.
 	 */
 	if (apic_init()) {

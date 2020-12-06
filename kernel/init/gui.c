@@ -19,6 +19,10 @@
 
 #include <init.h>
 
+mtx_t gui_mtx;
+int (*gui_mtx_lock)(mtx_t *);
+int (*gui_mtx_unlock)(mtx_t *);
+
 static unsigned char *back_buffer;
 static struct b_video_info vi;
 
@@ -356,9 +360,17 @@ static void ttf_set_colors(const unsigned char *indices)
 	}
 }
 
+static int gui_mtx_nop(mtx_t *mtx)
+{
+	return (*mtx == NULL) ? thrd_success : thrd_error;
+}
+
 int gui_init(void)
 {
 	size_t size;
+
+	gui_mtx_lock = gui_mtx_nop;
+	gui_mtx_unlock = gui_mtx_nop;
 
 	/*
 	 * This gui_init function is the only one in this module
@@ -430,7 +442,7 @@ int gui_init(void)
 	return 0;
 }
 
-int gui_create_window(const char *name, int x1, int y1, int x2, int y2)
+static int create_window(const char *name, int x1, int y1, int x2, int y2)
 {
 	struct gui_window *win;
 	unsigned char *win_buffer;
@@ -538,13 +550,29 @@ int gui_create_window(const char *name, int x1, int y1, int x2, int y2)
 	return 0;
 }
 
+int gui_create_window(const char *name, int x1, int y1, int x2, int y2)
+{
+	int r;
+
+	if (gui_mtx_lock(&gui_mtx) != thrd_success)
+		return 1;
+
+	r = create_window(name, x1, y1, x2, y2);
+	gui_mtx_unlock(&gui_mtx);
+
+	return r;
+}
+
 int gui_delete_window(void)
 {
 	struct gui_window *win;
 	unsigned x, y;
 
-	if (!gui_window_stack)
+	if (gui_mtx_lock(&gui_mtx) != thrd_success)
 		return 1;
+
+	if (!gui_window_stack)
+		return gui_mtx_unlock(&gui_mtx), 1;
 
 	win = gui_window_stack;
 
@@ -561,10 +589,13 @@ int gui_delete_window(void)
 	free(win->win_behind);
 	free(win);
 
+	gui_mtx_unlock(&gui_mtx);
+
 	return 0;
 }
 
-int gui_draw(unsigned char *png, size_t size, int x1, int y1, int x2, int y2)
+static int draw_raster_graphics(unsigned char *png,
+	size_t size, int x1, int y1, int x2, int y2)
 {
 	unsigned char *idat = NULL;
 	unsigned char *idat_buffer = NULL;
@@ -760,19 +791,35 @@ int gui_draw(unsigned char *png, size_t size, int x1, int y1, int x2, int y2)
 	return free(idat_buffer), 0;
 }
 
+int gui_draw(unsigned char *png, size_t size, int x1, int y1, int x2, int y2)
+{
+	int r;
+
+	if (gui_mtx_lock(&gui_mtx) != thrd_success)
+		return 1;
+
+	r = draw_raster_graphics(png, size, x1, y1, x2, y2);
+	gui_mtx_unlock(&gui_mtx);
+
+	return r;
+}
+
 int gui_move_window(int x, int y)
 {
 	struct gui_window *win = gui_window_stack;
 	unsigned i, j;
 
-	if (!gui_window_stack)
+	if (gui_mtx_lock(&gui_mtx) != thrd_success)
 		return 1;
+
+	if (!gui_window_stack)
+		return gui_mtx_unlock(&gui_mtx), 1;
 
 	if (x < 0 || (unsigned)x + win->win_width > vi.width)
-		return 1;
+		return gui_mtx_unlock(&gui_mtx), 1;
 
 	if (y < 0 || (unsigned)y + win->win_height > vi.height)
-		return 1;
+		return gui_mtx_unlock(&gui_mtx), 1;
 
 	for (i = 0; i < win->win_height; i++) {
 		unsigned behind = i * win->win_width;
@@ -797,6 +844,8 @@ int gui_move_window(int x, int y)
 			win->win_buffer[buffer++] = tmp;
 		}
 	}
+
+	gui_mtx_unlock(&gui_mtx);
 
 	return 0;
 }
@@ -833,23 +882,15 @@ static void handle_newline(void)
 	gui_window_stack->x = 0;
 }
 
-void gui_print(const char *format, ...)
+static void print_message(const char *message)
 {
 	unsigned char *dst_buffer;
 	unsigned win_width;
-
 	unsigned code_points[2] = { 0, 0 };
-
-	char buf[4096];
-	int ret, i;
+	int i;
 
 	if (!gui_window_stack)
 		return;
-
-	va_list va;
-	va_start(va, format);
-	ret = vsnprintf(buf, sizeof(buf), format, va);
-	va_end(va);
 
 	if (ttf_set_bitmap(ttf, ttf_bitmap_size, ttf_bitmap))
 		return;
@@ -861,11 +902,11 @@ void gui_print(const char *format, ...)
 
 	dst_buffer += (ttf_height + 2) * vi.width + 2;
 
-	for (i = 0; i < ret; i++) {
+	for (i = 0; message[i] != '\0'; i++) {
 		unsigned char *src = ttf_bitmap;
 		unsigned char *dst = dst_buffer;
 
-		unsigned c = (unsigned)buf[i];
+		unsigned c = (unsigned)message[i];
 		unsigned width = 0;
 		int kerning = 0;
 		unsigned x, y;
@@ -911,12 +952,35 @@ void gui_print(const char *format, ...)
 	}
 }
 
+void gui_print(const char *format, ...)
+{
+	char buf[512];
+
+	va_list va;
+	va_start(va, format);
+	vsnprintf(buf, sizeof(buf), format, va);
+	va_end(va);
+
+	if (gui_mtx_lock(&gui_mtx) != thrd_success)
+		return;
+
+	print_message(&buf[0]);
+	gui_mtx_unlock(&gui_mtx);
+}
+
 void gui_print_alert(const char *message)
 {
 	const unsigned char warning_color = 15;
 	struct gui_window *current_stack = gui_window_stack;
 	struct gui_window alert_win;
 	unsigned off_x, off_y, x, y;
+
+	/*
+	 * This function can be called even if gui_mtx is acquired
+	 * and it might be that framebuffer contains some partially
+	 * rendered graphics. Because this is meant to be used in
+	 * the panic() situations, this behavior has been accepted.
+	 */
 
 	if (!back_buffer)
 		return;
@@ -954,7 +1018,7 @@ void gui_print_alert(const char *message)
 	}
 
 	gui_window_stack = &alert_win;
-	gui_print("%s\n", message);
+	print_message(message);
 
 	gui_window_stack = current_stack;
 	blit();
@@ -962,6 +1026,9 @@ void gui_print_alert(const char *message)
 
 void gui_refresh(void)
 {
-	if (back_buffer)
-		blit();
+	if (back_buffer == NULL || gui_mtx_lock(&gui_mtx) != thrd_success)
+		return;
+
+	blit();
+	gui_mtx_unlock(&gui_mtx);
 }
