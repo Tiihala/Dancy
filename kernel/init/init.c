@@ -280,7 +280,6 @@ void init(void)
 
 		gui_create_window("Dancy Operating System", x1, y1, x2, y2);
 		gui_print("https://github.com/Tiihala/Dancy\n\n");
-		gui_refresh();
 
 		if (hpet_mode)
 			gui_print("Using High Precision Event Timer\n");
@@ -299,7 +298,6 @@ void init(void)
 				delay(100000000);
 
 			gui_print("\rDelay: %u/10", next);
-			gui_refresh();
 		}
 
 		gui_print("\rNumber of APs started: %u\n\n", smp_ap_count);
@@ -309,7 +307,6 @@ void init(void)
 				cpu_halt(1);
 
 			gui_print("\rUptime (seconds): %u", next);
-			gui_refresh();
 
 			prev = next;
 		}
