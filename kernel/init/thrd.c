@@ -92,7 +92,7 @@ int thrd_create(thrd_t *thr, thrd_start_t func, void *arg)
 		void *s = aligned_alloc(init_thrd_size, init_thrd_size);
 
 		if (!s)
-			spin_leave(&init_thrd_lock_local);
+			return thrd_nomem;
 
 		memset(s, 0, init_thrd_size);
 		thr_new = s;
