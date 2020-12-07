@@ -334,7 +334,8 @@ int rtc_read(struct b_time *bt);
 /*
  * Declarations of smp.c and trampoline code.
  */
-extern volatile uint32_t smp_ap_count;
+extern uint32_t smp_ap_count;
+extern uint32_t *smp_ap_id;
 extern const unsigned char smp_trampoline[512];
 
 void smp_init(void);

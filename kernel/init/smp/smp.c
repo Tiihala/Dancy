@@ -19,7 +19,8 @@
 
 #include <init.h>
 
-volatile uint32_t smp_ap_count = 0;
+uint32_t smp_ap_count = 0;
+uint32_t *smp_ap_id = NULL;
 
 static void *get_trampoline_addr(void)
 {
@@ -49,23 +50,30 @@ static void *get_trampoline_addr(void)
 	return (void *)((phys_addr_t)addr);
 }
 
+static int id_compare(const void *a, const void *b)
+{
+	if (*(uint32_t *)a < *(uint32_t *)b)
+		return -1;
+
+	if (*(uint32_t *)a > *(uint32_t *)b)
+		return 1;
+
+	return 0;
+}
+
 static int ap_lock;
 
 void smp_ap_entry(void)
 {
-	uint32_t id;
+	uint32_t id = apic_id();
 
 	/*
-	 * Increment the AP counter.
+	 * Save the APIC ID and increment the AP counter.
 	 */
 	spin_lock(&ap_lock);
-	smp_ap_count += 1;
+	smp_ap_id[smp_ap_count] = id;
+	cpu_write32(&smp_ap_count, (smp_ap_count + 1));
 	spin_unlock(&ap_lock);
-
-	/*
-	 * Read the APIC ID.
-	 */
-	id = apic_id();
 
 	/*
 	 * Continue the journey.
@@ -84,10 +92,11 @@ static const uint32_t smp_max_apic_id = 0xFE;
 void smp_init(void)
 {
 	const struct acpi_information *acpi = acpi_get_information();
+	uint32_t bsp_apic_id = apic_id();
+
 	uint32_t ap_entry_addr = (uint32_t)((addr_t)(smp_ap_entry));
 	uint32_t ap_started = 0;
 	unsigned char *addr, *ap_array;
-	size_t ap_array_size;
 	unsigned cpu_count, i, j;
 
 	if (acpi == NULL || acpi->num_cpu_core < 2)
@@ -98,13 +107,20 @@ void smp_init(void)
 	addr = get_trampoline_addr();
 	memcpy(addr, &smp_trampoline[0], 512);
 
-	ap_array_size = (size_t)((cpu_count - 1) * 4096);
-	ap_array = aligned_alloc(4096, ap_array_size);
+	{
+		size_t ap_count = cpu_count - 1;
+		size_t ap_array_size = ap_count * 4096;
+		size_t smp_ap_id_size = ap_count * sizeof(uint32_t);
 
-	if (!ap_array)
-		panic("SMP: out of memory");
+		ap_array = aligned_alloc(4096, ap_array_size);
+		smp_ap_id = malloc(smp_ap_id_size);
 
-	memset(ap_array, 0, ap_array_size);
+		if (ap_array == NULL || smp_ap_id == NULL)
+			panic("SMP: out of memory");
+
+		memset(ap_array, 0, ap_array_size);
+		memset(smp_ap_id, 0, smp_ap_id_size);
+	}
 
 	spin_lock(&ap_lock);
 
@@ -120,7 +136,7 @@ void smp_init(void)
 		/*
 		 * Skip the bootstrap processor.
 		 */
-		if (apic.id == apic_id())
+		if (apic.id == bsp_apic_id)
 			continue;
 
 		if (apic.id > smp_max_apic_id)
@@ -281,12 +297,28 @@ void smp_init(void)
 	 * the smp_ap_entry function. Wait about one second at most.
 	 */
 	for (i = 0; /* void */; i++) {
-		if (smp_ap_count == ap_started)
+		if (cpu_read32(&smp_ap_count) == ap_started)
 			break;
 
 		if (i == 10000)
 			panic("SMP: synchronization failure");
 
 		delay(100000);
+	}
+
+	/*
+	 * Sort APIC IDs.
+	 */
+	qsort(smp_ap_id, (size_t)smp_ap_count, sizeof(uint32_t), id_compare);
+
+	/*
+	 * There must be no duplicate APIC IDs.
+	 */
+	for (i = 0; i < smp_ap_count; i++) {
+		if (smp_ap_id[i] == bsp_apic_id)
+			panic("SMP: bootstrap identification failure");
+
+		if (i > 0 && smp_ap_id[i - 1] >= smp_ap_id[i])
+			panic("SMP: identification failure");
 	}
 }
