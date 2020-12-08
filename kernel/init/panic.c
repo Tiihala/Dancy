@@ -24,6 +24,7 @@ static int panic_lock;
 void panic(const char *message)
 {
 	void *panic_lock_local = &panic_lock;
+	uint32_t i;
 
 	/*
 	 * Application processors halt immediately.
@@ -35,6 +36,23 @@ void panic(const char *message)
 	 * The panic() function is not reentrant.
 	 */
 	spin_enter(&panic_lock_local);
+
+	/*
+	 * Send a non-maskable interrupt to every
+	 * application processor.
+	 */
+	for (i = 0; i < smp_ap_count; i++) {
+		uint32_t ap_id = smp_ap_id[i];
+		uint32_t icr_low, icr_high;
+
+		if (ap_id == apic_bsp_id || ap_id > 0xFE)
+			continue;
+
+		icr_low = 0x00004400;
+		icr_high = ap_id << 24;
+
+		apic_send(icr_low, icr_high);
+	}
 
 	/*
 	 * Print the message.
