@@ -23,33 +23,41 @@ static int panic_lock;
 
 void panic(const char *message)
 {
-	void *panic_lock_local = &panic_lock;
+	uint32_t current_id = apic_id();
 	uint32_t i;
-
-	/*
-	 * Application processors halt immediately.
-	 */
-	if (apic_bsp_id != apic_id())
-		cpu_halt(0);
 
 	/*
 	 * The panic() function is not reentrant.
 	 */
-	spin_enter(&panic_lock_local);
+	if (!spin_trylock(&panic_lock))
+		cpu_halt(0);
 
 	/*
-	 * Send a non-maskable interrupt to every
-	 * application processor.
+	 * Send a non-maskable interrupt to every other
+	 * application processor (except the current one).
 	 */
 	for (i = 0; i < smp_ap_count; i++) {
 		uint32_t ap_id = smp_ap_id[i];
 		uint32_t icr_low, icr_high;
 
-		if (ap_id == apic_bsp_id || ap_id > 0xFE)
+		if (ap_id == current_id || ap_id > 0xFE)
 			continue;
 
 		icr_low = 0x00004400;
 		icr_high = ap_id << 24;
+
+		apic_send(icr_low, icr_high);
+	}
+
+	/*
+	 * Send a non-maskable interrupt to the BSP if
+	 * running on an application processor.
+	 */
+	if (current_id != apic_bsp_id) {
+		uint32_t icr_low, icr_high;
+
+		icr_low = 0x00004400;
+		icr_high = apic_bsp_id << 24;
 
 		apic_send(icr_low, icr_high);
 	}
