@@ -25,15 +25,22 @@ void panic(const char *message)
 {
 	void *panic_lock_local = &panic_lock;
 
-	spin_enter(&panic_lock_local);
-
-	idt_load_null();
+	/*
+	 * Application processors halt immediately.
+	 */
+	if (apic_bsp_id != apic_id())
+		cpu_halt(0);
 
 	/*
-	 * Print the message only on the boot processor.
+	 * The panic() function is not reentrant.
 	 */
-	if (message != NULL && apic_bsp_id == apic_id()) {
-		char buffer[2048];
+	spin_enter(&panic_lock_local);
+
+	/*
+	 * Print the message.
+	 */
+	if (message != NULL) {
+		static char buffer[2048];
 
 		snprintf(&buffer[0], sizeof(buffer),
 			"   **** SYSTEM PANIC ****\n\n%s\n\n"
