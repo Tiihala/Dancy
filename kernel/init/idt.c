@@ -91,7 +91,6 @@ static void end(unsigned irq)
 
 void idt_handler(unsigned num, const void *stack)
 {
-	static unsigned idt_nmi;
 	const unsigned pic_irq_base = 32;
 	unsigned irq;
 
@@ -99,14 +98,6 @@ void idt_handler(unsigned num, const void *stack)
 	 * Handle CPU exceptions.
 	 */
 	if (num < 32) {
-		/*
-		 * Non-Maskable Interrupt (on BSP).
-		 */
-		if (num == 2 && apic_bsp_id == apic_id()) {
-			idt_nmi = 2;
-			return;
-		}
-
 		/*
 		 * Page-Fault Exception.
 		 */
@@ -121,12 +112,6 @@ void idt_handler(unsigned num, const void *stack)
 	 */
 	if (apic_bsp_id != apic_id())
 		return;
-
-	/*
-	 * Check for Non-Maskable Interrupt.
-	 */
-	if (idt_nmi)
-		idt_panic(idt_nmi, stack);
 
 	/*
 	 * Translate num to irq. Unsigned integer modulo wrapping is defined.
