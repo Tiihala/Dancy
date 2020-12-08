@@ -43,26 +43,23 @@ static void idt_panic(unsigned num, const void *stack)
 		"#GP - General-Protection Exception",
 		"#PF - Page-Fault Exception"
 	};
-	unsigned entries = (unsigned)(sizeof(names) / sizeof(names[0]));
+	static char message[512];
+	char *ptr = &message[0];
+	const unsigned entries = (unsigned)(sizeof(names) / sizeof(names[0]));
 	const size_t size = 128;
-	char message[1024], *ptr;
 	int add, i;
 
-	ptr = &message[0];
-	add = snprintf(ptr, size, "   **** SYSTEM PANIC ****\n\n");
-	ptr += ((add > 0) ? add : 0);
-
 	if (num < entries)
-		add = snprintf(ptr, size, "%s\n\n", names[num]);
+		add = snprintf(ptr, size, "%s\n", names[num]);
 	else
-		add = snprintf(ptr, size, "Interrupt Vector %u\n\n", num);
+		add = snprintf(ptr, size, "Interrupt Vector %u\n", num);
 	ptr += ((add > 0) ? add : 0);
 
 	if (num == 14) {
 		phys_addr_t cr2;
 
 		pg_get_fault(&cr2);
-		add = snprintf(ptr, size, "CR2: %p\n\n", cr2);
+		add = snprintf(ptr, size, "\nCR2: %p\n", cr2);
 		ptr += ((add > 0) ? add : 0);
 	}
 
@@ -70,13 +67,11 @@ static void idt_panic(unsigned num, const void *stack)
 		const phys_addr_t *s = (const phys_addr_t *)stack;
 		const void *val = (const void *)s[i];
 
-		add = snprintf(ptr, size, "  [%p]  %p\n", (s + i), val);
+		add = snprintf(ptr, size, "\n  [%p]  %p", (s + i), val);
 		ptr += ((add > 0) ? add : 0);
 	}
 
-	snprintf(ptr, size, "\nPlease restart the computer. Halted.");
-	gui_print_alert(&message[0]);
-	cpu_halt(0);
+	panic(&message[0]);
 }
 
 static void end(unsigned irq)
