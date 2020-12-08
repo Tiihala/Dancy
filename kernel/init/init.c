@@ -313,17 +313,13 @@ void init(void)
 	}
 }
 
-volatile uint32_t init_ap_error = 0;
-
 void init_ap(uint32_t id)
 {
 	/*
 	 * Initialize Local Advanced Programmable Interrupt Controller.
 	 */
-	if (apic_init()) {
-		cpu_write32((uint32_t *)&init_ap_error, 1);
-		cpu_halt(0);
-	}
+	if (apic_init())
+		panic("APIC initialization failed (application processor)");
 
 	/*
 	 * Enable interrupts.

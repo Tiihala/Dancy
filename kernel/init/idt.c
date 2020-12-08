@@ -43,7 +43,7 @@ static void idt_panic(unsigned num, const void *stack)
 		"#GP - General-Protection Exception",
 		"#PF - Page-Fault Exception"
 	};
-	static char message[512];
+	char message[512];
 	char *ptr = &message[0];
 	const unsigned entries = (unsigned)(sizeof(names) / sizeof(names[0]));
 	const size_t size = 128;
@@ -96,41 +96,22 @@ void idt_handler(unsigned num, const void *stack)
 	unsigned irq;
 
 	/*
-	 * Nested exceptions are not allowed. If an exception
-	 * occurs, the computer will reboot (a triple fault).
+	 * Handle CPU exceptions.
 	 */
 	if (num < 32) {
-		idt_load_null();
-
 		/*
 		 * Non-Maskable Interrupt (on BSP).
 		 */
 		if (num == 2 && apic_bsp_id == apic_id()) {
 			idt_nmi = 2;
-			idt_restore();
 			return;
 		}
 
 		/*
 		 * Page-Fault Exception.
 		 */
-		if (num == 14 && pg_handler() == 0) {
-			idt_restore();
+		if (num == 14 && pg_handler() == 0)
 			return;
-		}
-
-		/*
-		 * Application processors will set an error code. It
-		 * is known that there are "race conditions" and the
-		 * displayed error message is just one of the errors
-		 * if APs trigger exceptions at the same time.
-		 */
-		if (apic_bsp_id != apic_id()) {
-			uint32_t e =  (uint32_t)(num + 256);
-
-			cpu_write32((uint32_t *)&init_ap_error, e);
-			cpu_halt(0);
-		}
 
 		idt_panic(num, stack);
 	}
@@ -146,16 +127,6 @@ void idt_handler(unsigned num, const void *stack)
 	 */
 	if (idt_nmi)
 		idt_panic(idt_nmi, stack);
-
-	/*
-	 * Check for AP errors on BSP.
-	 */
-	if (init_ap_error) {
-		char message[32];
-
-		snprintf(&message[0], 32, "AP Error: %08X", init_ap_error);
-		panic(&message[0]);
-	}
 
 	/*
 	 * Translate num to irq. Unsigned integer modulo wrapping is defined.

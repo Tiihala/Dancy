@@ -230,8 +230,6 @@ void idt_restore(void);
 /*
  * Declarations of init.c
  */
-extern volatile uint32_t init_ap_error;
-
 void init(void);
 void init_ap(uint32_t id);
 
