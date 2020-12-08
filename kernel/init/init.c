@@ -318,16 +318,6 @@ volatile uint32_t init_ap_error = 0;
 void init_ap(uint32_t id)
 {
 	/*
-	 * Load the Global Descriptor Table.
-	 */
-	gdt_init();
-
-	/*
-	 * Load the Interrupt Descriptor Table.
-	 */
-	idt_restore();
-
-	/*
 	 * Initialize Local Advanced Programmable Interrupt Controller.
 	 */
 	if (apic_init()) {

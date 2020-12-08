@@ -68,6 +68,16 @@ void smp_ap_entry(void)
 	uint32_t id = apic_id();
 
 	/*
+	 * Load the Global Descriptor Table.
+	 */
+	gdt_init();
+
+	/*
+	 * Load the Interrupt Descriptor Table.
+	 */
+	idt_restore();
+
+	/*
 	 * Save the APIC ID and increment the AP counter.
 	 */
 	spin_lock(&ap_lock);
