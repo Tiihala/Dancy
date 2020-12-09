@@ -201,8 +201,7 @@ int mtx_lock(mtx_t *mtx)
 	while ((r = mtx_trylock(mtx)) != thrd_success) {
 		if (r != thrd_busy)
 			break;
-		if (apic_bsp_id == apic_id())
-			thrd_yield();
+		thrd_yield();
 	}
 
 	return r;

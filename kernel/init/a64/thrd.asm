@@ -21,6 +21,8 @@
 
 section .text
 
+        extern apic_bsp_id
+        extern apic_id
         extern init_thrd_current
         extern init_thrd_size
         global init_thrd_create
@@ -84,6 +86,13 @@ thrd_yield:
         push r15                        ; save register r15
         pushfq                          ; save flags
         cli                             ; disable interrupts
+
+        sub rsp, 32                     ; shadow space (alignment checked)
+        call apic_id                    ; eax = identification
+        add rsp, 32                     ; restore stack
+        mov edi, apic_bsp_id            ; r/edi = address of apic_bsp_id
+        cmp eax, [rdi]                  ; check bootstrap processor
+        jne short .L2
 
         mov edi, init_thrd_current      ; r/edi = address of init_thrd_current
         mov rbx, [rdi]                  ; rbx = address of init_thrd_current

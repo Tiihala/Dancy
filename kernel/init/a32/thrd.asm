@@ -21,6 +21,8 @@
 
 section .text
 
+        extern _apic_bsp_id
+        extern _apic_id
         extern _init_thrd_current
         extern _init_thrd_size
         global _init_thrd_create
@@ -84,6 +86,10 @@ _thrd_yield:
         push edi                        ; save register edi
         pushfd                          ; save flags
         cli                             ; disable interrupts
+
+        call _apic_id                   ; eax = identification
+        cmp eax, [_apic_bsp_id]         ; check bootstrap processor
+        jne short .L2
 
         xor ebx, ebx                    ; ebx = 0
         add ebx, [_init_thrd_current]   ; ebx = init_thrd_current
