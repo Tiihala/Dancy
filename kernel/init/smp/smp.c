@@ -216,17 +216,6 @@ void smp_init(void)
 		delay(10000000);
 
 		/*
-		 * Send INIT (Deassert).
-		 */
-		icr_low = 0x00000500;
-		apic_send(icr_low, icr_high);
-
-		/*
-		 * Wait for a very short moment.
-		 */
-		delay(100000);
-
-		/*
 		 * Send Startup IPI. The apic_send() function waits until the
 		 * delivery status bit is 0 before sending the interrupt.
 		 */
