@@ -99,11 +99,11 @@ static const uint32_t smp_max_apic_id = 0x0E;
 static const uint32_t smp_max_apic_id = 0xFE;
 #endif
 
+static const size_t smp_ap_stack_size = 0x2000;
+
 void smp_init(void)
 {
 	const struct acpi_information *acpi = acpi_get_information();
-	uint32_t bsp_apic_id = apic_id();
-
 	uint32_t ap_entry_addr = (uint32_t)((addr_t)(smp_ap_entry));
 	uint32_t ap_started = 0;
 	unsigned char *addr, *ap_array;
@@ -119,23 +119,23 @@ void smp_init(void)
 
 	{
 		size_t ap_count = cpu_count - 1;
-		size_t ap_array_size = ap_count * 4096;
+		size_t ap_array_size = ap_count * smp_ap_stack_size;
 		size_t smp_ap_id_size = ap_count * sizeof(uint32_t);
 
-		ap_array = aligned_alloc(4096, ap_array_size);
+		ap_array = aligned_alloc(smp_ap_stack_size, ap_array_size);
 		smp_ap_id = malloc(smp_ap_id_size);
 
 		if (ap_array == NULL || smp_ap_id == NULL)
 			panic("SMP: out of memory");
 
 		memset(ap_array, 0, ap_array_size);
-		memset(smp_ap_id, 0, smp_ap_id_size);
+		memset(smp_ap_id, 0xFF, smp_ap_id_size);
 	}
 
 	spin_lock(&ap_lock);
 
 	for (i = 0; i < cpu_count; i++) {
-		unsigned ap_offset = i * 4096;
+		unsigned ap_offset = (unsigned)(i * smp_ap_stack_size);
 		uint32_t ap_status = 0;
 		uint32_t icr_low, icr_high;
 		struct acpi_apic apic;
@@ -146,7 +146,7 @@ void smp_init(void)
 		/*
 		 * Skip the bootstrap processor.
 		 */
-		if (apic.id == bsp_apic_id)
+		if (apic.id == apic_bsp_id)
 			continue;
 
 		if (apic.id > smp_max_apic_id)
@@ -238,7 +238,40 @@ void smp_init(void)
 		 * Send another Startup IPI if needed.
 		 */
 		if ((ap_status = cpu_read32(&addr[0x1F8])) != 1) {
+			/*
+			 * Theoretically, it could be possible that the first
+			 * Startup IPI worked and will change the ap_status
+			 * value during this procedure. Write a special value
+			 * to ap_status so that the trampoline code does not
+			 * change the value.
+			 */
+			ap_status = 0xFF;
+			cpu_write32(&addr[0x1F8], ap_status);
+
+			/*
+			 * Send the interprocessor interrupt.
+			 */
 			apic_send(icr_low, icr_high);
+
+			/*
+			 * Check the delivery status.
+			 */
+			if (apic_wait_delivery())
+				panic("SMP: delivery status failure");
+
+			/*
+			 * Wait for 20 milliseconds.
+			 */
+			delay(20000000);
+
+			/*
+			 * It should be quite certain that the Startup IPIs
+			 * do not interleave in any way and the AP executes
+			 * the first loop that tries to change the ap_status
+			 * value from value 0 to 1.
+			 */
+			ap_status = 0;
+			cpu_write32(&addr[0x1F8], ap_status);
 
 			/*
 			 * Wait for the AP to wake up (about two seconds).
@@ -306,6 +339,23 @@ void smp_init(void)
 	}
 
 	/*
+	 * Replace trampoline code with halt instructions.
+	 */
+	{
+		const uint32_t halt_loop = 0xFCEBF4F4;
+
+		memset(addr, 0xF4, 512);
+		cpu_write32(&addr[508], halt_loop);
+	}
+
+	/*
+	 * As an extra test, verify that smp_ap_count has
+	 * not changed. It should not be possible.
+	 */
+	if (cpu_read32(&smp_ap_count) != ap_started)
+		panic("SMP: unexpected behavior");
+
+	/*
 	 * Sort APIC IDs.
 	 */
 	qsort(smp_ap_id, (size_t)smp_ap_count, sizeof(uint32_t), id_compare);
@@ -314,7 +364,7 @@ void smp_init(void)
 	 * There must be no duplicate APIC IDs.
 	 */
 	for (i = 0; i < smp_ap_count; i++) {
-		if (smp_ap_id[i] == bsp_apic_id)
+		if (smp_ap_id[i] == apic_bsp_id)
 			panic("SMP: bootstrap identification failure");
 
 		if (i > 0 && smp_ap_id[i - 1] >= smp_ap_id[i])
