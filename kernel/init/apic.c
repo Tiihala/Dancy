@@ -262,6 +262,23 @@ void apic_send(uint32_t icr_low, uint32_t icr_high)
 	cpu_write32(icr_300, icr_low);
 }
 
+int apic_wait_delivery(void)
+{
+	const void *icr_300 = (const void *)(apic_base + 0x300);
+	unsigned wait_delivery_status = 1000;
+
+	while (wait_delivery_status--) {
+		const uint32_t delivery_status_bit = (1u << 12);
+
+		if ((cpu_read32(icr_300) & delivery_status_bit) == 0)
+			return 0;
+
+		delay(1000000);
+	}
+
+	return 1;
+}
+
 void ioapic_init(void)
 {
 	const struct acpi_information *acpi = acpi_get_information();
