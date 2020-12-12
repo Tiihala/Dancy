@@ -20,10 +20,10 @@
 #ifndef DANCY_TIME_H
 #define DANCY_TIME_H
 
-typedef long long time_t;
+typedef long long dancy_time_t;
 
 struct timespec {
-	time_t tv_sec;
+	dancy_time_t tv_sec;
 	long tv_nsec;
 };
 
