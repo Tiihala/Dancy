@@ -105,6 +105,7 @@ void smp_init(void)
 {
 	const struct acpi_information *acpi = acpi_get_information();
 	uint32_t ap_entry_addr = (uint32_t)((addr_t)(smp_ap_entry));
+	uint32_t ap_second_sipi = 0;
 	uint32_t ap_started = 0;
 	unsigned char *addr, *ap_array;
 	unsigned cpu_count, i, j;
@@ -279,8 +280,10 @@ void smp_init(void)
 			for (j = 0; j < 20000; j++) {
 				ap_status = cpu_read32(&addr[0x1F8]);
 
-				if (ap_status == 1)
+				if (ap_status == 1) {
+					ap_second_sipi += 1;
 					break;
+				}
 
 				delay(100000);
 			}
@@ -288,9 +291,19 @@ void smp_init(void)
 
 		/*
 		 * If the AP did not wake up, clear the smp_ap_entry address.
+		 * Before continuing, send an INIT (Assert) so that the AP is
+		 * in a defined state. It is possible that the trampoline was
+		 * not able to change the ap_status for some unknown reason,
+		 * although it might have started up.
 		 */
 		if (ap_status != 1) {
 			cpu_write32(&ap_array[ap_offset], 0);
+
+			icr_low = 0x00004500;
+			apic_send(icr_low, icr_high);
+
+			b_print("SMP: processor failure (ID %X)\n", apic.id);
+
 			continue;
 		}
 
@@ -323,6 +336,14 @@ void smp_init(void)
 	 * All APs should wait for the spinlock. Ready, steady, go!
 	 */
 	spin_unlock(&ap_lock);
+
+	/*
+	 * Notify if two SIPIs were needed on this computer.
+	 */
+	if (ap_second_sipi) {
+		b_print("SMP: two Startup IPIs were needed (%u/%u)\n",
+			ap_second_sipi, ap_started);
+	}
 
 	/*
 	 * Make sure that everything really worked and APs are running
