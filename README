@@ -11,7 +11,15 @@ Build Instructions (Unix/Linux)
 
   1. Install the following packages (this may require root privileges)
 
-     gcc, g++, make, git
+       gcc, g++, make, git
+
+     Optionally, also the following packages
+
+       binutils-mingw-w64, gcc-mingw-w64, nasm
+
+     If the above three packages are not installed, the Makefile will
+     build them (scripts/external.sh). This step itself does not require
+     root privileges because all files are put in "./external" directory.
 
   2. Use a proper current directory
 
@@ -20,9 +28,6 @@ Build Instructions (Unix/Linux)
      git clone https://github.com/tiihala/dancy.git
      cd dancy
      make
-
-     The scripts will build a cross-compiler and Nasm and this is time
-     consuming. All these files are put in an ./external/ subdirectory.
 
      If cleaning the source tree with "make clean", the external tools
      are not deleted. The "make distclean" will delete these if needed.
