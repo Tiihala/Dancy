@@ -634,6 +634,8 @@ void video_show_menu(void)
 
 			if (key == DANCY_KEY_ENTER) {
 				new_state = 0xFFFFFFFFu;
+				if (first_run)
+					no_menu = 1;
 				break;
 			}
 
