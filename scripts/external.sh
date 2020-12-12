@@ -33,6 +33,13 @@ then
     exit 0
 fi
 
+if [ -f "/usr/bin/nasm" ] && [ -f "/usr/bin/x86_64-w64-mingw32-gcc" ]
+then
+    mkdir -p $DANCY_EXTERNAL/bin
+    touch external/external.sh
+    exit 0
+fi
+
 echo ""
 echo -e "\e[33mBuilding a cross compiler:\e[0m"
 echo -e "\e[33m    nasm-$ASM_VERSION\e[0m"
