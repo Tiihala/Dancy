@@ -37,7 +37,7 @@ static phys_addr_t alloc_table_page(void)
 		if (!buffer)
 			return 0;
 		memset(buffer, 0, buffer_size);
-		pg_tables_size += buffer_size;
+		pg_tables_size += (uint32_t)buffer_size;
 
 		size = buffer_size;
 	}
