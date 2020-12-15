@@ -12,9 +12,9 @@ rm -rf ./kernel/acpica
 rm -rf ./o32
 rm -rf ./o64
 rm -rf ./release
+rm -rf ./system
 
 rm -f ./scripts/dancy.mk
-rm -f ./system/*.AT
 rm -f ./LOADER.512
 rm -f ./LOADER.AT
 
