@@ -7,7 +7,7 @@
 /o64/
 /release/
 /scripts/dancy.mk
-/system/*.AT
+/system/
 LOADER.512
 LOADER.AT
 *.obj
