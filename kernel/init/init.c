@@ -86,6 +86,12 @@ void init(void)
 	}
 
 	/*
+	 * Initialize PCI (early).
+	 */
+	if (pci_init_early())
+		return;
+
+	/*
 	 * Load dancy.ttf and create a ttf object.
 	 */
 	{
@@ -265,6 +271,11 @@ void init(void)
 	 */
 	if (thrd_create(&gui_thr, gui_thread, NULL) != thrd_success)
 		panic("Error: gui_thread creation");
+
+	/*
+	 * Initialize PCI.
+	 */
+	pci_init();
 
 	/*
 	 * Temporary code for testing purposes.

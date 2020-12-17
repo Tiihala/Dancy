@@ -89,6 +89,9 @@
 ./o32/init/panic.o: ./kernel/init/panic.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/panic.c
 
+./o32/init/pci.o: ./kernel/init/pci.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/pci.c
+
 ./o32/init/pg.o: ./kernel/init/pg.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/pg.c
 
@@ -226,6 +229,9 @@
 
 ./o64/init/panic.o: ./kernel/init/panic.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/panic.c
+
+./o64/init/pci.o: ./kernel/init/pci.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/pci.c
 
 ./o64/init/pg.o: ./kernel/init/pg.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/pg.c

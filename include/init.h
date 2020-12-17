@@ -298,6 +298,26 @@ void panic(const char *message);
 
 
 /*
+ * Declarations of pci.c
+ */
+struct pci_device {
+	phys_addr_t ecam;
+	int group;
+	int bus;
+	int device;
+	int func;
+	uint32_t vendor_id;
+	uint32_t device_id;
+};
+
+extern uint32_t pci_device_count;
+extern struct pci_device *pci_devices;
+
+int pci_init_early(void);
+void pci_init(void);
+
+
+/*
  * Declarations of pg.asm and pg.c
  */
 extern volatile uint32_t pg_fault_counter;
