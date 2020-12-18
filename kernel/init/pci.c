@@ -56,6 +56,14 @@ static int pci_device_found(phys_addr_t ecam, int gbdf[4], uint32_t id_pair)
 	pci_devices[i].vendor_id = vendor_id;
 	pci_devices[i].device_id = device_id;
 
+	{
+		uint32_t class_code = pci_read(&pci_devices[i], 8) >> 8;
+		uint32_t type = (pci_read(&pci_devices[i], 12) >> 16) & 0x7Fu;
+
+		pci_devices[i].class_code = class_code;
+		pci_devices[i].header_type = (int)type;
+	}
+
 	pci_device_count += 1;
 
 	return 0;
@@ -74,6 +82,21 @@ static uint32_t pci_read32(int b, int d, int f, int off)
 
 	cpu_out32(pci_config_addr, addr);
 	return cpu_in32(pci_config_data);
+}
+
+static void pci_write32(int b, int d, int f, int off, uint32_t val)
+{
+	const uint16_t pci_config_addr = 0x0CF8;
+	const uint16_t pci_config_data = 0x0CFC;
+
+	uint32_t addr = 0x80000000u | ((uint32_t)off & 0xFCu);
+
+	addr |= (((uint32_t)f & 0x07u) << 8);
+	addr |= (((uint32_t)d & 0x1Fu) << 11);
+	addr |= (((uint32_t)b & 0xFFu) << 16);
+
+	cpu_out32(pci_config_addr, addr);
+	cpu_out32(pci_config_data, val);
 }
 
 static int pci_enumerate_bus(int b)
@@ -262,19 +285,21 @@ int pci_init_early(void)
 	if (!pci_device_count)
 		return 0;
 
-	b_log("Peripheral Component Interconnect\n");
+	b_log("Peripheral Component Interconnect (PCI)\n");
 
 	for (i = 0; i < pci_device_count; i++) {
-		b_log("\t%04X:%02X:%02X:%X - %04X %04X",
+		b_log("\t%04X:%02X:%02X.%X - %04X %04X Class %06X Type %02X",
 			(unsigned)pci_devices[i].group,
 			(unsigned)pci_devices[i].bus,
 			(unsigned)pci_devices[i].device,
 			(unsigned)pci_devices[i].func,
 			(unsigned)pci_devices[i].vendor_id,
-			(unsigned)pci_devices[i].device_id);
+			(unsigned)pci_devices[i].device_id,
+			(unsigned)pci_devices[i].class_code,
+			(unsigned)pci_devices[i].header_type);
 
 		if (pci_devices[i].ecam)
-			b_log(" ECAM: %p", (const void *)pci_devices[i].ecam);
+			b_log(" ECAM %p", (const void *)pci_devices[i].ecam);
 		b_log("\n");
 	}
 
@@ -287,4 +312,36 @@ void pci_init(void)
 {
 	if (pci_device_count == 0 && pci_enumerate(0) != 0)
 		panic(pci_enumerate_error);
+}
+
+uint32_t pci_read(const struct pci_device *pci, int off)
+{
+	uint32_t ret;
+
+	if (off < 0 || (off & 3) != 0)
+		return 0;
+
+	if (pci->ecam) {
+		phys_addr_t a = pci->ecam + (phys_addr_t)off;
+		ret = cpu_read32((const uint32_t *)a);
+	} else {
+		int b = pci->bus, d = pci->device, f = pci->func;
+		ret = pci_read32(b, d, f, off);
+	}
+
+	return ret;
+}
+
+void pci_write(struct pci_device *pci, int off, uint32_t val)
+{
+	if (off < 0 || (off & 3) != 0)
+		return;
+
+	if (pci->ecam) {
+		phys_addr_t a = pci->ecam + (phys_addr_t)off;
+		cpu_write32((uint32_t *)a, val);
+	} else {
+		int b = pci->bus, d = pci->device, f = pci->func;
+		pci_write32(b, d, f, off, val);
+	}
 }

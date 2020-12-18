@@ -308,6 +308,8 @@ struct pci_device {
 	int func;
 	uint32_t vendor_id;
 	uint32_t device_id;
+	uint32_t class_code;
+	int header_type;
 };
 
 extern uint32_t pci_device_count;
@@ -315,6 +317,8 @@ extern struct pci_device *pci_devices;
 
 int pci_init_early(void);
 void pci_init(void);
+uint32_t pci_read(const struct pci_device *pci, int off);
+void pci_write(struct pci_device *pci, int off, uint32_t val);
 
 
 /*
