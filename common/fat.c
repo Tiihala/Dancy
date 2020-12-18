@@ -297,7 +297,7 @@ static void write_timestamps(unsigned char *entry, int created, int modified)
 		hour = 23, min = 59, sec = 58;
 	}
 
-	err |= (mon  >= 0 && mon  <= 11) ? 0 : 1;
+	err |= (mon  >= 1 && mon  <= 12) ? 0 : 1;
 	err |= (day  >= 1 && day  <= 31) ? 0 : 1;
 	err |= (hour >= 0 && hour <= 23) ? 0 : 1;
 	err |= (min  >= 0 && min  <= 59) ? 0 : 1;
