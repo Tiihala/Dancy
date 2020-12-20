@@ -62,6 +62,7 @@ struct acpi_information {
 
 	phys_addr_t local_apic_base;
 	int dual_8259_setup;
+	int irq0_to_input2_override;
 
 	unsigned num_cpu_core;
 	unsigned num_io_apic;

@@ -487,6 +487,9 @@ int acpi_get_io_apic(unsigned idx, struct acpi_io_apic *io_apic)
 		io_apic->irq[i].flags = 0;
 	}
 
+	if (information.irq0_to_input2_override)
+		io_apic->irq[0].global_int = 2;
+
 	for (i = 0; length >= 2; /* void */) {
 		unsigned type = (unsigned)madt[0];
 		unsigned len = (unsigned)madt[1];

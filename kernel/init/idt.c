@@ -137,6 +137,32 @@ void idt_handler(unsigned num, const void *stack)
 	}
 
 	/*
+	 * Handle IRQ 2 (I/O APIC).
+	 *
+	 * When using I/O APIC, there usually is an interrupt source
+	 * override (from 0 to 2) in the ACPI tables. Handle the case if
+	 * this is not available and the timer seems to be using IRQ 2.
+	 */
+	if (irq == 2 && apic_mode != 0) {
+		static unsigned idt_irq2 = 0;
+
+		if (idt_irq2 < 16) {
+			idt_irq2 += 1;
+
+		} else if (idt_irq0 < 2 && idt_irq2 == 16) {
+			acpi_get_information()->irq0_to_input2_override = 1;
+
+			end(irq);
+			ioapic_init();
+			ioapic_enable(0);
+			return;
+		}
+
+		end(irq);
+		return;
+	}
+
+	/*
 	 * Spurious IRQ 7 (PIC 1).
 	 */
 	if (num == pic_irq_base + 7)
