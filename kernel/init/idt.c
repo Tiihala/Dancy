@@ -150,12 +150,12 @@ void idt_handler(unsigned num, const void *stack)
 			idt_irq2 += 1;
 
 		} else if (idt_irq0 < 2 && idt_irq2 == 16) {
+			idt_irq2 = UINT_MAX;
 			acpi_get_information()->irq0_to_input2_override = 1;
 
 			end(irq);
 			ioapic_init();
 			ioapic_enable(0);
-			return;
 		}
 
 		end(irq);
