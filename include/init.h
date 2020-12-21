@@ -400,6 +400,13 @@ void init_thrd_create(void *thr, thrd_start_t func, void *arg);
 
 
 /*
+ * Declarations of usb.c
+ */
+int usb_init_early(void);
+void usb_init(void);
+
+
+/*
  * Declarations of vga.c
  */
 void vga_set_palette(const struct b_video_info *vi);

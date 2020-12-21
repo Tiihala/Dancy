@@ -92,6 +92,12 @@ void init(void)
 		return;
 
 	/*
+	 * Initialize USB (early).
+	 */
+	if (usb_init_early())
+		return;
+
+	/*
 	 * Load dancy.ttf and create a ttf object.
 	 */
 	{
@@ -276,6 +282,11 @@ void init(void)
 	 * Initialize PCI.
 	 */
 	pci_init();
+
+	/*
+	 * Initialize USB.
+	 */
+	usb_init();
 
 	/*
 	 * Temporary code for testing purposes.

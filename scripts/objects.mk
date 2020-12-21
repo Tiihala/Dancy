@@ -110,6 +110,9 @@
 ./o32/init/thrd.o: ./kernel/init/thrd.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/thrd.c
 
+./o32/init/usb.o: ./kernel/init/usb.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/init/usb.c
+
 ./o32/init/vga.o: ./kernel/init/vga.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/init/vga.c
 
@@ -250,6 +253,9 @@
 
 ./o64/init/thrd.o: ./kernel/init/thrd.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/thrd.c
+
+./o64/init/usb.o: ./kernel/init/usb.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/init/usb.c
 
 ./o64/init/vga.o: ./kernel/init/vga.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/init/vga.c
