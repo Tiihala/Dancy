@@ -142,6 +142,148 @@ static int usb_init_uhci(struct pci_device *pci, int early)
 	return 0;
 }
 
+static int usb_init_ohci(struct pci_device *pci, int early)
+{
+	uint32_t cmd = pci_read(pci, 0x04) & 0xFFFFu;
+	phys_addr_t base = (phys_addr_t)pci_read(pci, 0x10);
+	uint32_t hc_revision = 0;
+	uint32_t i, val;
+
+	int mem_enabled = 0, legacy_bit = 0;
+	int io_space = (int)(base & 1u);
+
+	base &= 0xFFFFFFF0u;
+
+	if ((cmd & 2u) != 0) {
+		if (io_space != 0 || base < 0x20000)
+			return (int)(__LINE__);
+		hc_revision = cpu_read32((const uint32_t *)(base + 0));
+		legacy_bit = (int)((hc_revision & 0x100u) >> 8);
+		mem_enabled = 1;
+
+	} else if ((cmd & 1u) != 0) {
+		if (io_space != 0)
+			return (int)(__LINE__);
+	}
+
+	if (early) {
+		b_log("Open Host Controller Interface (OHCI)\n");
+
+		b_log("\tMemory Base Address is %p\n", (const void *)base);
+
+		val = pci_read(pci, 0x3C);
+		b_log("\tInterrupt Line is %u and Interrupt PIN is %02X\n",
+			(val & 0xFFu), ((val >> 8) & 0xFFu));
+
+		b_log("\tHcRevision value is %08X\n", hc_revision);
+
+		if (mem_enabled) {
+			val = cpu_read32((const uint32_t *)(base + 0x04));
+			b_log("\tHcControl value is %08X\n", val);
+		}
+
+		if (legacy_bit) {
+			val = cpu_read32((const uint32_t *)(base + 0x100));
+			b_log("\tHceControl value is %08X\n", val);
+			val = cpu_read32((const uint32_t *)(base + 0x10C));
+			b_log("\tHceStatus value is %08X\n", val);
+		}
+
+		b_log("\n");
+
+		return 0;
+	}
+
+	if (!mem_enabled)
+		return 0;
+
+	pg_map_uncached((void *)base);
+
+	/*
+	 * Handle the InterruptRouting bit.
+	 */
+	for (i = 0; i < 20000; i++) {
+		const uint32_t ir_bit = (1u << 8);
+		const uint32_t oc_bit = (1u << 30);
+		const uint32_t ocr_bit = (1u << 3);
+
+		val = cpu_read32((const uint32_t *)(base + 0x04));
+		if (i == 0 && (val & ir_bit) != 0) {
+			/*
+			 * Enable interrupt generation due to Ownership
+			 * change (HcInterruptEnable).
+			 */
+			val = 0u | oc_bit;
+			cpu_write32((uint32_t *)(base + 0x0C), val);
+
+			/*
+			 * Set OwnershipChangeRequest bit (HcCommandStatus).
+			 */
+			val = 0u | ocr_bit;
+			cpu_write32((uint32_t *)(base + 0x08), val);
+
+			delay(100000);
+			val = cpu_read32((const uint32_t *)(base + 0x04));
+		}
+
+		/*
+		 * Wait until the InterruptRouting bit is cleared.
+		 */
+		if ((val & ir_bit) == 0)
+			break;
+
+		delay(100000);
+	}
+
+	/*
+	 * Disable all interrupts (HcInterruptDisable).
+	 */
+	val = 0xFFFFFFFF;
+	cpu_write32((uint32_t *)(base + 0x14), val);
+
+	/*
+	 * Reset the controller (HcControl). The RemoteWakeupConnected bit
+	 * is set by system firmware, and the value will be preserved.
+	 */
+	{
+		const uint32_t rwc_bit = (1u << 9);
+
+		val = 0u | rwc_bit;
+		cpu_write32((uint32_t *)(base + 0x04), val);
+	}
+
+	/*
+	 * Reset the controller (HcCommandStatus).
+	 */
+	{
+		const uint32_t hcr_bit = (1u);
+
+		val = 0u | hcr_bit;
+		cpu_write32((uint32_t *)(base + 0x08), val);
+
+		delay(100000);
+
+		for (i = 0; i < 100; i++) {
+			val = cpu_read32((const uint32_t *)(base + 0x08));
+
+			if ((val & hcr_bit) == 0)
+				break;
+
+			delay(100000);
+		}
+	}
+
+	/*
+	 * Initialize HceControl Register.
+	 */
+	if (legacy_bit) {
+		val = 0x00000100;
+		cpu_write32((uint32_t *)(base + 0x100), val);
+	}
+
+	return 0;
+}
+
 static int usb_init_controllers(int early)
 {
 	struct pci_device *pci;
@@ -156,6 +298,14 @@ static int usb_init_controllers(int early)
 		 */
 		if (class_code == 0x0C0300) {
 			if ((r = usb_init_uhci(pci, early)) != 0)
+				return r;
+		}
+
+		/*
+		 * Open Host Controller Interface (OHCI).
+		 */
+		if (class_code == 0x0C0310) {
+			if ((r = usb_init_ohci(pci, early)) != 0)
 				return r;
 		}
 	}
