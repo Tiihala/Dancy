@@ -310,8 +310,19 @@ int pci_init_early(void)
 
 void pci_init(void)
 {
+	uint32_t i;
+
 	if (pci_device_count == 0 && pci_enumerate(0) != 0)
 		panic(pci_enumerate_error);
+
+	for (i = 0; i < pci_device_count; i++) {
+		const struct pci_device *pci = &pci_devices[i];
+
+		if (!pci->ecam)
+			break;
+
+		pg_map_uncached((void *)pci->ecam);
+	}
 }
 
 uint32_t pci_read(const struct pci_device *pci, int off)
