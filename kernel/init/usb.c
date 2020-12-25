@@ -151,13 +151,12 @@ static int usb_init_controllers(int early)
 		pci = &pci_devices[i];
 		class_code = (int)pci->class_code;
 
-		switch (class_code) {
-		case 0x0C0300:
+		/*
+		 * Universal Host Controller Interface (UHCI).
+		 */
+		if (class_code == 0x0C0300) {
 			if ((r = usb_init_uhci(pci, early)) != 0)
 				return r;
-			break;
-		default:
-			break;
 		}
 	}
 
