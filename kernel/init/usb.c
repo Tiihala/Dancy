@@ -284,10 +284,265 @@ static int usb_init_ohci(struct pci_device *pci, int early)
 	return 0;
 }
 
+static int usb_init_ehci(struct pci_device *pci, int early)
+{
+	uint32_t cmd = pci_read(pci, 0x04) & 0xFFFFu;
+	phys_addr_t base = (phys_addr_t)pci_read(pci, 0x10), base_cap = 0;
+
+	uint32_t cap_length = 0, hci_version = 0, eecp_offset = 0;
+	uint32_t hcs_params = 0, hcc_params = 0;
+	uint32_t i, val;
+
+	int mem_enabled = 0;
+	int mem_type = (int)((base >> 1) & 3u);
+	int io_space = (int)(base & 1u);
+
+	base &= 0xFFFFFFF0u;
+
+	if ((cmd & 2u) != 0) {
+		if (io_space != 0 || mem_type != 0 || base < 0x20000)
+			return (int)(__LINE__);
+		mem_enabled = 1;
+
+	} else if ((cmd & 1u) != 0) {
+		if (io_space != 0)
+			return (int)(__LINE__);
+	}
+
+	if (mem_enabled) {
+		val = cpu_read32((const uint32_t *)(base + 0x00));
+
+		cap_length = (val & 0xFFu);
+		base_cap = base + (phys_addr_t)cap_length;
+
+		hci_version = ((val >> 16) & 0xFFFFu);
+		hcs_params = cpu_read32((const uint32_t *)(base + 0x04));
+		hcc_params = cpu_read32((const uint32_t *)(base + 0x08));
+
+		eecp_offset = ((hcc_params >> 8) & 0xFFu);
+	}
+
+	/*
+	 * Make sure that "EECP" points to the USBLEGSUP Register.
+	 */
+	for (i = 0; eecp_offset != 0; i++) {
+		val = pci_read(pci, (int)(eecp_offset + 0x00));
+
+		/*
+		 * Check the Capability ID (value of 1).
+		 */
+		if ((val & 0xFFu) == 1)
+			break;
+
+		if (i == 128)
+			return (int)(__LINE__);
+
+		eecp_offset = ((val >> 8) & 0xFFu);
+	}
+
+	if (early) {
+		b_log("Enhanced Host Controller Interface (EHCI)\n");
+
+		b_log("\tMemory Base Address is %p\n", (const void *)base);
+
+		val = pci_read(pci, 0x3C);
+		b_log("\tInterrupt Line is %u and Interrupt PIN is %02X\n",
+			(val & 0xFFu), ((val >> 8) & 0xFFu));
+
+		val = pci_read(pci, 0x60) & 0xFFu;
+		b_log("\tSerial Bus Release Number is %02X\n", val);
+
+		b_log("\tCapability Register Length is %02X\n", cap_length);
+		b_log("\tInterface Version Number is %04X\n", hci_version);
+
+		b_log("\tStructural Parameters are %08X\n", hcs_params);
+		b_log("\tCapability Parameters are %08X\n", hcc_params);
+
+		if (mem_enabled) {
+			val = cpu_read32((const uint32_t *)(base_cap + 0x00));
+			b_log("\tCommand Register value is %08X\n", val);
+			val = cpu_read32((const uint32_t *)(base_cap + 0x04));
+			b_log("\tStatus Register value is %08X\n", val);
+		}
+
+		if (eecp_offset) {
+			val = pci_read(pci, (int)(eecp_offset + 0x00));
+			b_log("\tLegacy (EECP + 0) value is %08X\n", val);
+			val = pci_read(pci, (int)(eecp_offset + 0x04));
+			b_log("\tLegacy (EECP + 4) value is %08X\n", val);
+		}
+
+		b_log("\n");
+
+		return 0;
+	}
+
+	if (!mem_enabled)
+		return 0;
+
+	pg_map_uncached((void *)base);
+
+	/*
+	 * Handle the HC BIOS Owned Semaphore (USBLEGSUP).
+	 */
+	if (eecp_offset) {
+		const uint32_t smi_bit = (1u << 13);
+		const uint32_t hc_bios_semaphore = (1u << 16);
+		const uint32_t hc_os_semaphore = (1u << 24);
+
+		int legsup_offset = (int)(eecp_offset + 0x00);
+		int ctlsts_offset = (int)(eecp_offset + 0x04);
+
+		/*
+		 * Request ownership of the EHCI controller.
+		 */
+		val = pci_read(pci, legsup_offset);
+		pci_write(pci, legsup_offset, (val | hc_os_semaphore));
+
+		for (i = 0; (val & hc_bios_semaphore) != 0; i++) {
+			/*
+			 * If it seems that the BIOS does not release the
+			 * controller, set the SMI on OS Ownership Enable
+			 * bit (USBLEGCTLSTS).
+			 */
+			if (i == 10000) {
+				val = pci_read(pci, ctlsts_offset) | smi_bit;
+				pci_write(pci, ctlsts_offset, val);
+			}
+
+			/*
+			 * Try to set the OS Owned Semaphore again. The final
+			 * if statement will handle the unlikely case where
+			 * the BIOS clears the bit during this operation.
+			 */
+			if (i == 20000) {
+				val &= (~hc_os_semaphore);
+				pci_write(pci, legsup_offset, val);
+
+				val |= hc_os_semaphore;
+				pci_write(pci, legsup_offset, val);
+			}
+
+			/*
+			 * Something went wrong. Take ownership from the BIOS.
+			 */
+			if (i == 30000) {
+				val &= (~hc_bios_semaphore);
+				pci_write(pci, legsup_offset, val);
+				break;
+			}
+
+			delay(100000);
+
+			val = pci_read(pci, legsup_offset);
+		}
+
+		/*
+		 * Check that the above loop cleared the BIOS semaphore
+		 * and set the OS semaphore.
+		 */
+		val = pci_read(pci, legsup_offset);
+
+		if ((val & hc_bios_semaphore) != 0)
+			return (int)(__LINE__);
+
+		if ((val & hc_os_semaphore) == 0)
+			return (int)(__LINE__);
+
+		/*
+		 * Initialize Legacy Support Control/Status (USBLEGCTLSTS).
+		 */
+		val = 0x00000000;
+		pci_write(pci, ctlsts_offset, val);
+	}
+
+	/*
+	 * Handle host controller operational registers.
+	 */
+	{
+		const uint32_t rs_bit = (1u);
+		const uint32_t hc_reset_bit = (1u << 1);
+		const uint32_t hc_halted_bit = (1u << 12);
+
+		uint32_t *usbcmd_addr = (uint32_t *)(base_cap + 0x00);
+		uint32_t *usbsts_addr = (uint32_t *)(base_cap + 0x04);
+		uint32_t *usbint_addr = (uint32_t *)(base_cap + 0x08);
+
+		val = cpu_read32(usbcmd_addr);
+
+		/*
+		 * Check the Run/Stop (RS) bit and clear if needed.
+		 */
+		if ((val & rs_bit) != 0) {
+			val &= (~rs_bit);
+			cpu_write32(usbcmd_addr, val);
+
+			/*
+			 * Wait until the HCHalted bit is set (USBSTS).
+			 */
+			for (i = 0; i < 10000; i++) {
+				val = cpu_read32(usbsts_addr);
+
+				if ((val & hc_halted_bit) != 0)
+					break;
+
+				delay(100000);
+			}
+		}
+
+		/*
+		 * Set the HCRESET bit.
+		 */
+		val = cpu_read32(usbcmd_addr) | hc_reset_bit;
+		cpu_write32(usbcmd_addr, val);
+
+		delay(100000);
+
+		/*
+		 * Wait until the HCRESET bit is cleared.
+		 */
+		for (i = 0; i < 10000; i++) {
+			val = cpu_read32(usbcmd_addr);
+
+			if ((val & hc_reset_bit) == 0)
+				break;
+
+			delay(100000);
+		}
+
+		/*
+		 * Initialize USB Status Register (USBINTR).
+		 */
+		val = 0x0000003F;
+		cpu_write32(usbsts_addr, val);
+
+		/*
+		 * Initialize USB Interrupt Enable Register (USBINTR).
+		 */
+		val = 0x00000000;
+		cpu_write32(usbint_addr, val);
+	}
+
+	return 0;
+}
+
 static int usb_init_controllers(int early)
 {
 	struct pci_device *pci;
 	int class_code, i, r;
+
+	for (i = 0; i < (int)pci_device_count; i++) {
+		pci = &pci_devices[i];
+		class_code = (int)pci->class_code;
+
+		/*
+		 * Enhanced Host Controller Interface (EHCI).
+		 */
+		if (class_code == 0x0C0320) {
+			if ((r = usb_init_ehci(pci, early)) != 0)
+				return r;
+		}
+	}
 
 	for (i = 0; i < (int)pci_device_count; i++) {
 		pci = &pci_devices[i];
