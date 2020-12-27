@@ -242,17 +242,19 @@ void init(void)
 		pit_init();
 
 	/*
+	 * Allow IRQ 0, and IRQ 2 if using I/O APIC. For the latter, the
+	 * order is very relevant, i.e. IRQ 2 must be enabled first. After
+	 * that, IRQ 0 usually overrides its entry on the I/O APIC's table.
+	 */
+	if (apic_mode)
+		ioapic_enable(2), ioapic_enable(0);
+	else
+		cpu_out8(0x21, 0xFA);
+
+	/*
 	 * Enable interrupts.
 	 */
 	cpu_ints(1);
-
-	/*
-	 * Allow IRQ 0, and IRQ 2 if using I/O APIC.
-	 */
-	if (apic_mode)
-		ioapic_enable(0), ioapic_enable(2);
-	else
-		cpu_out8(0x21, 0xFA);
 
 	/*
 	 * Wait for the delay function calibration.
