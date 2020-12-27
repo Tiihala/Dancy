@@ -403,22 +403,34 @@ static int usb_init_ehci(struct pci_device *pci, int early)
 			/*
 			 * If it seems that the BIOS does not release the
 			 * controller, set the SMI on OS Ownership Enable
-			 * bit (USBLEGCTLSTS).
+			 * bit (USBLEGCTLSTS) and try again.
 			 */
 			if (i == 10000) {
-				val = pci_read(pci, ctlsts_offset) | smi_bit;
+				/*
+				 * Clear the SMI bit temporarily.
+				 */
+				val = pci_read(pci, ctlsts_offset);
+				val &= (~smi_bit);
 				pci_write(pci, ctlsts_offset, val);
-			}
 
-			/*
-			 * Try to set the OS Owned Semaphore again. The final
-			 * if statement will handle the unlikely case where
-			 * the BIOS clears the bit during this operation.
-			 */
-			if (i == 20000) {
+				/*
+				 * Cancel the current ownership request.
+				 */
+				val = pci_read(pci, legsup_offset);
 				val &= (~hc_os_semaphore);
 				pci_write(pci, legsup_offset, val);
 
+				/*
+				 * Set the SMI bit.
+				 */
+				val = pci_read(pci, ctlsts_offset);
+				val |= smi_bit;
+				pci_write(pci, ctlsts_offset, val);
+
+				/*
+				 * Set the OS Owned Semaphore again.
+				 */
+				val = pci_read(pci, legsup_offset);
 				val |= hc_os_semaphore;
 				pci_write(pci, legsup_offset, val);
 			}
