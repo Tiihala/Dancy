@@ -538,10 +538,286 @@ static int usb_init_ehci(struct pci_device *pci, int early)
 	return 0;
 }
 
+static int usb_init_xhci(struct pci_device *pci, int early)
+{
+	uint32_t cmd = pci_read(pci, 0x04) & 0xFFFFu;
+	phys_addr_t base = (phys_addr_t)pci_read(pci, 0x10), base_cap = 0;
+	phys_addr_t xecp_addr = 0;
+
+	uint32_t cap_length = 0, hci_version = 0;
+	uint32_t hcs_params[3] = { 0, 0, 0 };
+	uint32_t hcc_params[2] = { 0, 0 };
+	uint32_t i, val;
+
+	int mem_enabled = 0;
+	int mem_type = (int)((base >> 1) & 3u);
+	int io_space = (int)(base & 1u);
+
+	base &= 0xFFFFFFF0u;
+
+	if ((cmd & 2u) != 0) {
+		if (io_space != 0 || base < 0x20000)
+			return (int)(__LINE__);
+		if (mem_type == 2 && pci_read(pci, 0x14) != 0)
+			return (int)(__LINE__);
+		mem_enabled = 1;
+
+	} else if ((cmd & 1u) != 0) {
+		if (io_space != 0)
+			return (int)(__LINE__);
+	}
+
+	if (mem_enabled) {
+		val = cpu_read32((const uint32_t *)(base + 0x00));
+
+		cap_length = (val & 0xFFu);
+		base_cap = base + (phys_addr_t)cap_length;
+		hci_version = ((val >> 16) & 0xFFFFu);
+
+		hcs_params[0] = cpu_read32((const uint32_t *)(base + 0x04));
+		hcs_params[1] = cpu_read32((const uint32_t *)(base + 0x08));
+		hcs_params[2] = cpu_read32((const uint32_t *)(base + 0x0C));
+
+		hcc_params[0] = cpu_read32((const uint32_t *)(base + 0x10));
+		hcc_params[1] = cpu_read32((const uint32_t *)(base + 0x1C));
+
+		xecp_addr = base + (((hcc_params[0] >> 16) & 0xFFFFu) << 2);
+	}
+
+	/*
+	 * Make sure that "xECP" points to the USBLEGSUP Register.
+	 */
+	for (i = 0; xecp_addr != 0; i++) {
+		val = cpu_read32((const uint32_t *)(xecp_addr + 0x00));
+
+		/*
+		 * Check the Capability ID (value of 1).
+		 */
+		if ((val & 0xFFu) == 1)
+			break;
+
+		if (i == 128)
+			return (int)(__LINE__);
+
+		/*
+		 * Get the next xHCI Extended Capability Pointer.
+		 */
+		{
+			uint32_t add = ((val >> 8) & 0xFFu) << 2;
+
+			if (add != 0)
+				xecp_addr += (phys_addr_t)add;
+			else
+				xecp_addr = 0;
+		}
+	}
+
+	if (early) {
+		b_log("Extensible Host Controller Interface (xHCI)\n");
+
+		b_log("\tMemory Base Address is %p\n", (const void *)base);
+
+		val = pci_read(pci, 0x3C);
+		b_log("\tInterrupt Line is %u and Interrupt PIN is %02X\n",
+			(val & 0xFFu), ((val >> 8) & 0xFFu));
+
+		val = pci_read(pci, 0x60) & 0xFFu;
+		b_log("\tSerial Bus Release Number is %02X\n", val);
+
+		b_log("\tCapability Register Length is %02X\n", cap_length);
+		b_log("\tInterface Version Number is %04X\n", hci_version);
+
+		b_log("\tStructural Parameters 1 are %08X\n", hcs_params[0]);
+		b_log("\tStructural Parameters 2 are %08X\n", hcs_params[1]);
+		b_log("\tStructural Parameters 3 are %08X\n", hcs_params[2]);
+
+		b_log("\tCapability Parameters 1 are %08X\n", hcc_params[0]);
+		b_log("\tCapability Parameters 2 are %08X\n", hcc_params[1]);
+
+		if (mem_enabled) {
+			val = cpu_read32((const uint32_t *)(base_cap + 0));
+			b_log("\tCommand Register value is %08X\n", val);
+			val = cpu_read32((const uint32_t *)(base_cap + 4));
+			b_log("\tStatus Register value is %08X\n", val);
+		}
+
+		if (xecp_addr) {
+			val = cpu_read32((const uint32_t *)(xecp_addr + 0));
+			b_log("\tLegacy (xECP + 0) value is %08X\n", val);
+			val = cpu_read32((const uint32_t *)(xecp_addr + 4));
+			b_log("\tLegacy (xECP + 4) value is %08X\n", val);
+		}
+
+		b_log("\n");
+
+		return 0;
+	}
+
+	if (!mem_enabled)
+		return 0;
+
+	pg_map_uncached((void *)base);
+
+	/*
+	 * Handle the HC BIOS Owned Semaphore (USBLEGSUP).
+	 */
+	if (xecp_addr) {
+		const uint32_t smi_bit = (1u << 13);
+		const uint32_t hc_bios_semaphore = (1u << 16);
+		const uint32_t hc_os_semaphore = (1u << 24);
+
+		uint32_t *legsup_addr = (uint32_t *)(xecp_addr + 0x00);
+		uint32_t *ctlsts_addr = (uint32_t *)(xecp_addr + 0x04);
+
+		/*
+		 * Request ownership of the EHCI controller.
+		 */
+		val = cpu_read32(legsup_addr);
+		cpu_write32(legsup_addr, (val | hc_os_semaphore));
+
+		for (i = 0; (val & hc_bios_semaphore) != 0; i++) {
+			/*
+			 * If it seems that the BIOS does not release the
+			 * controller, set the SMI on OS Ownership Enable
+			 * bit (USBLEGCTLSTS) and try again.
+			 */
+			if (i == 10000) {
+				/*
+				 * Clear the SMI bit temporarily.
+				 */
+				val = cpu_read32(ctlsts_addr);
+				val &= (~smi_bit);
+				cpu_write32(ctlsts_addr, val);
+
+				/*
+				 * Cancel the current ownership request.
+				 */
+				val = cpu_read32(legsup_addr);
+				val &= (~hc_os_semaphore);
+				cpu_write32(legsup_addr, val);
+
+				/*
+				 * Set the SMI bit.
+				 */
+				val = cpu_read32(ctlsts_addr);
+				val |= smi_bit;
+				cpu_write32(ctlsts_addr, val);
+
+				/*
+				 * Set the OS Owned Semaphore again.
+				 */
+				val = cpu_read32(legsup_addr);
+				val |= hc_os_semaphore;
+				cpu_write32(legsup_addr, val);
+			}
+
+			/*
+			 * Something went wrong. Take ownership from the BIOS.
+			 */
+			if (i == 30000) {
+				val &= (~hc_bios_semaphore);
+				cpu_write32(legsup_addr, val);
+				break;
+			}
+
+			delay(100000);
+
+			val = cpu_read32(legsup_addr);
+		}
+
+		/*
+		 * Check that the above loop cleared the BIOS semaphore
+		 * and set the OS semaphore.
+		 */
+		val = cpu_read32(legsup_addr);
+
+		if ((val & hc_bios_semaphore) != 0)
+			return (int)(__LINE__);
+
+		if ((val & hc_os_semaphore) == 0)
+			return (int)(__LINE__);
+
+		/*
+		 * Initialize Legacy Support Control/Status (USBLEGCTLSTS).
+		 */
+		val = 0x00000000;
+		cpu_write32(ctlsts_addr, val);
+	}
+
+	/*
+	 * Handle host controller operational registers.
+	 */
+	{
+		const uint32_t rs_bit = (1u);
+		const uint32_t hc_reset_bit = (1u << 1);
+		const uint32_t hc_halted_bit = (1u);
+
+		uint32_t *usbcmd_addr = (uint32_t *)(base_cap + 0x00);
+		uint32_t *usbsts_addr = (uint32_t *)(base_cap + 0x04);
+
+		val = cpu_read32(usbcmd_addr);
+
+		/*
+		 * Check the Run/Stop (RS) bit and clear if needed.
+		 */
+		if ((val & rs_bit) != 0) {
+			val &= (~rs_bit);
+			cpu_write32(usbcmd_addr, val);
+
+			/*
+			 * Wait until the HCHalted bit is set (USBSTS).
+			 */
+			for (i = 0; i < 10000; i++) {
+				val = cpu_read32(usbsts_addr);
+
+				if ((val & hc_halted_bit) != 0)
+					break;
+
+				delay(100000);
+			}
+		}
+
+		/*
+		 * Set the HCRESET bit.
+		 */
+		val = cpu_read32(usbcmd_addr) | hc_reset_bit;
+		cpu_write32(usbcmd_addr, val);
+
+		delay(100000);
+
+		/*
+		 * Wait until the HCRESET bit is cleared.
+		 */
+		for (i = 0; i < 10000; i++) {
+			val = cpu_read32(usbcmd_addr);
+
+			if ((val & hc_reset_bit) == 0)
+				break;
+
+			delay(100000);
+		}
+	}
+
+	return 0;
+}
+
 static int usb_init_controllers(int early)
 {
 	struct pci_device *pci;
 	int class_code, i, r;
+
+	for (i = 0; i < (int)pci_device_count; i++) {
+		pci = &pci_devices[i];
+		class_code = (int)pci->class_code;
+
+		/*
+		 * Extensible Host Controller Interface (xHCI).
+		 */
+		if (class_code == 0x0C0330) {
+			if ((r = usb_init_xhci(pci, early)) != 0)
+				return r;
+		}
+	}
 
 	for (i = 0; i < (int)pci_device_count; i++) {
 		pci = &pci_devices[i];
