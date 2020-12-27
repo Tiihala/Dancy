@@ -523,7 +523,7 @@ static int usb_init_ehci(struct pci_device *pci, int early)
 		}
 
 		/*
-		 * Initialize USB Status Register (USBINTR).
+		 * Initialize USB Status Register (USBSTS).
 		 */
 		val = 0x0000003F;
 		cpu_write32(usbsts_addr, val);
@@ -860,6 +860,11 @@ int usb_init_early(void)
 {
 	int r;
 
+	/*
+	 * Allow early I/O only if using the BIOS boot loader. This
+	 * is for writing the init log file. The "usb_init" function
+	 * does the actual hardware configurations.
+	 */
 	if (boot_loader_type != BOOT_LOADER_TYPE_BIOS)
 		return 0;
 
