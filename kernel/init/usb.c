@@ -88,8 +88,10 @@ static int usb_init_uhci(struct pci_device *pci, int early)
 	val = 0x8F00;
 	pci_write(pci, 0xC0, val);
 
-	if (!io_enabled)
+	if (!io_enabled) {
+		b_print("UHCI: host controller is not enabled\n");
 		return 0;
+	}
 
 	/*
 	 * Clear the Run/Stop (RS) bit.
@@ -217,8 +219,10 @@ static int usb_init_ohci(struct pci_device *pci, int early)
 		return 0;
 	}
 
-	if (!mem_enabled)
+	if (!mem_enabled) {
+		b_print("OHCI: host controller is not enabled\n");
 		return 0;
+	}
 
 	pg_map_uncached((void *)base);
 
@@ -395,8 +399,10 @@ static int usb_init_ehci(struct pci_device *pci, int early)
 		return 0;
 	}
 
-	if (!mem_enabled)
+	if (!mem_enabled) {
+		b_print("EHCI: host controller is not enabled\n");
 		return 0;
+	}
 
 	pg_map_uncached((void *)base);
 
@@ -664,8 +670,10 @@ static int usb_init_xhci(struct pci_device *pci, int early)
 		return 0;
 	}
 
-	if (!mem_enabled)
+	if (!mem_enabled) {
+		b_print("xHCI: host controller is not enabled\n");
 		return 0;
+	}
 
 	pg_map_uncached((void *)base);
 
