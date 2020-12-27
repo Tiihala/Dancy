@@ -19,6 +19,31 @@
 
 #include <init.h>
 
+static phys_addr_t usb_get_base(struct pci_device *pci, int off, int early)
+{
+	phys_addr_t base = (phys_addr_t)pci_read(pci, off), base_high = 0;
+	int io_space = (int)(base & 1u);
+	int type = (int)((base >> 1) & 3u);
+
+	if (io_space)
+		return (phys_addr_t)(1);
+
+	base &= 0xFFFFFFF0u;
+
+	if (type == 2) {
+		base_high = (phys_addr_t)pci_read(pci, off + 4);
+		base |= ((base_high << 16) << 16);
+#ifdef DANCY_32
+		if (base_high)
+			base = 0;
+#endif
+		if (base_high && early)
+			base = 0;
+	}
+
+	return base;
+}
+
 static int usb_init_uhci(struct pci_device *pci, int early)
 {
 	uint32_t cmd = pci_read(pci, 0x04) & 0xFFFFu;
@@ -35,9 +60,8 @@ static int usb_init_uhci(struct pci_device *pci, int early)
 			return (int)(__LINE__);
 		io_enabled = 1;
 
-	} else if ((cmd & 2u) != 0) {
-		if (io_space == 0)
-			return (int)(__LINE__);
+	} else if ((cmd & 2u) != 0 && io_space == 0) {
+		return (int)(__LINE__);
 	}
 
 	if (early) {
@@ -145,25 +169,24 @@ static int usb_init_uhci(struct pci_device *pci, int early)
 static int usb_init_ohci(struct pci_device *pci, int early)
 {
 	uint32_t cmd = pci_read(pci, 0x04) & 0xFFFFu;
-	phys_addr_t base = (phys_addr_t)pci_read(pci, 0x10);
+	phys_addr_t base = usb_get_base(pci, 0x10, early);
 	uint32_t hc_revision = 0;
 	uint32_t i, val;
 
 	int mem_enabled = 0, legacy_bit = 0;
-	int io_space = (int)(base & 1u);
-
-	base &= 0xFFFFFFF0u;
 
 	if ((cmd & 2u) != 0) {
-		if (io_space != 0 || base < 0x20000)
+		if (base < 0x20000)
 			return (int)(__LINE__);
-		hc_revision = cpu_read32((const uint32_t *)(base + 0));
-		legacy_bit = (int)((hc_revision & 0x100u) >> 8);
 		mem_enabled = 1;
 
-	} else if ((cmd & 1u) != 0) {
-		if (io_space != 0)
-			return (int)(__LINE__);
+	} else if ((cmd & 1u) != 0 && base == 1) {
+		return (int)(__LINE__);
+	}
+
+	if (mem_enabled) {
+		hc_revision = cpu_read32((const uint32_t *)(base + 0));
+		legacy_bit = (int)((hc_revision & 0x100u) >> 8);
 	}
 
 	if (early) {
@@ -287,26 +310,21 @@ static int usb_init_ohci(struct pci_device *pci, int early)
 static int usb_init_ehci(struct pci_device *pci, int early)
 {
 	uint32_t cmd = pci_read(pci, 0x04) & 0xFFFFu;
-	phys_addr_t base = (phys_addr_t)pci_read(pci, 0x10), base_cap = 0;
+	phys_addr_t base = usb_get_base(pci, 0x10, early), base_cap = 0;
 
 	uint32_t cap_length = 0, hci_version = 0, eecp_offset = 0;
 	uint32_t hcs_params = 0, hcc_params = 0;
 	uint32_t i, val;
 
 	int mem_enabled = 0;
-	int mem_type = (int)((base >> 1) & 3u);
-	int io_space = (int)(base & 1u);
-
-	base &= 0xFFFFFFF0u;
 
 	if ((cmd & 2u) != 0) {
-		if (io_space != 0 || mem_type != 0 || base < 0x20000)
+		if (base < 0x20000)
 			return (int)(__LINE__);
 		mem_enabled = 1;
 
-	} else if ((cmd & 1u) != 0) {
-		if (io_space != 0)
-			return (int)(__LINE__);
+	} else if ((cmd & 1u) != 0 && base == 1) {
+		return (int)(__LINE__);
 	}
 
 	if (mem_enabled) {
@@ -541,7 +559,7 @@ static int usb_init_ehci(struct pci_device *pci, int early)
 static int usb_init_xhci(struct pci_device *pci, int early)
 {
 	uint32_t cmd = pci_read(pci, 0x04) & 0xFFFFu;
-	phys_addr_t base = (phys_addr_t)pci_read(pci, 0x10), base_cap = 0;
+	phys_addr_t base = usb_get_base(pci, 0x10, early), base_cap = 0;
 	phys_addr_t xecp_addr = 0;
 
 	uint32_t cap_length = 0, hci_version = 0;
@@ -550,21 +568,14 @@ static int usb_init_xhci(struct pci_device *pci, int early)
 	uint32_t i, val;
 
 	int mem_enabled = 0;
-	int mem_type = (int)((base >> 1) & 3u);
-	int io_space = (int)(base & 1u);
-
-	base &= 0xFFFFFFF0u;
 
 	if ((cmd & 2u) != 0) {
-		if (io_space != 0 || base < 0x20000)
-			return (int)(__LINE__);
-		if (mem_type == 2 && pci_read(pci, 0x14) != 0)
+		if (base < 0x20000)
 			return (int)(__LINE__);
 		mem_enabled = 1;
 
-	} else if ((cmd & 1u) != 0) {
-		if (io_space != 0)
-			return (int)(__LINE__);
+	} else if ((cmd & 1u) != 0 && base == 1) {
+		return (int)(__LINE__);
 	}
 
 	if (mem_enabled) {
