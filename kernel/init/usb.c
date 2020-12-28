@@ -179,7 +179,7 @@ static int usb_init_ohci(struct pci_device *pci, int early)
 
 	if ((cmd & 2u) != 0) {
 		if (base < 0x20000)
-			return (int)(__LINE__);
+			return (early != 0) ? 0 : (int)(__LINE__);
 		mem_enabled = 1;
 
 	} else if ((cmd & 1u) != 0 && base == 1) {
@@ -324,7 +324,7 @@ static int usb_init_ehci(struct pci_device *pci, int early)
 
 	if ((cmd & 2u) != 0) {
 		if (base < 0x20000)
-			return (int)(__LINE__);
+			return (early != 0) ? 0 : (int)(__LINE__);
 		mem_enabled = 1;
 
 	} else if ((cmd & 1u) != 0 && base == 1) {
@@ -577,7 +577,7 @@ static int usb_init_xhci(struct pci_device *pci, int early)
 
 	if ((cmd & 2u) != 0) {
 		if (base < 0x20000)
-			return (int)(__LINE__);
+			return (early != 0) ? 0 : (int)(__LINE__);
 		mem_enabled = 1;
 
 	} else if ((cmd & 1u) != 0 && base == 1) {
