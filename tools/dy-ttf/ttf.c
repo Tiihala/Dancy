@@ -49,6 +49,7 @@ static struct glyf   *ttf_glyf_array;
 static unsigned long ttf_glyf_points;
 
 static int ttf_created;
+static int ttf_verbose;
 
 static unsigned long ttf_em_mul = 2048;
 static unsigned long ttf_em_div = 2048;
@@ -1147,8 +1148,23 @@ static size_t ttf_build_glyf(size_t offset)
 
 		total_size += size;
 
-		if (ttf_glyf_points == 0)
+		if (ttf_glyf_points == 0) {
+			unsigned long point;
+
+			if (!ttf_verbose)
+				continue;
+
+			printf("Empty glyph %04lX", i);
+			for (j = 0; j < ttf_cmap_points; j++) {
+				if (ttf_cmap_array[j].index == i) {
+					point = ttf_cmap_array[j].point;
+					printf(" (%08lX)", point);
+					break;
+				}
+			}
+			printf("\n");
 			continue;
+		}
 
 		/*
 		 * Simple glyph format.
@@ -1715,6 +1731,8 @@ int ttf_main(struct options *opt)
 {
 	size_t offset;
 	int ret;
+
+	ttf_verbose = opt->verbose;
 
 	if ((ret = ttf_read_head()) != 0) {
 		fputs("Error: head table\n", stderr);
