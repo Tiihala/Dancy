@@ -3,7 +3,9 @@
 ##############################################################################
 
 DANCY_DB_FILES= \
- ./share/fonts/dancy.ttf \
+ ./share/fonts/dcysan.ttf \
+ ./share/fonts/dcysanb.ttf \
+ ./share/fonts/dcysanm.ttf \
  $(ACPICA_O32_AT) \
  ./o32/init.at \
  $(ACPICA_O64_AT) \

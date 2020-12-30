@@ -27,6 +27,8 @@ static unsigned char *back_buffer;
 static struct b_video_info vi;
 
 extern void *ttf;
+extern void *ttf_array[3];
+
 static size_t ttf_height = 16;
 
 static size_t ttf_bitmap_size;
@@ -984,6 +986,11 @@ void gui_print_alert(const char *message)
 
 	if (!back_buffer)
 		return;
+
+	/*
+	 * Use the monospaced font.
+	 */
+	ttf = ttf_array[2];
 
 	memset(&alert_win, 0, sizeof(alert_win));
 

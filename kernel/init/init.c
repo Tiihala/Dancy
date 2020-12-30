@@ -20,12 +20,20 @@
 #include <init.h>
 
 void *ttf;
+void *ttf_array[3];
+
+static const char *ttf_names[3] = {
+	"share/fonts/dcysan.ttf",
+	"share/fonts/dcysanb.ttf",
+	"share/fonts/dcysanm.ttf"
+};
 
 void init(void)
 {
 	const uint32_t log_mem = 0x00080000;
 	struct b_video_info vi;
 	struct b_time bt;
+	int i;
 
 	if (b_log_init(log_mem))
 		return;
@@ -70,8 +78,8 @@ void init(void)
 			"32 RGBX",
 			"32 BGRX"
 		};
-		unsigned i = (unsigned)vi.mode;
-		const char *mode_name = (i < 8) ? mode_names[i] : "";
+		unsigned idx = (unsigned)vi.mode;
+		const char *mode_name = (idx < 8) ? mode_names[idx] : "";
 
 		b_log("Video Mode\n");
 		b_log("\tMode: %ux%ux%s\n", vi.width, vi.height, mode_name);
@@ -98,10 +106,10 @@ void init(void)
 		return;
 
 	/*
-	 * Load dancy.ttf and create a ttf object.
+	 * Load fonts and create ttf objects.
 	 */
-	{
-		static const char *ttf_name = "share/fonts/dancy.ttf";
+	for (i = 0; i < (int)(sizeof(ttf_array) / sizeof(*ttf_array)); i++) {
+		const char *ttf_name = ttf_names[i];
 		unsigned char *ttf_data;
 		size_t ttf_size;
 
@@ -123,7 +131,14 @@ void init(void)
 		}
 
 		free(ttf_data);
+
+		ttf_array[i] = ttf;
 	}
+
+	/*
+	 * Use the first ttf object.
+	 */
+	ttf = ttf_array[0];
 
 	/*
 	 * Modify the boot file system.
