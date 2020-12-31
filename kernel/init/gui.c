@@ -53,26 +53,14 @@ static const uint32_t colors[16] = {
 	DANCY_PALETTE_F
 };
 
-static const unsigned char ttf_colors[8] = {
-	0x07, /* 0x00 */
-	0x06, /* 0x01 */
-	0x05, /* 0x02 */
-	0x04, /* 0x03 */
-	0x03, /* 0x04 */
-	0x02, /* 0x05 */
-	0x01, /* 0x06 */
-	0x00  /* 0x07 */
+static const unsigned char ttf_colors[16] = {
+	0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08,
+	0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
 };
 
-static const unsigned char ttf_colors_window[8] = {
-	0x00, /* 0x00 */
-	0x01, /* 0x01 */
-	0x02, /* 0x02 */
-	0x03, /* 0x03 */
-	0x04, /* 0x04 */
-	0x05, /* 0x05 */
-	0x06, /* 0x06 */
-	0x07  /* 0x07 */
+static const unsigned char ttf_colors_window[16] = {
+	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+	0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
 };
 
 static uint16_t palette16[256];
@@ -357,7 +345,7 @@ static void ttf_set_colors(const unsigned char *indices)
 
 		for (x = 0; x < height; x++) {
 			p = row[x];
-			row[x] = indices[p & 0x07u];
+			row[x] = indices[p & 0x0Fu];
 		}
 	}
 }
@@ -439,7 +427,7 @@ int gui_init(void)
 		return 1;
 	}
 
-	memset(back_buffer, 0x02, size);
+	memset(back_buffer, 0x04, size);
 
 	return 0;
 }
@@ -508,7 +496,7 @@ static int create_window(const char *name, int x1, int y1, int x2, int y2)
 		unsigned code_points[2] = { 0, 0 };
 
 		ttf_set_bitmap(ttf, ttf_bitmap_size, ttf_bitmap);
-		ttf_set_shades(ttf, 8);
+		ttf_set_shades(ttf, 16);
 
 		while (*name != '\0')  {
 			int kerning = 0;
@@ -896,7 +884,7 @@ static void print_message(const char *message)
 
 	if (ttf_set_bitmap(ttf, ttf_bitmap_size, ttf_bitmap))
 		return;
-	if (ttf_set_shades(ttf, 8))
+	if (ttf_set_shades(ttf, 16))
 		return;
 
 	dst_buffer = gui_window_stack->win_buffer;
@@ -972,7 +960,7 @@ void gui_print(const char *format, ...)
 
 void gui_print_alert(const char *message)
 {
-	const unsigned char warning_color = 15;
+	const unsigned char warning_color = 13;
 	struct gui_window *current_stack = gui_window_stack;
 	struct gui_window alert_win;
 	unsigned off_x, off_y, x, y;
