@@ -615,8 +615,8 @@ static int draw_raster_graphics(unsigned char *png,
 	if ((x2 - x1) < 8 || (y2 - y1) < 8)
 		return 1;
 
-	win_w = (unsigned)(x2 - x1);
-	win_h = (unsigned)(y2 - y1);
+	win_w = (unsigned)((x2 + 1) - x1);
+	win_h = (unsigned)((y2 + 1) - y1);
 
 	win_buffer = back_buffer + (y1 * (int)vi.width) + x1;
 
