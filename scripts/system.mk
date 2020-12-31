@@ -3,13 +3,14 @@
 ##############################################################################
 
 DANCY_DB_FILES= \
+ ./o32/init.at \
+ ./o64/init.at \
+ $(ACPICA_O32_AT) \
+ $(ACPICA_O64_AT) \
  ./share/fonts/dcysan.ttf \
  ./share/fonts/dcysanb.ttf \
  ./share/fonts/dcysanm.ttf \
- $(ACPICA_O32_AT) \
- ./o32/init.at \
- $(ACPICA_O64_AT) \
- ./o64/init.at
+ ./share/pictures/init.png
 
 ##############################################################################
 

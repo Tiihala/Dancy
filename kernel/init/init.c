@@ -165,9 +165,37 @@ void init(void)
 	}
 
 	/*
-	 * Create the first GUI window.
+	 * Draw the background picture and create the first GUI window.
 	 */
-	gui_create_window("Dancy Operating System", 20, 20, 620, 460);
+	if (vi.width != 0) {
+		const char *png_name = "share/pictures/init.png";
+		unsigned char *png_data;
+		size_t png_size;
+
+		int x1 = 0, y1 = 0;
+		int x2 = (int)(vi.width - 1), y2 = (int)(vi.height - 1);
+		int win_w, win_h;
+
+		if (!db_read(png_name, &png_data, &png_size)) {
+			gui_draw(png_data, png_size, x1, y1, x2, y2);
+			free(png_data);
+		}
+
+		win_w = (int)(vi.width * 2) / 3;
+		win_h = (int)(vi.height * 2) / 3;
+
+		if (win_w > 800)
+			win_w = 800;
+		if (win_h > 600)
+			win_h = 600;
+
+		x1 = (int)(vi.width / 2) - (win_w / 2);
+		y1 = (int)(vi.height / 2) - (win_h / 2);;
+		x2 = (int)(vi.width / 2) + (win_w / 2);
+		y2 = (int)(vi.height / 2) + (win_h / 2);
+
+		gui_create_window("Dancy Operating System", x1, y1, x2, y2);
+	}
 
 	/*
 	 * Use gui_print instead of the loader provided service.
@@ -309,15 +337,8 @@ void init(void)
 	 * Temporary code for testing purposes.
 	 */
 	{
-		int x1, y1, x2, y2;
 		unsigned prev = 0, next;
 
-		x1 = 40;
-		y1 = 80;
-		x2 = x1 + 320;
-		y2 = y1 + 200;
-
-		gui_create_window("Dancy Operating System", x1, y1, x2, y2);
 		gui_print("https://github.com/Tiihala/Dancy\n\n");
 
 		if (hpet_mode)
