@@ -320,7 +320,7 @@ static int db_files(struct options *opt)
 		opt->operands[1] = &dst[0];
 		if (mcopy(opt))
 			return 1;
-		if (limit-- == 0)
+		if (--limit == 0)
 			break;
 	}
 	return 0;
