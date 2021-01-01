@@ -4,8 +4,8 @@
 
 DY_BLOB_OBJECTS= \
  ./tools/dy-blob/dy-blob.obj \
- ./boot/cd/eltorito.obj \
- ./boot/fat/ldr512.obj \
+ ./boot/early/eltorito.obj \
+ ./boot/early/ldr512.obj \
  ./boot/loader.obj
 
 ./bin/dy-blob$(DANCY_EXE): $(DY_BLOB_OBJECTS) ./scripts/dancy.mk
@@ -24,7 +24,7 @@ DY_CONF_OBJECTS= \
 
 DY_GPT_OBJECTS= \
  ./tools/dy-gpt/dy-gpt.obj \
- ./boot/gpt/gpt.obj \
+ ./boot/early/gpt.obj \
  ./common/crc32c.obj
 
 ./bin/dy-gpt$(DANCY_EXE): $(DY_GPT_OBJECTS) ./scripts/dancy.mk
@@ -44,7 +44,7 @@ DY_INIT_OBJECTS= \
 
 DY_ISO_OBJECTS= \
  ./tools/dy-iso/dy-iso.obj \
- ./boot/cd/eltorito.obj
+ ./boot/early/eltorito.obj
 
 ./bin/dy-iso$(DANCY_EXE): $(DY_ISO_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_ISO_OBJECTS)
@@ -69,7 +69,7 @@ DY_LINK_HEADERS= \
 
 DY_MBR_OBJECTS= \
  ./tools/dy-mbr/dy-mbr.obj \
- ./boot/mbr/mbr.obj \
+ ./boot/early/mbr.obj \
  ./common/crc32c.obj
 
 ./bin/dy-mbr$(DANCY_EXE): $(DY_MBR_OBJECTS) ./scripts/dancy.mk
@@ -152,10 +152,10 @@ DY_UEFI_OBJECTS= \
 
 DY_VBR_OBJECTS= \
  ./tools/dy-vbr/dy-vbr.obj \
- ./boot/fat/floppy.obj \
- ./boot/fat/ldr512.obj \
- ./boot/fat/vbrchs.obj \
- ./boot/fat/vbrlba.obj \
+ ./boot/early/floppy.obj \
+ ./boot/early/ldr512.obj \
+ ./boot/early/vbrchs.obj \
+ ./boot/early/vbrlba.obj \
  ./common/crc32c.obj
 
 ./bin/dy-vbr$(DANCY_EXE): $(DY_VBR_OBJECTS) ./scripts/dancy.mk
@@ -176,26 +176,26 @@ DY_ZIP_OBJECTS= \
 
 ##############################################################################
 
-./boot/cd/eltorito.obj: ./boot/cd/eltorito.c $(DANCY_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./boot/cd/eltorito.c
+./boot/early/eltorito.obj: ./boot/early/eltorito.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./boot/early/eltorito.c
 
-./boot/fat/floppy.obj: ./boot/fat/floppy.c $(DANCY_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./boot/fat/floppy.c
+./boot/early/floppy.obj: ./boot/early/floppy.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./boot/early/floppy.c
 
-./boot/fat/ldr512.obj: ./boot/fat/ldr512.c $(DANCY_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./boot/fat/ldr512.c
+./boot/early/ldr512.obj: ./boot/early/ldr512.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./boot/early/ldr512.c
 
-./boot/fat/vbrchs.obj: ./boot/fat/vbrchs.c $(DANCY_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./boot/fat/vbrchs.c
+./boot/early/vbrchs.obj: ./boot/early/vbrchs.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./boot/early/vbrchs.c
 
-./boot/fat/vbrlba.obj: ./boot/fat/vbrlba.c $(DANCY_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./boot/fat/vbrlba.c
+./boot/early/vbrlba.obj: ./boot/early/vbrlba.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./boot/early/vbrlba.c
 
-./boot/gpt/gpt.obj: ./boot/gpt/gpt.c $(DANCY_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./boot/gpt/gpt.c
+./boot/early/gpt.obj: ./boot/early/gpt.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./boot/early/gpt.c
 
-./boot/mbr/mbr.obj: ./boot/mbr/mbr.c $(DANCY_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./boot/mbr/mbr.c
+./boot/early/mbr.obj: ./boot/early/mbr.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./boot/early/mbr.c
 
 ./boot/loader.obj: ./boot/loader.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/loader.c
