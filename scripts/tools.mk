@@ -182,20 +182,20 @@ DY_ZIP_OBJECTS= \
 ./boot/early/floppy.obj: ./boot/early/floppy.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/early/floppy.c
 
+./boot/early/gpt.obj: ./boot/early/gpt.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./boot/early/gpt.c
+
 ./boot/early/ldr512.obj: ./boot/early/ldr512.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/early/ldr512.c
+
+./boot/early/mbr.obj: ./boot/early/mbr.c $(DANCY_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./boot/early/mbr.c
 
 ./boot/early/vbrchs.obj: ./boot/early/vbrchs.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/early/vbrchs.c
 
 ./boot/early/vbrlba.obj: ./boot/early/vbrlba.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/early/vbrlba.c
-
-./boot/early/gpt.obj: ./boot/early/gpt.c $(DANCY_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./boot/early/gpt.c
-
-./boot/early/mbr.obj: ./boot/early/mbr.c $(DANCY_HEADERS)
-	$(DANCY_HOST_OBJECT)$@ ./boot/early/mbr.c
 
 ./boot/loader.obj: ./boot/loader.c $(DANCY_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./boot/loader.c
