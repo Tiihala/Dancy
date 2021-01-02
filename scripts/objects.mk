@@ -17,104 +17,104 @@
 ./o32/common/ttf.o: ./common/ttf.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/ttf.c
 
-./o32/init/a32/cpu.o: ./kernel/init/a32/cpu.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/init/a32/cpu.asm
+./o32/init/a32/cpu.o: ./boot/init/a32/cpu.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./boot/init/a32/cpu.asm
 
-./o32/init/a32/gdt.o: ./kernel/init/a32/gdt.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/init/a32/gdt.asm
+./o32/init/a32/gdt.o: ./boot/init/a32/gdt.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./boot/init/a32/gdt.asm
 
-./o32/init/a32/idt.o: ./kernel/init/a32/idt.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/init/a32/idt.asm
+./o32/init/a32/idt.o: ./boot/init/a32/idt.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./boot/init/a32/idt.asm
 
-./o32/init/a32/ld.o: ./kernel/init/a32/ld.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/init/a32/ld.asm
+./o32/init/a32/ld.o: ./boot/init/a32/ld.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./boot/init/a32/ld.asm
 
-./o32/init/a32/pg.o: ./kernel/init/a32/pg.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/init/a32/pg.asm
+./o32/init/a32/pg.o: ./boot/init/a32/pg.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./boot/init/a32/pg.asm
 
-./o32/init/a32/start.o: ./kernel/init/a32/start.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/init/a32/start.asm
+./o32/init/a32/start.o: ./boot/init/a32/start.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./boot/init/a32/start.asm
 
-./o32/init/a32/syscall.o: ./kernel/init/a32/syscall.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/init/a32/syscall.asm
+./o32/init/a32/syscall.o: ./boot/init/a32/syscall.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./boot/init/a32/syscall.asm
 
-./o32/init/a32/thrd.o: ./kernel/init/a32/thrd.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/init/a32/thrd.asm
+./o32/init/a32/thrd.o: ./boot/init/a32/thrd.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./boot/init/a32/thrd.asm
 
-./o32/init/smp/smp.o: ./kernel/init/smp/smp.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/smp/smp.c
+./o32/init/smp/smp.o: ./boot/init/smp/smp.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/smp/smp.c
 
-./o32/init/smp/start32.o: ./kernel/init/smp/start32.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/smp/start32.c
+./o32/init/smp/start32.o: ./boot/init/smp/start32.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/smp/start32.c
 
-./o32/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/acpi.c
+./o32/init/acpi.o: ./boot/init/acpi.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/acpi.c
 
-./o32/init/apic.o: ./kernel/init/apic.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/apic.c
+./o32/init/apic.o: ./boot/init/apic.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/apic.c
 
-./o32/init/cpu.o: ./kernel/init/cpu.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/cpu.c
+./o32/init/cpu.o: ./boot/init/cpu.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/cpu.c
 
-./o32/init/db.o: ./kernel/init/db.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/db.c
+./o32/init/db.o: ./boot/init/db.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/db.c
 
-./o32/init/delay.o: ./kernel/init/delay.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/delay.c
+./o32/init/delay.o: ./boot/init/delay.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/delay.c
 
-./o32/init/fs.o: ./kernel/init/fs.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/fs.c
+./o32/init/fs.o: ./boot/init/fs.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/fs.c
 
-./o32/init/gui.o: ./kernel/init/gui.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/gui.c
+./o32/init/gui.o: ./boot/init/gui.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/gui.c
 
-./o32/init/hpet.o: ./kernel/init/hpet.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/hpet.c
+./o32/init/hpet.o: ./boot/init/hpet.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/hpet.c
 
-./o32/init/idt.o: ./kernel/init/idt.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/idt.c
+./o32/init/idt.o: ./boot/init/idt.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/idt.c
 
-./o32/init/init.o: ./kernel/init/init.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/init.c
+./o32/init/init.o: ./boot/init/init.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/init.c
 
-./o32/init/ld.o: ./kernel/init/ld.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/ld.c
+./o32/init/ld.o: ./boot/init/ld.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/ld.c
 
-./o32/init/log.o: ./kernel/init/log.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/log.c
+./o32/init/log.o: ./boot/init/log.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/log.c
 
-./o32/init/memory.o: ./kernel/init/memory.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/memory.c
+./o32/init/memory.o: ./boot/init/memory.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/memory.c
 
-./o32/init/panic.o: ./kernel/init/panic.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/panic.c
+./o32/init/panic.o: ./boot/init/panic.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/panic.c
 
-./o32/init/pci.o: ./kernel/init/pci.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/pci.c
+./o32/init/pci.o: ./boot/init/pci.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/pci.c
 
-./o32/init/pg.o: ./kernel/init/pg.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/pg.c
+./o32/init/pg.o: ./boot/init/pg.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/pg.c
 
-./o32/init/pit.o: ./kernel/init/pit.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/pit.c
+./o32/init/pit.o: ./boot/init/pit.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/pit.c
 
-./o32/init/print.o: ./kernel/init/print.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/print.c
+./o32/init/print.o: ./boot/init/print.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/print.c
 
-./o32/init/rtc.o: ./kernel/init/rtc.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/rtc.c
+./o32/init/rtc.o: ./boot/init/rtc.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/rtc.c
 
-./o32/init/start.o: ./kernel/init/start.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/start.c
+./o32/init/start.o: ./boot/init/start.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/start.c
 
-./o32/init/thrd.o: ./kernel/init/thrd.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/thrd.c
+./o32/init/thrd.o: ./boot/init/thrd.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/thrd.c
 
-./o32/init/usb.o: ./kernel/init/usb.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/usb.c
+./o32/init/usb.o: ./boot/init/usb.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/usb.c
 
-./o32/init/vga.o: ./kernel/init/vga.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/init/vga.c
+./o32/init/vga.o: ./boot/init/vga.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/vga.c
 
 ./o32/lib/a32/dark.o: ./kernel/lib/a32/dark.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/dark.asm
@@ -161,104 +161,104 @@
 ./o64/common/ttf.o: ./common/ttf.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/ttf.c
 
-./o64/init/a64/cpu.o: ./kernel/init/a64/cpu.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/init/a64/cpu.asm
+./o64/init/a64/cpu.o: ./boot/init/a64/cpu.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/init/a64/cpu.asm
 
-./o64/init/a64/gdt.o: ./kernel/init/a64/gdt.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/init/a64/gdt.asm
+./o64/init/a64/gdt.o: ./boot/init/a64/gdt.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/init/a64/gdt.asm
 
-./o64/init/a64/idt.o: ./kernel/init/a64/idt.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/init/a64/idt.asm
+./o64/init/a64/idt.o: ./boot/init/a64/idt.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/init/a64/idt.asm
 
-./o64/init/a64/ld.o: ./kernel/init/a64/ld.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/init/a64/ld.asm
+./o64/init/a64/ld.o: ./boot/init/a64/ld.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/init/a64/ld.asm
 
-./o64/init/a64/pg.o: ./kernel/init/a64/pg.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/init/a64/pg.asm
+./o64/init/a64/pg.o: ./boot/init/a64/pg.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/init/a64/pg.asm
 
-./o64/init/a64/start.o: ./kernel/init/a64/start.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/init/a64/start.asm
+./o64/init/a64/start.o: ./boot/init/a64/start.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/init/a64/start.asm
 
-./o64/init/a64/syscall.o: ./kernel/init/a64/syscall.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/init/a64/syscall.asm
+./o64/init/a64/syscall.o: ./boot/init/a64/syscall.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/init/a64/syscall.asm
 
-./o64/init/a64/thrd.o: ./kernel/init/a64/thrd.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/init/a64/thrd.asm
+./o64/init/a64/thrd.o: ./boot/init/a64/thrd.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/init/a64/thrd.asm
 
-./o64/init/smp/smp.o: ./kernel/init/smp/smp.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/smp/smp.c
+./o64/init/smp/smp.o: ./boot/init/smp/smp.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/smp/smp.c
 
-./o64/init/smp/start64.o: ./kernel/init/smp/start64.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/smp/start64.c
+./o64/init/smp/start64.o: ./boot/init/smp/start64.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/smp/start64.c
 
-./o64/init/acpi.o: ./kernel/init/acpi.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/acpi.c
+./o64/init/acpi.o: ./boot/init/acpi.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/acpi.c
 
-./o64/init/apic.o: ./kernel/init/apic.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/apic.c
+./o64/init/apic.o: ./boot/init/apic.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/apic.c
 
-./o64/init/cpu.o: ./kernel/init/cpu.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/cpu.c
+./o64/init/cpu.o: ./boot/init/cpu.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/cpu.c
 
-./o64/init/db.o: ./kernel/init/db.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/db.c
+./o64/init/db.o: ./boot/init/db.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/db.c
 
-./o64/init/delay.o: ./kernel/init/delay.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/delay.c
+./o64/init/delay.o: ./boot/init/delay.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/delay.c
 
-./o64/init/fs.o: ./kernel/init/fs.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/fs.c
+./o64/init/fs.o: ./boot/init/fs.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/fs.c
 
-./o64/init/gui.o: ./kernel/init/gui.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/gui.c
+./o64/init/gui.o: ./boot/init/gui.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/gui.c
 
-./o64/init/hpet.o: ./kernel/init/hpet.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/hpet.c
+./o64/init/hpet.o: ./boot/init/hpet.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/hpet.c
 
-./o64/init/idt.o: ./kernel/init/idt.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/idt.c
+./o64/init/idt.o: ./boot/init/idt.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/idt.c
 
-./o64/init/init.o: ./kernel/init/init.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/init.c
+./o64/init/init.o: ./boot/init/init.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/init.c
 
-./o64/init/ld.o: ./kernel/init/ld.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/ld.c
+./o64/init/ld.o: ./boot/init/ld.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/ld.c
 
-./o64/init/log.o: ./kernel/init/log.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/log.c
+./o64/init/log.o: ./boot/init/log.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/log.c
 
-./o64/init/memory.o: ./kernel/init/memory.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/memory.c
+./o64/init/memory.o: ./boot/init/memory.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/memory.c
 
-./o64/init/panic.o: ./kernel/init/panic.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/panic.c
+./o64/init/panic.o: ./boot/init/panic.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/panic.c
 
-./o64/init/pci.o: ./kernel/init/pci.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/pci.c
+./o64/init/pci.o: ./boot/init/pci.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/pci.c
 
-./o64/init/pg.o: ./kernel/init/pg.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/pg.c
+./o64/init/pg.o: ./boot/init/pg.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/pg.c
 
-./o64/init/pit.o: ./kernel/init/pit.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/pit.c
+./o64/init/pit.o: ./boot/init/pit.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/pit.c
 
-./o64/init/print.o: ./kernel/init/print.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/print.c
+./o64/init/print.o: ./boot/init/print.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/print.c
 
-./o64/init/rtc.o: ./kernel/init/rtc.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/rtc.c
+./o64/init/rtc.o: ./boot/init/rtc.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/rtc.c
 
-./o64/init/start.o: ./kernel/init/start.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/start.c
+./o64/init/start.o: ./boot/init/start.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/start.c
 
-./o64/init/thrd.o: ./kernel/init/thrd.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/thrd.c
+./o64/init/thrd.o: ./boot/init/thrd.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/thrd.c
 
-./o64/init/usb.o: ./kernel/init/usb.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/usb.c
+./o64/init/usb.o: ./boot/init/usb.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/usb.c
 
-./o64/init/vga.o: ./kernel/init/vga.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/init/vga.c
+./o64/init/vga.o: ./boot/init/vga.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/vga.c
 
 ./o64/lib/a64/dark.o: ./kernel/lib/a64/dark.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/dark.asm
