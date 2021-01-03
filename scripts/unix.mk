@@ -48,6 +48,7 @@ include ./scripts/acpica.mk
 include ./scripts/dirs.mk
 include ./scripts/external.mk
 include ./scripts/init.mk
+include ./scripts/kernel.mk
 include ./scripts/legacy.mk
 include ./scripts/objects.mk
 include ./scripts/release.mk
