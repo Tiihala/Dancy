@@ -4,6 +4,7 @@
 
 DANCY_KERNEL_OBJECTS_32= \
  ./o32/acpios/a32/glblock.o \
+ ./o32/base/start.o \
  ./o32/common/crc32.o \
  ./o32/common/crc32c.o \
  ./o32/lib/a32/dark.o \
@@ -19,6 +20,7 @@ DANCY_KERNEL_OBJECTS_32= \
 
 DANCY_KERNEL_OBJECTS_64= \
  ./o64/acpios/a64/glblock.o \
+ ./o64/base/start.o \
  ./o64/common/crc32.o \
  ./o64/common/crc32c.o \
  ./o64/lib/a64/dark.o \

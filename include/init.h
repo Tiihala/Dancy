@@ -237,6 +237,14 @@ void init_ap(uint32_t id);
 
 
 /*
+ * Declarations of kernel.asm and kernel.c
+ */
+void kernel_init(void);
+void kernel_init_ap(uint32_t id);
+void kernel_jump(void (*func)(void), void *stack);
+
+
+/*
  * Declarations of ld.asm and ld.c
  */
 struct global_symbol {

@@ -5,6 +5,9 @@
 ./o32/acpios/a32/glblock.o: ./kernel/acpios/a32/glblock.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/acpios/a32/glblock.asm
 
+./o32/base/start.o: ./kernel/base/start.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/start.c
+
 ./o32/common/crc32.o: ./common/crc32.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/crc32.c
 
@@ -25,6 +28,9 @@
 
 ./o32/init/a32/idt.o: ./boot/init/a32/idt.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./boot/init/a32/idt.asm
+
+./o32/init/a32/kernel.o: ./boot/init/a32/kernel.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./boot/init/a32/kernel.asm
 
 ./o32/init/a32/ld.o: ./boot/init/a32/ld.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./boot/init/a32/ld.asm
@@ -76,6 +82,9 @@
 
 ./o32/init/init.o: ./boot/init/init.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/init.c
+
+./o32/init/kernel.o: ./boot/init/kernel.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/kernel.c
 
 ./o32/init/ld.o: ./boot/init/ld.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/ld.c
@@ -149,6 +158,9 @@
 ./o64/acpios/a64/glblock.o: ./kernel/acpios/a64/glblock.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/acpios/a64/glblock.asm
 
+./o64/base/start.o: ./kernel/base/start.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/start.c
+
 ./o64/common/crc32.o: ./common/crc32.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/crc32.c
 
@@ -169,6 +181,9 @@
 
 ./o64/init/a64/idt.o: ./boot/init/a64/idt.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./boot/init/a64/idt.asm
+
+./o64/init/a64/kernel.o: ./boot/init/a64/kernel.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./boot/init/a64/kernel.asm
 
 ./o64/init/a64/ld.o: ./boot/init/a64/ld.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./boot/init/a64/ld.asm
@@ -220,6 +235,9 @@
 
 ./o64/init/init.o: ./boot/init/init.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/init.c
+
+./o64/init/kernel.o: ./boot/init/kernel.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/kernel.c
 
 ./o64/init/ld.o: ./boot/init/ld.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/ld.c

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, 2020 Antti Tiihala
+ * Copyright (c) 2018, 2019, 2020, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -334,6 +334,11 @@ void init(void)
 	usb_init();
 
 	/*
+	 * Initialize the kernel.
+	 */
+	kernel_init();
+
+	/*
 	 * Temporary code for testing purposes.
 	 */
 	{
@@ -371,6 +376,8 @@ void init(void)
 			prev = next;
 		}
 	}
+
+	cpu_halt(0);
 }
 
 void init_ap(uint32_t id)
@@ -387,9 +394,10 @@ void init_ap(uint32_t id)
 	cpu_ints(1);
 
 	/*
-	 * Nothing to do at the moment.
+	 * Initialize the kernel (application processors).
 	 */
-	(void)id;
+	kernel_init_ap(id);
+
 	cpu_halt(0);
 }
 
