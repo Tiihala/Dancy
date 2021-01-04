@@ -85,7 +85,7 @@ void ld_free(void)
 	global_symbols_size = 0;
 }
 
-int ld_link(const char *name, unsigned char *obj, struct ld_object *out)
+int ld_link(const char *name, unsigned char *obj, struct ld_object *ld_obj)
 {
 	unsigned char *image = NULL;
 	size_t symbols = (size_t)LE32(&obj[44]);
@@ -111,9 +111,6 @@ int ld_link(const char *name, unsigned char *obj, struct ld_object *out)
 	unsigned char *symbol_table = obj + LE32(&obj[40]);
 	char *string_table = (char *)symbol_table + (symbols * 18);
 
-	if (out)
-		memset(out, 0, sizeof(out[0]));
-
 	/*
 	 * Allocate contiguous memory for the executable image.
 	 */
@@ -130,7 +127,14 @@ int ld_link(const char *name, unsigned char *obj, struct ld_object *out)
 		if (!size)
 			return ld_error(name, "empty object");
 
-		image = aligned_alloc(4096, size);
+		if (!ld_obj) {
+			image = aligned_alloc(4096, size);
+		} else {
+			if (ld_obj->reserved_size >= size) {
+				image = ld_obj->base_address;
+				ld_obj->total_size = size;
+			}
+		}
 
 		if (!image)
 			return ld_error(name, "out of memory");
@@ -160,16 +164,16 @@ int ld_link(const char *name, unsigned char *obj, struct ld_object *out)
 
 		bss_sec = p;
 
-		if (out) {
-			out->text_section  = text_sec;
-			out->rdata_section = rdata_sec;
-			out->data_section  = data_sec;
-			out->bss_section   = bss_sec;
+		if (ld_obj) {
+			ld_obj->text_section  = text_sec;
+			ld_obj->rdata_section = rdata_sec;
+			ld_obj->data_section  = data_sec;
+			ld_obj->bss_section   = bss_sec;
 
-			out->text_size  = (text_size  + add) & mask;
-			out->rdata_size = (rdata_size + add) & mask;
-			out->data_size  = (data_size  + add) & mask;
-			out->bss_size   = (bss_size   + add) & mask;
+			ld_obj->text_size  = (text_size  + add) & mask;
+			ld_obj->rdata_size = (rdata_size + add) & mask;
+			ld_obj->data_size  = (data_size  + add) & mask;
+			ld_obj->bss_size   = (bss_size   + add) & mask;
 		}
 	}
 

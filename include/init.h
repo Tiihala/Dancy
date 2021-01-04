@@ -256,6 +256,10 @@ extern struct global_symbol *global_symbols;
 extern size_t global_symbols_size;
 
 struct ld_object {
+	void *base_address;
+	size_t reserved_size;
+	size_t total_size;
+
 	void *text_section;
 	void *rdata_section;
 	void *data_section;
@@ -271,7 +275,7 @@ int ld_init(size_t symbols);
 int ld_add(const struct global_symbol *symbol);
 int ld_find(const char *name, struct global_symbol **symbol);
 void ld_free(void);
-int ld_link(const char *name, unsigned char *obj, struct ld_object *out);
+int ld_link(const char *name, unsigned char *obj, struct ld_object *ld_obj);
 void ld_relocate(void *base, void *reloc, void *symbol);
 int ld_validate(const char *name, unsigned char *obj, size_t size);
 
