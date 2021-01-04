@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2020 Antti Tiihala
+ * Copyright (c) 2019, 2020, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -125,6 +125,7 @@ void memory_print_map(void (*print)(const char *, ...))
 		{ B_MEM_BOOT_LOADER,       "Loader Runtime" },
 		{ B_MEM_UEFI_SYSCALLS,     "Loader Syscalls" },
 		{ B_MEM_INIT_EXECUTABLE,   "Executable (Init)" },
+		{ B_MEM_KERNEL,            "Executable (Kernel)" },
 		{ B_MEM_NOT_REPORTED,      "Not Reported" }
 	};
 	const struct b_mem *memory = memory_map;
@@ -229,6 +230,38 @@ static void fix_memory_map(void)
 	}
 }
 
+int memory_change_type(void *ptr, uint32_t type)
+{
+	struct b_mem *memory = memory_map;
+	phys_addr_t addr = (phys_addr_t)ptr;
+	int ret = 1;
+	uint32_t t;
+	size_t i;
+
+	if (ptr == NULL)
+		return 1;
+
+	if (memory_mtx_lock(&memory_mtx) != thrd_success)
+		return 1;
+
+	for (i = 1; (memory[i].flags & B_FLAG_VALID_ENTRY); i++) {
+		if (memory[i].base != addr)
+			continue;
+		t = memory[i].type;
+
+		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
+			memory[i].type = type;
+			ret = 0;
+			break;
+		}
+	}
+
+	fix_memory_map();
+	memory_mtx_unlock(&memory_mtx);
+
+	return ret;
+}
+
 static void *memory_aligned_alloc(size_t alignment, size_t size)
 {
 	struct b_mem_raw *memory = memory_map;
@@ -237,7 +270,7 @@ static void *memory_aligned_alloc(size_t alignment, size_t size)
 	size_t b, e;
 	size_t i;
 
-	if (alignment >= 0x00400000ul || size == 0ul || size >= 0x7FFFFFFFul)
+	if (alignment > 0x00400000ul || size == 0ul || size >= 0x7FFFFFFFul)
 		return NULL;
 
 	for (i = memory_entries - 1; i > 1; i--) {

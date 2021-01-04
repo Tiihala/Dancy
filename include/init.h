@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2020 Antti Tiihala
+ * Copyright (c) 2019, 2020, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -301,6 +301,7 @@ extern int (*memory_mtx_lock)(mtx_t *);
 extern int (*memory_mtx_unlock)(mtx_t *);
 
 int memory_init(void *map);
+int memory_change_type(void *ptr, uint32_t type);
 void memory_print_map(void (*print)(const char *, ...));
 
 
