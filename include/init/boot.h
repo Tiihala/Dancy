@@ -155,6 +155,7 @@ struct b_uefi_info {
 #define B_MEM_INIT_ALLOC_MAX    (0x8086FFFF)
 #define B_MEM_DATABASE_MIN      (0xDB000000)
 #define B_MEM_DATABASE_MAX      (0xDB00FFFF)
+#define B_MEM_KERNEL            (0xE0000000)
 #define B_MEM_NOT_REPORTED      (0xFFFFFFFF)
 
 #define B_FLAG_VALID_ENTRY      (1u << 0)
