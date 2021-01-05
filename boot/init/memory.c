@@ -26,6 +26,8 @@ mtx_t memory_mtx;
 int (*memory_mtx_lock)(mtx_t *);
 int (*memory_mtx_unlock)(mtx_t *);
 
+static int memory_manager_disabled;
+
 #define TYPE_BOOT       (0x01u)
 #define TYPE_INIT       (0x02u)
 #define TYPE_LOW_END    (0x04u)
@@ -124,8 +126,9 @@ void memory_print_map(void (*print)(const char *, ...))
 		{ B_MEM_PERSISTENT,        "Persistent" },
 		{ B_MEM_BOOT_LOADER,       "Loader Runtime" },
 		{ B_MEM_UEFI_SYSCALLS,     "Loader Syscalls" },
-		{ B_MEM_INIT_EXECUTABLE,   "Executable (Init)" },
-		{ B_MEM_KERNEL,            "Executable (Kernel)" },
+		{ B_MEM_INIT_EXECUTABLE,   "Init" },
+		{ B_MEM_KERNEL,            "Kernel" },
+		{ B_MEM_KERNEL_RESERVED,   "Kernel (Reserved)" },
 		{ B_MEM_NOT_REPORTED,      "Not Reported" }
 	};
 	const struct b_mem *memory = memory_map;
@@ -304,7 +307,7 @@ static void *memory_aligned_alloc(size_t alignment, size_t size)
 	 * The allocated memory must not be too far away from the init
 	 * module. This guarantees that dynamically linked modules work.
 	 */
-	{
+	if (!memory_manager_disabled) {
 		size_t addr_diff;
 
 		if (addr < memory_map_addr)
@@ -321,7 +324,17 @@ static void *memory_aligned_alloc(size_t alignment, size_t size)
 	memmove(&memory[i], &memory[i - 1], sizeof(struct b_mem));
 	memory_entries += 1;
 
-	memory[i].type = B_MEM_INIT_ALLOC_MIN;
+	if (!memory_manager_disabled){
+		memory[i].type = B_MEM_INIT_ALLOC_MIN;
+	} else {
+		const phys_addr_t kernel_top = 0x10000000ul;
+
+		if (addr < kernel_top)
+			memory[i].type = B_MEM_KERNEL;
+		else
+			memory[i].type = B_MEM_KERNEL_RESERVED;
+	}
+
 	memory[i].base_low = (uint32_t)addr;
 	memory[i].base_high = 0;
 
@@ -329,9 +342,96 @@ static void *memory_aligned_alloc(size_t alignment, size_t size)
 	return (void *)addr;
 }
 
+void memory_disable_manager(void)
+{
+	static const uint32_t types[] = {
+		B_MEM_EFI_LOADER_CODE,
+		B_MEM_EFI_LOADER_DATA,
+		B_MEM_EFI_BOOT_CODE,
+		B_MEM_EFI_BOOT_DATA,
+		B_MEM_BOOT_LOADER,
+		B_MEM_UEFI_SYSCALLS,
+		B_MEM_INIT_EXECUTABLE
+	};
+	size_t kernel_reserved_count = sizeof(types) / sizeof(types[0]);
+	struct b_mem_raw *memory = memory_map;
+	uint32_t mem_kernel_base = 0, mem_kernel_size = 0;
+	uint32_t mem_kernel_count = 0;
+	size_t i, j;
+
+	for (;;) {
+		if (memory_mtx_lock(&memory_mtx) == thrd_success)
+			break;
+	}
+
+	memory_manager_disabled = 1;
+
+	for (i = 0; (memory[i].flags & B_FLAG_VALID_ENTRY); i++) {
+		uint32_t t = memory[i].type;
+
+		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
+			memory[i].type = B_MEM_KERNEL_RESERVED;
+			continue;
+		}
+
+		for (j = 0; j < kernel_reserved_count; j++) {
+			if (t == types[j]) {
+				memory[i].type = B_MEM_KERNEL_RESERVED;
+				break;
+			}
+		}
+	}
+
+	fix_memory_map();
+
+	for (;;) {
+		if (memory_aligned_alloc(0x00400000ul, 0x00400000ul) == NULL)
+			break;
+	}
+
+	for (i = 0; (memory[i + 1].flags & B_FLAG_VALID_ENTRY); i++) {
+		uint32_t t = memory[i].type;
+
+		if (t == B_MEM_KERNEL) {
+			uint32_t base = memory[i].base_low;
+			uint32_t size = memory[i + 1].base_low - base;
+
+			if (mem_kernel_size < size) {
+				mem_kernel_base = base;
+				mem_kernel_size = size;
+			}
+			mem_kernel_count += 1;
+			continue;
+		}
+
+		if (t == B_MEM_NORMAL && memory[i].base_high == 0) {
+			memory[i].type = B_MEM_KERNEL_RESERVED;
+			continue;
+		}
+	}
+
+	if (mem_kernel_count > 1) {
+		for (i = 0; (memory[i].flags & B_FLAG_VALID_ENTRY); i++) {
+			uint32_t t = memory[i].type;
+
+			if (t != B_MEM_KERNEL)
+				continue;
+
+			if (memory[i].base_low != mem_kernel_base)
+				memory[i].type = B_MEM_KERNEL_RESERVED;
+		}
+	}
+
+	fix_memory_map();
+	memory_mtx_unlock(&memory_mtx);
+}
+
 void *aligned_alloc(size_t alignment, size_t size)
 {
 	void *r;
+
+	if (memory_manager_disabled)
+		return NULL;
 
 	if (memory_mtx_lock(&memory_mtx) != thrd_success)
 		return NULL;
@@ -369,6 +469,9 @@ void free(void *ptr)
 	size_t i;
 
 	if (ptr == NULL)
+		return;
+
+	if (memory_manager_disabled)
 		return;
 
 	if (memory_mtx_lock(&memory_mtx) != thrd_success)

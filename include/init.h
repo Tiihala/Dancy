@@ -302,6 +302,7 @@ extern int (*memory_mtx_unlock)(mtx_t *);
 
 int memory_init(void *map);
 int memory_change_type(void *ptr, uint32_t type);
+void memory_disable_manager(void);
 void memory_print_map(void (*print)(const char *, ...));
 
 
