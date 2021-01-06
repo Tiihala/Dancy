@@ -306,6 +306,11 @@ void kernel_init(void)
 		link_object(i);
 
 	/*
+	 * Initialize the kernel table.
+	 */
+	table_init();
+
+	/*
 	 * Release the lock.
 	 */
 	spin_unlock(&kernel_ap_lock);

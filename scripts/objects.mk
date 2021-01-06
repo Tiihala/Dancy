@@ -113,6 +113,9 @@
 ./o32/init/start.o: ./boot/init/start.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/start.c
 
+./o32/init/table.o: ./boot/init/table.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/table.c
+
 ./o32/init/thrd.o: ./boot/init/thrd.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/thrd.c
 
@@ -265,6 +268,9 @@
 
 ./o64/init/start.o: ./boot/init/start.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/start.c
+
+./o64/init/table.o: ./boot/init/table.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/table.c
 
 ./o64/init/thrd.o: ./boot/init/thrd.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/thrd.c

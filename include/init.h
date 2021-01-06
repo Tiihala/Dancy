@@ -362,6 +362,12 @@ void start_init(void *map);
 
 
 /*
+ * Declarations of table.c
+ */
+void table_init(void);
+
+
+/*
  * Declarations of thrd.asm and thrd.c
  *
  * If the following structure is edited, the assembly

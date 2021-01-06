@@ -70,6 +70,7 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/pg.o \
  ./o32/init/pit.o \
  ./o32/init/rtc.o \
+ ./o32/init/table.o \
  ./o32/init/thrd.o \
  ./o32/init/usb.o \
  ./o32/init/vga.o \
@@ -102,6 +103,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/pg.o \
  ./o64/init/pit.o \
  ./o64/init/rtc.o \
+ ./o64/init/table.o \
  ./o64/init/thrd.o \
  ./o64/init/usb.o \
  ./o64/init/vga.o \
