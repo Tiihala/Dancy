@@ -13,7 +13,7 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
-;; init/a32/cpu.asm
+;; lib/a32/cpu.asm
 ;;      Miscellaneous assembly functions (32-bit)
 ;;
 

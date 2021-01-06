@@ -20,9 +20,6 @@
 ./o32/common/ttf.o: ./common/ttf.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/ttf.c
 
-./o32/init/a32/cpu.o: ./boot/init/a32/cpu.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./boot/init/a32/cpu.asm
-
 ./o32/init/a32/gdt.o: ./boot/init/a32/gdt.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./boot/init/a32/gdt.asm
 
@@ -125,6 +122,9 @@
 ./o32/init/vga.o: ./boot/init/vga.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/vga.c
 
+./o32/lib/a32/cpu.o: ./kernel/lib/a32/cpu.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/lib/a32/cpu.asm
+
 ./o32/lib/a32/dark.o: ./kernel/lib/a32/dark.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/dark.asm
 
@@ -172,9 +172,6 @@
 
 ./o64/common/ttf.o: ./common/ttf.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/ttf.c
-
-./o64/init/a64/cpu.o: ./boot/init/a64/cpu.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./boot/init/a64/cpu.asm
 
 ./o64/init/a64/gdt.o: ./boot/init/a64/gdt.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./boot/init/a64/gdt.asm
@@ -277,6 +274,9 @@
 
 ./o64/init/vga.o: ./boot/init/vga.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/vga.c
+
+./o64/lib/a64/cpu.o: ./kernel/lib/a64/cpu.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/lib/a64/cpu.asm
 
 ./o64/lib/a64/dark.o: ./kernel/lib/a64/dark.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/dark.asm

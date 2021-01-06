@@ -47,7 +47,6 @@ DANCY_START_OBJECTS_64= \
 DANCY_INIT_OBJECTS_32= \
  ./o32/common/fat.o \
  ./o32/common/ttf.o \
- ./o32/init/a32/cpu.o \
  ./o32/init/a32/gdt.o \
  ./o32/init/a32/idt.o \
  ./o32/init/a32/kernel.o \
@@ -74,12 +73,12 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/thrd.o \
  ./o32/init/usb.o \
  ./o32/init/vga.o \
+ ./o32/lib/a32/cpu.o \
  ./o32/lib/stdlib.o
 
 DANCY_INIT_OBJECTS_64= \
  ./o64/common/fat.o \
  ./o64/common/ttf.o \
- ./o64/init/a64/cpu.o \
  ./o64/init/a64/gdt.o \
  ./o64/init/a64/idt.o \
  ./o64/init/a64/kernel.o \
@@ -106,6 +105,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/thrd.o \
  ./o64/init/usb.o \
  ./o64/init/vga.o \
+ ./o64/lib/a64/cpu.o \
  ./o64/lib/stdlib.o
 
 ##############################################################################

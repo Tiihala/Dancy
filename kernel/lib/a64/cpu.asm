@@ -13,7 +13,7 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
-;; init/a64/cpu.asm
+;; lib/a64/cpu.asm
 ;;      Miscellaneous assembly functions (64-bit)
 ;;
 
