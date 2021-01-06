@@ -213,6 +213,8 @@ void init_ap(uint32_t id);
 /*
  * Declarations of kernel.asm and kernel.c
  */
+extern struct kernel_table *kernel;
+
 void kernel_init(void);
 void kernel_init_ap(uint32_t id);
 void kernel_jump(void (*func)(void), void *stack);

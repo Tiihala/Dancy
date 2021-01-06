@@ -19,6 +19,8 @@
 
 #include <init.h>
 
+struct kernel_table *kernel;
+
 #ifdef DANCY_32
 #define OBJECT_PREFIX "o32/"
 #define SYMBOL_PREFIX "_"
@@ -248,6 +250,22 @@ void kernel_init(void)
 	 * Link the first kernel object (must be kernel_at).
 	 */
 	link_object(0);
+
+	/*
+	 * Find the __dancy_kernel_table symbol.
+	 */
+	{
+		struct global_symbol *sym;
+		addr_t addr;
+
+		if (ld_find("__dancy_kernel_table", &sym))
+			kernel_error("kernel.at: missing kernel table");
+
+		if ((addr = sym->value) == 0)
+			kernel_error("kernel.at: kernel table is null");
+
+		kernel = (struct kernel_table *)addr;
+	}
 
 	/*
 	 * Find the start symbol (bootstrap processor).
