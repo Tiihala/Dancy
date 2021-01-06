@@ -46,8 +46,7 @@ static struct kernel_object kernel_objects[] = {
 static struct ld_object *ld_obj_array = NULL;
 
 static const size_t stack_size = 0x2000;
-static addr_t stack_array_addr = 0;
-static size_t stack_array_size = 0;
+static addr_t stack_array_ptr = 0;
 static int stack_lock = 0;
 
 static void (*kernel_start_func)(void);
@@ -57,8 +56,13 @@ static int kernel_ap_count = 0;
 static int kernel_ap_retry = 0;
 static int kernel_ap_lock = 1;
 
-static addr_t kernel_base_address = 0;
+static addr_t kernel_memory_ptr = 0;
 static size_t kernel_memory_size = 0;
+
+static addr_t k_base_addr = 0;
+static addr_t k_heap_addr = 0;
+static addr_t k_stack_array_addr = 0;
+static size_t k_stack_array_size = 0;
 
 static void kernel_error(const char *message)
 {
@@ -80,18 +84,18 @@ static void kernel_init_memory(void)
 		uint32_t b2 = map[1].base_low;
 
 		if (type == B_MEM_KERNEL) {
-			if (kernel_base_address != 0 || b1 > b2)
+			if (kernel_memory_ptr != 0 || b1 > b2)
 				kernel_error("kernel_init_memory: error 1");
-			kernel_base_address = (addr_t)b1;
+			kernel_memory_ptr = (addr_t)b1;
 			kernel_memory_size = (size_t)(b2 - b1);
 		}
 
 		map += 1;
 	}
 
-	if (kernel_base_address == 0)
+	if (kernel_memory_ptr == 0)
 		kernel_error("kernel_init_memory: error 2");
-	if ((kernel_base_address & 0x3FFFFFu) != 0)
+	if ((kernel_memory_ptr & 0x3FFFFFu) != 0)
 		kernel_error("kernel_init_memory: error 3");
 
 	if (kernel_memory_size == 0)
@@ -102,15 +106,24 @@ static void kernel_init_memory(void)
 	/*
 	 * Calculate how much memory is needed for stacks (BSP + APs).
 	 */
-	stack_array_size = (size_t)(1 + smp_ap_count) * stack_size;
+	k_stack_array_size = (size_t)(1 + smp_ap_count) * stack_size;
 
-	if (stack_array_size > (kernel_memory_size / 4))
+	if (k_stack_array_size > (kernel_memory_size / 4))
 		kernel_error("kernel_init_memory: out of memory");
 
-	kernel_memory_size -= stack_array_size;
+	kernel_memory_size -= k_stack_array_size;
 
-	stack_array_addr = kernel_base_address;
-	stack_array_addr += (addr_t)kernel_memory_size;
+	/*
+	 * Set the memory layout variables.
+	 */
+	k_base_addr = kernel_memory_ptr;
+	k_heap_addr = kernel_memory_ptr;
+	k_stack_array_addr = kernel_memory_ptr + (addr_t)kernel_memory_size;
+
+	/*
+	 * Set the stack array pointer.
+	 */
+	stack_array_ptr = k_stack_array_addr;
 }
 
 static void load_object(int i)
@@ -153,12 +166,12 @@ static void link_object(int i)
 
 	memset(&ld_obj, 0, sizeof(ld_obj));
 
-	if ((kernel_base_address & 0xFFF) != 0)
+	if ((kernel_memory_ptr & 0xFFF) != 0)
 		kernel_error("link_object: error 1");
 	if ((kernel_memory_size & 0xFFF) != 0)
 		kernel_error("link_object: error 2");
 
-	ld_obj.base_address = (void *)kernel_base_address;
+	ld_obj.base_address = (void *)kernel_memory_ptr;
 	ld_obj.reserved_size = kernel_memory_size;
 
 	/*
@@ -170,10 +183,10 @@ static void link_object(int i)
 	if (kernel_memory_size < ld_obj.total_size)
 		kernel_error("link_object: error 3");
 
-	kernel_base_address += (addr_t)ld_obj.total_size;
+	kernel_memory_ptr += (addr_t)ld_obj.total_size;
 	kernel_memory_size -= ld_obj.total_size;
 
-	if (kernel_base_address > (addr_t)(0x10000000 - stack_array_size))
+	if (kernel_memory_ptr > (addr_t)(0x10000000 - k_stack_array_size))
 		kernel_error("link_object: unexpected memory layout");
 
 	/*
@@ -190,6 +203,8 @@ static void link_object(int i)
 	memcpy(&ld_obj_array[i], &ld_obj, sizeof(ld_obj));
 
 	kernel_objects[i].ld_obj = &ld_obj_array[i];
+
+	k_heap_addr = kernel_memory_ptr;
 }
 
 static void prepare_stack(void **stack)
@@ -198,10 +213,10 @@ static void prepare_stack(void **stack)
 
 	spin_lock(&stack_lock);
 
-	s = (unsigned char *)stack_array_addr;
-	stack_array_addr += (addr_t)stack_size;
+	s = (unsigned char *)stack_array_ptr;
+	stack_array_ptr += (addr_t)stack_size;
 
-	if (stack_array_addr > 0x10000000)
+	if (stack_array_ptr > 0x10000000)
 		kernel_error("prepare_stack: unexpected memory layout");
 
 	spin_unlock(&stack_lock);
