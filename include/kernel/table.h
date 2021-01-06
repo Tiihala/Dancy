@@ -24,6 +24,12 @@
 
 struct kernel_table {
 	size_t table_size;
+
+	addr_t base_addr;
+	addr_t heap_addr;
+
+	addr_t stack_array_addr;
+	size_t stack_array_size;
 };
 
 #endif

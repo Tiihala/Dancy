@@ -326,6 +326,14 @@ void kernel_init(void)
 	table_init();
 
 	/*
+	 * Write the memory layout variables.
+	 */
+	kernel->base_addr = k_base_addr;
+	kernel->heap_addr = k_heap_addr;
+	kernel->stack_array_addr = k_stack_array_addr;
+	kernel->stack_array_size = k_stack_array_size;
+
+	/*
 	 * Release the lock.
 	 */
 	spin_unlock(&kernel_ap_lock);
