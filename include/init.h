@@ -36,7 +36,7 @@
 
 #include <init/boot.h>
 #include <init/palette.h>
-
+#include <kernel/table.h>
 
 /*
  * Declarations of acpi.c

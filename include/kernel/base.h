@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2021 Antti Tiihala
+ * Copyright (c) 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,41 +13,22 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy.h
+ * kernel/base.h
  *      Header of Dancy Operating System
  */
 
-#ifndef DANCY_H
-#define DANCY_H
+#ifndef KERNEL_BASE_H
+#define KERNEL_BASE_H
 
-#include <dancy/blob.h>
-
-#if defined(DANCY_32) || defined(DANCY_64)
-
-#include <dancy/ctype.h>
-#include <dancy/keys.h>
-#include <dancy/lib.h>
-#include <dancy/limits.h>
-#include <dancy/stdarg.h>
-#include <dancy/stdio.h>
-#include <dancy/stdlib.h>
-#include <dancy/string.h>
-#include <dancy/symbol.h>
-#include <dancy/threads.h>
-#include <dancy/time.h>
 #include <dancy/types.h>
-
-enum dancy_error {
-
-#define DANCY_X(a, b) a,
-#include <dancy/error.h>
-#undef DANCY_X
-
-	dancy_error_end
-};
-
-#include <kernel/base.h>
 #include <kernel/table.h>
 
-#endif
+/*
+ * Declarations of start.c
+ */
+extern struct kernel_table *kernel;
+
+void kernel_start(void);
+void kernel_start_ap(void);
+
 #endif

@@ -88,6 +88,8 @@ DANCY_HEADERS= \
  ./include/dancy/types.h \
  ./include/init/boot.h \
  ./include/init/palette.h \
+ ./include/kernel/base.h \
+ ./include/kernel/table.h \
  ./include/dancy.h \
  ./include/init.h \
  ./include/uefi.h
