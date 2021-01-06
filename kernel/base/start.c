@@ -19,12 +19,22 @@
 
 #include <dancy.h>
 
+#ifdef DANCY_32
+struct kernel_table _dancy_kernel_table;
+struct kernel_table *kernel = &_dancy_kernel_table;
+#endif
+
+#ifdef DANCY_64
+struct kernel_table __dancy_kernel_table;
+struct kernel_table *kernel = &__dancy_kernel_table;
+#endif
+
 void kernel_start(void)
 {
-
+	cpu_halt(0);
 }
 
 void kernel_start_ap(void)
 {
-
+	cpu_halt(0);
 }
