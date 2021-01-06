@@ -45,6 +45,7 @@ static struct ld_object *ld_obj_array = NULL;
 
 static const size_t stack_size = 0x2000;
 static addr_t stack_array_addr = 0;
+static size_t stack_array_size = 0;
 static int stack_lock = 0;
 
 static void (*kernel_start_func)(void);
@@ -70,10 +71,8 @@ static void kernel_error(const char *message)
 static void kernel_init_memory(void)
 {
 	const struct b_mem_raw *map = memory_map;
-	size_t stack_array_size;
-	uint32_t addr;
 
-	for (addr = 0; map->base_high == 0; map++) {
+	while (map->base_high == 0) {
 		uint32_t type = map[0].type;
 		uint32_t b1 = map[0].base_low;
 		uint32_t b2 = map[1].base_low;
@@ -84,6 +83,8 @@ static void kernel_init_memory(void)
 			kernel_base_address = (addr_t)b1;
 			kernel_memory_size = (size_t)(b2 - b1);
 		}
+
+		map += 1;
 	}
 
 	if (kernel_base_address == 0)
@@ -170,6 +171,17 @@ static void link_object(int i)
 	kernel_base_address += (addr_t)ld_obj.total_size;
 	kernel_memory_size -= ld_obj.total_size;
 
+	if (kernel_base_address > (addr_t)(0x10000000 - stack_array_size))
+		kernel_error("link_object: unexpected memory layout");
+
+	/*
+	 * Kernel objects must not use all the memory. Theoretically,
+	 * one 4 MiB memory block is enough for the kernel, but at least
+	 * half of it must remain free after linking the kernel objects.
+	 */
+	if (kernel_memory_size < 0x200000)
+		kernel_error("link_object: out of memory");
+
 	ld_obj.base_address = NULL;
 	ld_obj.reserved_size = 0;
 
@@ -186,6 +198,9 @@ static void prepare_stack(void **stack)
 
 	s = (unsigned char *)stack_array_addr;
 	stack_array_addr += (addr_t)stack_size;
+
+	if (stack_array_addr > 0x10000000)
+		kernel_error("prepare_stack: unexpected memory layout");
 
 	spin_unlock(&stack_lock);
 
@@ -209,7 +224,7 @@ void kernel_init(void)
 	/*
 	 * Allocate the ld_obj array.
 	 */
-	ld_obj_array = calloc(sizeof(object_count), sizeof(struct ld_object));
+	ld_obj_array = calloc((size_t)object_count, sizeof(struct ld_object));
 	if (!ld_obj_array)
 		kernel_error("kernel_init: out of memory");
 
