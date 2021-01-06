@@ -334,15 +334,10 @@ void init(void)
 	usb_init();
 
 	/*
-	 * Initialize the kernel.
-	 */
-	kernel_init();
-
-	/*
 	 * Temporary code for testing purposes.
 	 */
 	{
-		unsigned prev = 0, next;
+		unsigned next;
 
 		gui_print("https://github.com/Tiihala/Dancy\n\n");
 
@@ -366,16 +361,12 @@ void init(void)
 		}
 
 		gui_print("\rNumber of APs started: %u\n\n", smp_ap_count);
-
-		for (;;) {
-			while (prev == (next = idt_irq0 / 1000))
-				cpu_halt(1);
-
-			gui_print("\rUptime (seconds): %u", next);
-
-			prev = next;
-		}
 	}
+
+	/*
+	 * Initialize the kernel.
+	 */
+	kernel_init();
 
 	cpu_halt(0);
 }
