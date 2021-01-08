@@ -23,6 +23,8 @@ mtx_t gui_mtx;
 int (*gui_mtx_lock)(mtx_t *);
 int (*gui_mtx_unlock)(mtx_t *);
 
+struct b_video_info *gui_video_info;
+
 static unsigned char *back_buffer;
 static struct b_video_info vi;
 
@@ -428,6 +430,8 @@ int gui_init(void)
 	}
 
 	memset(back_buffer, 0x04, size);
+
+	gui_video_info = &vi;
 
 	return 0;
 }

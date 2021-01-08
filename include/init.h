@@ -170,6 +170,7 @@ void fs_write_logs(void);
 extern mtx_t gui_mtx;
 extern int (*gui_mtx_lock)(mtx_t *);
 extern int (*gui_mtx_unlock)(mtx_t *);
+extern struct b_video_info *gui_video_info;
 
 int gui_init(void);
 int gui_create_window(const char *name, int x1, int y1, int x2, int y2);
