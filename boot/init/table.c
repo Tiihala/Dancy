@@ -68,6 +68,12 @@ void table_init(void)
 		panic("table_init: unexpected behavior");
 
 	/*
+	 * Write the function pointers.
+	 */
+	kernel->panic = panic;
+	kernel->print = gui_print;
+
+	/*
 	 * Write the framebuffer variables.
 	 */
 	if (gui_video_info != NULL) {

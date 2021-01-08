@@ -31,6 +31,9 @@ struct kernel_table {
 	addr_t stack_array_addr;
 	size_t stack_array_size;
 
+	void (*panic)(const char *message);
+	void (*print)(const char *format, ...);
+
 	uint32_t smp_ap_count;
 	uint32_t *smp_ap_id;
 

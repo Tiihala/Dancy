@@ -29,12 +29,50 @@ struct kernel_table __dancy_kernel_table;
 struct kernel_table *kernel = &__dancy_kernel_table;
 #endif
 
+static int ap_count;
+static int ap_lock;
+
 void kernel_start(void)
 {
+	/*
+	 * The kernel table structure is set by the init module. The size
+	 * of the structure is like a magic number, and it gives additional
+	 * certainty that both init and kernel use the same structure.
+	 */
+	if (cpu_read32((uint32_t *)&kernel->table_size) != sizeof(*kernel))
+		return;
+
+	kernel->print("Welcome to Dancy Operating System\n");
+
+	/*
+	 * The BSP calls this kernel_start function after all application
+	 * processors have called the kernel_start_ap function. Check that
+	 * everything really worked as intended.
+	 */
+	if (cpu_read32((uint32_t *)&ap_count) != kernel->smp_ap_count)
+		kernel->panic("SMP: kernel synchronization failure");
+
 	cpu_halt(0);
 }
 
 void kernel_start_ap(void)
 {
+	/*
+	 * The kernel->smp_ap_count member defines how many times this
+	 * kernel_start_ap function can be called.
+	 */
+	{
+		spin_lock(&ap_lock);
+
+		if (ap_count >= (int)kernel->smp_ap_count) {
+			spin_unlock(&ap_lock);
+			return;
+		}
+
+		ap_count += 1;
+
+		spin_unlock(&ap_lock);
+	}
+
 	cpu_halt(0);
 }
