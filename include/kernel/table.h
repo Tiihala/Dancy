@@ -30,6 +30,18 @@ struct kernel_table {
 
 	addr_t stack_array_addr;
 	size_t stack_array_size;
+
+	uint32_t smp_ap_count;
+	uint32_t *smp_ap_id;
+
+	uint32_t fb_mode;
+	uint32_t fb_width;
+	uint32_t fb_height;
+	uint32_t fb_stride;
+	phys_addr_t fb_addr;
+
+	addr_t fb_standard_addr;
+	size_t fb_standard_size;
 };
 
 #endif
