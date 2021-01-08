@@ -280,6 +280,7 @@ void kernel_init(void)
 			kernel_error("kernel.at: kernel table is null");
 
 		kernel = (struct kernel_table *)addr;
+		kernel->table_size = sizeof(struct kernel_table);
 	}
 
 	/*
@@ -321,17 +322,17 @@ void kernel_init(void)
 		link_object(i);
 
 	/*
-	 * Initialize the kernel table.
-	 */
-	table_init();
-
-	/*
 	 * Write the memory layout variables.
 	 */
 	kernel->base_addr = k_base_addr;
 	kernel->heap_addr = k_heap_addr;
 	kernel->stack_array_addr = k_stack_array_addr;
 	kernel->stack_array_size = k_stack_array_size;
+
+	/*
+	 * Initialize the kernel table.
+	 */
+	table_init();
 
 	/*
 	 * Release the lock.
