@@ -103,6 +103,7 @@ int acpi_get_io_apic(unsigned idx, struct acpi_io_apic *io_apic);
  * Declarations of apic.c
  */
 extern int apic_mode;
+extern phys_addr_t apic_base_addr;
 extern const unsigned apic_spurious_vector;
 extern const unsigned ioapic_irq_base;
 extern uint32_t apic_bsp_id;

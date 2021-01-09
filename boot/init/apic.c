@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Antti Tiihala
+ * Copyright (c) 2020, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,12 +25,12 @@ const unsigned ioapic_irq_base = 0x40;
 
 uint32_t apic_bsp_id = 0xFFFFFFFF;
 
-static phys_addr_t apic_base;
+phys_addr_t apic_base_addr;
 
 int apic_init(void)
 {
 	const struct acpi_information *acpi = acpi_get_information();
-	phys_addr_t local_apic_base = apic_base;
+	phys_addr_t local_apic_base = apic_base_addr;
 	unsigned flags = 0;
 
 	/*
@@ -114,15 +114,15 @@ int apic_init(void)
 			panic(&message[0]);
 		}
 
-		apic_base = local_apic_base;
-		pg_map_uncached((void *)apic_base);
+		apic_base_addr = local_apic_base;
+		pg_map_uncached((void *)apic_base_addr);
 	}
 
 	/*
 	 * Task Priority Register (TPR).
 	 */
 	{
-		void *r = (void *)(apic_base + 0x80);
+		void *r = (void *)(apic_base_addr + 0x80);
 
 		cpu_write32(r, 0x00000000);
 	}
@@ -131,7 +131,7 @@ int apic_init(void)
 	 * Logical Destination Register.
 	 */
 	{
-		void *r = (void *)(apic_base + 0xD0);
+		void *r = (void *)(apic_base_addr + 0xD0);
 
 		cpu_write32(r, 0x00000000);
 	}
@@ -140,7 +140,7 @@ int apic_init(void)
 	 * Destination Format Register.
 	 */
 	{
-		void *r = (void *)(apic_base + 0xE0);
+		void *r = (void *)(apic_base_addr + 0xE0);
 
 		cpu_write32(r, 0xFFFFFFFF);
 	}
@@ -149,7 +149,7 @@ int apic_init(void)
 	 * LVT Timer Register.
 	 */
 	{
-		void *r = (void *)(apic_base + 0x320);
+		void *r = (void *)(apic_base_addr + 0x320);
 
 		cpu_write32(r, 0x00010000);
 	}
@@ -158,7 +158,7 @@ int apic_init(void)
 	 * LVT LINT0 Register.
 	 */
 	{
-		void *r = (void *)(apic_base + 0x350);
+		void *r = (void *)(apic_base_addr + 0x350);
 		unsigned bsp_bit = (flags >> 8) & 1;
 
 		if (!bsp_bit)
@@ -169,7 +169,7 @@ int apic_init(void)
 	 * LVT LINT1 Register.
 	 */
 	{
-		void *r = (void *)(apic_base + 0x360);
+		void *r = (void *)(apic_base_addr + 0x360);
 		unsigned bsp_bit = (flags >> 8) & 1;
 
 		if (!bsp_bit)
@@ -180,7 +180,7 @@ int apic_init(void)
 	 * LVT Error Register.
 	 */
 	{
-		void *r = (void *)(apic_base + 0x370);
+		void *r = (void *)(apic_base_addr + 0x370);
 
 		cpu_write32(r, 0x00010000);
 	}
@@ -189,7 +189,7 @@ int apic_init(void)
 	 * Initial Count Register (Timer).
 	 */
 	{
-		void *r = (void *)(apic_base + 0x380);
+		void *r = (void *)(apic_base_addr + 0x380);
 
 		cpu_write32(r, 0x7FFFFFFF);
 	}
@@ -198,7 +198,7 @@ int apic_init(void)
 	 * Divide Configuration Register (Timer).
 	 */
 	{
-		void *r = (void *)(apic_base + 0x3E0);
+		void *r = (void *)(apic_base_addr + 0x3E0);
 
 		cpu_write32(r, 0x00000000);
 	}
@@ -207,7 +207,7 @@ int apic_init(void)
 	 * Set the spurious vector and software enable bit.
 	 */
 	{
-		void *r = (void *)(apic_base + 0xF0);
+		void *r = (void *)(apic_base_addr + 0xF0);
 
 		cpu_write32(r, (uint32_t)(apic_spurious_vector | 0x100));
 	}
@@ -225,7 +225,7 @@ int apic_init(void)
 
 void apic_eoi(void)
 {
-	void *eoi = (void *)(apic_base + 0xB0);
+	void *eoi = (void *)(apic_base_addr + 0xB0);
 
 	cpu_write32(eoi, 0);
 }
@@ -237,15 +237,15 @@ uint32_t apic_id(void)
 	if (!apic_mode)
 		return apic_bsp_id;
 
-	id = (const void *)(apic_base + 0x20);
+	id = (const void *)(apic_base_addr + 0x20);
 
 	return (cpu_read32(id) >> 24);
 }
 
 void apic_send(uint32_t icr_low, uint32_t icr_high)
 {
-	void *icr_300 = (void *)(apic_base + 0x300);
-	void *icr_310 = (void *)(apic_base + 0x310);
+	void *icr_300 = (void *)(apic_base_addr + 0x300);
+	void *icr_310 = (void *)(apic_base_addr + 0x310);
 
 	unsigned wait_delivery_status = 100;
 
@@ -264,7 +264,7 @@ void apic_send(uint32_t icr_low, uint32_t icr_high)
 
 int apic_wait_delivery(void)
 {
-	const void *icr_300 = (const void *)(apic_base + 0x300);
+	const void *icr_300 = (const void *)(apic_base_addr + 0x300);
 	unsigned wait_delivery_status = 1000;
 
 	while (wait_delivery_status--) {
@@ -292,7 +292,7 @@ void ioapic_init(void)
 	 * Get the APIC ID.
 	 */
 	{
-		const void *r = (const void *)(apic_base + 0x20);
+		const void *r = (const void *)(apic_base_addr + 0x20);
 		uint32_t id = cpu_read32(r);
 
 		bsc_apic_id = id >> 24;
