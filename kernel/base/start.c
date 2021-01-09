@@ -34,6 +34,11 @@ static int ap_lock;
 
 void kernel_start(void)
 {
+	static int run_once;
+
+	if (!spin_trylock(&run_once))
+		return;
+
 	/*
 	 * The kernel table structure is set by the init module. The size
 	 * of the structure is like a magic number, and it gives additional
