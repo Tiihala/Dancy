@@ -37,6 +37,8 @@ struct kernel_table {
 	uint32_t smp_ap_count;
 	uint32_t *smp_ap_id;
 
+	uint64_t delay_tsc_hz;
+
 	uint32_t fb_mode;
 	uint32_t fb_width;
 	uint32_t fb_height;

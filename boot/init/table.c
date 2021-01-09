@@ -74,6 +74,11 @@ void table_init(void)
 	kernel->print = gui_print;
 
 	/*
+	 * Write the TSC frequency variable.
+	 */
+	kernel->delay_tsc_hz = delay_tsc_hz;
+
+	/*
 	 * Write the framebuffer variables.
 	 */
 	if (gui_video_info != NULL) {
