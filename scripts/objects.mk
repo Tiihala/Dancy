@@ -5,6 +5,9 @@
 ./o32/acpios/a32/glblock.o: ./kernel/acpios/a32/glblock.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/acpios/a32/glblock.asm
 
+./o32/base/delay.o: ./kernel/base/delay.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/delay.c
+
 ./o32/base/start.o: ./kernel/base/start.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/start.c
 
@@ -160,6 +163,9 @@
 
 ./o64/acpios/a64/glblock.o: ./kernel/acpios/a64/glblock.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/acpios/a64/glblock.asm
+
+./o64/base/delay.o: ./kernel/base/delay.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/delay.c
 
 ./o64/base/start.o: ./kernel/base/start.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/start.c

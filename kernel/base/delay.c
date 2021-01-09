@@ -13,27 +13,31 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * kernel/base.h
- *      Header of Dancy Operating System
+ * base/delay.c
+ *      Delay function
  */
 
-#ifndef KERNEL_BASE_H
-#define KERNEL_BASE_H
+#include <dancy.h>
 
-#include <dancy/types.h>
-#include <kernel/table.h>
+void delay(uint32_t nanoseconds)
+{
+	uint32_t tsc_a, tsc_d;
+	uint64_t tsc_add, tsc_base, tsc_val;
 
-/*
- * Declarations of delay.c
- */
-void delay(uint32_t nanoseconds);
+	cpu_rdtsc(&tsc_a, &tsc_d);
 
-/*
- * Declarations of start.c
- */
-extern struct kernel_table *kernel;
+	/*
+	 * tsc_add = (delay_tsc_hz * nanoseconds) / 1000000000;
+	 */
+	tsc_add = (uint64_t)(kernel->delay_tsc_hz / 1000);
+	tsc_add *= (uint64_t)nanoseconds;
+	tsc_add /= 1000000;
 
-void kernel_start(void);
-void kernel_start_ap(void);
+	tsc_base = (((uint64_t)tsc_d << 16) << 16) | (uint64_t)tsc_a;
+	tsc_val = tsc_base;
 
-#endif
+	while ((tsc_val - tsc_base) < tsc_add) {
+		cpu_rdtsc(&tsc_a, &tsc_d);
+		tsc_val = (((uint64_t)tsc_d << 16) << 16) | (uint64_t)tsc_a;
+	}
+}

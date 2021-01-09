@@ -77,6 +77,8 @@ void table_init(void)
 	 * Write the TSC frequency variable.
 	 */
 	kernel->delay_tsc_hz = delay_tsc_hz;
+	if (kernel->delay_tsc_hz < 1000)
+		panic("TSC: unexpected frequency value");
 
 	/*
 	 * Write the framebuffer variables.
