@@ -57,7 +57,7 @@ static void *table_malloc(size_t size)
 void table_init(void)
 {
 	addr_t addr;
-	size_t size, i;
+	size_t size, i, j;
 
 	/*
 	 * Initialize the local memory manager.
@@ -115,6 +115,46 @@ void table_init(void)
 
 		for (i = 0; i < smp_ap_count; i++)
 			kernel->smp_ap_id[i] = smp_ap_id[i];
+	}
+
+	/*
+	 * Write the APIC and I/O APIC variables.
+	 */
+	{
+		const struct acpi_information *acpi = acpi_get_information();
+		struct acpi_io_apic io_apic;
+
+		kernel->apic_enabled = apic_mode;
+		kernel->apic_base_addr = apic_base_addr;
+		kernel->apic_bsp_id = apic_bsp_id;
+
+		kernel->io_apic_enabled = apic_mode;
+		kernel->io_apic_count = acpi->num_io_apic;
+
+		size = sizeof((kernel->io_apic[0]));
+		size *= (size_t)kernel->io_apic_count;
+
+		kernel->io_apic = table_malloc(size);
+
+		for (i = 0; i < kernel->io_apic_count; i++) {
+			if (acpi_get_io_apic((unsigned)i, &io_apic))
+				panic("I/O APIC: unexpected behavior");
+
+			kernel->io_apic[i].id = io_apic.id;
+			kernel->io_apic[i].base_int = io_apic.base_int;
+			kernel->io_apic[i].addr = io_apic.addr;
+
+			/*
+			 * Override table is the same for each I/O APIC.
+			 */
+			for (j = 0; j < 16; j++) {
+				uint32_t g = io_apic.irq[j].global_int;
+				uint32_t f = io_apic.irq[j].flags;
+
+				kernel->io_apic_override[j].global_int = g;
+				kernel->io_apic_override[j].flags = f;
+			}
+		}
 	}
 
 	/*

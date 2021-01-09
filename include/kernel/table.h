@@ -34,17 +34,54 @@ struct kernel_table {
 	void (*panic)(const char *message);
 	void (*print)(const char *format, ...);
 
+	/*
+	 * Symmetric Multiprocessing (SMP).
+	 */
 	uint32_t smp_ap_count;
 	uint32_t *smp_ap_id;
 
+	/*
+	 * Advanced Programmable Interrupt Controller (APIC)
+	 */
+	int apic_enabled;
+	phys_addr_t apic_base_addr;
+
+	uint32_t apic_bsp_id;
+
+	/*
+	 * I/O Advanced Programmable Interrupt Controller (I/O APIC).
+	 */
+	int io_apic_enabled;
+	uint32_t io_apic_count;
+
+	struct {
+		uint32_t id;
+		uint32_t base_int;
+		phys_addr_t addr;
+	} *io_apic;
+
+	struct {
+		uint32_t global_int;
+		uint32_t flags;
+	} io_apic_override[16];
+
+	/*
+	 * Time-Stamp Counter (TSC).
+	 */
 	uint64_t delay_tsc_hz;
 
+	/*
+	 * Framebuffer set by system firmware.
+	 */
 	uint32_t fb_mode;
 	uint32_t fb_width;
 	uint32_t fb_height;
 	uint32_t fb_stride;
 	phys_addr_t fb_addr;
 
+	/*
+	 * Standard framebuffer with 4-byte pixels.
+	 */
 	addr_t fb_standard_addr;
 	size_t fb_standard_size;
 };
