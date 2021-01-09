@@ -24,6 +24,14 @@
 #include <kernel/table.h>
 
 /*
+ * Declarations of apic.c
+ */
+void apic_eoi(void);
+uint32_t apic_id(void);
+void apic_send(uint32_t icr_low, uint32_t icr_high);
+int apic_wait_delivery(void);
+
+/*
  * Declarations of delay.c
  */
 void delay(uint32_t nanoseconds);
