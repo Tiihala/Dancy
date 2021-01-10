@@ -366,10 +366,19 @@ void memory_disable_manager(void)
 
 	memory_manager_disabled = 1;
 
+	/*
+	 * Memory types that can be used like B_MEM_NORMAL are
+	 * changed to B_MEM_KERNEL_RESERVED.
+	 */
 	for (i = 0; (memory[i].flags & B_FLAG_VALID_ENTRY); i++) {
 		uint32_t t = memory[i].type;
 
 		if (t >= B_MEM_INIT_ALLOC_MIN && t <= B_MEM_INIT_ALLOC_MAX) {
+			memory[i].type = B_MEM_KERNEL_RESERVED;
+			continue;
+		}
+
+		if (t >= B_MEM_DATABASE_MIN && t <= B_MEM_DATABASE_MAX) {
 			memory[i].type = B_MEM_KERNEL_RESERVED;
 			continue;
 		}
@@ -384,11 +393,18 @@ void memory_disable_manager(void)
 
 	fix_memory_map();
 
+	/*
+	 * Allocate memory as much as possible. The type will be either
+	 * B_MEM_KERNEL or B_MEM_KERNEL_RESERVED.
+	 */
 	for (;;) {
 		if (memory_aligned_alloc(0x00400000ul, 0x00400000ul) == NULL)
 			break;
 	}
 
+	/*
+	 * Find the largest B_MEM_KERNEL block.
+	 */
 	for (i = 0; (memory[i + 1].flags & B_FLAG_VALID_ENTRY); i++) {
 		uint32_t t = memory[i].type;
 
@@ -401,15 +417,12 @@ void memory_disable_manager(void)
 				mem_kernel_size = size;
 			}
 			mem_kernel_count += 1;
-			continue;
-		}
-
-		if (t == B_MEM_NORMAL && memory[i].base_high == 0) {
-			memory[i].type = B_MEM_KERNEL_RESERVED;
-			continue;
 		}
 	}
 
+	/*
+	 * Only one B_MEM_KERNEL block is allowed.
+	 */
 	if (mem_kernel_count > 1) {
 		for (i = 0; (memory[i].flags & B_FLAG_VALID_ENTRY); i++) {
 			uint32_t t = memory[i].type;
@@ -420,6 +433,16 @@ void memory_disable_manager(void)
 			if (memory[i].base_low != mem_kernel_base)
 				memory[i].type = B_MEM_KERNEL_RESERVED;
 		}
+	}
+
+	/*
+	 * All other B_MEM_NORMAL memory is changed to B_MEM_KERNEL_RESERVED.
+	 */
+	for (i = 0; (memory[i].flags & B_FLAG_VALID_ENTRY); i++) {
+		uint32_t t = memory[i].type;
+
+		if (t == B_MEM_NORMAL)
+			memory[i].type = B_MEM_KERNEL_RESERVED;
 	}
 
 	fix_memory_map();
