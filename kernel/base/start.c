@@ -32,6 +32,18 @@ struct kernel_table *kernel = &__dancy_kernel_table;
 static int ap_count;
 static int ap_lock;
 
+static void checked_init(int (*func)(void), const char *desc)
+{
+	int r = func();
+
+	if (r) {
+		char msg[128];
+
+		snprintf(&msg[0], 128, "%s: init error code %d", desc, r);
+		kernel->panic(msg);
+	}
+}
+
 void kernel_start(void)
 {
 	static int run_once;
@@ -56,6 +68,8 @@ void kernel_start(void)
 	 */
 	if (cpu_read32((uint32_t *)&ap_count) != kernel->smp_ap_count)
 		kernel->panic("SMP: kernel synchronization failure");
+
+	checked_init(heap_init, "Heap memory manager");
 
 	cpu_halt(0);
 }

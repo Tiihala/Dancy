@@ -37,6 +37,11 @@ int apic_wait_delivery(void);
 void delay(uint32_t nanoseconds);
 
 /*
+ * Declarations of heap.c
+ */
+int heap_init(void);
+
+/*
  * Declarations of start.c
  */
 extern struct kernel_table *kernel;
