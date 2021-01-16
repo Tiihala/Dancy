@@ -84,6 +84,18 @@ struct kernel_table {
 	 */
 	addr_t fb_standard_addr;
 	size_t fb_standard_size;
+
+	/*
+	 * System memory map.
+	 */
+	size_t memory_map_size;
+
+	struct {
+		uint32_t type;
+		uint32_t reserved;
+		uint64_t base;
+		uint64_t efi_attributes;
+	} *memory_map;
 };
 
 #endif

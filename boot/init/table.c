@@ -158,6 +158,54 @@ void table_init(void)
 	}
 
 	/*
+	 * Write the system memory map.
+	 */
+	{
+		const struct b_mem_raw *memory = memory_map;
+		size_t entries = 1;
+
+		for (;;) {
+			uint32_t base_low = memory[entries].base_low;
+			uint32_t base_high = memory[entries].base_high;
+
+			entries += 1;
+
+			if (base_low == 0 && base_high == 0)
+				break;
+		}
+
+		size = entries * sizeof((kernel->memory_map[0]));
+		kernel->memory_map = table_malloc(size);
+		memset(kernel->memory_map, 0, size);
+
+		kernel->memory_map_size = size;
+
+		for (i = 0; i < (entries - 1); i++) {
+			uint64_t base_low = (uint64_t)memory[i].base_low;
+			uint64_t base_high = (uint64_t)memory[i].base_high;
+			uint64_t base = ((base_high << 16) << 16) | base_low;
+
+			const void *other = &memory[i].other[0];
+			uint64_t efi_attributes = *((const uint64_t *)other);
+
+			kernel->memory_map[i].type = memory[i].type;
+			kernel->memory_map[i].base = base;
+			kernel->memory_map[i].efi_attributes = efi_attributes;
+		}
+
+		if (kernel->memory_map[0].base != 0)
+			panic("table_init: inconsistent memory map");
+
+		for (i = 1; i < (entries - 1); i++) {
+			uint64_t b1 = kernel->memory_map[i - 1].base;
+			uint64_t b2 = kernel->memory_map[i].base;
+
+			if (b1 >= b2)
+				panic("table_init: inconsistent memory map");
+		}
+	}
+
+	/*
 	 * Update the heap_addr variable.
 	 */
 	heap_used = (heap_used + 0x0FFFu) & 0xFFFFF000u;
