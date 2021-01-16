@@ -96,6 +96,23 @@ struct kernel_table {
 		uint64_t base;
 		uint64_t efi_attributes;
 	} *memory_map;
+
+	/*
+	 * Peripheral Component Interconnect (PCI).
+	 */
+	int pci_device_count;
+
+	struct {
+		int group;
+		int bus;
+		int device;
+		int func;
+
+		phys_addr_t ecam;
+		uint32_t vendor_id;
+		uint32_t device_id;
+		uint32_t class_code;
+	} *pci_device;
 };
 
 #endif

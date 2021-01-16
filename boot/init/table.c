@@ -35,6 +35,8 @@ static void *table_alloc_pages(size_t count)
 	addr = kernel->heap_addr + (addr_t)heap_used;
 	heap_used += size;
 
+	memset((void *)addr, 0, size);
+
 	return (void *)addr;
 }
 
@@ -50,6 +52,8 @@ static void *table_malloc(size_t size)
 
 	addr = kernel->heap_addr + (addr_t)heap_used;
 	heap_used += aligned_size;
+
+	memset((void *)addr, 0, size);
 
 	return (void *)addr;
 }
@@ -179,8 +183,6 @@ void table_init(void)
 
 		size = entries * sizeof((kernel->memory_map[0]));
 		kernel->memory_map = table_malloc(size);
-		memset(kernel->memory_map, 0, size);
-
 		kernel->memory_map_size = size;
 
 		for (i = 0; i < (entries - 1); i++) {
@@ -205,6 +207,40 @@ void table_init(void)
 
 			if (b1 >= b2)
 				panic("table_init: inconsistent memory map");
+		}
+	}
+
+	/*
+	 * Write the PCI device structures.
+	 */
+	{
+		size_t entries = (size_t)pci_device_count;
+
+		kernel->pci_device_count = (int)entries;
+
+		size = entries * sizeof(kernel->pci_device[0]);
+		kernel->pci_device = table_malloc(size);
+
+		for (i = 0; i < entries; i++) {
+			int group  = pci_devices[i].group;
+			int bus    = pci_devices[i].bus;
+			int device = pci_devices[i].device;
+			int func   = pci_devices[i].func;
+
+			phys_addr_t ecam    = pci_devices[i].ecam;
+			uint32_t vendor_id  = pci_devices[i].vendor_id;
+			uint32_t device_id  = pci_devices[i].device_id;
+			uint32_t class_code = pci_devices[i].class_code;
+
+			kernel->pci_device[i].group  = group;
+			kernel->pci_device[i].bus    = bus;
+			kernel->pci_device[i].device = device;
+			kernel->pci_device[i].func   = func;
+			kernel->pci_device[i].ecam   = ecam;
+
+			kernel->pci_device[i].vendor_id  = vendor_id;
+			kernel->pci_device[i].device_id  = device_id;
+			kernel->pci_device[i].class_code = class_code;
 		}
 	}
 
