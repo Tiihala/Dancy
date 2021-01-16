@@ -174,6 +174,9 @@ void table_init(void)
 				break;
 		}
 
+		if (entries != memory_entries + 1)
+			panic("table_init: inconsistent memory map");
+
 		size = entries * sizeof((kernel->memory_map[0]));
 		kernel->memory_map = table_malloc(size);
 		memset(kernel->memory_map, 0, size);

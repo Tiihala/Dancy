@@ -216,6 +216,14 @@ void init(void)
 	b_exit();
 
 	/*
+	 * The boot service termination may have modified the memory map.
+	 */
+	if (memory_init(memory_map)) {
+		gui_refresh();
+		cpu_halt(0);
+	}
+
+	/*
 	 * Load the Global Descriptor Table.
 	 */
 	gdt_init();

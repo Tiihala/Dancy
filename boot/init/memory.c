@@ -47,9 +47,6 @@ int memory_init(void *map)
 	size_t i;
 
 	/*
-	 * This memory_init function is the only one in this module that
-	 * uses boot loader services.
-	 *
 	 * The boot loader is responsible for providing a valid memory map.
 	 * There are no error recovery strategies because the whole computer
 	 * state is unknown if we cannot trust the memory map.
