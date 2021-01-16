@@ -40,7 +40,7 @@ static void *table_alloc_pages(size_t count)
 	return (void *)addr;
 }
 
-static void *table_malloc(size_t size)
+static void *table_alloc(size_t size)
 {
 	size_t aligned_size = (size + 0x0Fu) & 0xFFFFFFF0u;
 	addr_t addr;
@@ -48,7 +48,7 @@ static void *table_malloc(size_t size)
 	heap_used = (heap_used + 0x0Fu) & 0xFFFFFFF0u;
 
 	if (size > 0x10000 || (heap_used + aligned_size) > heap_size)
-		panic("table_malloc: out of memory");
+		panic("table_alloc: out of memory");
 
 	addr = kernel->heap_addr + (addr_t)heap_used;
 	heap_used += aligned_size;
@@ -115,7 +115,7 @@ void table_init(void)
 		kernel->smp_ap_count = (int)smp_ap_count;
 
 		size = (size_t)(smp_ap_count * sizeof(uint32_t));
-		kernel->smp_ap_id = table_malloc(size);
+		kernel->smp_ap_id = table_alloc(size);
 
 		for (i = 0; i < smp_ap_count; i++)
 			kernel->smp_ap_id[i] = smp_ap_id[i];
@@ -138,7 +138,7 @@ void table_init(void)
 		size = sizeof((kernel->io_apic[0]));
 		size *= (size_t)kernel->io_apic_count;
 
-		kernel->io_apic = table_malloc(size);
+		kernel->io_apic = table_alloc(size);
 
 		for (i = 0; i < (size_t)kernel->io_apic_count; i++) {
 			if (acpi_get_io_apic((unsigned)i, &io_apic))
@@ -182,7 +182,7 @@ void table_init(void)
 			panic("table_init: inconsistent memory map");
 
 		size = entries * sizeof((kernel->memory_map[0]));
-		kernel->memory_map = table_malloc(size);
+		kernel->memory_map = table_alloc(size);
 		kernel->memory_map_size = size;
 
 		for (i = 0; i < (entries - 1); i++) {
@@ -219,7 +219,7 @@ void table_init(void)
 		kernel->pci_device_count = (int)entries;
 
 		size = entries * sizeof(kernel->pci_device[0]);
-		kernel->pci_device = table_malloc(size);
+		kernel->pci_device = table_alloc(size);
 
 		for (i = 0; i < entries; i++) {
 			int group  = pci_devices[i].group;
