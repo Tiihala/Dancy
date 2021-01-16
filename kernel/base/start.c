@@ -66,7 +66,7 @@ void kernel_start(void)
 	 * processors have called the kernel_start_ap function. Check that
 	 * everything really worked as intended.
 	 */
-	if (cpu_read32((uint32_t *)&ap_count) != kernel->smp_ap_count)
+	if ((int)cpu_read32((uint32_t *)&ap_count) != kernel->smp_ap_count)
 		kernel->panic("SMP: kernel synchronization failure");
 
 	checked_init(heap_init, "Heap memory manager");
@@ -83,7 +83,7 @@ void kernel_start_ap(void)
 	{
 		spin_lock(&ap_lock);
 
-		if (ap_count >= (int)kernel->smp_ap_count) {
+		if (ap_count >= kernel->smp_ap_count) {
 			spin_unlock(&ap_lock);
 			return;
 		}

@@ -37,7 +37,7 @@ struct kernel_table {
 	/*
 	 * Symmetric Multiprocessing (SMP).
 	 */
-	uint32_t smp_ap_count;
+	int smp_ap_count;
 	uint32_t *smp_ap_id;
 
 	/*
@@ -52,7 +52,7 @@ struct kernel_table {
 	 * I/O Advanced Programmable Interrupt Controller (I/O APIC).
 	 */
 	int io_apic_enabled;
-	uint32_t io_apic_count;
+	int io_apic_count;
 
 	struct {
 		uint32_t id;

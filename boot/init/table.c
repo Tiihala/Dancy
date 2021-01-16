@@ -108,7 +108,7 @@ void table_init(void)
 	 * even if there were no application processors.
 	 */
 	{
-		kernel->smp_ap_count = smp_ap_count;
+		kernel->smp_ap_count = (int)smp_ap_count;
 
 		size = (size_t)(smp_ap_count * sizeof(uint32_t));
 		kernel->smp_ap_id = table_malloc(size);
@@ -129,14 +129,14 @@ void table_init(void)
 		kernel->apic_bsp_id = apic_bsp_id;
 
 		kernel->io_apic_enabled = apic_mode;
-		kernel->io_apic_count = acpi->num_io_apic;
+		kernel->io_apic_count = (int)acpi->num_io_apic;
 
 		size = sizeof((kernel->io_apic[0]));
 		size *= (size_t)kernel->io_apic_count;
 
 		kernel->io_apic = table_malloc(size);
 
-		for (i = 0; i < kernel->io_apic_count; i++) {
+		for (i = 0; i < (size_t)kernel->io_apic_count; i++) {
 			if (acpi_get_io_apic((unsigned)i, &io_apic))
 				panic("I/O APIC: unexpected behavior");
 
