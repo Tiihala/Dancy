@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Antti Tiihala
+ * Copyright (c) 2020, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -38,16 +38,6 @@ static int check_caller(void)
 	}
 
 	return 0;
-}
-
-static uint32_t get_current_id(void)
-{
-	uint32_t id = apic_id();
-
-	if (id == apic_bsp_id)
-		id += (uint32_t)((addr_t)init_thrd_current);
-
-	return id;
 }
 
 int thrd_create(thrd_t *thr, thrd_start_t func, void *arg)
@@ -168,7 +158,7 @@ int mtx_init(mtx_t *mtx, int type)
 	struct init_mtx *m = NULL;
 	int i;
 
-	if (type < 0 || (type & mtx_timed) != 0)
+	if (type != mtx_plain)
 		return thrd_error;
 
 	spin_enter(&lock_local);
@@ -177,21 +167,15 @@ int mtx_init(mtx_t *mtx, int type)
 		if (init_mtx_array[i].init == 0) {
 			m = &init_mtx_array[i];
 			m->init = 1;
-			m->lock = 0;
-			m->type = type;
-			m->count = 0;
+			spin_unlock(&m->lock);
+			*mtx = m;
 			break;
 		}
 	}
 
 	spin_leave(&lock_local);
 
-	if (!m)
-		return thrd_error;
-
-	*mtx = m;
-
-	return thrd_success;
+	return (m == NULL) ? thrd_error : thrd_success;
 }
 
 int mtx_lock(mtx_t *mtx)
@@ -209,45 +193,19 @@ int mtx_lock(mtx_t *mtx)
 
 int mtx_trylock(mtx_t *mtx)
 {
-	void *lock_local = &init_mtx_lock;
 	struct init_mtx *m = *mtx;
-	int r = thrd_success;
 
-	spin_enter(&lock_local);
+	if (!spin_trylock(&m->lock))
+		return thrd_busy;
 
-	if (m->count == 0) {
-		m->count += 1;
-		m->id = get_current_id();
-	} else {
-		if (m->id != get_current_id())
-			r = thrd_busy;
-		else if ((m->type & mtx_recursive) == 0)
-			r = thrd_error;
-		else if (m->count == UINT_MAX)
-			r = thrd_error;
-		else
-			m->count += 1;
-	}
-
-	spin_leave(&lock_local);
-
-	return r;
+	return thrd_success;
 }
 
 int mtx_unlock(mtx_t *mtx)
 {
-	void *lock_local = &init_mtx_lock;
 	struct init_mtx *m = *mtx;
-	int r = thrd_success;
 
-	spin_enter(&lock_local);
+	spin_unlock(&m->lock);
 
-	if (m->count == 0 || m->id != get_current_id())
-		r = thrd_error;
-	else
-		m->count -= 1;
-
-	spin_leave(&lock_local);
-
-	return r;
+	return thrd_success;
 }

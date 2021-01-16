@@ -385,9 +385,6 @@ struct init_thrd {
 struct init_mtx {
 	int init;
 	int lock;
-	int type;
-	unsigned count;
-	uint32_t id;
 };
 
 extern struct init_thrd *init_thrd_current;
