@@ -958,6 +958,26 @@ void gui_print(const char *format, ...)
 	if (gui_mtx_lock(&gui_mtx) != thrd_success)
 		return;
 
+	if (!gui_window_stack) {
+		int x1, y1, x2, y2;
+		int win_w, win_h;
+
+		win_w = (int)(vi.width * 2) / 3;
+		win_h = (int)(vi.height * 2) / 3;
+
+		if (win_w > 800)
+			win_w = 800;
+		if (win_h > 600)
+			win_h = 600;
+
+		x1 = (int)(vi.width / 2) - (win_w / 2);
+		y1 = (int)(vi.height / 2) - (win_h / 2);;
+		x2 = (int)(vi.width / 2) + (win_w / 2);
+		y2 = (int)(vi.height / 2) + (win_h / 2);
+
+		create_window("Dancy Operating System", x1, y1, x2, y2);
+	}
+
 	print_message(&buf[0]);
 	gui_mtx_unlock(&gui_mtx);
 }
