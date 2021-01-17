@@ -326,6 +326,23 @@ void init(void)
 	usb_init();
 
 	/*
+	 * Print a message before initializing the kernel. This will create
+	 * a GUI window if not already created.
+	 */
+	{
+		static const char *months[13] = {
+			"???", "Jan", "Feb", "Mar", "Apr",
+			"May", "Jun", "Jul", "Aug", "Sep",
+			"Oct", "Nov", "Dec"
+		};
+		int m = (bt.month <= 12) ? (int)bt.month : 0;
+
+		b_print("Started on %u %s %u %02u:%02u\n\n",
+			(unsigned)bt.day, months[m], (unsigned)bt.year,
+			(unsigned)bt.hour, (unsigned)bt.minute);
+	}
+
+	/*
 	 * Initialize the kernel.
 	 */
 	kernel_init();
