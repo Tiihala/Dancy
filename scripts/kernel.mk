@@ -11,6 +11,7 @@ DANCY_KERNEL_OBJECTS_32= \
  ./o32/base/start.o \
  ./o32/common/crc32.o \
  ./o32/common/crc32c.o \
+ ./o32/common/ttf.o \
  ./o32/lib/a32/cpu.o \
  ./o32/lib/a32/dark.o \
  ./o32/lib/a32/spin.o \
@@ -32,6 +33,7 @@ DANCY_KERNEL_OBJECTS_64= \
  ./o64/base/start.o \
  ./o64/common/crc32.o \
  ./o64/common/crc32c.o \
+ ./o64/common/ttf.o \
  ./o64/lib/a64/cpu.o \
  ./o64/lib/a64/dark.o \
  ./o64/lib/a64/spin.o \
