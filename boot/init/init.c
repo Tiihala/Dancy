@@ -326,36 +326,6 @@ void init(void)
 	usb_init();
 
 	/*
-	 * Temporary code for testing purposes.
-	 */
-	{
-		unsigned next;
-
-		gui_print("https://github.com/Tiihala/Dancy\n\n");
-
-		if (hpet_mode)
-			gui_print("Using High Precision Event Timer\n");
-
-		gui_print("Using %s\n\n",
-			(apic_mode == 0) ? "PIC 8259" : "I/O APIC");
-
-		gui_print("TSC: %4u.%03u Mhz\n\n",
-			(unsigned)(delay_tsc_hz / 1000000),
-			(unsigned)((delay_tsc_hz % 1000000) / 1000));
-
-		for (next = 0; next <= 10; next++) {
-			unsigned delay_calls = 10;
-
-			while (delay_calls--)
-				delay(100000000);
-
-			gui_print("\rDelay: %u/10", next);
-		}
-
-		gui_print("\rNumber of APs started: %u\n\n", smp_ap_count);
-	}
-
-	/*
 	 * Initialize the kernel.
 	 */
 	kernel_init();
