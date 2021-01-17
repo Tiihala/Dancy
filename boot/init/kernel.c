@@ -124,6 +124,17 @@ static void kernel_init_memory(void)
 	 * Set the stack array pointer.
 	 */
 	stack_array_ptr = k_stack_array_addr;
+
+	/*
+	 * Fill the whole kernel memory block with int3 instructions.
+	 */
+	{
+		void *destination = (void *)k_base_addr;
+		const int int3_instruction = 0xCC;
+		size_t size = kernel_memory_size + k_stack_array_size;
+
+		memset(destination, int3_instruction, size);
+	}
 }
 
 static void load_object(int i)
