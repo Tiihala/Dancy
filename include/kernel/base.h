@@ -37,6 +37,38 @@ int apic_wait_delivery(void);
 void delay(uint32_t nanoseconds);
 
 /*
+ * Declarations of gdt.asm and gdt.c
+ */
+enum gdt_sel {
+	gdt_null_1      = 0x00,
+	gdt_kernel_code = 0x08,
+	gdt_kernel_data = 0x10,
+	gdt_null_2      = 0x18,
+	gdt_user_data   = 0x20,
+	gdt_user_code   = 0x28,
+	gdt_task_state  = 0x30
+};
+
+enum gdt_sys_sel {
+	gdt_syscall_sel = 0x08,
+	gdt_sysret_sel  = 0x18
+};
+
+int gdt_init(void);
+int gdt_init_ap(void);
+
+void gdt_load(const void *gdt_ptr);
+void gdt_load_cs(int sel);
+void gdt_load_es(int sel);
+void gdt_load_ss(int sel);
+void gdt_load_ds(int sel);
+void gdt_load_fs(int sel);
+void gdt_load_gs(int sel);
+
+void *gdt_get_tss(void);
+void gdt_load_tss(int sel);
+
+/*
  * Declarations of heap.c
  */
 int heap_init(void);

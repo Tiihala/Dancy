@@ -4,8 +4,10 @@
 
 DANCY_KERNEL_OBJECTS_32= \
  ./o32/acpios/a32/glblock.o \
+ ./o32/base/a32/gdt.o \
  ./o32/base/apic.o \
  ./o32/base/delay.o \
+ ./o32/base/gdt.o \
  ./o32/base/heap.o \
  ./o32/base/mtx.o \
  ./o32/base/start.o \
@@ -26,8 +28,10 @@ DANCY_KERNEL_OBJECTS_32= \
 
 DANCY_KERNEL_OBJECTS_64= \
  ./o64/acpios/a64/glblock.o \
+ ./o64/base/a64/gdt.o \
  ./o64/base/apic.o \
  ./o64/base/delay.o \
+ ./o64/base/gdt.o \
  ./o64/base/heap.o \
  ./o64/base/mtx.o \
  ./o64/base/start.o \

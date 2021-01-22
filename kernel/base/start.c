@@ -70,6 +70,7 @@ void kernel_start(void)
 		kernel->panic("SMP: kernel synchronization failure");
 
 	checked_init(heap_init, "Heap memory manager");
+	checked_init(gdt_init, "GDT (BSP)");
 
 	cpu_halt(0);
 }
@@ -92,6 +93,8 @@ void kernel_start_ap(void)
 
 		spin_unlock(&ap_lock);
 	}
+
+	checked_init(gdt_init_ap, "GDT (AP)");
 
 	cpu_halt(0);
 }

@@ -5,11 +5,17 @@
 ./o32/acpios/a32/glblock.o: ./kernel/acpios/a32/glblock.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/acpios/a32/glblock.asm
 
+./o32/base/a32/gdt.o: ./kernel/base/a32/gdt.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/base/a32/gdt.asm
+
 ./o32/base/apic.o: ./kernel/base/apic.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/apic.c
 
 ./o32/base/delay.o: ./kernel/base/delay.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/delay.c
+
+./o32/base/gdt.o: ./kernel/base/gdt.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/gdt.c
 
 ./o32/base/heap.o: ./kernel/base/heap.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/heap.c
@@ -173,11 +179,17 @@
 ./o64/acpios/a64/glblock.o: ./kernel/acpios/a64/glblock.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/acpios/a64/glblock.asm
 
+./o64/base/a64/gdt.o: ./kernel/base/a64/gdt.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/base/a64/gdt.asm
+
 ./o64/base/apic.o: ./kernel/base/apic.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/apic.c
 
 ./o64/base/delay.o: ./kernel/base/delay.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/delay.c
+
+./o64/base/gdt.o: ./kernel/base/gdt.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/gdt.c
 
 ./o64/base/heap.o: ./kernel/base/heap.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/heap.c
