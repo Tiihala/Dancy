@@ -506,12 +506,11 @@ void kernel_init(void)
 			icr_high = ap_id << 24;
 
 			apic_send(icr_low, icr_high);
-			delay(200000);
 		}
 
-		if (kernel_ap_retry == 0) {
-			delay(2000000);
-			kernel_ap_retry = 1;
+		if (kernel_ap_retry < 10000) {
+			delay(100000);
+			kernel_ap_retry += 1;
 			continue;
 		}
 
@@ -534,6 +533,9 @@ void kernel_init_ap(uint32_t id)
 {
 	void *stack;
 
+	if (id == apic_bsp_id)
+		kernel_error("kernel_init_ap: unexpected behavior");
+
 	/*
 	 * Stop execution until an interrupt occurs.
 	 */
@@ -543,9 +545,6 @@ void kernel_init_ap(uint32_t id)
 	 * Acquire the lock, increment the counter, and release the lock.
 	 */
 	spin_lock(&kernel_ap_lock);
-
-	if (smp_ap_id[kernel_ap_count] != id)
-		b_print("kernel_init_ap: unexpected execution order\n");
 
 	kernel_ap_count += 1;
 	if (kernel_ap_count > (int)smp_ap_count)
