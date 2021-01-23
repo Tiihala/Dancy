@@ -237,6 +237,24 @@ static void prepare_stack(void **stack)
 	*stack = s;
 }
 
+static int qsort_symbols(const void *v1, const void *v2)
+{
+	const struct global_symbol *s1 = v1;
+	const struct global_symbol *s2 = v2;
+
+	int r = strcmp(&s1->name[0], &s2->name[0]);
+
+	if (r != 0)
+		return r;
+
+	if (s1->value < s2->value)
+		return -1;
+	if (s1->value > s2->value)
+		return 1;
+
+	return 0;
+}
+
 void kernel_init(void)
 {
 	int object_count = sizeof(kernel_objects) / sizeof(kernel_objects[0]);
@@ -331,6 +349,131 @@ void kernel_init(void)
 	 */
 	for (i = 1; i < object_count; i++)
 		link_object(i);
+
+	/*
+	 * Write the module information.
+	 */
+	{
+		int module_count = 0;
+		size_t size;
+
+		for (i = 0; i < object_count; i++) {
+			if (kernel_objects[i].ld_obj)
+				module_count += 1;
+		}
+
+		if (!module_count)
+			kernel_error("kernel_init: no modules");
+
+		size = (size_t)module_count * sizeof(kernel->module[0]);
+
+		if (size + 0x100000 >= kernel_memory_size)
+			kernel_error("kernel_init: out of memory");
+
+		kernel->module_count = module_count;
+		kernel->module = (void *)kernel_memory_ptr;
+
+		memset(kernel->module, 0, size);
+
+		size = (size + 0x0Fu) & 0xFFFFFFF0u;
+		kernel_memory_ptr += (addr_t)size;
+		kernel_memory_size -= size;
+		k_heap_addr = kernel_memory_ptr;
+
+		module_count = 0;
+
+		for (i = 0; i < object_count; i++) {
+			const struct ld_object *ld_obj;
+
+			addr_t text_addr, rdata_addr, data_addr, bss_addr;
+			size_t text_size, rdata_size, data_size, bss_size;
+
+			ld_obj = kernel_objects[i].ld_obj;
+			if (!ld_obj)
+				continue;
+
+			text_addr  = (addr_t)ld_obj->text_section;
+			text_size  = ld_obj->text_size;
+
+			rdata_addr = (addr_t)ld_obj->rdata_section;
+			rdata_size = ld_obj->rdata_size;
+
+			data_addr  = (addr_t)ld_obj->data_section;
+			data_size  = ld_obj->data_size;
+
+			bss_addr   = (addr_t)ld_obj->bss_section;
+			bss_size   = ld_obj->bss_size;
+
+			kernel->module[module_count].text_addr  = text_addr;
+			kernel->module[module_count].text_size  = text_size;
+
+			kernel->module[module_count].rdata_addr = rdata_addr;
+			kernel->module[module_count].rdata_size = rdata_size;
+
+			kernel->module[module_count].data_addr  = data_addr;
+			kernel->module[module_count].data_size  = data_size;
+
+			kernel->module[module_count].bss_addr   = bss_addr;
+			kernel->module[module_count].bss_size   = bss_size;
+
+			size = sizeof(kernel->module[module_count].name) - 1;
+
+			strncpy(&kernel->module[module_count].name[0],
+				&kernel_objects[i].name[0], size);
+
+			module_count += 1;
+		}
+
+		if (kernel->module_count != module_count)
+			kernel_error("kernel_init: unexpected behavior");
+	}
+
+	/*
+	 * Write the global symbol table.
+	 */
+	{
+		int symbol_count;
+		size_t size;
+
+		size = global_symbols_size;
+		symbol_count = (int)(size / sizeof(global_symbols[0]));
+
+		if ((size % sizeof(global_symbols[0])) != 0)
+			kernel_error("kernel_init: unexpected behavior");
+
+		if (!symbol_count)
+			kernel_error("kernel_init: no symbols");
+
+		size = (size_t)symbol_count * sizeof(kernel->symbol[0]);
+
+		if (size + 0x100000 >= kernel_memory_size)
+			kernel_error("kernel_init: out of memory");
+
+		kernel->symbol_count = symbol_count;
+		kernel->symbol = (void *)kernel_memory_ptr;
+
+		memset(kernel->symbol, 0, size);
+
+		size = (size + 0x0Fu) & 0xFFFFFFF0u;
+		kernel_memory_ptr += (addr_t)size;
+		kernel_memory_size -= size;
+		k_heap_addr = kernel_memory_ptr;
+
+		qsort(global_symbols, (size_t)symbol_count,
+			sizeof(global_symbols[0]), qsort_symbols);
+
+		size = sizeof(kernel->symbol[0].name) - 1;
+
+		for (i = 0; i < symbol_count; i++) {
+			uint32_t value = global_symbols[i].value;
+			const char *name = &global_symbols[i].name[0];
+
+			kernel->symbol[i].value = value;
+			strncpy(&kernel->symbol[i].name[0], name, size);
+		}
+	}
+
+	k_heap_addr = (k_heap_addr + 0x0FFFu) & 0xFFFFF000u;
 
 	/*
 	 * Write the memory layout variables.

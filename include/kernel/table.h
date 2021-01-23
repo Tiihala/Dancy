@@ -35,6 +35,37 @@ struct kernel_table {
 	void (*print)(const char *format, ...);
 
 	/*
+	 * Dynamically linked modules (including the kernel itself).
+	 */
+	int module_count;
+
+	struct {
+		addr_t text_addr;
+		size_t text_size;
+
+		addr_t rdata_addr;
+		size_t rdata_size;
+
+		addr_t data_addr;
+		size_t data_size;
+
+		addr_t bss_addr;
+		size_t bss_size;
+
+		char name[16];
+	} *module;
+
+	/*
+	 * Global symbol table.
+	 */
+	int symbol_count;
+
+	struct {
+		uint32_t value;
+		char name[36];
+	} *symbol;
+
+	/*
 	 * Symmetric Multiprocessing (SMP).
 	 */
 	int smp_ap_count;
