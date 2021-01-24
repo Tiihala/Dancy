@@ -128,11 +128,6 @@ void idt_handler(unsigned num, const void *stack)
 			delay_calibrate();
 
 		end(irq);
-
-		/*
-		 * Simple threads for pre-kernel environment.
-		 */
-		thrd_yield();
 		return;
 	}
 

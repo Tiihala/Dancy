@@ -980,6 +980,8 @@ void gui_print(const char *format, ...)
 
 	print_message(&buf[0]);
 	gui_mtx_unlock(&gui_mtx);
+
+	gui_refresh();
 }
 
 void gui_print_alert(const char *message)
@@ -1050,28 +1052,4 @@ void gui_refresh(void)
 
 	blit();
 	gui_mtx_unlock(&gui_mtx);
-}
-
-thrd_t gui_thr;
-
-int gui_thread(void *arg)
-{
-	const unsigned blit_interval = 1000;
-	unsigned prev_irq0 = idt_irq0;
-
-	while (back_buffer != NULL) {
-		unsigned current_irq0 = idt_irq0;
-
-		if (current_irq0 - prev_irq0 >= blit_interval) {
-			prev_irq0 = current_irq0;
-
-			if (gui_mtx_lock(&gui_mtx) != thrd_success)
-				break;
-			blit();
-			gui_mtx_unlock(&gui_mtx);
-		}
-		thrd_yield();
-	}
-
-	return (arg != NULL);
 }

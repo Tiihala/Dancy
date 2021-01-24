@@ -59,9 +59,6 @@
 ./o32/init/a32/syscall.o: ./boot/init/a32/syscall.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./boot/init/a32/syscall.asm
 
-./o32/init/a32/thrd.o: ./boot/init/a32/thrd.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./boot/init/a32/thrd.asm
-
 ./o32/init/smp/smp.o: ./boot/init/smp/smp.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/smp/smp.c
 
@@ -110,6 +107,9 @@
 ./o32/init/memory.o: ./boot/init/memory.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/memory.c
 
+./o32/init/mtx.o: ./boot/init/mtx.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/mtx.c
+
 ./o32/init/panic.o: ./boot/init/panic.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/panic.c
 
@@ -133,9 +133,6 @@
 
 ./o32/init/table.o: ./boot/init/table.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/table.c
-
-./o32/init/thrd.o: ./boot/init/thrd.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./boot/init/thrd.c
 
 ./o32/init/usb.o: ./boot/init/usb.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/usb.c
@@ -233,9 +230,6 @@
 ./o64/init/a64/syscall.o: ./boot/init/a64/syscall.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./boot/init/a64/syscall.asm
 
-./o64/init/a64/thrd.o: ./boot/init/a64/thrd.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./boot/init/a64/thrd.asm
-
 ./o64/init/smp/smp.o: ./boot/init/smp/smp.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/smp/smp.c
 
@@ -284,6 +278,9 @@
 ./o64/init/memory.o: ./boot/init/memory.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/memory.c
 
+./o64/init/mtx.o: ./boot/init/mtx.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/mtx.c
+
 ./o64/init/panic.o: ./boot/init/panic.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/panic.c
 
@@ -307,9 +304,6 @@
 
 ./o64/init/table.o: ./boot/init/table.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/table.c
-
-./o64/init/thrd.o: ./boot/init/thrd.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./boot/init/thrd.c
 
 ./o64/init/usb.o: ./boot/init/usb.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/usb.c

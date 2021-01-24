@@ -51,7 +51,6 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/a32/idt.o \
  ./o32/init/a32/kernel.o \
  ./o32/init/a32/pg.o \
- ./o32/init/a32/thrd.o \
  ./o32/init/smp/smp.o \
  ./o32/init/smp/start32.o \
  ./o32/init/acpi.o \
@@ -65,13 +64,13 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/init.o \
  ./o32/init/kernel.o \
  ./o32/init/log.o \
+ ./o32/init/mtx.o \
  ./o32/init/panic.o \
  ./o32/init/pci.o \
  ./o32/init/pg.o \
  ./o32/init/pit.o \
  ./o32/init/rtc.o \
  ./o32/init/table.o \
- ./o32/init/thrd.o \
  ./o32/init/usb.o \
  ./o32/init/vga.o \
  ./o32/lib/a32/cpu.o \
@@ -84,7 +83,6 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/a64/idt.o \
  ./o64/init/a64/kernel.o \
  ./o64/init/a64/pg.o \
- ./o64/init/a64/thrd.o \
  ./o64/init/smp/smp.o \
  ./o64/init/smp/start64.o \
  ./o64/init/acpi.o \
@@ -98,13 +96,13 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/init.o \
  ./o64/init/kernel.o \
  ./o64/init/log.o \
+ ./o64/init/mtx.o \
  ./o64/init/panic.o \
  ./o64/init/pci.o \
  ./o64/init/pg.o \
  ./o64/init/pit.o \
  ./o64/init/rtc.o \
  ./o64/init/table.o \
- ./o64/init/thrd.o \
  ./o64/init/usb.o \
  ./o64/init/vga.o \
  ./o64/lib/a64/cpu.o \

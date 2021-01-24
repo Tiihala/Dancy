@@ -182,9 +182,6 @@ void gui_print(const char *format, ...);
 void gui_print_alert(const char *message);
 void gui_refresh(void);
 
-extern thrd_t gui_thr;
-int gui_thread(void *arg);
-
 
 /*
  * Declarations of hpet.c
@@ -366,31 +363,6 @@ void start_init(void *map);
  * Declarations of table.c
  */
 void table_init(void);
-
-
-/*
- * Declarations of thrd.asm and thrd.c
- *
- * If the following structure is edited, the assembly
- * functions in thrd.asm files must be checked.
- */
-struct init_thrd {
-	struct init_thrd *next; /* DANCY_32: 0   DANCY_64: 0  */
-	void *stack;            /* DANCY_32: 4   DANCY_64: 8  */
-	uint32_t detached;      /* DANCY_32: 8   DANCY_64: 16 */
-	int res;                /* DANCY_32: 12  DANCY_64: 20 */
-	int terminated;         /* DANCY_32: 16  DANCY_64: 24 */
-};
-
-struct init_mtx {
-	int init;
-	int lock;
-};
-
-extern struct init_thrd *init_thrd_current;
-extern const size_t init_thrd_size;
-
-void init_thrd_create(void *thr, thrd_start_t func, void *arg);
 
 
 /*

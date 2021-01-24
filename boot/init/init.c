@@ -310,12 +310,6 @@ void init(void)
 	smp_init();
 
 	/*
-	 * Create a GUI thread, which will refresh the screen.
-	 */
-	if (thrd_create(&gui_thr, gui_thread, NULL) != thrd_success)
-		panic("Error: gui_thread creation");
-
-	/*
 	 * Initialize PCI.
 	 */
 	pci_init();
