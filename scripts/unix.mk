@@ -45,6 +45,7 @@ path: ./bin/dy-path$(DANCY_EXE)
 	@PATH=$(DANCY_PATH) ./bin/dy-path$(DANCY_EXE)
 
 include ./scripts/at/acpica.mk
+include ./scripts/at/base.mk
 include ./scripts/at/init.mk
 include ./scripts/at/kernel.mk
 include ./scripts/at/uefi.mk
