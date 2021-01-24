@@ -41,6 +41,7 @@ struct kernel_object {
 static struct kernel_object kernel_objects[] = {
 	{ 0, NULL, NULL, OBJECT_PREFIX "lib.at" },
 	{ 0, NULL, NULL, OBJECT_PREFIX "base.at" },
+	{ 0, NULL, NULL, OBJECT_PREFIX "acpios.at" },
 	{ 1, NULL, NULL, OBJECT_PREFIX "acpica.at" }
 };
 
