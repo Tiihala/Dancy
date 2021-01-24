@@ -17,7 +17,7 @@
  *      Unrecoverable errors
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 static int panic_lock;
 

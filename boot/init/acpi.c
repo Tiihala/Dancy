@@ -17,7 +17,7 @@
  *      Advanced Configuration and Power Interface Specification
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 static struct acpi_information information;
 

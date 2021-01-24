@@ -17,7 +17,7 @@
  *      Symmetric multiprocessing (64-bit)
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 const unsigned char smp_trampoline[512] = {
 	DANCY_BLOB(0x2E0F,0x011E,0x0201,0x0F09,0xB841,0x54EB,0x03F4,0xEBFD),

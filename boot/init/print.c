@@ -17,7 +17,7 @@
  *      Display text on screen
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 static void loader_print(const char *format, ...)
 {

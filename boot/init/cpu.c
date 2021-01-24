@@ -17,7 +17,7 @@
  *      Test CPU features
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 int cpu_test_features(void)
 {

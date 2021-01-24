@@ -17,7 +17,7 @@
  *      Kernel initialization
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 struct kernel_table *kernel;
 

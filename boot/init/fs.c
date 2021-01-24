@@ -17,7 +17,7 @@
  *      File system functions
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 static void *fat;
 static int media_id;

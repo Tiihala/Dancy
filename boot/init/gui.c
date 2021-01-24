@@ -17,7 +17,7 @@
  *      Graphical user interface for pre-kernel environment
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 mtx_t gui_mtx;
 int (*gui_mtx_lock)(mtx_t *);

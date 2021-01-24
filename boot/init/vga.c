@@ -17,7 +17,7 @@
  *      Initialize VGA hardware
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 #define VGA_COLORS 16
 

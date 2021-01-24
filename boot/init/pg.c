@@ -17,7 +17,7 @@
  *      Page translation and protection
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 volatile uint32_t pg_fault_counter;
 volatile uint32_t pg_tables_size;

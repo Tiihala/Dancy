@@ -17,7 +17,7 @@
  *      Delay function
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 volatile int delay_ready = 0;
 volatile int delay_error = 0;

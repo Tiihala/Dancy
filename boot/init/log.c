@@ -17,7 +17,7 @@
  *      Boot log manager
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 char *boot_log;
 size_t boot_log_size;

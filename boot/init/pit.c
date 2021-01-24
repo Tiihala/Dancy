@@ -17,7 +17,7 @@
  *      Programmable Interval Timer
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 static const unsigned pit_hz = 1000;
 static const unsigned pit_rate = 1193182;

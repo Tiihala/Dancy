@@ -17,7 +17,7 @@
  *      Advanced Programmable Interrupt Controller
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 int apic_mode = 0;
 const unsigned apic_spurious_vector = 0xFF;

@@ -17,7 +17,7 @@
  *      Kernel table initialization
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 static size_t heap_size = 0;
 static size_t heap_used = 0;

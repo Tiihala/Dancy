@@ -17,7 +17,7 @@
  *      Load init.at from system databases
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 #ifdef DANCY_32
 static const char *init_at = "o32/init.at";

@@ -17,7 +17,7 @@
  *      Universal Serial Bus
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 static phys_addr_t usb_get_base(struct pci_device *pci, int off, int early)
 {

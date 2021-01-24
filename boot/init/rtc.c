@@ -17,7 +17,7 @@
  *      Get current time and date
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 struct rtc_regs {
 	unsigned second;

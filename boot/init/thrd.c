@@ -17,7 +17,7 @@
  *      Threads for pre-kernel environment
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 struct init_thrd *init_thrd_current = NULL;
 

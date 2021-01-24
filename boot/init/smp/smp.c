@@ -17,7 +17,7 @@
  *      Symmetric multiprocessing
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 uint32_t smp_ap_count = 0;
 uint32_t *smp_ap_id = NULL;

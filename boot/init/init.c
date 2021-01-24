@@ -17,7 +17,7 @@
  *      Initialization of Dancy Operating System
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 void *ttf;
 void *ttf_array[3];

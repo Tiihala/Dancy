@@ -17,7 +17,7 @@
  *      Interrupt handler
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 volatile unsigned idt_irq0;
 

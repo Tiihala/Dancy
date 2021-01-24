@@ -17,7 +17,7 @@
  *      Simple memory manager for pre-kernel environment
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 size_t memory_entries;
 void *memory_map;

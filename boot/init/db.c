@@ -17,7 +17,7 @@
  *      Handle database files
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 static int db_count;
 static void **db_array;

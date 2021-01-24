@@ -17,7 +17,7 @@
  *      High Precision Event Timer
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 int hpet_mode = 0;
 

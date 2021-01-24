@@ -17,7 +17,7 @@
  *      Dynamic linker and loader
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 #if defined (DANCY_32)
 static const unsigned obj_magic = 0x014C;

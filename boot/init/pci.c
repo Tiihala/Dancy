@@ -17,7 +17,7 @@
  *      Peripheral Component Interconnect
  */
 
-#include <init.h>
+#include <boot/init.h>
 
 uint32_t pci_device_count;
 struct pci_device *pci_devices;
