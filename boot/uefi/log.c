@@ -17,7 +17,7 @@
  *      Boot log manager (UEFI)
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 char *uefi_log;
 size_t uefi_log_size;

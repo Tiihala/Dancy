@@ -17,7 +17,7 @@
  *      Boot loader system calls (UEFI)
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 unsigned long b_output_string(const char *str, unsigned int len)
 {

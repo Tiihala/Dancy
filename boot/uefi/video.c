@@ -17,7 +17,7 @@
  *      Graphics Output Protocol
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 uint32_t video_active;
 

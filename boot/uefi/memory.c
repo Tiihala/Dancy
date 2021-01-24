@@ -17,7 +17,7 @@
  *      Memory allocation and GetMemoryMap
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 uint64_t gMapkey;
 

@@ -17,7 +17,7 @@
  *      Use UEFI services to display text on screen
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 const void *L(const char *s)
 {

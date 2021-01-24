@@ -17,7 +17,7 @@
  *      Wrapper functions for boot services
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 void u_clear_screen(void)
 {

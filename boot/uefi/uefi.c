@@ -17,7 +17,7 @@
  *      Boot Loader (UEFI)
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 static const char *welcome =
 	"UEFI Boot Loader (Dancy Operating System)\n"

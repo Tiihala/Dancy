@@ -17,7 +17,7 @@
  *      Block I/O Protocol
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 uint32_t b_bytes_per_block;
 uint32_t b_total_blocks;

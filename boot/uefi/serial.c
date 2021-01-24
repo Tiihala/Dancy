@@ -17,7 +17,7 @@
  *      Serial I/O Protocol
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 static EFI_HANDLE handle_com1;
 static EFI_HANDLE handle_com2;

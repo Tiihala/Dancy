@@ -17,7 +17,7 @@
  *      Simple Text Input Ex Protocol
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 static EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL *input;
 

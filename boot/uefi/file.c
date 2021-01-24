@@ -17,7 +17,7 @@
  *      Read config.at, databases, and in_x64.at
  */
 
-#include <uefi.h>
+#include <boot/uefi.h>
 
 extern void *file_info;
 extern uint64_t file_info_size;
