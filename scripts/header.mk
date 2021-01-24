@@ -72,6 +72,10 @@ DANCY_TARGET_RELEASE= \
  ./release/dancy.zip
 
 DANCY_HEADERS= \
+ ./include/boot/init.h \
+ ./include/boot/loader.h \
+ ./include/boot/palette.h \
+ ./include/boot/uefi.h \
  ./include/dancy/blob.h \
  ./include/dancy/ctype.h \
  ./include/dancy/error.h \
@@ -86,12 +90,8 @@ DANCY_HEADERS= \
  ./include/dancy/threads.h \
  ./include/dancy/time.h \
  ./include/dancy/types.h \
- ./include/init/boot.h \
- ./include/init/palette.h \
  ./include/kernel/base.h \
  ./include/kernel/table.h \
- ./include/dancy.h \
- ./include/init.h \
- ./include/uefi.h
+ ./include/dancy.h
 
 DANCY_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(DANCY_TARGET_TOOLS)

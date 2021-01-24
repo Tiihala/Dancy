@@ -13,12 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * init/boot.h
+ * boot/loader.h
  *      Header of Dancy Operating System
  */
 
-#ifndef INIT_BOOT_H
-#define INIT_BOOT_H
+#ifndef BOOT_LOADER_H
+#define BOOT_LOADER_H
 
 #include <dancy/types.h>
 

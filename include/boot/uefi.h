@@ -13,12 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * uefi.h
+ * boot/uefi.h
  *      Header of Dancy Operating System
  */
 
-#ifndef DANCY_UEFI_H
-#define DANCY_UEFI_H
+#ifndef BOOT_UEFI_H
+#define BOOT_UEFI_H
 
 #if !defined(DANCY_64)
 #error Definition of DANCY_64 is not available
@@ -33,7 +33,7 @@
 #include <dancy/string.h>
 #include <dancy/types.h>
 
-#include <init/boot.h>
+#include <boot/loader.h>
 
 unsigned long crc32c(const void *obj, size_t len);
 
