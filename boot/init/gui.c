@@ -798,52 +798,6 @@ int gui_draw(unsigned char *png, size_t size, int x1, int y1, int x2, int y2)
 	return r;
 }
 
-int gui_move_window(int x, int y)
-{
-	struct gui_window *win = gui_window_stack;
-	unsigned i, j;
-
-	if (gui_mtx_lock(&gui_mtx) != thrd_success)
-		return 1;
-
-	if (!gui_window_stack)
-		return gui_mtx_unlock(&gui_mtx), 1;
-
-	if (x < 0 || (unsigned)x + win->win_width > vi.width)
-		return gui_mtx_unlock(&gui_mtx), 1;
-
-	if (y < 0 || (unsigned)y + win->win_height > vi.height)
-		return gui_mtx_unlock(&gui_mtx), 1;
-
-	for (i = 0; i < win->win_height; i++) {
-		unsigned behind = i * win->win_width;
-		unsigned buffer = i * vi.width;
-
-		for (j = 0; j < win->win_width; j++) {
-			unsigned char tmp = win->win_behind[behind];
-			win->win_behind[behind++] = win->win_buffer[buffer];
-			win->win_buffer[buffer++] = tmp;
-		}
-	}
-
-	win->win_buffer = back_buffer + (y * (int)vi.width) + x;
-
-	for (i = 0; i < win->win_height; i++) {
-		unsigned behind = i * win->win_width;
-		unsigned buffer = i * vi.width;
-
-		for (j = 0; j < win->win_width; j++) {
-			unsigned char tmp = win->win_behind[behind];
-			win->win_behind[behind++] = win->win_buffer[buffer];
-			win->win_buffer[buffer++] = tmp;
-		}
-	}
-
-	gui_mtx_unlock(&gui_mtx);
-
-	return 0;
-}
-
 static void handle_newline(void)
 {
 	unsigned win_width = gui_window_stack->win_width - 2;
@@ -979,9 +933,9 @@ void gui_print(const char *format, ...)
 	}
 
 	print_message(&buf[0]);
-	gui_mtx_unlock(&gui_mtx);
 
-	gui_refresh();
+	blit();
+	gui_mtx_unlock(&gui_mtx);
 }
 
 void gui_print_alert(const char *message)
