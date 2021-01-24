@@ -4,9 +4,11 @@
 
 DANCY_DB_FILES= \
  ./o32/init.at \
- ./o32/kernel.at \
+ ./o32/lib.at \
+ ./o32/base.at \
  ./o64/init.at \
- ./o64/kernel.at \
+ ./o64/lib.at \
+ ./o64/base.at \
  $(ACPICA_O32_AT) \
  $(ACPICA_O64_AT) \
  ./share/fonts/dcysan.ttf \

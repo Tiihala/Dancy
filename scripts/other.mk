@@ -47,7 +47,6 @@ path: ./bin/dy-path$(DANCY_EXE)
 !include .\scripts\at\acpica.mk
 !include .\scripts\at\base.mk
 !include .\scripts\at\init.mk
-!include .\scripts\at\kernel.mk
 !include .\scripts\at\lib.mk
 !include .\scripts\at\uefi.mk
 

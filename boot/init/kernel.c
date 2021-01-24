@@ -39,7 +39,8 @@ struct kernel_object {
 };
 
 static struct kernel_object kernel_objects[] = {
-	{ 0, NULL, NULL, OBJECT_PREFIX "kernel.at" },
+	{ 0, NULL, NULL, OBJECT_PREFIX "lib.at" },
+	{ 0, NULL, NULL, OBJECT_PREFIX "base.at" },
 	{ 1, NULL, NULL, OBJECT_PREFIX "acpica.at" }
 };
 
@@ -291,9 +292,10 @@ void kernel_init(void)
 	kernel_init_memory();
 
 	/*
-	 * Link the first kernel object (must be kernel_at).
+	 * Link all the kernel objects.
 	 */
-	link_object(0);
+	for (i = 0; i < object_count; i++)
+		link_object(i);
 
 	/*
 	 * Find the __dancy_kernel_table symbol.
@@ -303,10 +305,10 @@ void kernel_init(void)
 		addr_t addr;
 
 		if (ld_find("__dancy_kernel_table", &sym))
-			kernel_error("kernel.at: missing kernel table");
+			kernel_error("kernel_init: missing kernel table");
 
 		if ((addr = sym->value) == 0)
-			kernel_error("kernel.at: kernel table is null");
+			kernel_error("kernel_init: kernel table is null");
 
 		kernel = (struct kernel_table *)addr;
 		kernel->table_size = sizeof(struct kernel_table);
@@ -320,10 +322,10 @@ void kernel_init(void)
 		addr_t addr;
 
 		if (ld_find(SYMBOL_PREFIX "kernel_start", &sym))
-			kernel_error("kernel.at: missing kernel_start");
+			kernel_error("kernel_init: missing kernel_start");
 
 		if ((addr = sym->value) == 0)
-			kernel_error("kernel.at: kernel_start is null");
+			kernel_error("kernel_init: kernel_start is null");
 
 		kernel_start_func = (void (*)(void))addr;
 	}
@@ -336,19 +338,13 @@ void kernel_init(void)
 		addr_t addr;
 
 		if (ld_find(SYMBOL_PREFIX "kernel_start_ap", &sym))
-			kernel_error("kernel.at: missing kernel_start_ap");
+			kernel_error("kernel_init: missing kernel_start_ap");
 
 		if ((addr = sym->value) == 0)
-			kernel_error("kernel.at: kernel_start_ap is null");
+			kernel_error("kernel_init: kernel_start_ap is null");
 
 		kernel_start_ap_func = (void (*)(void))addr;
 	}
-
-	/*
-	 * Link other kernel objects.
-	 */
-	for (i = 1; i < object_count; i++)
-		link_object(i);
 
 	/*
 	 * Write the module information.
