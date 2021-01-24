@@ -29,6 +29,8 @@ BOOTX64_EFI_OBJECTS= \
  ./o64/uefi/uefi.o \
  ./o64/uefi/video.o
 
+##############################################################################
+
 ./efi/boot/BOOTX64.EFI: ./o64/uefi.at
 	$(DY_UEFI) -tx64 -o$@ ./o64/uefi.at
 

@@ -44,14 +44,15 @@ distclean: clean
 path: ./bin/dy-path$(DANCY_EXE)
 	@cmd /C "set PATH=$(DANCY_PATH) && bin\dy-path$(DANCY_EXE)"
 
-!include .\scripts\acpica.mk
+!include .\scripts\at\acpica.mk
+!include .\scripts\at\init.mk
+!include .\scripts\at\kernel.mk
+!include .\scripts\at\uefi.mk
+
 !include .\scripts\dirs.mk
 !include .\scripts\external.mk
-!include .\scripts\init.mk
-!include .\scripts\kernel.mk
 !include .\scripts\legacy.mk
 !include .\scripts\objects.mk
 !include .\scripts\release.mk
 !include .\scripts\system.mk
 !include .\scripts\tools.mk
-!include .\scripts\uefi.mk
