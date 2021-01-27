@@ -8,6 +8,9 @@
 ./o32/base/a32/gdt.o: ./kernel/base/a32/gdt.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/base/a32/gdt.asm
 
+./o32/base/a32/idt.o: ./kernel/base/a32/idt.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/base/a32/idt.asm
+
 ./o32/base/apic.o: ./kernel/base/apic.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/apic.c
 
@@ -19,6 +22,9 @@
 
 ./o32/base/heap.o: ./kernel/base/heap.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/heap.c
+
+./o32/base/idt.o: ./kernel/base/idt.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/idt.c
 
 ./o32/base/mtx.o: ./kernel/base/mtx.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/mtx.c
@@ -179,6 +185,9 @@
 ./o64/base/a64/gdt.o: ./kernel/base/a64/gdt.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/base/a64/gdt.asm
 
+./o64/base/a64/idt.o: ./kernel/base/a64/idt.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/base/a64/idt.asm
+
 ./o64/base/apic.o: ./kernel/base/apic.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/apic.c
 
@@ -190,6 +199,9 @@
 
 ./o64/base/heap.o: ./kernel/base/heap.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/heap.c
+
+./o64/base/idt.o: ./kernel/base/idt.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/idt.c
 
 ./o64/base/mtx.o: ./kernel/base/mtx.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/mtx.c

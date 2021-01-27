@@ -4,19 +4,23 @@
 
 DANCY_BASE_OBJECTS_32= \
  ./o32/base/a32/gdt.o \
+ ./o32/base/a32/idt.o \
  ./o32/base/apic.o \
  ./o32/base/delay.o \
  ./o32/base/gdt.o \
  ./o32/base/heap.o \
+ ./o32/base/idt.o \
  ./o32/base/mtx.o \
  ./o32/base/start.o
 
 DANCY_BASE_OBJECTS_64= \
  ./o64/base/a64/gdt.o \
+ ./o64/base/a64/idt.o \
  ./o64/base/apic.o \
  ./o64/base/delay.o \
  ./o64/base/gdt.o \
  ./o64/base/heap.o \
+ ./o64/base/idt.o \
  ./o64/base/mtx.o \
  ./o64/base/start.o
 

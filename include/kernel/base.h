@@ -74,6 +74,19 @@ void gdt_load_tss(int sel);
 int heap_init(void);
 
 /*
+ * Declarations of idt.asm and idt.c
+ */
+extern uint8_t idt_asm_array[256][16];
+extern const uint8_t idt_asm_gp_handler[];
+extern const uint8_t idt_asm_handler[];
+
+int idt_init(void);
+int idt_init_ap(void);
+
+void idt_handler(int num, void *stack);
+void idt_load(const void *idt_ptr);
+
+/*
  * Declarations of start.c
  */
 extern struct kernel_table *kernel;
