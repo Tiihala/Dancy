@@ -84,6 +84,7 @@ int idt_init(void);
 int idt_init_ap(void);
 
 void idt_handler(int num, void *stack);
+void idt_install_asm(int num, const uint8_t asm_handler[]);
 void idt_load(const void *idt_ptr);
 
 /*

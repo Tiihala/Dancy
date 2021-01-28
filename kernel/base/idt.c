@@ -87,6 +87,17 @@ static void idt_build(void)
 	}
 }
 
+static void idt_install_global(int num, const uint8_t asm_handler[])
+{
+	addr_t addr = (addr_t)&asm_handler[0];
+	uint32_t *p = (uint32_t *)((addr_t)&idt_global[num * 8]);
+
+	cpu_write32(&p[1], 0);
+
+	cpu_write32(&p[0], (uint32_t)((addr & 0x0000FFFF) | 0x00080000));
+	cpu_write32(&p[1], (uint32_t)((addr & 0xFFFF0000) | 0x00008E00));
+}
+
 #endif
 
 #ifdef DANCY_64
@@ -134,6 +145,17 @@ static void idt_build(void)
 		p[2] = 0;
 		p[3] = 0;
 	}
+}
+
+static void idt_install_global(int num, const uint8_t asm_handler[])
+{
+	addr_t addr = (addr_t)&asm_handler[0];
+	uint32_t *p = (uint32_t *)((addr_t)&idt_global[num * 16]);
+
+	cpu_write32(&p[1], 0), p[2] = 0, p[3] = 0;
+
+	cpu_write32(&p[0], (uint32_t)((addr & 0x0000FFFF) | 0x00080000));
+	cpu_write32(&p[1], (uint32_t)((addr & 0xFFFF0000) | 0x00008E00));
 }
 
 #endif
@@ -217,4 +239,14 @@ static void idt_panic(int num, void *stack)
 void idt_handler(int num, void *stack)
 {
 	idt_panic(num, stack);
+}
+
+void idt_install_asm(int num, const uint8_t asm_handler[])
+{
+	if (num < 0 || num > 255 || (addr_t)&asm_handler[0] >= 0x10000000)
+		return;
+
+	spin_lock(&idt_lock);
+	idt_install_global(num, asm_handler);
+	spin_unlock(&idt_lock);
 }
