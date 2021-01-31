@@ -95,4 +95,17 @@ extern struct kernel_table *kernel;
 void kernel_start(void);
 void kernel_start_ap(void);
 
+/*
+ * Declarations of timer.asm and timer.c
+ */
+extern uint8_t timer_apic_base[];
+extern const uint8_t timer_asm_handler_apic[];
+extern const uint8_t timer_asm_handler_pic[];
+
+extern volatile uint32_t timer_ticks;
+extern volatile uint64_t timer_ticks_64;
+extern volatile uint32_t timer_ticks_wait;
+
+void timer_handler(void);
+
 #endif

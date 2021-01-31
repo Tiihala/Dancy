@@ -11,6 +11,9 @@
 ./o32/base/a32/idt.o: ./kernel/base/a32/idt.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/base/a32/idt.asm
 
+./o32/base/a32/timer.o: ./kernel/base/a32/timer.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/base/a32/timer.asm
+
 ./o32/base/apic.o: ./kernel/base/apic.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/apic.c
 
@@ -31,6 +34,9 @@
 
 ./o32/base/start.o: ./kernel/base/start.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/start.c
+
+./o32/base/timer.o: ./kernel/base/timer.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/timer.c
 
 ./o32/common/crc32.o: ./common/crc32.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/crc32.c
@@ -188,6 +194,9 @@
 ./o64/base/a64/idt.o: ./kernel/base/a64/idt.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/base/a64/idt.asm
 
+./o64/base/a64/timer.o: ./kernel/base/a64/timer.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/base/a64/timer.asm
+
 ./o64/base/apic.o: ./kernel/base/apic.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/apic.c
 
@@ -208,6 +217,9 @@
 
 ./o64/base/start.o: ./kernel/base/start.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/start.c
+
+./o64/base/timer.o: ./kernel/base/timer.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/timer.c
 
 ./o64/common/crc32.o: ./common/crc32.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/crc32.c
