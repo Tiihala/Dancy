@@ -50,7 +50,6 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/a32/gdt.o \
  ./o32/init/a32/idt.o \
  ./o32/init/a32/kernel.o \
- ./o32/init/a32/pg.o \
  ./o32/init/smp/smp.o \
  ./o32/init/smp/start32.o \
  ./o32/init/acpi.o \
@@ -82,7 +81,6 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/a64/gdt.o \
  ./o64/init/a64/idt.o \
  ./o64/init/a64/kernel.o \
- ./o64/init/a64/pg.o \
  ./o64/init/smp/smp.o \
  ./o64/init/smp/start64.o \
  ./o64/init/acpi.o \

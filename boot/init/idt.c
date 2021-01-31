@@ -56,10 +56,9 @@ static void idt_panic(unsigned num, const void *stack)
 	ptr += ((add > 0) ? add : 0);
 
 	if (num == 14) {
-		phys_addr_t cr2;
+		addr_t cr2 = (addr_t)cpu_read_cr2();
 
-		pg_get_fault(&cr2);
-		add = snprintf(ptr, size, "\nCR2: %p\n", cr2);
+		add = snprintf(ptr, size, "\nCR2: %p\n", (void *)cr2);
 		ptr += ((add > 0) ? add : 0);
 	}
 

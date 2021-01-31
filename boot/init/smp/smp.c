@@ -170,7 +170,7 @@ void smp_init(void)
 		 */
 		{
 			uint32_t ap_stack;
-			phys_addr_t ap_paging;
+			uint32_t ap_paging;
 
 			/*
 			 * Use correct stack alignment (DANCY_32 or DANCY_64).
@@ -193,13 +193,13 @@ void smp_init(void)
 			/*
 			 * Use the same paging structures.
 			 */
-			pg_get_current(&ap_paging);
+			ap_paging = (uint32_t)cpu_read_cr3();
 
 			/*
 			 * Write the smp_ap_info values.
 			 */
 			cpu_write32(&addr[0x1F0], ap_stack);
-			cpu_write32(&addr[0x1F4], (uint32_t)ap_paging);
+			cpu_write32(&addr[0x1F4], ap_paging);
 			cpu_write32(&addr[0x1F8], ap_status);
 		}
 

@@ -62,9 +62,6 @@
 ./o32/init/a32/ld.o: ./boot/init/a32/ld.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./boot/init/a32/ld.asm
 
-./o32/init/a32/pg.o: ./boot/init/a32/pg.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./boot/init/a32/pg.asm
-
 ./o32/init/a32/start.o: ./boot/init/a32/start.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./boot/init/a32/start.asm
 
@@ -244,9 +241,6 @@
 
 ./o64/init/a64/ld.o: ./boot/init/a64/ld.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./boot/init/a64/ld.asm
-
-./o64/init/a64/pg.o: ./boot/init/a64/pg.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./boot/init/a64/pg.asm
 
 ./o64/init/a64/start.o: ./boot/init/a64/start.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./boot/init/a64/start.asm

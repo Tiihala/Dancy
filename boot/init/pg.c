@@ -200,24 +200,23 @@ int pg_init(void)
 	if (identity_map(high_addr, 1, 0))
 		return 1;
 
-	pg_switch(pg_addr);
+	cpu_write_cr3((cpu_native_t)pg_addr);
 
 	return 0;
 }
 
 int pg_handler(void)
 {
-	phys_addr_t addr;
+	phys_addr_t addr = (phys_addr_t)cpu_read_cr2();
 	int r = 0;
 
 	spin_lock(&pg_lock);
 	pg_fault_counter += 1;
-	pg_get_fault(&addr);
 
 	if (addr < 0x1000 || identity_map(addr, 1, 0))
 		r = 1;
 
-	pg_switch(pg_addr);
+	cpu_write_cr3((cpu_native_t)pg_addr);
 	spin_unlock(&pg_lock);
 
 	return r;
@@ -231,6 +230,6 @@ void pg_map_uncached(void *addr)
 	spin_lock(&pg_lock);
 	identity_map((phys_addr_t)addr, 0, 1);
 
-	pg_switch(pg_addr);
+	cpu_write_cr3((cpu_native_t)pg_addr);
 	spin_unlock(&pg_lock);
 }
