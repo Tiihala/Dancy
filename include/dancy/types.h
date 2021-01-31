@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019 Antti Tiihala
+ * Copyright (c) 2018, 2019, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,26 +28,30 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
 
-#if defined (DANCY_32)
+#ifdef DANCY_32
 
 typedef unsigned int addr_t;
 typedef unsigned int phys_addr_t;
+typedef unsigned int cpu_native_t;
 #define DANCY_SIZE_MAX (4294967295ul)
 
-#elif defined (DANCY_64)
+#endif
+
+#ifdef DANCY_64
 
 typedef unsigned long long addr_t;
 typedef unsigned long long phys_addr_t;
+typedef unsigned long long cpu_native_t;
 #define DANCY_SIZE_MAX (18446744073709551615ull)
 
 #endif
 
-#if !defined (SIZE_MAX)
+#ifndef SIZE_MAX
 #define SIZE_MAX DANCY_SIZE_MAX
 #endif
 
 #if SIZE_MAX != DANCY_SIZE_MAX
-#error Definition of SIZE_MAX is not compatible
+#error "Definition of SIZE_MAX is not compatible"
 #endif
 
 #endif
