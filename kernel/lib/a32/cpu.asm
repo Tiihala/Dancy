@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2019, 2020 Antti Tiihala
+;; Copyright (c) 2019, 2020, 2021 Antti Tiihala
 ;;
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -38,9 +38,17 @@ section .text
         global _cpu_read8
         global _cpu_read16
         global _cpu_read32
+        global _cpu_read_cr0
+        global _cpu_read_cr2
+        global _cpu_read_cr3
+        global _cpu_read_cr4
         global _cpu_write8
         global _cpu_write16
         global _cpu_write32
+        global _cpu_write_cr0
+        global _cpu_write_cr2
+        global _cpu_write_cr3
+        global _cpu_write_cr4
 
 align 16
         ; void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b)
@@ -230,6 +238,30 @@ _cpu_read32:
         ret
 
 align 16
+        ; cpu_native_t cpu_read_cr0(void)
+_cpu_read_cr0:
+        mov eax, cr0                    ; eax = control register cr0
+        ret
+
+align 16
+        ; cpu_native_t cpu_read_cr2(void)
+_cpu_read_cr2:
+        mov eax, cr2                    ; eax = control register cr2
+        ret
+
+align 16
+        ; cpu_native_t cpu_read_cr3(void)
+_cpu_read_cr3:
+        mov eax, cr3                    ; eax = control register cr3
+        ret
+
+align 16
+        ; cpu_native_t cpu_read_cr4(void)
+_cpu_read_cr4:
+        mov eax, cr4                    ; eax = control register cr4
+        ret
+
+align 16
         ; void cpu_write8(void *address, uint8_t value)
 _cpu_write8:
         mov ecx, [esp+4]                ; ecx = address
@@ -254,4 +286,32 @@ _cpu_write32:
         mov edx, [esp+8]                ; edx = value
         mov [ecx], edx                  ; write
         wbinvd                          ; flush internal caches
+        ret
+
+align 16
+        ; void cpu_write_cr0(cpu_native_t value)
+_cpu_write_cr0:
+        mov ecx, [esp+4]                ; ecx = value
+        mov cr0, ecx                    ; cr0 = value
+        ret
+
+align 16
+        ; void cpu_write_cr2(cpu_native_t value)
+_cpu_write_cr2:
+        mov ecx, [esp+4]                ; ecx = value
+        mov cr2, ecx                    ; cr2 = value
+        ret
+
+align 16
+        ; void cpu_write_cr3(cpu_native_t value)
+_cpu_write_cr3:
+        mov ecx, [esp+4]                ; ecx = value
+        mov cr3, ecx                    ; cr3 = value
+        ret
+
+align 16
+        ; void cpu_write_cr4(cpu_native_t value)
+_cpu_write_cr4:
+        mov ecx, [esp+4]                ; ecx = value
+        mov cr4, ecx                    ; cr4 = value
         ret

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Antti Tiihala
+ * Copyright (c) 2020, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -67,9 +67,19 @@ uint8_t cpu_read8(const void *address);
 uint16_t cpu_read16(const void *address);
 uint32_t cpu_read32(const void *address);
 
+cpu_native_t cpu_read_cr0(void);
+cpu_native_t cpu_read_cr2(void);
+cpu_native_t cpu_read_cr3(void);
+cpu_native_t cpu_read_cr4(void);
+
 void cpu_write8(void *address, uint8_t value);
 void cpu_write16(void *address, uint16_t value);
 void cpu_write32(void *address, uint32_t value);
+
+void cpu_write_cr0(cpu_native_t value);
+void cpu_write_cr2(cpu_native_t value);
+void cpu_write_cr3(cpu_native_t value);
+void cpu_write_cr4(cpu_native_t value);
 
 /*
  * Declarations of crc32.c and crc32c.c
