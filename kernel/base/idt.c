@@ -178,9 +178,37 @@ int idt_init(void)
 	idt_register.table_addr = (uint32_t)((addr_t)idt_global);
 
 	idt_ptr = &idt_register.table_limit;
-	idt_load(idt_ptr);
-
 	spin_unlock(&idt_lock);
+
+	/*
+	 * Install the timer handler (IRQ 0).
+	 */
+	if (kernel->io_apic_enabled) {
+		const int irq0_apic = 64;
+		uint32_t a, *p;
+
+		a = (uint32_t)kernel->apic_base_addr;
+		p = (uint32_t *)((addr_t)&timer_apic_base[0]);
+
+		if (cpu_read32(p))
+			return DE_UNEXPECTED;
+		cpu_write32(p, a);
+#ifdef DANCY_64
+		a = (uint32_t)(kernel->apic_base_addr >> 32);
+		p = (uint32_t *)((addr_t)&timer_apic_base[4]);
+
+		if (cpu_read32(p))
+			return DE_UNEXPECTED;
+		cpu_write32(p, a);
+#endif
+		idt_install_asm(irq0_apic, timer_asm_handler_apic);
+	} else {
+		const int irq0_pic = 32;
+
+		idt_install_asm(irq0_pic, timer_asm_handler_pic);
+	}
+
+	idt_load(idt_ptr);
 
 	return 0;
 }

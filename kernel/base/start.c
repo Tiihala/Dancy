@@ -71,39 +71,7 @@ void kernel_start(void)
 
 	checked_init(heap_init, "Heap memory manager");
 	checked_init(gdt_init, "GDT (BSP)");
-
-	/*
-	 * Initialize the interrupt descriptor table.
-	 */
-	{
-		const int irq0_apic = 64;
-		const int irq0_pic = 32;
-		uint32_t a, *p;
-
-		int r = cpu_ints(0);
-
-		checked_init(idt_init, "IDT (BSP)");
-
-		if (kernel->io_apic_enabled) {
-			a = (uint32_t)kernel->apic_base_addr;
-			p = (uint32_t *)((addr_t)&timer_apic_base[0]);
-			if (cpu_read32(p))
-				kernel->panic("timer_apic_base: error 1");
-			cpu_write32(p, a);
-#ifdef DANCY_64
-			a = (uint32_t)(kernel->apic_base_addr >> 32);
-			p = (uint32_t *)((addr_t)&timer_apic_base[4]);
-			if (cpu_read32(p))
-				kernel->panic("timer_apic_base: error 2");
-			cpu_write32(p, a);
-#endif
-			idt_install_asm(irq0_apic, timer_asm_handler_apic);
-		} else {
-			idt_install_asm(irq0_pic, timer_asm_handler_pic);
-		}
-
-		cpu_ints(r);
-	}
+	checked_init(idt_init, "IDT (BSP)");
 
 	cpu_halt(0);
 }
