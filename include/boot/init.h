@@ -319,6 +319,7 @@ extern volatile uint32_t pg_tables_size;
 int pg_init(void);
 int pg_handler(void);
 void pg_map_uncached(void *addr);
+void pg_restore(void);
 
 
 /*

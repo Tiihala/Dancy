@@ -233,3 +233,8 @@ void pg_map_uncached(void *addr)
 	cpu_write_cr3((cpu_native_t)pg_addr);
 	spin_unlock(&pg_lock);
 }
+
+void pg_restore(void)
+{
+	cpu_write_cr3((cpu_native_t)pg_addr);
+}

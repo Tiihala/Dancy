@@ -23,8 +23,16 @@ static int panic_lock;
 
 void panic(const char *message)
 {
-	uint32_t current_id = apic_id();
+	uint32_t current_id;
 	uint32_t i;
+
+	/*
+	 * Use the paging structures of the init module if calling
+	 * the panic function from the early kernel.
+	 */
+	pg_restore();
+
+	current_id = apic_id();
 
 	/*
 	 * The panic() function is not reentrant.
