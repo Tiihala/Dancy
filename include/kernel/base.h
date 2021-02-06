@@ -88,6 +88,21 @@ void idt_install_asm(int num, const uint8_t asm_handler[]);
 void idt_load(const void *idt_ptr);
 
 /*
+ * Declarations of pg.c
+ */
+enum pg_type {
+	pg_normal   = 0x00,
+	pg_uncached = 0x01
+};
+
+extern cpu_native_t pg_kernel;
+
+int pg_init(void);
+int pg_init_ap(void);
+
+void *pg_map_kernel(phys_addr_t addr, size_t size, int type);
+
+/*
  * Declarations of start.c
  */
 extern struct kernel_table *kernel;

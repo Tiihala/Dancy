@@ -32,6 +32,9 @@
 ./o32/base/mtx.o: ./kernel/base/mtx.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/mtx.c
 
+./o32/base/pg.o: ./kernel/base/pg.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/pg.c
+
 ./o32/base/start.o: ./kernel/base/start.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/start.c
 
@@ -211,6 +214,9 @@
 
 ./o64/base/mtx.o: ./kernel/base/mtx.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/mtx.c
+
+./o64/base/pg.o: ./kernel/base/pg.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/pg.c
 
 ./o64/base/start.o: ./kernel/base/start.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/start.c

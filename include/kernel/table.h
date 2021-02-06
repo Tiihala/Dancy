@@ -76,6 +76,7 @@ struct kernel_table {
 	 */
 	int apic_enabled;
 	phys_addr_t apic_base_addr;
+	addr_t apic_base_vaddr;
 
 	uint32_t apic_bsp_id;
 

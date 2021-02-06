@@ -73,6 +73,8 @@ void kernel_start(void)
 	checked_init(gdt_init, "GDT (BSP)");
 	checked_init(idt_init, "IDT (BSP)");
 
+	checked_init(pg_init, "Paging (BSP)");
+
 	cpu_halt(0);
 }
 
@@ -97,6 +99,8 @@ void kernel_start_ap(void)
 
 	checked_init(gdt_init_ap, "GDT (AP)");
 	checked_init(idt_init_ap, "IDT (AP)");
+
+	checked_init(pg_init_ap, "Paging (AP)");
 
 	cpu_halt(0);
 }
