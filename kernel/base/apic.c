@@ -21,7 +21,7 @@
 
 void apic_eoi(void)
 {
-	void *eoi = (void *)(kernel->apic_base_addr + 0xB0);
+	void *eoi = (void *)(kernel->apic_base_vaddr + 0xB0);
 
 	cpu_write32(eoi, 0);
 }
@@ -33,15 +33,15 @@ uint32_t apic_id(void)
 	if (!kernel->apic_enabled)
 		return kernel->apic_bsp_id;
 
-	id = (const void *)(kernel->apic_base_addr + 0x20);
+	id = (const void *)(kernel->apic_base_vaddr + 0x20);
 
 	return (cpu_read32(id) >> 24);
 }
 
 void apic_send(uint32_t icr_low, uint32_t icr_high)
 {
-	void *icr_300 = (void *)(kernel->apic_base_addr + 0x300);
-	void *icr_310 = (void *)(kernel->apic_base_addr + 0x310);
+	void *icr_300 = (void *)(kernel->apic_base_vaddr + 0x300);
+	void *icr_310 = (void *)(kernel->apic_base_vaddr + 0x310);
 
 	unsigned wait_delivery_status = 100;
 
@@ -60,7 +60,7 @@ void apic_send(uint32_t icr_low, uint32_t icr_high)
 
 int apic_wait_delivery(void)
 {
-	const void *icr_300 = (const void *)(kernel->apic_base_addr + 0x300);
+	const void *icr_300 = (const void *)(kernel->apic_base_vaddr + 0x300);
 	unsigned wait_delivery_status = 1000;
 
 	while (wait_delivery_status--) {
