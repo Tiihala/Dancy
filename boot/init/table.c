@@ -85,6 +85,11 @@ void table_init(void)
 		panic("TSC: unexpected frequency value");
 
 	/*
+	 * Allocate the virtual address slot for Local APIC registers.
+	 */
+	kernel->apic_base_vaddr = (addr_t)table_alloc_pages(1);
+
+	/*
 	 * Write the framebuffer variables.
 	 */
 	if (gui_video_info != NULL) {

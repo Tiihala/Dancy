@@ -208,11 +208,12 @@ int pg_init(void)
 	if (mtx_init(&pg_mtx, mtx_plain) != thrd_success)
 		return DE_UNEXPECTED;
 
-	if ((pg_apic_base_vaddr = (addr_t)pg_alloc_page()) == 0)
-		return DE_MEMORY;
-
 	if ((pg_kernel = (cpu_native_t)pg_alloc_page()) == 0)
 		return DE_MEMORY;
+
+	pg_apic_base_vaddr = kernel->apic_base_vaddr;
+	if (pg_apic_base_vaddr == 0 || (pg_apic_base_vaddr & 0x0FFF) != 0)
+		return DE_UNEXPECTED;
 
 	/*
 	 * Create a special mapping for Local APIC registers.
@@ -251,7 +252,6 @@ int pg_init(void)
 		pg_map_kernel((phys_addr_t)base, (size_t)size, pg_normal);
 	}
 
-	kernel->apic_base_vaddr = pg_apic_base_vaddr;
 	cpu_write32((uint32_t *)&pg_ready, 1);
 
 	r = cpu_ints(0);
