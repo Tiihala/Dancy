@@ -39,6 +39,22 @@ static struct gdt_block *gdt_array = NULL;
 static int gdt_count = 0;
 static int gdt_used = 0;
 
+static uint32_t gdt_early_apic_id(void)
+{
+	const void *id;
+
+	if (!kernel->apic_enabled)
+		return kernel->apic_bsp_id;
+
+	/*
+	 * Use the physical APIC base address because the
+	 * kernel paging has not been set up at this point.
+	 */
+	id = (const void *)(kernel->apic_base_addr + 0x20);
+
+	return (cpu_read32(id) >> 24);
+}
+
 #ifdef DANCY_32
 
 static void gdt_build_block(struct gdt_block *gb)
@@ -47,7 +63,7 @@ static void gdt_build_block(struct gdt_block *gb)
 
 	gb->table_limit = (uint16_t)(sizeof(gb->table) - 1);
 	gb->table_addr = (uint32_t)((addr_t)&gb->table[0]);
-	gb->id = apic_id();
+	gb->id = gdt_early_apic_id();
 
 	p = &gb->table[gdt_kernel_code];
 	p[0] = 0xFF, p[1] = 0xFF, p[2] = 0x00, p[3] = 0x00;
@@ -93,7 +109,7 @@ static void gdt_build_block(struct gdt_block *gb)
 
 	gb->table_limit = (uint16_t)(sizeof(gb->table) - 1);
 	gb->table_addr = (uint32_t)((addr_t)&gb->table[0]);
-	gb->id = apic_id();
+	gb->id = gdt_early_apic_id();
 
 	p = &gb->table[gdt_kernel_code];
 	p[0] = 0xFF, p[1] = 0xFF, p[2] = 0x00, p[3] = 0x00;
@@ -141,7 +157,7 @@ int gdt_init(void)
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
 
-	if (kernel->apic_bsp_id != apic_id())
+	if (kernel->apic_bsp_id != gdt_early_apic_id())
 		return DE_UNEXPECTED;
 
 	gdt_count = kernel->smp_ap_count + 1;
@@ -197,7 +213,7 @@ int gdt_init_ap(void)
 	struct gdt_block *gb = NULL;
 	int r;
 
-	if (kernel->apic_bsp_id == apic_id())
+	if (kernel->apic_bsp_id == gdt_early_apic_id())
 		return DE_UNEXPECTED;
 
 	spin_lock(&gdt_lock);
