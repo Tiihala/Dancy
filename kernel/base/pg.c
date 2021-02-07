@@ -200,7 +200,7 @@ int pg_init(void)
 
 	size_t map_size = kernel->memory_map_size;
 	int map_entries = (int)(map_size / sizeof(kernel->memory_map[0]));
-	int i, r;
+	int i, j, r;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
@@ -216,19 +216,121 @@ int pg_init(void)
 		return DE_UNEXPECTED;
 
 	/*
+	 * Map the modules (4 KiB pages).
+	 */
+	for (i = 0; i < kernel->module_count; i++) {
+		size_t size;
+		int map_count;
+		phys_addr_t addr;
+
+		/*
+		 * The .text section.
+		 */
+		size = kernel->module[i].text_size;
+		map_count = (int)((size + 0x0FFF) / 0x1000);
+		addr = (phys_addr_t)kernel->module[i].text_addr;
+
+		for (j = 0; j < map_count; j++) {
+			pg_map_kernel(addr, 0x1000, pg_normal);
+			addr += 0x1000;
+		}
+
+		/*
+		 * The .rdata section.
+		 */
+		size = kernel->module[i].rdata_size;
+		map_count = (int)((size + 0x0FFF) / 0x1000);
+		addr = (phys_addr_t)kernel->module[i].rdata_addr;
+
+		for (j = 0; j < map_count; j++) {
+			pg_map_kernel(addr, 0x1000, pg_normal);
+			addr += 0x1000;
+		}
+
+		/*
+		 * The .data section.
+		 */
+		size = kernel->module[i].data_size;
+		map_count = (int)((size + 0x0FFF) / 0x1000);
+		addr = (phys_addr_t)kernel->module[i].data_addr;
+
+		for (j = 0; j < map_count; j++) {
+			pg_map_kernel(addr, 0x1000, pg_normal);
+			addr += 0x1000;
+		}
+
+		/*
+		 * The .bss section.
+		 */
+		size = kernel->module[i].bss_size;
+		map_count = (int)((size + 0x0FFF) / 0x1000);
+		addr = (phys_addr_t)kernel->module[i].bss_addr;
+
+		for (j = 0; j < map_count; j++) {
+			pg_map_kernel(addr, 0x1000, pg_normal);
+			addr += 0x1000;
+		}
+	}
+
+	/*
 	 * Create a special mapping for Local APIC registers.
 	 */
 	pg_map_kernel((phys_addr_t)pg_apic_base_vaddr, 0x1000, pg_uncached);
 
 	/*
-	 * Map the framebuffer (identity mapping).
+	 * Map the I/O APIC memory registers (IOREGSEL and IOWIN).
 	 */
-	if (kernel->fb_height) {
-		size_t size = (size_t)(kernel->fb_height * kernel->fb_stride);
+	if (kernel->io_apic_enabled) {
+		for (i = 0; i < kernel->io_apic_count; i++) {
+			phys_addr_t addr = kernel->io_apic[i].addr;
 
-		pg_map_kernel(kernel->fb_addr, size, pg_normal);
+			pg_map_kernel(addr, 0x20, pg_uncached);
+		}
 	}
 
+	/*
+	 * Map the framebuffer (4 KiB pages).
+	 */
+	{
+		size_t size = (size_t)(kernel->fb_height * kernel->fb_stride);
+		int map_count = (int)((size + 0x0FFF) / 0x1000);
+		phys_addr_t addr = kernel->fb_addr;
+
+		for (i = 0; i < map_count; i++) {
+			pg_map_kernel(addr, 0x1000, pg_normal);
+			addr += 0x1000;
+		}
+	}
+
+	/*
+	 * Map the standard framebuffer (4 KiB pages).
+	 */
+	{
+		size_t size = kernel->fb_standard_size;
+		int map_count = (int)((size + 0x0FFF) / 0x1000);
+		phys_addr_t addr = kernel->fb_standard_addr;
+
+		for (i = 0; i < map_count; i++) {
+			pg_map_kernel(addr, 0x1000, pg_normal);
+			addr += 0x1000;
+		}
+	}
+
+	/*
+	 * Map the PCI memory mapped configuration areas (4 KiB pages).
+	 */
+	for (i = 0; i < kernel->pci_device_count; i++) {
+		phys_addr_t addr = kernel->pci_device[i].ecam;
+
+		if (addr)
+			pg_map_kernel(addr, 0x1000, pg_uncached);
+	}
+
+	/*
+	 * Map other kernel memory areas. Use large pages if possible.
+	 * It is safe to run the pg_map_kernel function for areas that
+	 * have been mapped already.
+	 */
 	for (i = 0; i < map_entries - 1; i++) {
 		const uint32_t type_kernel = 0xE0000000;
 		const uint32_t type_kernel_reserved = 0xE000FFFF;
