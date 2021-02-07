@@ -121,7 +121,7 @@ static void *heap_aligned_alloc(size_t alignment, size_t size)
 		if ((heap_map[0] & used_bit) != 0)
 			return NULL;
 
-		if ((heap_map[1] & (~used_bit)) < (heap_map_addr + 0x2000))
+		if ((heap_map[1] - heap_map[0]) < 0x2000)
 			return NULL;
 
 		heap_map_size += 0x1000;
@@ -174,6 +174,39 @@ static void heap_free(const void *ptr)
 		memmove(&heap_map[i], &heap_map[i + 1], s);
 		heap_map[--heap_map_entries] = 0;
 	}
+}
+
+void *heap_alloc_static_page(void)
+{
+	const uint32_t used_bit = 1;
+	const size_t size = 0x1000;
+	addr_t heap_map_addr = (addr_t)heap_map;
+	void *ptr;
+
+	if (mtx_lock(&heap_mtx) != thrd_success)
+		return NULL;
+
+	if ((heap_map[0] & used_bit) != 0) {
+		mtx_unlock(&heap_mtx);
+		return NULL;
+	}
+
+	if ((heap_map[1] - heap_map[0]) < 0x2000) {
+		mtx_unlock(&heap_mtx);
+		return NULL;
+	}
+
+	ptr = heap_map;
+	heap_map_addr += (addr_t)size;
+
+	memmove((void *)heap_map_addr, ptr, heap_map_size);
+
+	heap_map = (uint32_t *)heap_map_addr;
+	heap_map[0] = (uint32_t)(heap_map_addr + heap_map_size);
+
+	mtx_unlock(&heap_mtx);
+
+	return memset(ptr, 0, size);
 }
 
 void *aligned_alloc(size_t alignment, size_t size)

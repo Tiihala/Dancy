@@ -72,6 +72,7 @@ void gdt_load_tss(int sel);
  * Declarations of heap.c
  */
 int heap_init(void);
+void *heap_alloc_static_page(void);
 
 /*
  * Declarations of idt.asm and idt.c
