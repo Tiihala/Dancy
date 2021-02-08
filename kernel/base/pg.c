@@ -26,17 +26,6 @@ static int pg_ready;
 
 static addr_t pg_apic_base_vaddr;
 
-static phys_addr_t pg_alloc_page(void)
-{
-	const size_t size = 0x1000;
-	void *page;
-
-	page = aligned_alloc(size, size);
-	memset(page, 0, size);
-
-	return (phys_addr_t)page;
-}
-
 #ifdef DANCY_32
 
 static int pg_map_identity(phys_addr_t addr, int type, int large_page)
@@ -69,7 +58,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	}
 
 	if ((ptr[offset] & 1) == 0) {
-		if ((page = (uint32_t)pg_alloc_page()) == 0)
+		if ((page = (uint32_t)heap_alloc_static_page()) == 0)
 			return 1;
 		ptr[offset] = page | page_bits;
 	} else if ((ptr[offset] & 0x80) != 0) {
@@ -121,7 +110,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	ptr = (uint64_t *)pg_kernel;
 
 	if ((ptr[pml4e_offset] & 1) == 0) {
-		if ((page = (uint64_t)pg_alloc_page()) == 0)
+		if ((page = (uint64_t)heap_alloc_static_page()) == 0)
 			return 1;
 		ptr[pml4e_offset] = page | page_bits;
 	}
@@ -132,7 +121,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFF000);
 
 	if ((ptr[pdpe_offset] & 1) == 0) {
-		if ((page = (uint64_t)pg_alloc_page()) == 0)
+		if ((page = (uint64_t)heap_alloc_static_page()) == 0)
 			return 1;
 		ptr[pdpe_offset] = page | page_bits;
 	}
@@ -161,7 +150,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	}
 
 	if ((ptr[offset] & 1) == 0) {
-		if ((page = (uint64_t)pg_alloc_page()) == 0)
+		if ((page = (uint64_t)heap_alloc_static_page()) == 0)
 			return 1;
 		ptr[offset] = page | page_bits;
 	} else if ((ptr[offset] & 0x80) != 0) {
@@ -208,7 +197,7 @@ int pg_init(void)
 	if (mtx_init(&pg_mtx, mtx_plain) != thrd_success)
 		return DE_UNEXPECTED;
 
-	if ((pg_kernel = (cpu_native_t)pg_alloc_page()) == 0)
+	if ((pg_kernel = (cpu_native_t)heap_alloc_static_page()) == 0)
 		return DE_MEMORY;
 
 	pg_apic_base_vaddr = kernel->apic_base_vaddr;
