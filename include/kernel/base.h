@@ -101,6 +101,7 @@ extern cpu_native_t pg_kernel;
 int pg_init(void);
 int pg_init_ap(void);
 
+void *pg_get_entry(const void *pte);
 void *pg_map_kernel(phys_addr_t addr, size_t size, int type);
 
 /*

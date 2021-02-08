@@ -87,6 +87,29 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	return 0;
 }
 
+void *pg_get_entry(const void *pte)
+{
+	addr_t addr = (addr_t)pte;
+	int offset = (int)(addr >> 22);
+	uint32_t *ptr;
+
+	/*
+	 * Page-directory table.
+	 */
+	ptr = (uint32_t *)(cpu_read_cr3() & 0xFFFFF000);
+
+	if ((ptr[offset] & 1) == 0 || (ptr[offset] & 0x80) != 0)
+		return NULL;
+
+	/*
+	 * Page table.
+	 */
+	ptr = (uint32_t *)(ptr[offset] & 0xFFFFF000);
+	offset = (int)((addr >> 12) & 0x3FF);
+
+	return &ptr[offset];
+}
+
 static const phys_addr_t pg_unit_size = 0x400000;
 
 #endif
@@ -177,6 +200,50 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 		ptr[offset] = page | page_bits | (ptr[offset] & 0x18);
 
 	return 0;
+}
+
+void *pg_get_entry(const void *pte)
+{
+	addr_t addr = (addr_t)pte;
+	int pml4e_offset = (int)(addr >> 39);
+	int pdpe_offset = (int)((addr >> 30) & 0x1FF);
+	int offset = (int)((addr >> 21) & 0x1FF);
+	uint64_t *ptr;
+
+	if (pml4e_offset > 0x1FF)
+		return NULL;
+
+	/*
+	 * Page-map-level-4 table.
+	 */
+	ptr = (uint64_t *)(cpu_read_cr3() & 0xFFFFF000);
+
+	if ((ptr[pml4e_offset] & 1) == 0)
+		return NULL;
+
+	/*
+	 * Page-directory-pointer table.
+	 */
+	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFF000);
+
+	if ((ptr[pdpe_offset] & 1) == 0)
+		return NULL;
+
+	/*
+	 * Page-directory table.
+	 */
+	ptr = (uint64_t *)(ptr[pdpe_offset] & 0xFFFFF000);
+
+	if ((ptr[offset] & 1) == 0 || (ptr[offset] & 0x80) != 0)
+		return NULL;
+
+	/*
+	 * Page table.
+	 */
+	ptr = (uint64_t *)(ptr[offset] & 0xFFFFF000);
+	offset = (int)((addr >> 12) & 0x1FF);
+
+	return &ptr[offset];
 }
 
 static const phys_addr_t pg_unit_size = 0x200000;
