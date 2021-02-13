@@ -46,7 +46,9 @@ int bitarray_written(struct bitarray *b, size_t *written);
  */
 void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b);
 void cpu_halt(uint32_t counter);
+
 int cpu_ints(int enable);
+void cpu_invlpg(const void *address);
 
 void cpu_rdtsc(uint32_t *a, uint32_t *d);
 void cpu_rdtsc_delay(uint32_t a, uint32_t d);

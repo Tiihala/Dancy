@@ -24,6 +24,7 @@ section .text
         global _cpu_id
         global _cpu_halt
         global _cpu_ints
+        global _cpu_invlpg
         global _cpu_rdtsc
         global _cpu_rdtsc_delay
         global _cpu_rdtsc_diff
@@ -105,6 +106,13 @@ _cpu_ints:
         jne short .end
         xor dword [esp], 0x00000200     ; clear interrupt flag
 .end:   popfd                           ; pop eflags
+        ret
+
+align 16
+        ; void cpu_invlpg(const void *address)
+_cpu_invlpg:
+        mov ecx, [esp+4]                ; ecx = address
+        invlpg [ecx]                    ; invalidate tlb entry
         ret
 
 align 16
