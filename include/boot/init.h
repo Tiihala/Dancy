@@ -371,6 +371,6 @@ void usb_init(void);
 /*
  * Declarations of vga.c
  */
-void vga_set_palette(const struct b_video_info *vi);
+void vga_set_palette_early(const struct b_video_info *vi);
 
 #endif

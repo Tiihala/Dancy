@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2020 Antti Tiihala
+ * Copyright (c) 2019, 2020, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,18 +19,9 @@
 
 #include <boot/init.h>
 
-#define VGA_COLORS 16
-
-static const uint32_t vga_colors[VGA_COLORS] = {
-	0x00000000, 0x00101010, 0x00202020, 0x00303030,
-	0x00404040, 0x00505050, 0x00606060, 0x00707070,
-	0x00808080, 0x00909090, 0x00A0A0A0, 0x00B0B0B0,
-	0x00C0C0C0, 0x00D0D0D0, 0x00E0E0E0, 0x00F0F0F0
-};
-
-void vga_set_palette(const struct b_video_info *vi)
+void vga_set_palette_early(const struct b_video_info *vi)
 {
-
+	uint8_t color = 0;
 	uint32_t delay_low, delay_high;
 	uint8_t pic1, pic2;
 	int i;
@@ -103,10 +94,9 @@ void vga_set_palette(const struct b_video_info *vi)
 	 * Generate the palette.
 	 */
 	for (i = 0; i < 256; i++) {
-		uint32_t color = vga_colors[i % VGA_COLORS];
-		int red   = (int)((color >> 2)  & 63u);
-		int green = (int)((color >> 10) & 63u);
-		int blue  = (int)((color >> 18) & 63u);
+		uint8_t red   = (uint8_t)(color >> 2);
+		uint8_t green = (uint8_t)(color >> 2);
+		uint8_t blue  = (uint8_t)(color >> 2);
 
 		/*
 		 * Select the color index.
@@ -117,14 +107,19 @@ void vga_set_palette(const struct b_video_info *vi)
 		/*
 		 * Write the color values.
 		 */
-		cpu_out8(0x03C9, (uint8_t)(red >= 0 ? red : 0));
+		cpu_out8(0x03C9, red);
 		cpu_rdtsc_delay(delay_low, delay_high);
 
-		cpu_out8(0x03C9, (uint8_t)(green >= 0 ? green : 0));
+		cpu_out8(0x03C9, green);
 		cpu_rdtsc_delay(delay_low, delay_high);
 
-		cpu_out8(0x03C9, (uint8_t)(blue >= 0 ? blue : 0));
+		cpu_out8(0x03C9, blue);
 		cpu_rdtsc_delay(delay_low, delay_high);
+
+		if (i < 15)
+			color = (uint8_t)(color + 0x10u);
+		else
+			color = (uint8_t)(i + 1);
 	}
 
 	/*

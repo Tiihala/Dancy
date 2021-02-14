@@ -179,7 +179,7 @@ static void blit_1byte(void)
 
 	for (y = 0; y < vi.height; y++) {
 		for (x = 0; x < vi.width; x++)
-			dst[x] = src[x];
+			dst[x] = (unsigned char)(src[x] << 4);
 		src += src_add;
 		dst += dst_add;
 	}
