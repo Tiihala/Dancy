@@ -74,7 +74,6 @@ DANCY_TARGET_RELEASE= \
 DANCY_HEADERS= \
  ./include/boot/init.h \
  ./include/boot/loader.h \
- ./include/boot/palette.h \
  ./include/boot/uefi.h \
  ./include/dancy/blob.h \
  ./include/dancy/ctype.h \

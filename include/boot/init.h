@@ -35,7 +35,6 @@
 #include <dancy/types.h>
 
 #include <boot/loader.h>
-#include <boot/palette.h>
 #include <kernel/table.h>
 
 /*
