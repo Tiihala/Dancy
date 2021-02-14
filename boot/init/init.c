@@ -233,6 +233,12 @@ void init(void)
 	gui_refresh();
 
 	/*
+	 * Finalize the color palette if using the 8-bit mode.
+	 */
+	if (vi.width != 0 && vi.mode == B_MODE_PALETTE)
+		vga_set_palette();
+
+	/*
 	 * Make memory functions thread-safe.
 	 */
 	mtx_init(&memory_mtx, mtx_plain);

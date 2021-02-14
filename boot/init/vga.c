@@ -19,10 +19,12 @@
 
 #include <boot/init.h>
 
+static uint32_t delay_low;
+static uint32_t delay_high;
+
 void vga_set_palette_early(const struct b_video_info *vi)
 {
 	uint8_t color = 0;
-	uint32_t delay_low, delay_high;
 	uint8_t pic1, pic2;
 	int i;
 
@@ -150,4 +152,61 @@ void vga_set_palette_early(const struct b_video_info *vi)
 	 */
 	cpu_out8(0x21, pic1);
 	cpu_out8(0xA1, pic2);
+}
+
+void vga_set_palette(void)
+{
+	int i, r;
+
+	/*
+	 * The caller must make sure that writing VGA registers is safe.
+	 */
+	r = cpu_ints(0);
+
+	/*
+	 * Generate the palette.
+	 */
+	for (i = 0; i < 256; i++) {
+		uint32_t color = (uint32_t)i;
+		uint8_t red, green, blue;
+
+		switch (i % 4) {
+		case 0:
+			color = (color << 16) | (color << 8) | (color << 0);
+			break;
+		case 1:
+			color = (color << 0);
+			break;
+		case 2:
+			color = (color << 8);
+			break;
+		default:
+			color = (color << 16);
+			break;
+		}
+
+		red   = (uint8_t)((color >> 2)  & 63u);
+		green = (uint8_t)((color >> 10) & 63u);
+		blue  = (uint8_t)((color >> 18) & 63u);
+
+		/*
+		 * Select the color index.
+		 */
+		cpu_out8(0x03C8, (uint8_t)i);
+		cpu_rdtsc_delay(delay_low, delay_high);
+
+		/*
+		 * Write the color values.
+		 */
+		cpu_out8(0x03C9, red);
+		cpu_rdtsc_delay(delay_low, delay_high);
+
+		cpu_out8(0x03C9, green);
+		cpu_rdtsc_delay(delay_low, delay_high);
+
+		cpu_out8(0x03C9, blue);
+		cpu_rdtsc_delay(delay_low, delay_high);
+	}
+
+	cpu_ints(r);
 }
