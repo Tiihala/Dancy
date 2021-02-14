@@ -156,26 +156,22 @@ static void blit_vga(void)
 		cpu_out8(0x03C4, 0x02);
 		cpu_out8(0x03C5, 0x01);
 
-		for (x = 0; x < 80; x++)
-			dst[x] = row_plane0[x];
+		memcpy(&dst[0], &row_plane0[0], 80);
 
 		cpu_out8(0x03C4, 0x02);
 		cpu_out8(0x03C5, 0x02);
 
-		for (x = 0; x < 80; x++)
-			dst[x] = row_plane1[x];
+		memcpy(&dst[0], &row_plane1[0], 80);
 
 		cpu_out8(0x03C4, 0x02);
 		cpu_out8(0x03C5, 0x04);
 
-		for (x = 0; x < 80; x++)
-			dst[x] = row_plane2[x];
+		memcpy(&dst[0], &row_plane2[0], 80);
 
 		cpu_out8(0x03C4, 0x02);
 		cpu_out8(0x03C5, 0x08);
 
-		for (x = 0; x < 80; x++)
-			dst[x] = row_plane3[x];
+		memcpy(&dst[0], &row_plane3[0], 80);
 
 		src += 640;
 		dst += 80;
