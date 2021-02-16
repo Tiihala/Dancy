@@ -37,6 +37,13 @@ int apic_wait_delivery(void);
 void delay(uint32_t nanoseconds);
 
 /*
+ * Declarations of fb.c
+ */
+int fb_init(void);
+void fb_panic(void);
+void fb_render(void);
+
+/*
  * Declarations of gdt.asm and gdt.c
  */
 enum gdt_sel {

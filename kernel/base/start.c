@@ -74,6 +74,7 @@ void kernel_start(void)
 	checked_init(idt_init, "IDT (BSP)");
 
 	checked_init(pg_init, "Paging (BSP)");
+	checked_init(fb_init, "Framebuffer");
 
 	cpu_halt(0);
 }

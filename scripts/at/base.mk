@@ -8,6 +8,7 @@ DANCY_BASE_OBJECTS_32= \
  ./o32/base/a32/timer.o \
  ./o32/base/apic.o \
  ./o32/base/delay.o \
+ ./o32/base/fb.o \
  ./o32/base/gdt.o \
  ./o32/base/heap.o \
  ./o32/base/idt.o \
@@ -22,6 +23,7 @@ DANCY_BASE_OBJECTS_64= \
  ./o64/base/a64/timer.o \
  ./o64/base/apic.o \
  ./o64/base/delay.o \
+ ./o64/base/fb.o \
  ./o64/base/gdt.o \
  ./o64/base/heap.o \
  ./o64/base/idt.o \
