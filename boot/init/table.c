@@ -58,6 +58,22 @@ static void *table_alloc(size_t size)
 	return (void *)addr;
 }
 
+static void detach_init_module(void)
+{
+	static void (*null_func)(void);
+
+	kernel->detach_init_module = null_func;
+
+	if (kernel->panic == panic)
+		kernel->panic("kernel->panic() not overridden");
+
+	if (kernel->print == gui_print)
+		kernel->panic("kernel->print() not overridden");
+
+	if (gui_detach())
+		kernel->panic("detach_init_module: unexpected behavior");
+}
+
 void table_init(void)
 {
 	addr_t addr;
@@ -74,6 +90,7 @@ void table_init(void)
 	/*
 	 * Write the function pointers.
 	 */
+	kernel->detach_init_module = detach_init_module;
 	kernel->panic = panic;
 	kernel->print = gui_print;
 

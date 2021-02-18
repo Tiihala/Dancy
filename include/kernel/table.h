@@ -31,6 +31,7 @@ struct kernel_table {
 	addr_t stack_array_addr;
 	size_t stack_array_size;
 
+	void (*detach_init_module)(void);
 	void (*panic)(const char *message);
 	void (*print)(const char *format, ...);
 

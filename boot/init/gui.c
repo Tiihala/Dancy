@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Antti Tiihala
+ * Copyright (c) 2020, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -568,6 +568,29 @@ int gui_delete_window(void)
 	free(win);
 
 	gui_mtx_unlock(&gui_mtx);
+
+	return 0;
+}
+
+int gui_detach(void)
+{
+	unsigned char *s = back_buffer;
+	uint32_t *d = (uint32_t *)kernel->fb_standard_addr;
+	int pixel_count = (int)(vi.width * vi.height);
+	int i;
+
+	if (s == NULL)
+		return 0;
+
+	if (kernel->fb_standard_size < (size_t)(pixel_count * 4))
+		return 1;
+
+	for (i = 0; i < pixel_count; i++) {
+		uint32_t c = s[i];
+
+		c = (c < 16) ? colors[c] : 0u;
+		d[i] = c;
+	}
 
 	return 0;
 }
