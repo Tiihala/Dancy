@@ -119,6 +119,19 @@ struct kernel_table {
 	size_t fb_standard_size;
 
 	/*
+	 * Kernel console bitmap glyphs.
+	 */
+	int glyph_count;
+	int glyph_width;
+	int glyph_height;
+
+	struct {
+		int unicode_count;
+		uint32_t unicode;
+		void *data;
+	} *glyph;
+
+	/*
 	 * System memory map.
 	 */
 	size_t memory_map_size;

@@ -130,6 +130,110 @@ void table_init(void)
 	}
 
 	/*
+	 * Write the kernel console bitmap glyphs (monospace).
+	 */
+	{
+		const struct b_video_info *vi = gui_video_info;
+		static unsigned char ttf_bitmap[1024];
+		extern void *ttf_array[3];
+
+		void *ttf_kernel = ttf_array[2];
+		unsigned code_point, width = 0;
+		int extra_height, glyph_em = 16;
+		unsigned char *data;
+
+		if (vi->width >= 1920 && vi->height >= 1080)
+			glyph_em = 28;
+		else if (vi->width >= 1280 && vi->height >= 1024)
+			glyph_em = 24;
+		else if (vi->width >= 1024 && vi->height >= 768)
+			glyph_em = 20;
+
+		size = (size_t)(glyph_em * glyph_em);
+
+		if (ttf_set_bitmap(ttf_kernel, size, &ttf_bitmap[0]))
+			panic("Glyph: could not set the bitmap");
+
+		if (ttf_set_shades(ttf_kernel, 256))
+			panic("Glyph: unexpected behavior");
+
+		if (ttf_render(ttf_kernel, 0x20, &width))
+			panic("Glyph: rendering error");
+
+		if (width < 8 || width > (unsigned)glyph_em)
+			panic("Glyph: unexpected glyph width");
+
+		kernel->glyph_count = 2;
+		kernel->glyph_width = (int)width;
+		kernel->glyph_height = (int)width * 2;
+
+		extra_height = kernel->glyph_height - glyph_em;
+		if (extra_height < 0)
+			panic("Glyph: unexpected glyph height");
+
+		size = (size_t)kernel->glyph_count * sizeof(kernel->glyph[0]);
+		kernel->glyph = table_alloc(size);
+
+		/*
+		 * Unicode range from 0x20 to 0x7F.
+		 */
+		kernel->glyph[0].unicode_count = 96;
+		kernel->glyph[0].unicode = 0x20;
+
+		size = (size_t)kernel->glyph[0].unicode_count;
+		size *= (size_t)(kernel->glyph_width * kernel->glyph_height);
+		kernel->glyph[0].data = table_alloc(size);
+
+		code_point = (unsigned)kernel->glyph[0].unicode;
+		data = kernel->glyph[0].data;
+
+		for (i = 0; i < (size_t)kernel->glyph[0].unicode_count; i++) {
+			unsigned char *ptr = &ttf_bitmap[0];
+			int x, y;
+
+			if (ttf_render(ttf_kernel, code_point++, &width))
+				panic("Glyph: rendering error");
+
+			data += (extra_height * kernel->glyph_width);
+
+			for (y = 0; y < glyph_em; y++) {
+				for (x = 0; x < kernel->glyph_width; x++)
+					*data++ = ptr[x];
+				ptr += glyph_em;
+			}
+		}
+
+		/*
+		 * Unicode range from 0xA0 to 0xFF.
+		 */
+		kernel->glyph[1].unicode_count = 96;
+		kernel->glyph[1].unicode = 0xA0;
+
+		size = (size_t)kernel->glyph[1].unicode_count;
+		size *= (size_t)(kernel->glyph_width * kernel->glyph_height);
+		kernel->glyph[1].data = table_alloc(size);
+
+		code_point = (unsigned)kernel->glyph[1].unicode;
+		data = kernel->glyph[1].data;
+
+		for (i = 0; i < (size_t)kernel->glyph[1].unicode_count; i++) {
+			unsigned char *ptr = &ttf_bitmap[0];
+			int x, y;
+
+			if (ttf_render(ttf_kernel, code_point++, &width))
+				panic("Glyph: rendering error");
+
+			data += (extra_height * kernel->glyph_width);
+
+			for (y = 0; y < glyph_em; y++) {
+				for (x = 0; x < kernel->glyph_width; x++)
+					*data++ = ptr[x];
+				ptr += glyph_em;
+			}
+		}
+	}
+
+	/*
 	 * Write the SMP variables. Allocate the zero-length memory area
 	 * even if there were no application processors.
 	 */
