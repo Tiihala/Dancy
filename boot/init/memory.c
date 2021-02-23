@@ -433,20 +433,39 @@ void *aligned_alloc(size_t alignment, size_t size)
 void *calloc(size_t nmemb, size_t size)
 {
 	size_t total = nmemb * size;
-	void *ptr;
+	void *r;
 
 	if (!total || total / nmemb != size)
 		return NULL;
-	if ((ptr = malloc(total)) != NULL)
-		memset(ptr, 0, total);
-	return ptr;
+
+	if (memory_manager_disabled)
+		return NULL;
+
+	if (memory_mtx_lock(&memory_mtx) != thrd_success)
+		return NULL;
+
+	if ((r = memory_aligned_alloc(16, total)) != NULL)
+		memset(r, 0, total);
+
+	memory_mtx_unlock(&memory_mtx);
+
+	return r;
 }
 
 void *malloc(size_t size)
 {
-	if (size >= 0x7FFFFFFFul)
+	void *r;
+
+	if (memory_manager_disabled)
 		return NULL;
-	return aligned_alloc(16, (size + 15ul) & 0xFFFFFFF0ul);
+
+	if (memory_mtx_lock(&memory_mtx) != thrd_success)
+		return NULL;
+
+	r = memory_aligned_alloc(16, size);
+	memory_mtx_unlock(&memory_mtx);
+
+	return r;
 }
 
 void free(void *ptr)
