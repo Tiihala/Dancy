@@ -32,6 +32,14 @@ void apic_send(uint32_t icr_low, uint32_t icr_high);
 int apic_wait_delivery(void);
 
 /*
+ * Declarations of console.c
+ */
+int con_init(void);
+void con_clear(void);
+void con_print(const char *format, ...);
+void con_write(const void *data, size_t size);
+
+/*
  * Declarations of delay.c
  */
 void delay(uint32_t nanoseconds);

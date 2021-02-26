@@ -76,6 +76,8 @@ void kernel_start(void)
 	checked_init(pg_init, "Paging (BSP)");
 	checked_init(fb_init, "Framebuffer");
 
+	checked_init(con_init, "Console");
+
 	cpu_halt(0);
 }
 

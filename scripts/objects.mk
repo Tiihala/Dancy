@@ -17,6 +17,9 @@
 ./o32/base/apic.o: ./kernel/base/apic.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/apic.c
 
+./o32/base/console.o: ./kernel/base/console.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/console.c
+
 ./o32/base/delay.o: ./kernel/base/delay.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/delay.c
 
@@ -202,6 +205,9 @@
 
 ./o64/base/apic.o: ./kernel/base/apic.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/apic.c
+
+./o64/base/console.o: ./kernel/base/console.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/console.c
 
 ./o64/base/delay.o: ./kernel/base/delay.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/delay.c
