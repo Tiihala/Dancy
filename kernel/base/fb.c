@@ -35,8 +35,10 @@ static struct {
 	void *pte;
 	void *dst_a;
 	void *dst_b;
+	void *dst_c;
 	size_t size_a;
 	size_t size_b;
+	size_t size_c;
 } *fb_page_array;
 
 static void *fb_blit_buffer;
@@ -148,14 +150,23 @@ static void fb_blit_vga(int page)
 
 static void fb_copy(int page)
 {
-	const uint8_t *b = fb_blit_buffer;
+	const uint8_t *buffer = fb_blit_buffer;
 	size_t size_a = fb_page_array[page].size_a;
 	size_t size_b = fb_page_array[page].size_b;
 
-	memcpy(fb_page_array[page].dst_a, &b[0], size_a);
+	memcpy(fb_page_array[page].dst_a, buffer, size_a);
 
-	if (size_b)
-		memcpy(fb_page_array[page].dst_b, &b[size_a], size_b);
+	if (size_b) {
+		size_t size_c = fb_page_array[page].size_c;
+
+		buffer += size_a;
+		memcpy(fb_page_array[page].dst_b, buffer, size_b);
+
+		if (size_c) {
+			buffer += size_b;
+			memcpy(fb_page_array[page].dst_c, buffer, size_c);
+		}
+	}
 }
 
 static void fb_blit_palette(int page)
@@ -415,33 +426,43 @@ int fb_init(void)
 
 	if (pixel_size) {
 		uint8_t *dst = fb_physical_ptr;
+		size_t row_size = (size_t)(fb_width * pixel_size);
 		int unit = 1024 * pixel_size;
-		int size_total = 0;
-		int size_diff;
-		size_t size_a, size_b;
+		int size_diff, size_total = 0;
+		size_t size_a, size_b, size_c;
 
 		for (i = 0; i < fb_page_count; i++) {
 			int t0 = 1024 * i;
 			int t1 = t0 % fb_width;
 			int t2 = fb_width - t1;
 			int t3 = ((t0 / fb_width) * fb_stride);
+			int t4 = fb_stride;
 
 			fb_page_array[i].dst_a = &dst[t3 + (t1 * pixel_size)];
+			fb_page_array[i].dst_b = NULL;
+			fb_page_array[i].dst_c = NULL;
 
-			if (t2 >= 1024) {
-				size_a = (size_t)unit;
-				size_b = 0;
-				fb_page_array[i].dst_b = NULL;
-			} else {
-				size_a = (size_t)(t2 * pixel_size);
+			size_a = (size_t)unit;
+			size_b = 0;
+			size_c = 0;
+
+			if (t2 < 1024) {
 				size_b = (size_t)(unit - (t2 * pixel_size));
-				fb_page_array[i].dst_b = &dst[t3 + fb_stride];
+				size_a = (size_t)(t2 * pixel_size);
+				fb_page_array[i].dst_b = &dst[t3 + t4];
+			}
+
+			if (size_b > row_size) {
+				size_c = size_b - row_size;
+				size_b = row_size;
+				fb_page_array[i].dst_c = &dst[t3 + (2 * t4)];
 			}
 
 			fb_page_array[i].size_a = size_a;
 			fb_page_array[i].size_b = size_b;
+			fb_page_array[i].size_c = size_c;
 
-			if ((size_a + size_b) != (size_t)unit)
+			if ((size_a + size_b + size_c) != (size_t)unit)
 				return DE_UNEXPECTED;
 
 			size_total += unit;
@@ -453,6 +474,15 @@ int fb_init(void)
 			i = fb_page_count - 1;
 
 			size = (size_t)(-size_diff);
+
+			if (fb_page_array[i].size_c <= size) {
+				size -= fb_page_array[i].size_c;
+				fb_page_array[i].size_c = 0;
+				fb_page_array[i].dst_c = NULL;
+			} else {
+				fb_page_array[i].size_c -= size;
+				size = 0;
+			}
 
 			if (fb_page_array[i].size_b <= size) {
 				size -= fb_page_array[i].size_b;
