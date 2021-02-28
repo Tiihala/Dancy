@@ -31,6 +31,10 @@ static void *fb_standard_ptr;
 
 static int fb_page_count;
 
+/*
+ * The fb.asm files use this structure. Please
+ * check them if doing any kind modifications.
+ */
 static struct {
 	void *pte;
 	void *dst_a;
@@ -46,6 +50,8 @@ static uint8_t *fb_vga_plane0;
 static uint8_t *fb_vga_plane1;
 static uint8_t *fb_vga_plane2;
 static uint8_t *fb_vga_plane3;
+
+extern void fb_copy(const void *fb_page, const void *fb_blit_buffer);
 
 static void fb_blit_vga(int page)
 {
@@ -148,27 +154,6 @@ static void fb_blit_vga(int page)
 	memcpy(d, fb_vga_plane3, 128);
 }
 
-static void fb_copy(int page)
-{
-	const uint8_t *buffer = fb_blit_buffer;
-	size_t size_a = fb_page_array[page].size_a;
-	size_t size_b = fb_page_array[page].size_b;
-
-	memcpy(fb_page_array[page].dst_a, buffer, size_a);
-
-	if (size_b) {
-		size_t size_c = fb_page_array[page].size_c;
-
-		buffer += size_a;
-		memcpy(fb_page_array[page].dst_b, buffer, size_b);
-
-		if (size_c) {
-			buffer += size_b;
-			memcpy(fb_page_array[page].dst_c, buffer, size_c);
-		}
-	}
-}
-
 static void fb_blit_palette(int page)
 {
 	const uint8_t *s = fb_standard_ptr;
@@ -185,7 +170,7 @@ static void fb_blit_palette(int page)
 		d[j] = (uint8_t)(((r + g + b) / 3) & 0xFC);
 	}
 
-	fb_copy(page);
+	fb_copy(&fb_page_array[page], fb_blit_buffer);
 }
 
 static void fb_blit_15bit(int page)
@@ -211,7 +196,7 @@ static void fb_blit_15bit(int page)
 		d[j] = p0 | p1;
 	}
 
-	fb_copy(page);
+	fb_copy(&fb_page_array[page], fb_blit_buffer);
 }
 
 static void fb_blit_16bit(int page)
@@ -237,7 +222,7 @@ static void fb_blit_16bit(int page)
 		d[j] = p0 | p1;
 	}
 
-	fb_copy(page);
+	fb_copy(&fb_page_array[page], fb_blit_buffer);
 }
 
 static void fb_blit_rgb(int page)
@@ -258,7 +243,7 @@ static void fb_blit_rgb(int page)
 		d[j + 2] = b;
 	}
 
-	fb_copy(page);
+	fb_copy(&fb_page_array[page], fb_blit_buffer);
 }
 
 static void fb_blit_bgr(int page)
@@ -279,7 +264,7 @@ static void fb_blit_bgr(int page)
 		d[j + 2] = r;
 	}
 
-	fb_copy(page);
+	fb_copy(&fb_page_array[page], fb_blit_buffer);
 }
 
 static void fb_blit_rgbx(int page)
@@ -301,7 +286,7 @@ static void fb_blit_rgbx(int page)
 		d[i + 3] = 0;
 	}
 
-	fb_copy(page);
+	fb_copy(&fb_page_array[page], fb_blit_buffer);
 }
 
 static void fb_blit_bgrx(int page)
@@ -323,7 +308,7 @@ static void fb_blit_bgrx(int page)
 		d[i + 3] = 0;
 	}
 
-	fb_copy(page);
+	fb_copy(&fb_page_array[page], fb_blit_buffer);
 }
 
 static void (*fb_blit)(int page);
