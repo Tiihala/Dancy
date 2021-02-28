@@ -191,11 +191,22 @@ static void con_write_locked(const unsigned char *data, int size)
 			uint32_t *dst = &con_buffer[0];
 			uint32_t *src = &con_buffer[con_columns];
 
-			for (j = con_columns; j < con_cells; j++)
-				*dst++ = (*src++) & 0x7FFFFFFF;
+			for (j = con_columns; j < con_cells; j++) {
+				uint32_t t0 = *dst & 0x7FFFFFFF;
+				uint32_t t1 = *src & 0x7FFFFFFF;
 
-			for (j = 0; j < con_columns; j++)
-				*dst++ = 0;
+				if (t0 != t1)
+					*dst = t1;
+				dst += 1, src += 1;
+			}
+
+			for (j = 0; j < con_columns; j++) {
+				uint32_t t = *dst & 0x7FFFFFFF;
+
+				if (t != 0)
+					*dst = 0;
+				dst += 1;
+			}
 
 			con_row = con_rows - 1;
 		}
