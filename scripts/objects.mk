@@ -5,6 +5,9 @@
 ./o32/acpios/a32/glblock.o: ./kernel/acpios/a32/glblock.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/acpios/a32/glblock.asm
 
+./o32/base/a32/fb.o: ./kernel/base/a32/fb.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/base/a32/fb.asm
+
 ./o32/base/a32/gdt.o: ./kernel/base/a32/gdt.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/base/a32/gdt.asm
 
@@ -193,6 +196,9 @@
 
 ./o64/acpios/a64/glblock.o: ./kernel/acpios/a64/glblock.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/acpios/a64/glblock.asm
+
+./o64/base/a64/fb.o: ./kernel/base/a64/fb.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/base/a64/fb.asm
 
 ./o64/base/a64/gdt.o: ./kernel/base/a64/gdt.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/base/a64/gdt.asm

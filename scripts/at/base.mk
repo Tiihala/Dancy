@@ -3,6 +3,7 @@
 ##############################################################################
 
 DANCY_BASE_OBJECTS_32= \
+ ./o32/base/a32/fb.o \
  ./o32/base/a32/gdt.o \
  ./o32/base/a32/idt.o \
  ./o32/base/a32/timer.o \
@@ -19,6 +20,7 @@ DANCY_BASE_OBJECTS_32= \
  ./o32/base/timer.o
 
 DANCY_BASE_OBJECTS_64= \
+ ./o64/base/a64/fb.o \
  ./o64/base/a64/gdt.o \
  ./o64/base/a64/idt.o \
  ./o64/base/a64/timer.o \
