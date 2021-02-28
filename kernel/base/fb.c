@@ -52,6 +52,7 @@ static uint8_t *fb_vga_plane2;
 static uint8_t *fb_vga_plane3;
 
 extern void fb_copy(const void *fb_page, const void *fb_blit_buffer);
+extern void fb_copy_vga(void *s1, const void *s2);
 
 static void fb_blit_vga(int page)
 {
@@ -136,22 +137,22 @@ static void fb_blit_vga(int page)
 	cpu_out8(0x03C4, 0x02);
 	cpu_out8(0x03C5, 0x01);
 
-	memcpy(d, fb_vga_plane0, 128);
+	fb_copy_vga(d, fb_vga_plane0);
 
 	cpu_out8(0x03C4, 0x02);
 	cpu_out8(0x03C5, 0x02);
 
-	memcpy(d, fb_vga_plane1, 128);
+	fb_copy_vga(d, fb_vga_plane1);
 
 	cpu_out8(0x03C4, 0x02);
 	cpu_out8(0x03C5, 0x04);
 
-	memcpy(d, fb_vga_plane2, 128);
+	fb_copy_vga(d, fb_vga_plane2);
 
 	cpu_out8(0x03C4, 0x02);
 	cpu_out8(0x03C5, 0x08);
 
-	memcpy(d, fb_vga_plane3, 128);
+	fb_copy_vga(d, fb_vga_plane3);
 }
 
 static void fb_blit_palette(int page)
