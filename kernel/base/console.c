@@ -145,8 +145,6 @@ static void con_render(void)
 		con_buffer[i] |= 0x80000000;
 		i += 1;
 	}
-
-	fb_render();
 }
 
 static void con_write_locked(const unsigned char *data, int size)
@@ -233,6 +231,38 @@ void con_clear(void)
 	mtx_unlock(&con_mtx);
 }
 
+void con_panic(const char *message)
+{
+	static int run_once;
+	uint32_t *p = (uint32_t *)kernel->fb_standard_addr;
+	const void *data = message;
+	int size = (int)strlen(message);
+	int i;
+
+	if (!con_ready || !spin_trylock(&run_once))
+		return;
+
+	/*
+	 * The caller is responsible for stopping other
+	 * running threads of execution. Try to lock the
+	 * mutex but ignore the return value. The mutex
+	 * is not unlocked in this con_panic function.
+	 */
+	(void)mtx_trylock(&con_mtx);
+
+	memset(p, 0, kernel->fb_standard_size);
+
+	for (i = 0; i < con_cells; i++)
+		con_buffer[i] = 0;
+
+	con_column = 0;
+	con_row = 0;
+
+	con_write_locked(data, size);
+	con_render();
+	fb_panic();
+}
+
 void con_print(const char *format, ...)
 {
 	size_t size = sizeof(con_print_buffer);
@@ -255,6 +285,7 @@ void con_print(const char *format, ...)
 		memset(&con_print_buffer[0], 0, (size_t)r);
 
 		con_render();
+		fb_render();
 		mtx_unlock(&con_mtx);
 	}
 }
@@ -267,6 +298,7 @@ void con_write(const void *data, size_t size)
 	if (size <= (size_t)(INT_MAX)) {
 		con_write_locked(data, (int)size);
 		con_render();
+		fb_render();
 	}
 
 	mtx_unlock(&con_mtx);

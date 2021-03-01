@@ -36,6 +36,7 @@ int apic_wait_delivery(void);
  */
 int con_init(void);
 void con_clear(void);
+void con_panic(const char *message);
 void con_print(const char *format, ...);
 void con_write(const void *data, size_t size);
 
