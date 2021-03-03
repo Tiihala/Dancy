@@ -80,7 +80,7 @@ void kernel_start(void)
 
 	kernel->panic = panic;
 	kernel->print = con_print;
-	kernel->detach_init_module();
+	kernel->detach_init_module(&timer_ticks);
 
 	cpu_halt(0);
 }

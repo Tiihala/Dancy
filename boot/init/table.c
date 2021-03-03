@@ -58,9 +58,9 @@ static void *table_alloc(size_t size)
 	return (void *)addr;
 }
 
-static void detach_init_module(void)
+static void detach_init_module(volatile uint32_t *ticks)
 {
-	static void (*null_func)(void);
+	static void (*null_func)(volatile uint32_t *);
 
 	kernel->detach_init_module = null_func;
 
@@ -69,6 +69,9 @@ static void detach_init_module(void)
 
 	if (kernel->print == gui_print)
 		kernel->panic("kernel->print() not overridden");
+
+	while (*ticks < 3000)
+		cpu_halt(1);
 
 	if (gui_detach())
 		kernel->panic("detach_init_module: unexpected behavior");
