@@ -574,23 +574,21 @@ int gui_delete_window(void)
 
 int gui_detach(void)
 {
-	unsigned char *s = back_buffer;
-	uint32_t *d = (uint32_t *)kernel->fb_standard_addr;
-	int pixel_count = (int)(vi.width * vi.height);
+	uint32_t *fb_standard = (uint32_t *)kernel->fb_standard_addr;
 	int i;
 
-	if (s == NULL)
-		return 0;
-
-	if (kernel->fb_standard_size < (size_t)(pixel_count * 4))
-		return 1;
-
-	for (i = 0; i < pixel_count; i++) {
-		uint32_t c = s[i];
-
-		c = (c < 16) ? colors[c] : 0u;
-		d[i] = c;
+	if (back_buffer) {
+		for (i = 0; /* void */; i++) {
+			if (gui_delete_window())
+				break;
+			if (i == 16)
+				return 1;
+		}
+		blit();
 	}
+
+	if (fb_standard)
+		memset(fb_standard, 0, kernel->fb_standard_size);
 
 	return 0;
 }
