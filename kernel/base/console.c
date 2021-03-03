@@ -58,6 +58,17 @@ int con_init(void)
 	if (con_columns < 70 || con_rows < 25)
 		return DE_UNEXPECTED;
 
+	offset = (((int)kernel->fb_width % kernel->glyph_width) / 2);
+
+	if (con_columns > 80) {
+		offset += (kernel->glyph_width / 2);
+		con_columns -= 1;
+	}
+
+	con_fb_start = (uint32_t *)kernel->fb_standard_addr + offset;
+	offset = (((int)kernel->fb_height % kernel->glyph_height) / 2);
+	con_fb_start += (offset * (int)kernel->fb_width);
+
 	size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
 	size = (size + 0x0FFF) & 0xFFFFF000;
 
@@ -69,14 +80,6 @@ int con_init(void)
 
 	for (i = 0; i < con_cells; i++)
 		con_buffer[i] = 0;
-
-	con_fb_start = (uint32_t *)kernel->fb_standard_addr;
-
-	offset = (((int)kernel->fb_width % kernel->glyph_width) / 2);
-	con_fb_start += offset;
-
-	offset = (((int)kernel->fb_height % kernel->glyph_height) / 2);
-	con_fb_start += (offset * (int)kernel->fb_width);
 
 	cpu_write32((uint32_t *)&con_ready, 1);
 
