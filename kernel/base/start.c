@@ -78,6 +78,10 @@ void kernel_start(void)
 
 	checked_init(con_init, "Console");
 
+	kernel->panic = panic;
+	kernel->print = con_print;
+	kernel->detach_init_module();
+
 	cpu_halt(0);
 }
 

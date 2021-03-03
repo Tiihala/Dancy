@@ -105,6 +105,12 @@ void idt_install_asm(int num, const uint8_t asm_handler[]);
 void idt_load(const void *idt_ptr);
 
 /*
+ * Declarations of panic.c
+ */
+extern int panic_lock;
+void panic(const char *message);
+
+/*
  * Declarations of pg.c
  */
 enum pg_type {
