@@ -34,6 +34,63 @@ static uint32_t *con_fb_start;
 
 static char con_print_buffer[4096];
 
+#define CON_RGB(r, g, b) (r | (g << 8) | (b << 16))
+
+static const int con_color_table[16] = {
+	CON_RGB(  0,   0,   0),
+	CON_RGB(170,   0,   0),
+	CON_RGB(  0, 170,   0),
+	CON_RGB(170,  85,   0),
+	CON_RGB(  0,   0, 170),
+	CON_RGB(170,   0, 170),
+	CON_RGB(  0, 170, 170),
+	CON_RGB(170, 170, 170),
+	CON_RGB( 85,  85,  85),
+	CON_RGB(255,  85,  85),
+	CON_RGB( 85, 255,  85),
+	CON_RGB(255, 255,  85),
+	CON_RGB( 85,  85, 255),
+	CON_RGB(255,  85, 255),
+	CON_RGB( 85, 255, 255),
+	CON_RGB(255, 255, 255)
+};
+
+static uint32_t con_lookup_table[0x10000];
+
+static uint32_t con_alpha_blend(int bg, int fg, int alpha)
+{
+	int bg_r = bg & 0xFF;
+	int bg_g = (bg >> 8) & 0xFF;
+	int bg_b = (bg >> 16) & 0xFF;
+
+	int fg_r = fg & 0xFF;
+	int fg_g = (fg >> 8) & 0xFF;
+	int fg_b = (fg >> 16) & 0xFF;
+
+	int r = ((alpha * fg_r) + ((255 - alpha) * bg_r)) / 255;
+	int g = ((alpha * fg_g) + ((255 - alpha) * bg_g)) / 255;
+	int b = ((alpha * fg_b) + ((255 - alpha) * bg_b)) / 255;
+
+	return (uint32_t)(r | (g << 8) | (b << 16));
+}
+
+static void con_build_lookup_table(void)
+{
+	uint32_t *p = &con_lookup_table[0];
+	int i, j, k;
+
+	for (i = 0; i < 16; i++) {
+		int bg = con_color_table[i];
+
+		for (j = 15; j >= 0; j--) {
+			int fg = con_color_table[j];
+
+			for (k = 0; k < 256; k++)
+				*p++ = con_alpha_blend(bg, fg, k);
+		}
+	}
+}
+
 int con_init(void)
 {
 	static int run_once;
@@ -81,6 +138,7 @@ int con_init(void)
 	for (i = 0; i < con_cells; i++)
 		con_buffer[i] = 0;
 
+	con_build_lookup_table();
 	cpu_write32((uint32_t *)&con_ready, 1);
 
 	return 0;
@@ -94,14 +152,16 @@ static void con_render(void)
 	while (i < con_cells) {
 		uint32_t c = con_buffer[i];
 		uint8_t *data = NULL;
-		uint32_t *fb_ptr;
+		volatile uint32_t *fb_ptr;
 		int fb_off, x, y;
+		int table_i;
 
 		if ((c & 0x80000000) != 0) {
 			i += 1;
 			continue;
 		}
 
+		table_i = (int)((c >> 13) & 0xFF00);
 		c &= 0x001FFFFF;
 
 		if (c == 0)
@@ -126,7 +186,7 @@ static void con_render(void)
 			continue;
 		}
 
-		fb_ptr = con_fb_start;
+		fb_ptr = (volatile uint32_t *)con_fb_start;
 		fb_off = (i % con_columns) * kernel->glyph_width;
 		fb_ptr += fb_off;
 
@@ -136,10 +196,21 @@ static void con_render(void)
 
 		for (y = 0; y < kernel->glyph_height; y++) {
 			for (x = 0; x < kernel->glyph_width; x++) {
-				uint32_t pixel = data[x];
+				int off = (table_i | (int)data[x]);
+				uint32_t pixel = con_lookup_table[off];
 
-				pixel = (pixel << 16) | (pixel << 8) | pixel;
-				fb_ptr[x] = pixel;
+				/*
+				 * Avoid writing to the standard framebuffer,
+				 * which is in normal memory, if the pixel
+				 * value does not change. Paging is used for
+				 * monitoring the modified framebuffer areas.
+				 *
+				 * The volatile qualifier is for suppressing
+				 * compiler optimizations. Normally this kind
+				 * of "if statement" would be redundant.
+				 */
+				if (fb_ptr[x] != pixel)
+					fb_ptr[x] = pixel;
 			}
 			data += kernel->glyph_width;
 			fb_ptr += kernel->fb_width;
