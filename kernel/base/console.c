@@ -272,6 +272,59 @@ static void con_render(void)
 	}
 }
 
+static void con_scroll_up(void)
+{
+	uint32_t *dst = &con_buffer[0];
+	uint32_t *src = &con_buffer[con_columns];
+	int i;
+
+	for (i = con_columns; i < con_cells; i++) {
+		uint32_t t0 = *dst & (~con_rendered_bit);
+		uint32_t t1 = *src & (~con_rendered_bit);
+
+		if (t0 != t1)
+			*dst = t1;
+		dst += 1, src += 1;
+	}
+
+	for (i = 0; i < con_columns; i++) {
+		uint32_t t = *dst & (~con_rendered_bit);
+
+		if (t != con_attribute)
+			*dst = con_attribute;
+		dst += 1;
+	}
+}
+
+static void con_scroll_down(void)
+{
+	uint32_t *dst = &con_buffer[(con_rows - 1) * con_columns];
+	uint32_t *src = &con_buffer[(con_rows - 2) * con_columns];
+	int i;
+
+	dst += (con_columns - 1);
+	src += (con_columns - 1);
+
+	for (i = con_columns; i < con_cells; i++) {
+		uint32_t t0 = *dst & (~con_rendered_bit);
+		uint32_t t1 = *src & (~con_rendered_bit);
+
+		if (t0 != t1)
+			*dst = t1;
+		dst -= 1, src -= 1;
+	}
+
+	dst = &con_buffer[0];
+
+	for (i = 0; i < con_columns; i++) {
+		uint32_t t = *dst & (~con_rendered_bit);
+
+		if (t != con_attribute)
+			*dst = con_attribute;
+		dst += 1;
+	}
+}
+
 static void con_handle_escape(void)
 {
 	char *p = &con_escape_buffer[0];
@@ -411,6 +464,202 @@ static void con_handle_escape(void)
 		}
 		return;
 	}
+
+	/*
+	 * The rest of the function is for CSI sequences.
+	 */
+	if (csi == 0)
+		return;
+
+	/*
+	 * Horizontal Vertical Position is the same as Cursor Position.
+	 */
+	if (type == 'f')
+		type = 'H';
+
+	/*
+	 * Handle other CSI sequences.
+	 */
+	switch (type) {
+
+	/*
+	 * CSI <n> A - Cursor Up.
+	 */
+	case 'A': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		if (con_row - n >= 0)
+			con_row -= n;
+		else
+			con_row = 0;
+	} break;
+
+	/*
+	 * CSI <n> B - Cursor Down.
+	 */
+	case 'B': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		if (con_row + n < con_rows)
+			con_row += n;
+		else
+			con_row = con_rows - 1;
+	} break;
+
+	/*
+	 * CSI <n> C - Cursor Forward.
+	 */
+	case 'C': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		if (con_column + n < con_columns)
+			con_column += n;
+		else
+			con_column = con_columns - 1;
+	} break;
+
+	/*
+	 * CSI <n> D - Cursor Back.
+	 */
+	case 'D': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		if (con_column - n >= 0)
+			con_column -= n;
+		else
+			con_column = 0;
+	} break;
+
+	/*
+	 * CSI <n> E - Cursor Next Line.
+	 */
+	case 'E': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		con_column = 0;
+
+		if (con_row + n < con_rows)
+			con_row += n;
+		else
+			con_row = con_rows - 1;
+	} break;
+
+	/*
+	 * CSI <n> F - Cursor Previous Line.
+	 */
+	case 'F': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		con_column = 0;
+
+		if (con_row - n >= 0)
+			con_row -= n;
+		else
+			con_row = 0;
+	} break;
+
+	/*
+	 * CSI <n> G - Cursor Horizontal Absolute.
+	 */
+	case 'G': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		con_column = (n - 1 < con_columns) ? n - 1 : con_columns - 1;
+	} break;
+
+	/*
+	 * CSI <n> ; <m> H - Cursor Position.
+	 */
+	case 'H': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+		int m = (count < 2 || parameters[1] < 1) ? 1 : parameters[1];
+
+		con_row = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
+		con_column = (m - 1 < con_columns) ? m - 1 : con_columns - 1;
+	} break;
+
+	/*
+	 * CSI <n> J - Erase in Display.
+	 */
+	case 'J': {
+		int n = (count < 1) ? 0 : parameters[0];
+		int t0 = 0, t1 = 0;
+
+		if (n == 0) {
+			t0 = con_column + (con_row * con_columns);
+			t1 = con_cells;
+
+		} else if (n == 1) {
+			t1 = con_column + (con_row * con_columns) + 1;
+
+		} else if (n == 2 || n == 3) {
+			t1 = con_cells;
+		}
+
+		for (i = t0; i < t1; i++) {
+			con_buffer[i] &= 0x7FF00000;
+			con_buffer[i] |= con_attribute;
+		}
+	} break;
+
+	/*
+	 * CSI <n> K - Erase in Line.
+	 */
+	case 'K': {
+		int n = (count < 1) ? 0 : parameters[0];
+		int t0 = 0, t1 = 0;
+
+		if (n == 0) {
+			t0 = con_column + (con_row * con_columns);
+			t1 = con_columns + (con_row * con_columns);
+
+		} else if (n == 1) {
+			t0 = con_row * con_columns;
+			t1 = con_column + (con_row * con_columns) + 1;
+
+		} else if (n == 2) {
+			t0 = con_row * con_columns;
+			t1 = con_columns + (con_row * con_columns);
+		}
+
+		for (i = t0; i < t1; i++) {
+			con_buffer[i] &= 0x7FF00000;
+			con_buffer[i] |= con_attribute;
+		}
+	} break;
+
+	/*
+	 * CSI <n> S - Scroll Up.
+	 */
+	case 'S': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		if (n > con_rows)
+			n = con_rows;
+
+		for (i = 0; i < n; i++)
+			con_scroll_up();
+	} break;
+
+	/*
+	 * CSI <n> S - Scroll Down.
+	 */
+	case 'T': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		if (n > con_rows)
+			n = con_rows;
+
+		for (i = 0; i < n; i++)
+			con_scroll_down();
+	} break;
+
+	/*
+	 * Unknown CSI sequences are ignored.
+	 */
+	default:
+		break;
+	}
 }
 
 static void con_write_locked(const unsigned char *data, int size)
@@ -450,7 +699,7 @@ static void con_write_locked(const unsigned char *data, int size)
 			spaces = 8 - (con_column & 7);
 			offset = con_column + (con_row * con_columns);
 			for (j = 0; j < spaces; j++)
-				con_buffer[offset + j] = 0x20;
+				con_buffer[offset + j] = con_attribute;
 			con_column = (con_column + 8) & 0x7FFFFFF8;
 			break;
 		case '\n':
@@ -470,6 +719,7 @@ static void con_write_locked(const unsigned char *data, int size)
 			break;
 		default:
 			offset = con_column + (con_row * con_columns);
+			c = (c != ' ') ? c : 0;
 			con_buffer[offset] = (uint32_t)c | con_attribute;
 			con_column += 1;
 			break;
@@ -481,26 +731,7 @@ static void con_write_locked(const unsigned char *data, int size)
 		}
 
 		if (con_row >= con_rows) {
-			uint32_t *dst = &con_buffer[0];
-			uint32_t *src = &con_buffer[con_columns];
-
-			for (j = con_columns; j < con_cells; j++) {
-				uint32_t t0 = *dst & (~con_rendered_bit);
-				uint32_t t1 = *src & (~con_rendered_bit);
-
-				if (t0 != t1)
-					*dst = t1;
-				dst += 1, src += 1;
-			}
-
-			for (j = 0; j < con_columns; j++) {
-				uint32_t t = *dst & (~con_rendered_bit);
-
-				if (t != 0)
-					*dst = 0;
-				dst += 1;
-			}
-
+			con_scroll_up();
 			con_row = con_rows - 1;
 		}
 	}
