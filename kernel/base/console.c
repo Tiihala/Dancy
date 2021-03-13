@@ -707,6 +707,22 @@ static void con_handle_escape(void)
 	} break;
 
 	/*
+	 * CSI <n> X - Erase Character.
+	 */
+	case 'X': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+		uint32_t *t0, *t1;
+
+		t0 = &con_buffer[con_column + (con_row * con_columns)];
+		t1 = &con_buffer[con_columns + (con_row * con_columns)];
+
+		for (i = 0; i < n && t0 < t1; i++, t0++) {
+			if ((*t0 & (~con_rendered_bit)) != con_attribute)
+				*t0 = con_attribute;
+		}
+	} break;
+
+	/*
 	 * Unknown CSI sequences are ignored.
 	 */
 	default:
