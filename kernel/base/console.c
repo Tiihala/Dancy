@@ -483,6 +483,32 @@ static void con_handle_escape(void)
 	switch (type) {
 
 	/*
+	 * CSI <n> @ - Insert Character.
+	 */
+	case '@': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+		uint32_t *t0, *t1;
+
+		t0 = &con_buffer[con_column + (con_row * con_columns)];
+		t1 = &con_buffer[(con_columns - 1) + (con_row * con_columns)];
+
+		for (i = 0; i < n; i++) {
+			uint32_t *t3 = t1;
+
+			while (t0 < t3) {
+				uint32_t t4 = *(t3 - 0) & (~con_rendered_bit);
+				uint32_t t5 = *(t3 - 1) & (~con_rendered_bit);
+
+				if (t4 != t5)
+					*t3 = t5;
+				t3 -= 1;
+			}
+			if ((*t0 & (~con_rendered_bit)) != con_attribute)
+				*t0 = con_attribute;
+		}
+	} break;
+
+	/*
 	 * CSI <n> A - Cursor Up.
 	 */
 	case 'A': {
@@ -629,6 +655,32 @@ static void con_handle_escape(void)
 	} break;
 
 	/*
+	 * CSI <n> P - Delete Character.
+	 */
+	case 'P': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+		uint32_t *t0, *t1;
+
+		t0 = &con_buffer[con_column + (con_row * con_columns)];
+		t1 = &con_buffer[(con_columns - 1) + (con_row * con_columns)];
+
+		for (i = 0; i < n; i++) {
+			uint32_t *t3 = t0;
+
+			while (t1 > t3) {
+				uint32_t t4 = *(t3 + 0) & (~con_rendered_bit);
+				uint32_t t5 = *(t3 + 1) & (~con_rendered_bit);
+
+				if (t4 != t5)
+					*t3 = t5;
+				t3 += 1;
+			}
+			if ((*t1 & (~con_rendered_bit)) != con_attribute)
+				*t1 = con_attribute;
+		}
+	} break;
+
+	/*
 	 * CSI <n> S - Scroll Up.
 	 */
 	case 'S': {
@@ -642,7 +694,7 @@ static void con_handle_escape(void)
 	} break;
 
 	/*
-	 * CSI <n> S - Scroll Down.
+	 * CSI <n> T - Scroll Down.
 	 */
 	case 'T': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
