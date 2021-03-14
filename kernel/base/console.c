@@ -28,6 +28,9 @@ static int con_columns;
 static int con_row;
 static int con_rows;
 
+static int con_row_scroll_first;
+static int con_row_scroll_last;
+
 static int con_cells;
 static uint32_t *con_buffer;
 static uint32_t *con_fb_start;
@@ -116,6 +119,18 @@ static void con_build_lookup_table(void)
 	}
 }
 
+static void con_init_variables(void)
+{
+	con_attribute = 0;
+	con_escape_size = 0;
+
+	con_column = 0;
+	con_row = 0;
+
+	con_row_scroll_first = 0;
+	con_row_scroll_last = con_rows - 1;
+}
+
 int con_init(void)
 {
 	static int run_once;
@@ -164,6 +179,7 @@ int con_init(void)
 		con_buffer[i] = 0;
 
 	con_build_lookup_table();
+	con_init_variables();
 	cpu_write32((uint32_t *)&con_ready, 1);
 
 	return 0;
@@ -274,11 +290,12 @@ static void con_render(void)
 
 static void con_scroll_up(void)
 {
-	uint32_t *dst = &con_buffer[0];
-	uint32_t *src = &con_buffer[con_columns];
+	uint32_t *dst = &con_buffer[con_row_scroll_first * con_columns];
+	uint32_t *src = dst + con_columns;
+	int movs = (con_row_scroll_last - con_row_scroll_first) * con_columns;
 	int i;
 
-	for (i = con_columns; i < con_cells; i++) {
+	for (i = 0; i < movs; i++) {
 		uint32_t t0 = *dst & (~con_rendered_bit);
 		uint32_t t1 = *src & (~con_rendered_bit);
 
@@ -298,14 +315,15 @@ static void con_scroll_up(void)
 
 static void con_scroll_down(void)
 {
-	uint32_t *dst = &con_buffer[(con_rows - 1) * con_columns];
-	uint32_t *src = &con_buffer[(con_rows - 2) * con_columns];
+	uint32_t *dst = &con_buffer[con_row_scroll_last * con_columns];
+	uint32_t *src = dst - con_columns;
+	int movs = (con_row_scroll_last - con_row_scroll_first) * con_columns;
 	int i;
 
 	dst += (con_columns - 1);
 	src += (con_columns - 1);
 
-	for (i = con_columns; i < con_cells; i++) {
+	for (i = 0; i < movs; i++) {
 		uint32_t t0 = *dst & (~con_rendered_bit);
 		uint32_t t1 = *src & (~con_rendered_bit);
 
@@ -314,7 +332,7 @@ static void con_scroll_down(void)
 		dst -= 1, src -= 1;
 	}
 
-	dst = &con_buffer[0];
+	dst = &con_buffer[con_row_scroll_first * con_columns];
 
 	for (i = 0; i < con_columns; i++) {
 		uint32_t t = *dst & (~con_rendered_bit);
@@ -723,6 +741,23 @@ static void con_handle_escape(void)
 	} break;
 
 	/*
+	 * CSI <n> ; <m> r - Set Scrolling Region.
+	 */
+	case 'r': {
+		int n = (count < 1) ? 0 : parameters[0];
+		int m = (count < 2) ? 0 : parameters[1];
+
+		n = (n >= 1) ? n : 1;
+		m = (m >= 1) ? m : con_rows;
+
+		m = (m <= con_rows) ? m : con_rows;
+		n = (n <= m) ? n : m;
+
+		con_row_scroll_first = n - 1;
+		con_row_scroll_last = m - 1;
+	} break;
+
+	/*
 	 * Unknown CSI sequences are ignored.
 	 */
 	default:
@@ -798,9 +833,9 @@ static void con_write_locked(const unsigned char *data, int size)
 			con_row += 1;
 		}
 
-		if (con_row >= con_rows) {
+		if (con_row > con_row_scroll_last) {
 			con_scroll_up();
-			con_row = con_rows - 1;
+			con_row -= 1;
 		}
 	}
 }
@@ -819,12 +854,7 @@ void con_clear(void)
 	for (i = 0; i < con_cells; i++)
 		con_buffer[i] = con_rendered_bit;
 
-	con_attribute = 0;
-	con_escape_size = 0;
-
-	con_column = 0;
-	con_row = 0;
-
+	con_init_variables();
 	mtx_unlock(&con_mtx);
 }
 
@@ -852,13 +882,9 @@ void con_panic(const char *message)
 	for (i = 0; i < con_cells; i++)
 		con_buffer[i] = 0;
 
-	con_attribute = 0;
-	con_escape_size = 0;
-
-	con_column = 0;
-	con_row = 0;
-
+	con_init_variables();
 	con_write_locked(data, size);
+
 	con_render();
 	fb_panic();
 }
