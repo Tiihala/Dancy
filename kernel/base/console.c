@@ -673,6 +673,52 @@ static void con_handle_escape(void)
 	} break;
 
 	/*
+	 * CSI <n> L - Insert Line.
+	 */
+	case 'L': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+		int saved_val = con_row_scroll_first;
+
+		if (n > con_rows)
+			n = con_rows;
+
+		if (con_row < con_row_scroll_first)
+			n = 0;
+		if (con_row > con_row_scroll_last)
+			n = 0;
+
+		con_row_scroll_first = con_row;
+
+		for (i = 0; i < n; i++)
+			con_scroll_down();
+
+		con_row_scroll_first = saved_val;
+	} break;
+
+	/*
+	 * CSI <n> M - Delete Line.
+	 */
+	case 'M': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+		int saved_val = con_row_scroll_first;
+
+		if (n > con_rows)
+			n = con_rows;
+
+		if (con_row < con_row_scroll_first)
+			n = 0;
+		if (con_row > con_row_scroll_last)
+			n = 0;
+
+		con_row_scroll_first = con_row;
+
+		for (i = 0; i < n; i++)
+			con_scroll_up();
+
+		con_row_scroll_first = saved_val;
+	} break;
+
+	/*
 	 * CSI <n> P - Delete Character.
 	 */
 	case 'P': {
