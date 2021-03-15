@@ -817,6 +817,7 @@ static void con_write_locked(const unsigned char *data, int size)
 
 	for (i = 0; i < size; i++) {
 		int c = (int)data[i];
+		int new_line = 0;
 		int offset, spaces;
 
 		if (con_escape_size) {
@@ -852,6 +853,7 @@ static void con_write_locked(const unsigned char *data, int size)
 			con_column = (con_column + 8) & 0x7FFFFFF8;
 			break;
 		case '\n':
+			new_line = 1;
 			con_column = 0;
 			con_row += 1;
 			break;
@@ -875,14 +877,18 @@ static void con_write_locked(const unsigned char *data, int size)
 		}
 
 		if (con_column >= con_columns) {
+			new_line = 1;
 			con_column = 0;
 			con_row += 1;
 		}
 
-		if (con_row > con_row_scroll_last) {
+		if (new_line && con_row == con_row_scroll_last + 1) {
 			con_scroll_up();
 			con_row -= 1;
 		}
+
+		if (con_row >= con_rows)
+			con_row = con_rows - 1;
 	}
 }
 
