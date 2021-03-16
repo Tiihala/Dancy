@@ -33,6 +33,8 @@ static int con_row_scroll_last;
 
 static int con_cells;
 static uint32_t *con_buffer;
+static uint32_t *con_buffer_main;
+static uint32_t *con_buffer_alt;
 static uint32_t *con_fb_start;
 
 static uint32_t con_attribute;
@@ -66,6 +68,14 @@ static const int con_color_table[16] = {
 	CON_RGB(255,  85, 255),
 	CON_RGB( 85, 255, 255),
 	CON_RGB(255, 255, 255)
+};
+
+enum con_state_command {
+	con_clear_state,
+	con_save_cursor,
+	con_save_main_state,
+	con_restore_cursor,
+	con_restore_main_state
 };
 
 static uint32_t con_lookup_table[0x10000];
@@ -119,6 +129,41 @@ static void con_build_lookup_table(void)
 	}
 }
 
+static void con_handle_state(int cmd)
+{
+	static int state[8];
+	int i;
+
+	if (cmd == con_clear_state) {
+		for (i = 0; i < 8; i++)
+			state[i] = 0;
+
+	} else if (cmd == con_save_cursor) {
+		state[0] = (int)(con_attribute & 0x7FFFFFFF);
+		state[1] = con_column;
+		state[2] = con_row;
+
+	} else if (cmd == con_save_main_state) {
+		state[3] = (int)(con_attribute & 0x7FFFFFFF);
+		state[4] = con_column;
+		state[5] = con_row;
+		state[6] = con_row_scroll_first;
+		state[7] = con_row_scroll_last;
+
+	} else if (cmd == con_restore_cursor) {
+		con_attribute = (uint32_t)state[0];
+		con_column = state[1];
+		con_row = state[2];
+
+	} else if (cmd == con_restore_main_state) {
+		con_attribute = (uint32_t)state[3];
+		con_column = state[4];
+		con_row = state[5];
+		con_row_scroll_first = state[6];
+		con_row_scroll_last = state[7];
+	}
+}
+
 static void con_init_variables(void)
 {
 	con_attribute = 0;
@@ -129,6 +174,8 @@ static void con_init_variables(void)
 
 	con_row_scroll_first = 0;
 	con_row_scroll_last = con_rows - 1;
+
+	con_handle_state(con_clear_state);
 }
 
 int con_init(void)
@@ -169,10 +216,13 @@ int con_init(void)
 	size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
 	size = (size + 0x0FFF) & 0xFFFFF000;
 
-	con_buffer = aligned_alloc(0x1000, size);
-	if (!con_buffer)
+	con_buffer_main = aligned_alloc(0x1000, size);
+	con_buffer_alt = aligned_alloc(0x1000, size);
+
+	if (!con_buffer_main || !con_buffer_alt)
 		return DE_MEMORY;
 
+	con_buffer = con_buffer_main;
 	con_cells = con_columns * con_rows;
 
 	for (i = 0; i < con_cells; i++)
@@ -348,7 +398,7 @@ static void con_handle_escape(void)
 	char *p = &con_escape_buffer[0];
 	char *e = &con_escape_buffer[con_escape_size];
 	int type = (con_escape_size > 1) ? (int)(*(e - 1)) : 0;
-	int csi = (p[1] == '[');
+	int csi = (p[1] == '['), csi_percent = 0;
 
 	int parameters[16];
 	int count = 0;
@@ -357,10 +407,18 @@ static void con_handle_escape(void)
 	if (csi) {
 		const int count_limit = 16;
 		const int value_limit = 0x10000;
+		int c;
+
+		if (p[2] == '?') {
+			csi_percent = 1;
+			p += 1;
+		}
 
 		for (p = &p[2]; p < e; p++) {
 			int parameter = 0;
-			int c = (int)*p;
+
+			if ((c = (int)*p) == type)
+				break;
 
 			while (c >= '0' && c <= '9') {
 				parameter *= 10;
@@ -386,6 +444,9 @@ static void con_handle_escape(void)
 	 * CSI <n> m - Select Graphics Rendition.
 	 */
 	if (csi && type == 'm') {
+		if (count == 0)
+			parameters[count++] = 0;
+
 		for (i = 0; i < count; i++) {
 			int parameter = parameters[i];
 			int fg_color = -1, bg_color = -1;
@@ -786,6 +847,52 @@ static void con_handle_escape(void)
 		}
 	} break;
 
+
+	/*
+	 * CSI ? 1049 h - Enable Alternate Screen Buffer.
+	 */
+	case 'h': {
+		const int cmd = 1049;
+		int n = 0;
+
+		for (i = 0; i < count; i++)
+			n = (parameters[i] == cmd) ? cmd : 0;
+
+		if (csi_percent && n == cmd) {
+			if (con_buffer == con_buffer_main)
+				con_handle_state(con_save_main_state);
+
+			con_buffer = con_buffer_alt;
+
+			for (i = 0; i < con_cells; i++)
+				con_buffer[i] = 0;
+		}
+	} break;
+
+	/*
+	 * CSI ? 1049 l - Disable Alternate Screen Buffer.
+	 */
+	case 'l': {
+		const int cmd = 1049;
+		int n = 0;
+
+		for (i = 0; i < count; i++)
+			n = (parameters[i] == cmd) ? cmd : 0;
+
+		if (csi_percent && n == cmd) {
+			if (con_buffer == con_buffer_alt) {
+				for (i = 0; i < con_cells; i++)
+					con_buffer[i] = 0;
+
+				con_buffer = con_buffer_main;
+				con_handle_state(con_restore_main_state);
+
+				for (i = 0; i < con_cells; i++)
+					con_buffer[i] &= (~con_rendered_bit);
+			}
+		}
+	} break;
+
 	/*
 	 * CSI <n> ; <m> r - Set Scrolling Region.
 	 */
@@ -801,6 +908,22 @@ static void con_handle_escape(void)
 
 		con_row_scroll_first = n - 1;
 		con_row_scroll_last = m - 1;
+	} break;
+
+	/*
+	 * CSI s - Save Cursor.
+	 */
+	case 's': {
+		if (count == 0)
+			con_handle_state(con_save_cursor);
+	} break;
+
+	/*
+	 * CSI u - Restore Cursor.
+	 */
+	case 'u': {
+		if (count == 0)
+			con_handle_state(con_restore_cursor);
 	} break;
 
 	/*
@@ -903,8 +1026,13 @@ void con_clear(void)
 	memset(p, 0, kernel->fb_standard_size);
 	fb_render();
 
+	con_buffer = con_buffer_main;
+
 	for (i = 0; i < con_cells; i++)
 		con_buffer[i] = con_rendered_bit;
+
+	for (i = 0; i < con_cells; i++)
+		con_buffer_alt[i] = 0;
 
 	con_init_variables();
 	mtx_unlock(&con_mtx);
