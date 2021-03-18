@@ -35,7 +35,9 @@ static int con_cells;
 static uint32_t *con_buffer;
 static uint32_t *con_buffer_main;
 static uint32_t *con_buffer_alt;
+
 static uint32_t *con_fb_start;
+static uint8_t *con_tabs_array;
 
 static uint32_t con_attribute;
 
@@ -166,6 +168,8 @@ static void con_handle_state(int cmd)
 
 static void con_init_variables(void)
 {
+	int i;
+
 	con_attribute = 0;
 	con_escape_size = 0;
 
@@ -175,6 +179,11 @@ static void con_init_variables(void)
 	con_row_scroll_first = 0;
 	con_row_scroll_last = con_rows - 1;
 
+	for (i = 0; i < con_columns; i++)
+		con_tabs_array[i] = (uint8_t)(((i % 8) == 0) ? 1 : 0);
+
+	con_tabs_array[con_columns - 1] = 1;
+
 	con_handle_state(con_clear_state);
 }
 
@@ -182,6 +191,7 @@ int con_init(void)
 {
 	static int run_once;
 	size_t size;
+	uint8_t *buffer;
 	int i, offset;
 
 	if (!spin_trylock(&run_once))
@@ -214,13 +224,20 @@ int con_init(void)
 	con_fb_start += (offset * (int)kernel->fb_width);
 
 	size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
+	size *= 2;
+	size += (size_t)con_columns * sizeof(con_tabs_array[0]);
+
 	size = (size + 0x0FFF) & 0xFFFFF000;
+	buffer = aligned_alloc(0x1000, size);
 
-	con_buffer_main = aligned_alloc(0x1000, size);
-	con_buffer_alt = aligned_alloc(0x1000, size);
-
-	if (!con_buffer_main || !con_buffer_alt)
+	if (!buffer)
 		return DE_MEMORY;
+
+	size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
+
+	con_buffer_main = (void *)(buffer);
+	con_buffer_alt = (void *)(buffer + size);
+	con_tabs_array = (void *)(buffer + size + size);
 
 	con_buffer = con_buffer_main;
 	con_cells = con_columns * con_rows;
@@ -941,7 +958,7 @@ static void con_write_locked(const unsigned char *data, int size)
 	for (i = 0; i < size; i++) {
 		int c = (int)data[i];
 		int new_line = 0;
-		int offset, spaces;
+		int offset;
 
 		if (con_escape_size) {
 			char *p = &con_escape_buffer[0];
@@ -969,11 +986,14 @@ static void con_write_locked(const unsigned char *data, int size)
 			con_column -= ((con_column > 0) ? 1 : 0);
 			break;
 		case '\t':
-			spaces = 8 - (con_column & 7);
-			offset = con_column + (con_row * con_columns);
-			for (j = 0; j < spaces; j++)
-				con_buffer[offset + j] = con_attribute;
-			con_column = (con_column + 8) & 0x7FFFFFF8;
+			offset = INT_MAX;
+			for (j = con_column + 1; j < con_columns; j++) {
+				if (con_tabs_array[j] != 0) {
+					offset = j;
+					break;
+				}
+			}
+			con_column = offset;
 			break;
 		case '\n':
 			new_line = 1;
