@@ -562,6 +562,14 @@ static void con_handle_escape(void)
 	}
 
 	/*
+	 * ESC H - Horizontal Tab Set.
+	 */
+	if (csi == 0 && type == 'H') {
+		con_tabs_array[con_column] = 1;
+		return;
+	}
+
+	/*
 	 * The rest of the function is for CSI sequences.
 	 */
 	if (csi == 0)
@@ -698,6 +706,20 @@ static void con_handle_escape(void)
 
 		con_row = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
 		con_column = (m - 1 < con_columns) ? m - 1 : con_columns - 1;
+	} break;
+
+	/*
+	 * CSI <n> I - Cursor Forward Tabulation.
+	 */
+	case 'I': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+		int t = con_columns - 1;
+
+		for (i = con_column + 1; i < con_columns && n > 0; i++) {
+			if (con_tabs_array[i] != 0)
+				t = i, n -= 1;
+		}
+		con_column = t;
 	} break;
 
 	/*
@@ -864,6 +886,34 @@ static void con_handle_escape(void)
 		}
 	} break;
 
+	/*
+	 * CSI <n> Z - Cursor Backward Tabulation.
+	 */
+	case 'Z': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		for (i = con_column - 1; i >= 0 && n > 0; i--) {
+			if (i == 0 || con_tabs_array[i] != 0)
+				con_column = i, n -= 1;
+		}
+	} break;
+
+	/*
+	 * CSI <n> g - Tab Clear.
+	 */
+	case 'g': {
+		int n = (count < 1 || parameters[0] < 1) ? 0 : parameters[0];
+		int t = con_columns - 1;
+
+		if (n == 0) {
+			if (con_column < t)
+				con_tabs_array[con_column] = 0;
+
+		} else if (n == 3) {
+			for (i = 0; i < t; i++)
+				con_tabs_array[i] = 0;
+		}
+	} break;
 
 	/*
 	 * CSI ? 1049 h - Enable Alternate Screen Buffer.
