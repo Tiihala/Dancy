@@ -562,11 +562,43 @@ static void con_handle_escape(void)
 	}
 
 	/*
-	 * ESC H - Horizontal Tab Set.
+	 * Handle the plain ESC sequences.
 	 */
-	if (csi == 0 && type == 'H') {
-		con_tabs_array[con_column] = 1;
-		return;
+	if (csi == 0) {
+		/*
+		 * ESC H - Horizontal Tab Set.
+		 */
+		if (type == 'H') {
+			con_tabs_array[con_column] = 1;
+			return;
+		}
+
+		/*
+		 * ESC M - Reverse Index.
+		 */
+		if (type == 'M') {
+			if (con_row == con_row_scroll_first)
+				con_scroll_down();
+			else if (con_row > 0)
+				con_row -= 1;
+			return;
+		}
+
+		/*
+		 * ESC 7 - Save Cursor.
+		 */
+		if (type == '7') {
+			con_handle_state(con_save_cursor);
+			return;
+		}
+
+		/*
+		 * ESC 8 - Restore Cursor.
+		 */
+		if (type == '8') {
+			con_handle_state(con_restore_cursor);
+			return;
+		}
 	}
 
 	/*
@@ -1012,6 +1044,15 @@ static void con_write_locked(const unsigned char *data, int size)
 
 		if (con_escape_size) {
 			char *p = &con_escape_buffer[0];
+
+			if (con_escape_size == 1 && (c == '7' || c == '8')) {
+				p[con_escape_size++] = (char)c;
+				con_handle_escape();
+
+				p[0] = 0, p[1] = 0;
+				con_escape_size = 0;
+				continue;
+			}
 
 			if (con_escape_size + 2 > sizeof(con_escape_buffer)) {
 				memset(p, 0, sizeof(con_escape_buffer));
