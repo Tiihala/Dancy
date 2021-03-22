@@ -33,6 +33,8 @@ static int con_row_scroll_last;
 static int con_wrap_delay;
 
 static int con_cells;
+static int con_cursor_visible;
+
 static uint32_t *con_buffer;
 static uint32_t *con_buffer_main;
 static uint32_t *con_buffer_alt;
@@ -182,6 +184,7 @@ static void con_init_variables(void)
 	con_row_scroll_first = 0;
 	con_row_scroll_last = con_rows - 1;
 	con_wrap_delay = 0;
+	con_cursor_visible = 0;
 
 	for (i = 0; i < con_columns; i++)
 		con_tabs_array[i] = (uint8_t)(((i % 8) == 0) ? 1 : 0);
@@ -259,14 +262,14 @@ int con_init(void)
 static void con_render(void)
 {
 	int glyph_size = kernel->glyph_width * kernel->glyph_height;
+	volatile uint32_t *fb_ptr;
+	int fb_off, x, y;
 	int i = 0, j;
 
 	while (i < con_cells) {
 		uint32_t c = con_buffer[i];
 		uint8_t *data = NULL;
 		int underline = 0;
-		volatile uint32_t *fb_ptr;
-		int fb_off, x, y;
 		int table_i;
 
 		if ((c & con_rendered_bit) != 0) {
@@ -357,6 +360,28 @@ static void con_render(void)
 		con_buffer[i] |= con_rendered_bit;
 		i += 1;
 	}
+
+	if (con_cursor_visible) {
+		int bg, fg = 0x00FFFFFF;
+		uint32_t pixel;
+
+		fb_ptr = (volatile uint32_t *)con_fb_start;
+		fb_off = con_column * kernel->glyph_width;
+		fb_ptr += fb_off;
+
+		fb_off = con_row * kernel->glyph_height;
+		fb_off *= (int)kernel->fb_width;
+		fb_ptr += fb_off;
+
+		for (y = 0; y < kernel->glyph_height; y++) {
+			for (x = 0; x < kernel->glyph_width; x++) {
+				bg = (int)(fb_ptr[x] & 0x00FFFFFF);
+				pixel = con_alpha_blend(bg, fg, 192);
+				fb_ptr[x] = pixel;
+			}
+			fb_ptr += kernel->fb_width;
+		}
+	}
 }
 
 static void con_scroll_up(void)
@@ -419,7 +444,7 @@ static void con_handle_escape(void)
 	char *p = &con_escape_buffer[0];
 	char *e = &con_escape_buffer[con_escape_size];
 	int type = (con_escape_size > 1) ? (int)(*(e - 1)) : 0;
-	int csi = (p[1] == '['), csi_percent = 0;
+	int csi = (p[1] == '['), csi_question = 0;
 
 	int parameters[16];
 	int count = 0;
@@ -431,7 +456,7 @@ static void con_handle_escape(void)
 		int c;
 
 		if (p[2] == '?') {
-			csi_percent = 1;
+			csi_question = 1;
 			p += 1;
 		}
 
@@ -967,38 +992,40 @@ static void con_handle_escape(void)
 	} break;
 
 	/*
+	 * CSI ? 25 h   - Make Cursor Visible.
 	 * CSI ? 1049 h - Enable Alternate Screen Buffer.
 	 */
 	case 'h': {
-		const int cmd = 1049;
-		int n = 0;
+		for (i = 0; i < count && csi_question != 0; i++) {
+			int n = parameters[i];
 
-		for (i = 0; i < count; i++)
-			n = (parameters[i] == cmd) ? cmd : 0;
+			if (n == 25)
+				con_cursor_visible = 1;
 
-		if (csi_percent && n == cmd) {
-			if (con_buffer == con_buffer_main)
-				con_handle_state(con_save_main_state);
+			if (n == 1049) {
+				if (con_buffer == con_buffer_main)
+					con_handle_state(con_save_main_state);
 
-			con_buffer = con_buffer_alt;
+				con_buffer = con_buffer_alt;
 
-			for (i = 0; i < con_cells; i++)
-				con_buffer[i] = 0;
+				for (i = 0; i < con_cells; i++)
+					con_buffer[i] = 0;
+			}
 		}
 	} break;
 
 	/*
+	 * CSI ? 25 l   - Make Cursor Invisible.
 	 * CSI ? 1049 l - Disable Alternate Screen Buffer.
 	 */
 	case 'l': {
-		const int cmd = 1049;
-		int n = 0;
+		for (i = 0; i < count && csi_question != 0; i++) {
+			int n = parameters[i];
 
-		for (i = 0; i < count; i++)
-			n = (parameters[i] == cmd) ? cmd : 0;
+			if (n == 25)
+				con_cursor_visible = 0;
 
-		if (csi_percent && n == cmd) {
-			if (con_buffer == con_buffer_alt) {
+			if (n == 1049 && con_buffer == con_buffer_alt) {
 				for (i = 0; i < con_cells; i++)
 					con_buffer[i] = 0;
 
@@ -1068,6 +1095,12 @@ static void con_increment_row(void)
 static void con_write_locked(const unsigned char *data, int size)
 {
 	int i, j;
+
+	if (con_cursor_visible) {
+		int offset = con_column + (con_row * con_columns);
+
+		con_buffer[offset] &= (~con_rendered_bit);
+	}
 
 	for (i = 0; i < size; i++) {
 		int c = (int)data[i];
