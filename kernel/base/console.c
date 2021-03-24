@@ -194,6 +194,25 @@ static void con_init_variables(void)
 	con_handle_state(con_clear_state);
 }
 
+static void con_reset(void)
+{
+	uint32_t *p = (uint32_t *)kernel->fb_standard_addr;
+	int i;
+
+	memset(p, 0, kernel->fb_standard_size);
+	fb_render();
+
+	con_buffer = con_buffer_main;
+
+	for (i = 0; i < con_cells; i++)
+		con_buffer[i] = con_rendered_bit;
+
+	for (i = 0; i < con_cells; i++)
+		con_buffer_alt[i] = 0;
+
+	con_init_variables();
+}
+
 int con_init(void)
 {
 	static int run_once;
@@ -594,6 +613,14 @@ static void con_handle_escape(void)
 	 * Handle the plain ESC sequences.
 	 */
 	if (csi == 0) {
+		/*
+		 * ESC c - Reset.
+		 */
+		if (type == 'c') {
+			con_reset();
+			return;
+		}
+
 		/*
 		 * ESC H - Horizontal Tab Set.
 		 */
@@ -1199,34 +1226,18 @@ static void con_write_locked(const unsigned char *data, int size)
 
 void con_clear(void)
 {
-	uint32_t *p = (uint32_t *)kernel->fb_standard_addr;
-	int i;
-
 	if (!con_ready || mtx_lock(&con_mtx) != thrd_success)
 		return;
 
-	memset(p, 0, kernel->fb_standard_size);
-	fb_render();
-
-	con_buffer = con_buffer_main;
-
-	for (i = 0; i < con_cells; i++)
-		con_buffer[i] = con_rendered_bit;
-
-	for (i = 0; i < con_cells; i++)
-		con_buffer_alt[i] = 0;
-
-	con_init_variables();
+	con_reset();
 	mtx_unlock(&con_mtx);
 }
 
 void con_panic(const char *message)
 {
 	static int run_once;
-	uint32_t *p = (uint32_t *)kernel->fb_standard_addr;
 	const void *data = message;
 	int size = (int)strlen(message);
-	int i;
 
 	if (!con_ready || !spin_trylock(&run_once))
 		return;
@@ -1239,12 +1250,7 @@ void con_panic(const char *message)
 	 */
 	(void)mtx_trylock(&con_mtx);
 
-	memset(p, 0, kernel->fb_standard_size);
-
-	for (i = 0; i < con_cells; i++)
-		con_buffer[i] = 0;
-
-	con_init_variables();
+	con_reset();
 	con_write_locked(data, size);
 
 	con_render();
