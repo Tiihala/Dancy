@@ -664,12 +664,6 @@ static void con_handle_escape(void)
 		return;
 
 	/*
-	 * Horizontal Vertical Position is the same as Cursor Position.
-	 */
-	if (type == 'f')
-		type = 'H';
-
-	/*
 	 * Handle other CSI sequences.
 	 */
 	switch (type) {
@@ -999,6 +993,28 @@ static void con_handle_escape(void)
 			if (i == 0 || con_tabs_array[i] != 0)
 				con_column = i, n -= 1;
 		}
+	} break;
+
+	/*
+	 * CSI <n> d - Cursor Vertical Absolute.
+	 */
+	case 'd': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+
+		con_row = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
+		con_wrap_delay = 0;
+	} break;
+
+	/*
+	 * CSI <n> ; <m> f - Cursor Position.
+	 */
+	case 'f': {
+		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
+		int m = (count < 2 || parameters[1] < 1) ? 1 : parameters[1];
+
+		con_row = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
+		con_column = (m - 1 < con_columns) ? m - 1 : con_columns - 1;
+		con_wrap_delay = 0;
 	} break;
 
 	/*
