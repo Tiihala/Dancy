@@ -3,6 +3,7 @@
 ##############################################################################
 
 DANCY_LIB_OBJECTS_32= \
+ ./o32/common/utf8.o \
  ./o32/lib/a32/cpu.o \
  ./o32/lib/a32/dark.o \
  ./o32/lib/a32/spin.o \
@@ -16,6 +17,7 @@ DANCY_LIB_OBJECTS_32= \
  ./o32/lib/string.o
 
 DANCY_LIB_OBJECTS_64= \
+ ./o64/common/utf8.o \
  ./o64/lib/a64/cpu.o \
  ./o64/lib/a64/dark.o \
  ./o64/lib/a64/spin.o \

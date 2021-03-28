@@ -160,4 +160,14 @@ int ttf_set_bitmap(void *ttf, size_t size, void *bitmap);
 int ttf_set_shades(void *ttf, unsigned int number);
 int ttf_render(void *ttf, unsigned int code_point, unsigned int *width);
 
+/*
+ * Declarations of utf8.c
+ */
+int utf8_decode(int *state, unsigned char c);
+int utf8_encode(unsigned int unicode, unsigned char *out);
+
+#define UTF8_WAITING_NEXT  (-1)
+#define UTF8_ERROR_CONSUME (-2)
+#define UTF8_ERROR_RETRY   (-3)
+
 #endif

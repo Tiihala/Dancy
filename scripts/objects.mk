@@ -65,6 +65,9 @@
 ./o32/common/ttf.o: ./common/ttf.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/ttf.c
 
+./o32/common/utf8.o: ./common/utf8.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./common/utf8.c
+
 ./o32/init/a32/gdt.o: ./boot/init/a32/gdt.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./boot/init/a32/gdt.asm
 
@@ -259,6 +262,9 @@
 
 ./o64/common/ttf.o: ./common/ttf.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/ttf.c
+
+./o64/common/utf8.o: ./common/utf8.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./common/utf8.c
 
 ./o64/init/a64/gdt.o: ./boot/init/a64/gdt.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./boot/init/a64/gdt.asm
