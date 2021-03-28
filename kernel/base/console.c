@@ -30,6 +30,7 @@ static int con_rows;
 
 static int con_row_scroll_first;
 static int con_row_scroll_last;
+static int con_utf8_state;
 static int con_wrap_delay;
 
 static int con_cells;
@@ -183,6 +184,8 @@ static void con_init_variables(void)
 
 	con_row_scroll_first = 0;
 	con_row_scroll_last = con_rows - 1;
+
+	con_utf8_state = 0;
 	con_wrap_delay = 0;
 	con_cursor_visible = 0;
 
@@ -1137,7 +1140,7 @@ static void con_increment_row(void)
 
 static void con_write_locked(const unsigned char *data, int size)
 {
-	int i, j;
+	int i = 0, j;
 
 	if (con_cursor_visible) {
 		int offset = con_column + (con_row * con_columns);
@@ -1145,10 +1148,19 @@ static void con_write_locked(const unsigned char *data, int size)
 		con_buffer[offset] &= (~con_rendered_bit);
 	}
 
-	for (i = 0; i < size; i++) {
-		int c = (int)data[i];
+	while (i < size) {
+		int c = utf8_decode(&con_utf8_state, data[i++]);
 		int normal = 0;
 		int offset;
+
+		if (c == UTF8_WAITING_NEXT)
+			continue;
+
+		if (c == UTF8_ERROR_RETRY)
+			i -= 1;
+
+		if (c < 0 || c > 0xFFFFF)
+			c = 0xFFFD;
 
 		if (con_escape_size) {
 			char *p = &con_escape_buffer[0];
@@ -1288,11 +1300,13 @@ void con_print(const char *format, ...)
 
 	va_end(va);
 
-	if (locked && r > 0) {
-		const void *data = &con_print_buffer[0];
+	if (locked) {
+		void *data = &con_print_buffer[0];
 
-		con_write_locked(data, r);
-		memset(&con_print_buffer[0], 0, (size_t)r);
+		if (r > 0) {
+			con_write_locked(data, r);
+			memset(data, 0, (size_t)r);
+		}
 
 		con_render();
 		fb_render();
