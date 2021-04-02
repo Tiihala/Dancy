@@ -203,6 +203,10 @@ _b_exit:
         mov ah, 0xAF                    ; ah = syscall number
         int 0x20                        ; boot loader syscall
 
+        pushfd                          ; push FLAGS
+        and dword [esp], 0xFFC0822A     ; use defined value
+        popfd                           ; pop FLAGS
+
         ; Replace above .text section with "int3" instructions.
         ; Boot loader services must not be called after b_exit.
 
