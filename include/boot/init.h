@@ -121,6 +121,7 @@ void ioapic_enable(unsigned isa_irq);
  * Declarations of cpu.c
  */
 int cpu_test_features(void);
+void cpu_init_control_registers(void);
 
 
 /*

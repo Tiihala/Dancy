@@ -226,6 +226,11 @@ void init(void)
 	}
 
 	/*
+	 * Initialize control registers.
+	 */
+	cpu_init_control_registers();
+
+	/*
 	 * Refresh the GUI. Otherwise panic() may fail later because the
 	 * framebuffer would not be identity mapped. Normally page faults
 	 * will map the pages but panic() does not allow exceptions.
@@ -357,6 +362,11 @@ void init_ap(uint32_t id)
 	 */
 	if (apic_init())
 		panic("APIC initialization failed (application processor)");
+
+	/*
+	 * Initialize control registers.
+	 */
+	cpu_init_control_registers();
 
 	/*
 	 * Enable interrupts.
