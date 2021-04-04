@@ -91,6 +91,7 @@ DANCY_HEADERS= \
  ./include/dancy/types.h \
  ./include/kernel/base.h \
  ./include/kernel/table.h \
+ ./include/kernel/task.h \
  ./include/dancy.h
 
 DANCY_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(DANCY_TARGET_TOOLS)
