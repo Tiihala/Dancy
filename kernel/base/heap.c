@@ -68,7 +68,7 @@ static void *heap_aligned_alloc(size_t alignment, size_t size)
 	int map_insert = 0;
 	int i;
 
-	if (alignment == 0 || alignment > 0x1000)
+	if (alignment == 0 || alignment > 0x2000)
 		return NULL;
 
 	if ((alignment & (alignment - 1)) != 0)
