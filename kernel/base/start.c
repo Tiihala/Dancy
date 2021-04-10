@@ -82,6 +82,8 @@ void kernel_start(void)
 	kernel->print = con_print;
 	kernel->detach_init_module(&timer_ticks);
 
+	checked_init(task_init, "Task");
+
 	cpu_halt(0);
 }
 
@@ -108,6 +110,7 @@ void kernel_start_ap(void)
 	checked_init(idt_init_ap, "IDT (AP)");
 
 	checked_init(pg_init_ap, "Paging (AP)");
+	checked_init(task_init_ap, "Task (AP)");
 
 	cpu_halt(0);
 }
