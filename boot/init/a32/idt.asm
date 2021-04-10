@@ -119,7 +119,6 @@ idt_common:
         ;   [esp+0]    register ebx
 
         and esp, 0xFFFFFFF0             ; align stack
-        mov eax, [ebx+16]               ; eax = error code
         lea edx, [ebx+20]               ; edx = stack at "instruction pointer"
 
         ; void idt_handler(unsigned num, const void *stack)

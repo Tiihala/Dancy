@@ -83,7 +83,6 @@ _idt_asm_handler:
         ;   [esp+0]    segment register ds
 
         and esp, 0xFFFFFFF0             ; align stack
-        mov eax, [ebx+24]               ; eax = error code
         lea edx, [ebx+28]               ; edx = stack at "instruction pointer"
 
         ; void idt_handler(int num, void *stack)
