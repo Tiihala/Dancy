@@ -24,7 +24,7 @@ section .text
         extern task_yield
         global task_create_asm
         global task_current
-        global task_switch
+        global task_switch_asm
 
 align 16
         ; void task_create_asm(struct task *new_task,
@@ -79,8 +79,8 @@ task_current:
         ret
 
 align 16
-        ; void task_switch(struct task *next)
-task_switch:
+        ; void task_switch_asm(struct task *next)
+task_switch_asm:
         push rbx                        ; save register rbx
         push rbp                        ; save register rbp
         push rsi                        ; save register rsi
@@ -94,7 +94,6 @@ task_switch:
         test eax, 0x1000                ; test stack pointer
         jz short stack_error
 
-        or dword [rcx+16], 0x00000001   ; set TASK_FLAG_RUNNING (next)
         and eax, 0xFFFFE000             ; rax = address of current task
         mov [rax], esp                  ; save stack pointer
         fxsave [rax+0x0C00]             ; save fpu, mmx, and sse state

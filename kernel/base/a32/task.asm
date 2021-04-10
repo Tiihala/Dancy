@@ -24,7 +24,7 @@ section .text
         extern _task_yield
         global _task_create_asm
         global _task_current
-        global _task_switch
+        global _task_switch_asm
         global _task_patch_fxsave
         global _task_patch_fxrstor
 
@@ -83,8 +83,8 @@ _task_current:
         ret
 
 align 16
-        ; void task_switch(struct task *next)
-_task_switch:
+        ; void task_switch_asm(struct task *next)
+_task_switch_asm:
         push ebx                        ; save register ebx
         push ebp                        ; save register ebp
         push esi                        ; save register esi
@@ -95,7 +95,6 @@ _task_switch:
         test eax, 0x1000                ; test stack pointer
         jz short _stack_error
 
-        or dword [ecx+16], 0x00000001   ; set TASK_FLAG_RUNNING (next)
         and eax, 0xFFFFE000             ; eax = address of current task
         lea ebx, [eax+0x0C00]           ; ebx = address of fxsave area
         mov [eax], esp                  ; save stack pointer

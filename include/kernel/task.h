@@ -34,6 +34,8 @@ struct task {
 	uint64_t id;     /* Offset: 8 */
 	int state;       /* Offset: 16 + 0 * sizeof(int) */
 	int retval;      /* Offset: 16 + 1 * sizeof(int) */
+
+	int lock;
 };
 
 int task_init(void);

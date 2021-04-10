@@ -19,6 +19,9 @@
 
 #include <dancy.h>
 
+void task_create_asm(struct task *new_task, int (*func)(void *), void *arg);
+void task_switch_asm(struct task *next);
+
 static int task_ready;
 
 static uint32_t task_default_cr3;
@@ -89,7 +92,8 @@ int task_init(void)
 	current->cr3 = task_default_cr3;
 	current->id = task_get_id();
 
-	task_switch(current);
+	task_switch_asm(current);
+	current->state = TASK_FLAG_RUNNING;
 
 	fstate = (const uint8_t *)current + 0x0C00;
 	memcpy(&task_default_fstate[0], fstate, 512);
@@ -110,12 +114,11 @@ int task_init_ap(void)
 	current->cr3 = task_default_cr3;
 	current->id = task_get_id();
 
-	task_switch(current);
+	task_switch_asm(current);
+	current->state = TASK_FLAG_RUNNING;
 
 	return 0;
 }
-
-void task_create_asm(struct task *new_task, int (*func)(void *), void *arg);
 
 struct task *task_create(int (*func)(void *), void *arg)
 {
@@ -134,6 +137,25 @@ struct task *task_create(int (*func)(void *), void *arg)
 	}
 
 	return new_task;
+}
+
+void task_switch(struct task *next)
+{
+	void *lock_local;
+	int state;
+
+	if (next == NULL)
+		return;
+
+	lock_local = &next->lock;
+
+	spin_enter(&lock_local);
+	state = next->state;
+	next->state = (state | TASK_FLAG_RUNNING);
+	spin_leave(&lock_local);
+
+	if ((state & TASK_FLAG_RUNNING) == 0)
+		task_switch_asm(next);
 }
 
 void task_yield(void)
