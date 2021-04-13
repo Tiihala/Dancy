@@ -32,15 +32,13 @@ align 16
         ; void task_create_asm(struct task *new_task,
         ;                      int (*func)(void *), void *arg)
         ;
-        ; #define TASK_FLAG_RUNNING         (0x00000001)
-        ; #define TASK_FLAG_TERMINATED      (0x00000002)
-        ;
         ; struct task {
         ;         uint32_t esp;    /* Offset: 0 */
         ;         uint32_t cr3;    /* Offset: 4 */
         ;         uint64_t id;     /* Offset: 8 */
-        ;         int state;       /* Offset: 16 + 0 * sizeof(int) */
+        ;         int active;      /* Offset: 16 + 0 * sizeof(int) */
         ;         int retval;      /* Offset: 16 + 1 * sizeof(int) */
+        ;         int stopped;     /* Offset: 16 + 2 * sizeof(int) */
         ;         ...
         ; };
 _task_create_asm:
@@ -69,7 +67,7 @@ _func_return:
         mov ecx, esp                    ; ecx = stack pointer
         and ecx, 0xFFFFE000             ; ecx = address of current task
         mov [ecx+20], eax               ; current->retval = eax
-        or dword [ecx+16], 0x00000002   ; set TASK_FLAG_TERMINATED
+        mov dword [ecx+24], 1           ; set stopped flag
         call _task_yield                ; switch to another task
         int3                            ; breakpoint exception
 .L1:    hlt                             ; halt instruction
@@ -112,7 +110,7 @@ _task_patch_fxrstor:
         db 0x0F, 0xAE, 0x0B             ; "fxrstor [ebx]"
 
         mov cr3, edx                    ; change virtual address space
-        and dword [eax+16], 0xFFFFFFFE  ; clear TASK_FLAG_RUNNING (previous)
+        mov dword [eax+16], 0           ; clear active flag (previous task)
         pop edi                         ; restore register edi
         pop esi                         ; restore register esi
         pop ebp                         ; restore register ebp

@@ -27,8 +27,23 @@ static int task_ready;
 static uint32_t task_default_cr3;
 static uint8_t task_default_fstate[512];
 
+static int task_lock;
+static struct task *task_head;
+static struct task *task_tail;
+
 static int task_id_lock;
 static uint64_t task_id;
+
+static void task_append(struct task *new_task)
+{
+	void *lock_local = &task_lock;
+
+	new_task->next = task_head;
+
+	spin_enter(&lock_local);
+	task_tail = (task_tail->next = new_task);
+	spin_leave(&lock_local);
+}
 
 static uint64_t task_get_id(void)
 {
@@ -93,11 +108,12 @@ int task_init(void)
 	current->id = task_get_id();
 
 	task_switch_asm(current);
-	current->state = TASK_FLAG_RUNNING;
+	current->active = 1;
 
 	fstate = (const uint8_t *)current + 0x0C00;
 	memcpy(&task_default_fstate[0], fstate, 512);
 
+	task_head = (task_tail = current);
 	cpu_write32((uint32_t *)&task_ready, 1);
 
 	return 0;
@@ -115,7 +131,8 @@ int task_init_ap(void)
 	current->id = task_get_id();
 
 	task_switch_asm(current);
-	current->state = TASK_FLAG_RUNNING;
+	current->active = 1;
+	task_append(current);
 
 	return 0;
 }
@@ -134,31 +151,24 @@ struct task *task_create(int (*func)(void *), void *arg)
 		memcpy(fstate, &task_default_fstate[0], 512);
 
 		task_create_asm(new_task, func, arg);
+		task_append(new_task);
 	}
 
 	return new_task;
 }
 
-void task_switch(struct task *next)
+int task_switch(struct task *next)
 {
-	void *lock_local;
-	int state;
+	if (!next || !spin_trylock(&next->active))
+		return 1;
 
-	if (next == NULL)
-		return;
-
-	lock_local = &next->lock;
-
-	spin_enter(&lock_local);
-	state = next->state;
-	next->state = (state | TASK_FLAG_RUNNING);
-	spin_leave(&lock_local);
-
-	if ((state & TASK_FLAG_RUNNING) == 0)
-		task_switch_asm(next);
+	return task_switch_asm(next), 0;
 }
 
 void task_yield(void)
 {
+	struct task *next = task_current()->next;
 
+	while (task_switch(next))
+		next = next->next;
 }

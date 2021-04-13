@@ -30,15 +30,13 @@ align 16
         ; void task_create_asm(struct task *new_task,
         ;                      int (*func)(void *), void *arg)
         ;
-        ; #define TASK_FLAG_RUNNING         (0x00000001)
-        ; #define TASK_FLAG_TERMINATED      (0x00000002)
-        ;
         ; struct task {
         ;         uint32_t esp;    /* Offset: 0 */
         ;         uint32_t cr3;    /* Offset: 4 */
         ;         uint64_t id;     /* Offset: 8 */
-        ;         int state;       /* Offset: 16 + 0 * sizeof(int) */
+        ;         int active;      /* Offset: 16 + 0 * sizeof(int) */
         ;         int retval;      /* Offset: 16 + 1 * sizeof(int) */
+        ;         int stopped;     /* Offset: 16 + 2 * sizeof(int) */
         ;         ...
         ; };
 task_create_asm:
@@ -65,7 +63,7 @@ func_return:
         mov ecx, esp                    ; rcx = stack pointer (32-bit)
         and ecx, 0xFFFFE000             ; rcx = address of current task
         mov [rcx+20], eax               ; current->retval = eax
-        or dword [rcx+16], 0x00000002   ; set TASK_FLAG_TERMINATED
+        mov dword [rcx+24], 1           ; set stopped flag
         call task_yield                 ; switch to another task
         int3                            ; breakpoint exception
 .L1:    hlt                             ; halt instruction
@@ -103,7 +101,7 @@ task_switch_asm:
         fxrstor [rcx+0x0C00]            ; restore fpu, mmx, and sse state
 
         mov cr3, rdx                    ; change virtual address space
-        and dword [rax+16], 0xFFFFFFFE  ; clear TASK_FLAG_RUNNING (previous)
+        mov dword [rax+16], 0           ; clear active flag (previous task)
         pop r15                         ; restore register r15
         pop r14                         ; restore register r14
         pop r13                         ; restore register r13

@@ -22,20 +22,15 @@
 
 #include <dancy/types.h>
 
-/*
- * These values are used in assembly code.
- */
-#define TASK_FLAG_RUNNING         (0x00000001)
-#define TASK_FLAG_TERMINATED      (0x00000002)
-
 struct task {
 	uint32_t esp;    /* Offset: 0 */
 	uint32_t cr3;    /* Offset: 4 */
 	uint64_t id;     /* Offset: 8 */
-	int state;       /* Offset: 16 + 0 * sizeof(int) */
+	int active;      /* Offset: 16 + 0 * sizeof(int) */
 	int retval;      /* Offset: 16 + 1 * sizeof(int) */
+	int stopped;     /* Offset: 16 + 2 * sizeof(int) */
 
-	int lock;
+	struct task *next;
 };
 
 int task_init(void);
@@ -43,7 +38,7 @@ int task_init_ap(void);
 
 struct task *task_current(void);
 struct task *task_create(int (*func)(void *), void *arg);
-void task_switch(struct task *next);
+int task_switch(struct task *next);
 void task_yield(void);
 
 #endif
