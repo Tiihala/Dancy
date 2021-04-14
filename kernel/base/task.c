@@ -162,6 +162,11 @@ int task_switch(struct task *next)
 	if (!next || !spin_trylock(&next->active))
 		return 1;
 
+	if (next->stopped) {
+		next->active = 0;
+		return 1;
+	}
+
 	return task_switch_asm(next), 0;
 }
 
@@ -169,6 +174,8 @@ void task_yield(void)
 {
 	struct task *next = task_current()->next;
 
-	while (task_switch(next))
-		next = next->next;
+	if (next) {
+		while (task_switch(next))
+			next = next->next;
+	}
 }
