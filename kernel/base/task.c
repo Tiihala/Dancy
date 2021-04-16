@@ -45,13 +45,14 @@ static void task_append(struct task *new_task)
 	spin_leave(&lock_local);
 }
 
-static uint64_t task_get_id(void)
+static uint64_t task_create_id(void)
 {
 	void *lock_local = &task_id_lock;
 	uint64_t id;
 
 	spin_enter(&lock_local);
-	id = task_id++;
+	if ((id = ++task_id) == 0)
+		panic("Error: task ID");
 	spin_leave(&lock_local);
 
 	return id;
@@ -105,7 +106,7 @@ int task_init(void)
 	current = memset((void *)task_current(), 0, 0x1000);
 	task_default_cr3 = (uint32_t)cpu_read_cr3();
 	current->cr3 = task_default_cr3;
-	current->id = task_get_id();
+	current->id = task_create_id();
 
 	task_switch_asm(current);
 	current->active = 1;
@@ -128,7 +129,7 @@ int task_init_ap(void)
 
 	current = memset((void *)task_current(), 0, 0x1000);
 	current->cr3 = task_default_cr3;
-	current->id = task_get_id();
+	current->id = task_create_id();
 
 	task_switch_asm(current);
 	current->active = 1;
@@ -137,15 +138,17 @@ int task_init_ap(void)
 	return 0;
 }
 
-struct task *task_create(int (*func)(void *), void *arg)
+uint64_t task_create(int (*func)(void *), void *arg)
 {
+	uint64_t id = 0;
 	struct task *new_task = aligned_alloc(0x2000, 0x2000);
 	uint8_t *fstate;
 
 	if (new_task) {
 		memset(new_task, 0, 0x2000);
 		new_task->cr3 = task_default_cr3;
-		new_task->id = task_get_id();
+		new_task->id = (id = task_create_id());
+		new_task->id_owner = task_current()->id;
 
 		fstate = (uint8_t *)new_task + 0x0C00;
 		memcpy(fstate, &task_default_fstate[0], 512);
@@ -154,7 +157,7 @@ struct task *task_create(int (*func)(void *), void *arg)
 		task_append(new_task);
 	}
 
-	return new_task;
+	return id;
 }
 
 int task_switch(struct task *next)
@@ -163,7 +166,7 @@ int task_switch(struct task *next)
 		return 1;
 
 	if (next->stopped) {
-		next->active = 0;
+		spin_unlock(&next->active);
 		return 1;
 	}
 

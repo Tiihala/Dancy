@@ -30,6 +30,7 @@ struct task {
 	int retval;      /* Offset: 16 + 1 * sizeof(int) */
 	int stopped;     /* Offset: 16 + 2 * sizeof(int) */
 
+	uint64_t id_owner;
 	struct task *next;
 };
 
@@ -37,7 +38,8 @@ int task_init(void);
 int task_init_ap(void);
 
 struct task *task_current(void);
-struct task *task_create(int (*func)(void *), void *arg);
+uint64_t task_create(int (*func)(void *), void *arg);
+
 int task_switch(struct task *next);
 void task_yield(void);
 
