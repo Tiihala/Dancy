@@ -175,10 +175,12 @@ int task_switch(struct task *next)
 
 void task_yield(void)
 {
-	struct task *next = task_current()->next;
+	struct task *current = task_current();
+	struct task *next = current->next;
 
-	if (next) {
-		while (task_switch(next))
-			next = next->next;
+	while (task_switch(next)) {
+		if (!next || next == current)
+			break;
+		next = next->next;
 	}
 }
