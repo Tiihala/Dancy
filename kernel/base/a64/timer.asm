@@ -25,6 +25,7 @@ section .text
         global timer_apic_base
         global timer_asm_handler_apic
         global timer_asm_handler_pic
+        global timer_read
 
 align 64
         ; const uint8_t timer_asm_handler_apic[]
@@ -106,6 +107,13 @@ timer_call_handler:
         pop rcx                         ; restore register rcx
         pop rax                         ; restore register rax
         iretq
+
+align 16
+        ; uint64_t timer_read(void)
+timer_read:
+        mov edx, timer_ticks_64         ; rdx = address of timer_ticks_64
+        mov rax, [rdx]                  ; rax = ticks
+        ret
 
 
 section .data

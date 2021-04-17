@@ -146,5 +146,6 @@ extern volatile uint64_t timer_ticks_64;
 extern volatile uint32_t timer_ticks_wait;
 
 void timer_handler(void);
+uint64_t timer_read(void);
 
 #endif

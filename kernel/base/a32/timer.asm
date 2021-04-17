@@ -25,6 +25,7 @@ section .text
         global _timer_apic_base
         global _timer_asm_handler_apic
         global _timer_asm_handler_pic
+        global _timer_read
 
 align 64
         ; const uint8_t timer_asm_handler_apic[]
@@ -121,6 +122,18 @@ _timer_call_handler:
         pop eax                         ; restore register eax
         pop ebp                         ; restore register ebp
         iret
+
+align 16
+        ; uint64_t timer_read(void)
+_timer_read:
+        push ebx                        ; save register ebx
+        xor eax, eax                    ; eax = 0
+        xor ecx, ecx                    ; ecx = 0
+        xor edx, edx                    ; edx = 0
+        xor ebx, ebx                    ; ebx = 0
+        lock cmpxchg8b [_timer_ticks]   ; edx:eax = ticks
+        pop ebx                         ; restore register ebx
+        ret
 
 
 section .data
