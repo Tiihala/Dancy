@@ -32,25 +32,34 @@ _timer_asm_handler_apic:
         push ebp                        ; save register ebp
         push eax                        ; save register eax
         push ecx                        ; save register ecx
+        push edx                        ; save register edx
+        push ebx                        ; save register ebx
 
         ; uint8_t timer_apic_base[4]
         db 0xBD                         ; "mov ebp, [_timer_apic_base]"
 _timer_apic_base: db 0, 0, 0, 0
         mov dword [ebp+0xB0], 0         ; end of interrupt
 
-        mov ebp, _timer_ticks           ; ebp = address of _timer_ticks
-        lock add dword [ebp+0], 1       ; increment ticks (low dword)
-        lock adc dword [ebp+4], 0       ; increment ticks (high dword)
+        mov ebp, _timer_ticks_64        ; ebp = address of _timer_ticks_64
+        mov eax, [ebp+0]                ; eax = ticks (low dword)
+        mov edx, [ebp+4]                ; edx = ticks (high dword)
+        mov ebx, eax                    ; ebx = ticks (low dword)
+        mov ecx, edx                    ; ecx = ticks (high dword)
+        add ebx, 1                      ; increment ticks (low dword)
+        adc ecx, 0                      ; increment ticks (high dword)
+        lock cmpxchg8b [ebp]            ; update [_timer_ticks_64]
 
         mov ebp, _timer_ticks_wait      ; ebp = address of _timer_ticks_wait
 .L1:    mov eax, [ebp]                  ; read current value
         test eax, eax                   ; test zero
-        jz short _timer_call_handler
+        jz near _timer_call_handler
 
         lea ecx, [eax-1]                ; ecx = decremented wait value
         lock cmpxchg [ebp], ecx         ; try to decrement
         jnz short .L1                   ; retry if needed
 
+        pop ebx                         ; restore register ebx
+        pop edx                         ; restore register edx
         pop ecx                         ; restore register ecx
         pop eax                         ; restore register eax
         pop ebp                         ; restore register ebp
@@ -62,13 +71,20 @@ _timer_asm_handler_pic:
         push ebp                        ; save register ebp
         push eax                        ; save register eax
         push ecx                        ; save register ecx
+        push edx                        ; save register edx
+        push ebx                        ; save register ebx
 
         mov al, 0x20                    ; al = 0x20
         out 0x20, al                    ; end of interrupt
 
-        mov ebp, _timer_ticks           ; ebp = address of _timer_ticks
-        lock add dword [ebp+0], 1       ; increment ticks (low dword)
-        lock adc dword [ebp+4], 0       ; increment ticks (high dword)
+        mov ebp, _timer_ticks_64        ; ebp = address of _timer_ticks_64
+        mov eax, [ebp+0]                ; eax = ticks (low dword)
+        mov edx, [ebp+4]                ; edx = ticks (high dword)
+        mov ebx, eax                    ; ebx = ticks (low dword)
+        mov ecx, edx                    ; ecx = ticks (high dword)
+        add ebx, 1                      ; increment ticks (low dword)
+        adc ecx, 0                      ; increment ticks (high dword)
+        lock cmpxchg8b [ebp]            ; update [_timer_ticks_64]
 
         mov ebp, _timer_ticks_wait      ; ebp = address of _timer_ticks_wait
 .L1:    mov eax, [ebp]                  ; read current value
@@ -79,6 +95,8 @@ _timer_asm_handler_pic:
         lock cmpxchg [ebp], ecx         ; try to decrement
         jnz short .L1                   ; retry if needed
 
+        pop ebx                         ; restore register ebx
+        pop edx                         ; restore register edx
         pop ecx                         ; restore register ecx
         pop eax                         ; restore register eax
         pop ebp                         ; restore register ebp
@@ -86,7 +104,6 @@ _timer_asm_handler_pic:
 
 align 16
 _timer_call_handler:
-        push edx                        ; save register edx
         push es                         ; save segment register es
         push ds                         ; save segment register ds
         mov ebp, esp                    ; save stack
@@ -98,6 +115,7 @@ _timer_call_handler:
 
         pop ds                          ; restore segment register ds
         pop es                          ; restore segment register es
+        pop ebx                         ; restore register ebx
         pop edx                         ; restore register edx
         pop ecx                         ; restore register ecx
         pop eax                         ; restore register eax
