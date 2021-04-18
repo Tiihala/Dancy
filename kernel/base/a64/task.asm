@@ -110,6 +110,7 @@ task_switch_asm:
         pop rsi                         ; restore register rsi
         pop rbp                         ; restore register rbp
         pop rbx                         ; restore register rbx
+        sti                             ; enable interrupts
         ret
 
 stack_error:

@@ -115,6 +115,7 @@ _task_patch_fxrstor:
         pop esi                         ; restore register esi
         pop ebp                         ; restore register ebp
         pop ebx                         ; restore register ebx
+        sti                             ; enable interrupts
         ret
 
 _stack_error:
