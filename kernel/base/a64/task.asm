@@ -25,6 +25,8 @@ section .text
         global task_create_asm
         global task_current
         global task_switch_asm
+        global task_switch_disable
+        global task_switch_enable
 
 align 16
         ; void task_create_asm(struct task *new_task,
@@ -37,6 +39,7 @@ align 16
         ;         int active;      /* Offset: 16 + 0 * sizeof(int) */
         ;         int retval;      /* Offset: 16 + 1 * sizeof(int) */
         ;         int stopped;     /* Offset: 16 + 2 * sizeof(int) */
+        ;         int ndisable;    /* Offset: 16 + 3 * sizeof(int) */
         ;         ...
         ; };
 task_create_asm:
@@ -93,6 +96,9 @@ task_switch_asm:
         jz short stack_error
 
         and eax, 0xFFFFE000             ; rax = address of current task
+        cmp dword [rax+28], 0           ; skip if ndisable is non-zero
+        jne short task_switch_asm_end
+
         mov [rax], esp                  ; save stack pointer
         fxsave [rax+0x0C00]             ; save fpu, mmx, and sse state
 
@@ -102,6 +108,8 @@ task_switch_asm:
 
         mov cr3, rdx                    ; change virtual address space
         mov dword [rax+16], 0           ; clear active flag (previous task)
+
+task_switch_asm_end:
         pop r15                         ; restore register r15
         pop r14                         ; restore register r14
         pop r13                         ; restore register r13
@@ -114,6 +122,30 @@ task_switch_asm:
         ret
 
 stack_error:
+        int3                            ; breakpoint exception
+.L1:    hlt                             ; halt instruction
+        jmp short .L1
+
+align 16
+        ; void task_switch_disable(void)
+task_switch_disable:
+        mov eax, esp                    ; rax = stack pointer (32-bit)
+        and eax, 0xFFFFE000             ; rax = address of current task
+        lock add dword [rax+28], 1      ; increment ndisable value
+        js short state_error
+        ret
+
+align 16
+        ; void task_switch_enable(void)
+task_switch_enable:
+        mov eax, esp                    ; rax = stack pointer (32-bit)
+        and eax, 0xFFFFE000             ; rax = address of current task
+        lock sub dword [rax+28], 1      ; decrement ndisable value
+        js short state_error
+        ret
+
+state_error:
+        mov dword [rax+28], 0x88000000  ; set erroneous state value
         int3                            ; breakpoint exception
 .L1:    hlt                             ; halt instruction
         jmp short .L1

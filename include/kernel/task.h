@@ -29,6 +29,7 @@ struct task {
 	int active;      /* Offset: 16 + 0 * sizeof(int) */
 	int retval;      /* Offset: 16 + 1 * sizeof(int) */
 	int stopped;     /* Offset: 16 + 2 * sizeof(int) */
+	int ndisable;    /* Offset: 16 + 3 * sizeof(int) */
 
 	uint64_t id_owner;
 	struct task *next;
@@ -41,6 +42,8 @@ struct task *task_current(void);
 uint64_t task_create(int (*func)(void *), void *arg);
 
 int task_switch(struct task *next);
+void task_switch_disable(void);
+void task_switch_enable(void);
 void task_yield(void);
 
 #endif

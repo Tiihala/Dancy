@@ -25,6 +25,8 @@ section .text
         global _task_create_asm
         global _task_current
         global _task_switch_asm
+        global _task_switch_disable
+        global _task_switch_enable
         global _task_patch_fxsave
         global _task_patch_fxrstor
 
@@ -39,6 +41,7 @@ align 16
         ;         int active;      /* Offset: 16 + 0 * sizeof(int) */
         ;         int retval;      /* Offset: 16 + 1 * sizeof(int) */
         ;         int stopped;     /* Offset: 16 + 2 * sizeof(int) */
+        ;         int ndisable;    /* Offset: 16 + 3 * sizeof(int) */
         ;         ...
         ; };
 _task_create_asm:
@@ -94,6 +97,9 @@ _task_switch_asm:
         jz short _stack_error
 
         and eax, 0xFFFFE000             ; eax = address of current task
+        cmp dword [eax+28], 0           ; skip if ndisable is non-zero
+        jne short _task_switch_asm_end
+
         lea ebx, [eax+0x0C00]           ; ebx = address of fxsave area
         mov [eax], esp                  ; save stack pointer
 
@@ -111,6 +117,8 @@ _task_patch_fxrstor:
 
         mov cr3, edx                    ; change virtual address space
         mov dword [eax+16], 0           ; clear active flag (previous task)
+
+_task_switch_asm_end:
         pop edi                         ; restore register edi
         pop esi                         ; restore register esi
         pop ebp                         ; restore register ebp
@@ -119,6 +127,30 @@ _task_patch_fxrstor:
         ret
 
 _stack_error:
+        int3                            ; breakpoint exception
+.L1:    hlt                             ; halt instruction
+        jmp short .L1
+
+align 16
+        ; void task_switch_disable(void)
+_task_switch_disable:
+        mov eax, esp                    ; eax = stack pointer
+        and eax, 0xFFFFE000             ; eax = address of current task
+        lock add dword [eax+28], 1      ; increment ndisable value
+        js short _state_error
+        ret
+
+align 16
+        ; void task_switch_enable(void)
+_task_switch_enable:
+        mov eax, esp                    ; eax = stack pointer
+        and eax, 0xFFFFE000             ; eax = address of current task
+        lock sub dword [eax+28], 1      ; decrement ndisable value
+        js short _state_error
+        ret
+
+_state_error:
+        mov dword [eax+28], 0x88000000  ; set erroneous state value
         int3                            ; breakpoint exception
 .L1:    hlt                             ; halt instruction
         jmp short .L1
