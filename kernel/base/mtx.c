@@ -24,6 +24,7 @@ static int base_mtx_lock;
 struct base_mtx {
 	int init;
 	int lock;
+	int yield;
 };
 
 #define BASE_MTX_COUNT 128
@@ -55,6 +56,7 @@ int mtx_init(mtx_t *mtx, int type)
 		if (base_mtx_array[i].init == 0) {
 			m = &base_mtx_array[i];
 			m->init = 1;
+			m->yield = 0;
 			spin_unlock(&m->lock);
 			*mtx = m;
 			break;
@@ -68,14 +70,15 @@ int mtx_init(mtx_t *mtx, int type)
 
 int mtx_lock(mtx_t *mtx)
 {
-	int r;
+	if (null_mxt)
+		return thrd_error;
 
-	while ((r = mtx_trylock(mtx)) != thrd_success) {
-		if (r != thrd_busy)
-			break;
+	while (!spin_trylock(&this_mtx->lock)) {
+		this_mtx->yield = 1;
+		task_yield();
 	}
 
-	return r;
+	return thrd_success;
 }
 
 int mtx_trylock(mtx_t *mtx)
@@ -91,10 +94,18 @@ int mtx_trylock(mtx_t *mtx)
 
 int mtx_unlock(mtx_t *mtx)
 {
+	int yield;
+
 	if (null_mxt)
 		return thrd_error;
 
+	yield = this_mtx->yield;
+	this_mtx->yield = 0;
+
 	spin_unlock(&this_mtx->lock);
+
+	if (yield)
+		task_yield();
 
 	return thrd_success;
 }
