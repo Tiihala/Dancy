@@ -95,6 +95,8 @@ static void gdt_build_block(struct gdt_block *gb)
 		p[7] = (uint8_t)(tss_addr >> 24);
 
 		p = (uint8_t *)tss_addr;
+		p[8] = (uint8_t)gdt_kernel_data;
+		p[9] = 0x00;
 		p[102] = (uint8_t)(sizeof(gb->tss));
 	}
 }
