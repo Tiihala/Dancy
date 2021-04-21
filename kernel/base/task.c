@@ -20,7 +20,7 @@
 #include <dancy.h>
 
 void task_create_asm(struct task *new_task, int (*func)(void *), void *arg);
-void task_switch_asm(struct task *next);
+void task_switch_asm(struct task *next, void *tss);
 
 static int task_ready;
 
@@ -108,7 +108,7 @@ int task_init(void)
 	current->cr3 = task_default_cr3;
 	current->id = task_create_id();
 
-	task_switch_asm(current);
+	task_switch_asm(current, gdt_get_tss());
 	current->active = 1;
 
 	fstate = (const uint8_t *)current + 0x0C00;
@@ -131,7 +131,7 @@ int task_init_ap(void)
 	current->cr3 = task_default_cr3;
 	current->id = task_create_id();
 
-	task_switch_asm(current);
+	task_switch_asm(current, gdt_get_tss());
 	current->active = 1;
 	task_append(current);
 
@@ -170,7 +170,7 @@ int task_switch(struct task *next)
 		return 1;
 	}
 
-	return task_switch_asm(next), 0;
+	return task_switch_asm(next, gdt_get_tss()), 0;
 }
 
 void task_yield(void)

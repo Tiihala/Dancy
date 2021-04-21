@@ -84,7 +84,7 @@ _task_current:
         ret
 
 align 16
-        ; void task_switch_asm(struct task *next)
+        ; void task_switch_asm(struct task *next, void *tss)
 _task_switch_asm:
         push ebx                        ; save register ebx
         push ebp                        ; save register ebp
@@ -93,12 +93,16 @@ _task_switch_asm:
 
         mov eax, esp                    ; eax = stack pointer
         mov ecx, [esp+20]               ; ecx = (struct task *)next
+        mov edx, [esp+24]               ; edx = (void *)tss
         test eax, 0x1000                ; test stack pointer
         jz short _stack_error
 
         and eax, 0xFFFFE000             ; eax = address of current task
         cmp dword [eax+28], 0           ; skip if ndisable is non-zero
         jne short _task_switch_asm_end
+
+        lea ebx, [ecx+0x1FF0]           ; ebx = value of esp0
+        mov [edx+4], ebx                ; update esp0 (task-state segment)
 
         lea ebx, [eax+0x0C00]           ; ebx = address of fxsave area
         mov [eax], esp                  ; save stack pointer

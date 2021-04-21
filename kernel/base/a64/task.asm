@@ -80,7 +80,7 @@ task_current:
         ret
 
 align 16
-        ; void task_switch_asm(struct task *next)
+        ; void task_switch_asm(struct task *next, void *tss)
 task_switch_asm:
         push rbx                        ; save register rbx
         push rbp                        ; save register rbp
@@ -98,6 +98,9 @@ task_switch_asm:
         and eax, 0xFFFFE000             ; rax = address of current task
         cmp dword [rax+28], 0           ; skip if ndisable is non-zero
         jne short task_switch_asm_end
+
+        lea ebx, [rcx+0x1FF0]           ; ebx = value of rsp0 (32-bit)
+        mov [rdx+4], ebx                ; update rsp0 (task-state segment)
 
         mov [rax], esp                  ; save stack pointer
         fxsave [rax+0x0C00]             ; save fpu, mmx, and sse state
