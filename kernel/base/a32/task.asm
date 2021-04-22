@@ -21,7 +21,7 @@
 
 section .text
 
-        extern _task_yield
+        extern _task_exit
         global _task_create_asm
         global _task_current
         global _task_switch_asm
@@ -68,11 +68,9 @@ _func_start:
 
 align 16
 _func_return:
-        mov ecx, esp                    ; ecx = stack pointer
-        and ecx, 0xFFFFE000             ; ecx = address of current task
-        mov [ecx+20], eax               ; current->retval = eax
-        mov dword [ecx+24], 1           ; set stopped flag
-        call _task_yield                ; switch to another task
+        mov ecx, eax                    ; ecx = retval
+        mov [esp], ecx                  ; "push" retval
+        call _task_exit                 ; task_exit(retval)
         int3                            ; breakpoint exception
 .L1:    hlt                             ; halt instruction
         jmp short .L1

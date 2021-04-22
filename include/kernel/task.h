@@ -40,6 +40,7 @@ int task_init_ap(void);
 
 struct task *task_current(void);
 uint64_t task_create(int (*func)(void *), void *arg);
+void task_exit(int retval);
 
 int task_switch(struct task *next);
 void task_switch_disable(void);
