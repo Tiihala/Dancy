@@ -63,6 +63,7 @@ align 16
 _func_start:
         mov eax, _func_return           ; eax = _func_return
         xchg eax, [esp]                 ; set the return address
+        sti                             ; enable interrupts
         jmp eax                         ; func(arg)
 
 align 16
@@ -127,7 +128,6 @@ _task_switch_asm_end:
         pop esi                         ; restore register esi
         pop ebp                         ; restore register ebp
         pop ebx                         ; restore register ebx
-        sti                             ; enable interrupts
         ret
 
 _stack_error:

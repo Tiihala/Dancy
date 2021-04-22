@@ -59,6 +59,7 @@ func_start:
         mov eax, func_return            ; rax = func_return
         xchg rax, [rsp]                 ; set the return address
         mov rcx, [rsp+8]                ; rcx = arg
+        sti                             ; enable interrupts
         jmp rax                         ; func(arg)
 
 align 16
@@ -121,7 +122,6 @@ task_switch_asm_end:
         pop rsi                         ; restore register rsi
         pop rbp                         ; restore register rbp
         pop rbx                         ; restore register rbx
-        sti                             ; enable interrupts
         ret
 
 stack_error:
