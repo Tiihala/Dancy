@@ -23,6 +23,7 @@ void task_create_asm(struct task *new_task, int (*func)(void *), void *arg);
 void task_switch_asm(struct task *next, void *tss);
 
 static int task_ready;
+static int task_ap_count;
 
 static uint32_t task_default_cr3;
 static uint8_t task_default_fstate[512];
@@ -63,6 +64,7 @@ int task_init(void)
 	static int run_once;
 	struct task *current;
 	const uint8_t *fstate;
+	uint32_t ap_count;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
@@ -117,6 +119,11 @@ int task_init(void)
 	task_head = (task_tail = current);
 	cpu_write32((uint32_t *)&task_ready, 1);
 
+	ap_count = (uint32_t)kernel->smp_ap_count;
+
+	while (cpu_read32((const uint32_t *)&task_ap_count) != ap_count)
+		delay(1000000);
+
 	return 0;
 }
 
@@ -134,6 +141,12 @@ int task_init_ap(void)
 	task_switch_asm(current, gdt_get_tss());
 	current->active = 1;
 	task_append(current);
+
+	spin_lock(&task_lock);
+	task_ap_count += 1;
+	if (task_ap_count > kernel->smp_ap_count)
+		panic("task_init_ap: called too many times");
+	spin_unlock(&task_lock);
 
 	return 0;
 }
@@ -162,6 +175,8 @@ uint64_t task_create(int (*func)(void *), void *arg)
 
 int task_switch(struct task *next)
 {
+	int r;
+
 	if (!next || !spin_trylock(&next->active))
 		return 1;
 
@@ -170,7 +185,11 @@ int task_switch(struct task *next)
 		return 1;
 	}
 
-	return task_switch_asm(next, gdt_get_tss()), 0;
+	r = cpu_ints(0);
+	task_switch_asm(next, gdt_get_tss());
+	cpu_ints(r);
+
+	return 0;
 }
 
 void task_yield(void)
