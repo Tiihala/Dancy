@@ -46,17 +46,19 @@ _idt_asm_gp_handler:
         and eax, [esp+16]               ; detect kernel code
         jnz short _idt_asm_handler      ; jump if not kernel code
 
-        mov eax, es                     ; eax = segment register es
-        and eax, 0x0000FFF8             ; test segment value
         mov eax, ss                     ; eax = segment register ss
+        mov ecx, es                     ; ecx = segment register es
         mov es, eax                     ; set valid segment value
-        jz short .end
+        cmp eax, ecx                    ; test segment value
+        jne short .end
 
-        mov eax, ds                     ; eax = segment register ds
-        and eax, 0x0000FFF8             ; test segment value
-        mov eax, ss                     ; eax = segment register ss
+        mov ecx, ds                     ; ecx = segment register ds
         mov ds, eax                     ; set valid segment value
-        jnz short _idt_asm_handler
+        cmp eax, ecx                    ; test segment value
+        jne short .end
+
+        mov ecx, 13                     ; general-protection exception
+        jmp short _idt_asm_handler
 
 .end:   pop ecx                         ; restore register ecx
         pop eax                         ; restore register eax
