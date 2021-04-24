@@ -51,7 +51,7 @@ task_create_asm:
         mov edx, func_start             ; rdx = func_start
         mov [rax], rdx                  ; save func_start
 
-        lea eax, [rax-64]               ; space for pushed registers
+        lea eax, [rax-96]               ; space for pushed registers
         mov [rcx], eax                  ; new_task->esp = stack pointer
         ret
 
@@ -121,6 +121,13 @@ task_switch_asm:
         push r14                        ; save register r14
         push r15                        ; save register r15
 
+        mov eax, es                     ; save segment register es
+        push rax                        ; ^^^^
+        mov eax, ds                     ; save segment register ds
+        push rax                        ; ^^^^
+        push fs                         ; save segment register fs
+        push gs                         ; save segment register gs
+
         mov eax, esp                    ; rax = stack pointer (32-bit)
         test eax, 0x1000                ; test stack pointer
         jz short stack_error
@@ -143,6 +150,13 @@ task_switch_asm:
         mov dword [rax+16], 0           ; clear active flag (previous task)
 
 task_switch_asm_end:
+        pop gs                          ; restore segment register gs
+        pop fs                          ; restore segment register fs
+        pop rax                         ; restore segment register ds
+        mov ds, eax                     ; ^^^^^^^
+        pop rax                         ; restore segment register es
+        mov es, eax                     ; ^^^^^^^
+
         pop r15                         ; restore register r15
         pop r14                         ; restore register r14
         pop r13                         ; restore register r13

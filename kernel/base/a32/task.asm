@@ -56,7 +56,7 @@ _task_create_asm:
         mov edx, _func_start            ; edx = _func_start
         mov [eax], edx                  ; save _func_start
 
-        lea eax, [eax-16]               ; space for pushed registers
+        lea eax, [eax-24]               ; space for pushed registers
         mov [ecx], eax                  ; new_task->esp = stack pointer
         ret
 
@@ -118,10 +118,12 @@ _task_switch_asm:
         push ebp                        ; save register ebp
         push esi                        ; save register esi
         push edi                        ; save register edi
+        push fs                         ; save segment register fs
+        push gs                         ; save segment register gs
 
         mov eax, esp                    ; eax = stack pointer
-        mov ecx, [esp+20]               ; ecx = (struct task *)next
-        mov edx, [esp+24]               ; edx = (void *)tss
+        mov ecx, [esp+28]               ; ecx = (struct task *)next
+        mov edx, [esp+32]               ; edx = (void *)tss
         test eax, 0x1000                ; test stack pointer
         jz short _stack_error
 
@@ -151,6 +153,8 @@ _task_patch_fxrstor:
         mov dword [eax+16], 0           ; clear active flag (previous task)
 
 _task_switch_asm_end:
+        pop gs                          ; restore segment register gs
+        pop fs                          ; restore segment register fs
         pop edi                         ; restore register edi
         pop esi                         ; restore register esi
         pop ebp                         ; restore register ebp
