@@ -24,6 +24,7 @@ section .text
         extern task_exit
         global task_create_asm
         global task_current
+        global task_jump_asm
         global task_switch_asm
         global task_switch_disable
         global task_switch_enable
@@ -76,6 +77,37 @@ task_current:
         mov eax, esp                    ; rax = stack pointer (32-bit)
         and eax, 0xFFFFE000             ; rax = address of current task
         ret
+
+align 16
+        ; void task_jump_asm(addr_t ip, addr_t cs, addr_t sp, addr_t ss)
+task_jump_asm:
+        push r9                         ; push ss
+        push r8                         ; push rsp
+        push 0x00000202                 ; push rflags
+        push rdx                        ; push cs
+        push rcx                        ; push rip
+
+        xor eax, eax                    ; rax = 0
+        mov es, eax                     ; set es segment register (0)
+        mov ds, eax                     ; set ds segment register (0)
+        mov fs, eax                     ; set fs segment register (0)
+        mov gs, eax                     ; set gs segment register (0)
+
+        xor ecx, ecx                    ; rcx = 0
+        xor edx, edx                    ; rdx = 0
+        xor ebx, ebx                    ; rbx = 0
+        xor ebp, ebp                    ; rbp = 0
+        xor esi, esi                    ; rsi = 0
+        xor edi, edi                    ; rdi = 0
+        xor r8, r8                      ; r8 = 0
+        xor r9, r9                      ; r9 = 0
+        xor r10, r10                    ; r10 = 0
+        xor r11, r11                    ; r11 = 0
+        xor r12, r12                    ; r12 = 0
+        xor r13, r13                    ; r13 = 0
+        xor r14, r14                    ; r14 = 0
+        xor r15, r15                    ; r15 = 0
+        iretq                           ; "jump" to user space
 
 align 16
         ; void task_switch_asm(struct task *next, void *tss)

@@ -184,6 +184,16 @@ void task_exit(int retval)
 	panic("task_exit: unexpected behavior");
 }
 
+void task_jump(addr_t user_ip, addr_t user_sp)
+{
+	extern void task_jump_asm(addr_t ip, addr_t cs, addr_t sp, addr_t ss);
+
+	addr_t cs = gdt_user_code | 3;
+	addr_t ss = gdt_user_data | 3;
+
+	task_jump_asm(user_ip, cs, user_sp, ss);
+}
+
 int task_switch(struct task *next)
 {
 	int r;

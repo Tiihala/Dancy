@@ -41,6 +41,7 @@ int task_init_ap(void);
 struct task *task_current(void);
 uint64_t task_create(int (*func)(void *), void *arg);
 void task_exit(int retval);
+void task_jump(addr_t user_ip, addr_t user_sp);
 
 int task_switch(struct task *next);
 void task_switch_disable(void);
