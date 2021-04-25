@@ -172,11 +172,14 @@ uint64_t task_create(int (*func)(void *), void *arg)
 void task_exit(int retval)
 {
 	struct task *current = task_current();
+	struct task *next = current->next;
 
 	current->retval = retval;
 	current->stopped = 1;
 
-	task_yield();
+	while (task_switch(next))
+		next = (!next) ? task_head : next->next;
+
 	panic("task_exit: unexpected behavior");
 }
 
