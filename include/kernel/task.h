@@ -33,6 +33,10 @@ struct task {
 
 	uint64_t id_owner;
 	struct task *next;
+
+	cpu_native_t iret_frame[5];
+	int iret_lock;
+	int iret_num;
 };
 
 int task_init(void);
