@@ -376,6 +376,12 @@ void idt_panic(int num, void *stack, struct idt_context *context)
 		current->iret_frame[1] = p[1];
 		current->iret_frame[2] = p[2];
 
+		current->iret_num = num;
+
+		p[0] = (cpu_native_t)&idt_asm_panic[0];
+		p[1] = (cpu_native_t)gdt_kernel_code;
+		p[2] = (cpu_native_t)0x00000002;
+
 #ifdef DANCY_32
 		if ((current->iret_frame[1] & 3) == 0) {
 			cpu_native_t iret_esp, iret_ss;
@@ -389,21 +395,19 @@ void idt_panic(int num, void *stack, struct idt_context *context)
 		} else {
 			current->iret_frame[3] = p[3];
 			current->iret_frame[4] = p[4];
+			/*
+			 * The ESP and SS are not used anymore, but set
+			 * them anyway for consistency.
+			 */
+			p[3] = (cpu_native_t)stack;
+			p[4] = (cpu_native_t)gdt_kernel_data;
 		}
-#endif
-
-#ifdef DANCY_64
+#else
 		current->iret_frame[3] = p[3];
 		current->iret_frame[4] = p[4];
-#endif
-		current->iret_num = num;
-
-		p[0] = (cpu_native_t)&idt_asm_panic[0];
-		p[1] = (cpu_native_t)gdt_kernel_code;
-		p[2] = (cpu_native_t)0x00000002;
 		p[3] = (cpu_native_t)stack;
 		p[4] = (cpu_native_t)gdt_kernel_data;
-
+#endif
 		return;
 	}
 
