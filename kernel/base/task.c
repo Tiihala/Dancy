@@ -25,7 +25,6 @@ void task_switch_asm(struct task *next, void *tss);
 static int task_ready;
 static int task_ap_count;
 
-static uint32_t task_default_cr3;
 static uint8_t task_default_fstate[512];
 
 static int task_lock;
@@ -69,8 +68,6 @@ int task_init(void)
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
 
-	task_default_cr3 = (uint32_t)cpu_read_cr3();
-
 #ifdef DANCY_32
 	if ((cpu_read_cr4() & (1u << 9)) == 0) {
 		extern uint8_t task_patch_fxsave[3];
@@ -106,8 +103,7 @@ int task_init(void)
 	}
 #endif
 	current = memset((void *)task_current(), 0, 0x1000);
-	task_default_cr3 = (uint32_t)cpu_read_cr3();
-	current->cr3 = task_default_cr3;
+	current->cr3 = (uint32_t)pg_kernel;
 	current->id = task_create_id();
 
 	task_switch_asm(current, gdt_get_tss());
@@ -135,7 +131,7 @@ int task_init_ap(void)
 		delay(1000000);
 
 	current = memset((void *)task_current(), 0, 0x1000);
-	current->cr3 = task_default_cr3;
+	current->cr3 = (uint32_t)pg_kernel;
 	current->id = task_create_id();
 
 	task_switch_asm(current, gdt_get_tss());
@@ -159,7 +155,7 @@ uint64_t task_create(int (*func)(void *), void *arg)
 
 	if (new_task) {
 		memset(new_task, 0, 0x2000);
-		new_task->cr3 = task_default_cr3;
+		new_task->cr3 = (uint32_t)pg_kernel;
 		new_task->id = (id = task_create_id());
 		new_task->id_owner = task_current()->id;
 
