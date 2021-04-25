@@ -22,9 +22,11 @@
 section .text
 
         extern _idt_handler
+        extern _idt_panic
         global _idt_asm_array
         global _idt_asm_gp_handler
         global _idt_asm_handler
+        global _idt_asm_panic
         global _idt_load
 
 align 64
@@ -107,6 +109,50 @@ _idt_asm_handler:
         pop eax                         ; restore register eax
         add esp, 4                      ; remove error code
         iret
+
+align 16
+        ; const uint8_t idt_asm_panic[]
+        ;
+        ; void idt_panic(int num, void *stack, struct idt_context *context);
+        ;
+        ; struct idt_context {
+        ;         cpu_native_t eax;
+        ;         cpu_native_t ecx;
+        ;         cpu_native_t edx;
+        ;         cpu_native_t ebx;
+        ;         cpu_native_t ebp;
+        ;         cpu_native_t esi;
+        ;         cpu_native_t edi;
+        ;
+        ;         cpu_native_t cr2;
+        ;         cpu_native_t cr3;
+        ; };
+_idt_asm_panic:
+        sub esp, 36                     ; allocate stack space
+
+        mov [esp+0], eax                ; save register eax
+        mov [esp+4], ecx                ; save register ecx
+        mov [esp+8], edx                ; save register edx
+        mov [esp+12], ebx               ; save register ebx
+        mov [esp+16], ebp               ; save register ebp
+        mov [esp+20], esi               ; save register esi
+        mov [esp+24], edi               ; save register edi
+
+        mov eax, cr2                    ; eax = cr2
+        mov [esp+28], eax               ; save register cr2
+        mov eax, cr3                    ; eax = cr3
+        mov [esp+32], eax               ; save register cr3
+
+        mov ebp, esp                    ; ebp = "context"
+        and esp, 0xFFFFFFF0             ; align stack
+
+        push 0                          ; push 0
+        push ebp                        ; push context
+        push 0                          ; push NULL
+        push 0                          ; push 0
+        call _idt_panic                 ; idt_panic(0, NULL, context)
+.L1:    hlt                             ; halt instruction
+        jmp short .L1
 
 align 16
         ; void idt_load(const void *idt_ptr)

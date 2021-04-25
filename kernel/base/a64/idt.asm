@@ -22,8 +22,10 @@
 section .text
 
         extern idt_handler
+        extern idt_panic
         global idt_asm_array
         global idt_asm_handler
+        global idt_asm_panic
         global idt_load
 
 align 64
@@ -75,6 +77,66 @@ idt_asm_handler:
         pop rax                         ; restore register rax
         add rsp, 8                      ; remove error code
         iretq
+
+align 16
+        ; const uint8_t idt_asm_panic[]
+        ;
+        ; void idt_panic(int num, void *stack, struct idt_context *context);
+        ;
+        ; struct idt_context {
+        ;         cpu_native_t rax;
+        ;         cpu_native_t rcx;
+        ;         cpu_native_t rdx;
+        ;         cpu_native_t rbx;
+        ;         cpu_native_t rbp;
+        ;         cpu_native_t rsi;
+        ;         cpu_native_t rdi;
+        ;
+        ;         cpu_native_t r8;
+        ;         cpu_native_t r9;
+        ;         cpu_native_t r10;
+        ;         cpu_native_t r11;
+        ;         cpu_native_t r12;
+        ;         cpu_native_t r13;
+        ;         cpu_native_t r14;
+        ;         cpu_native_t r15;
+        ;
+        ;         cpu_native_t cr2;
+        ;         cpu_native_t cr3;
+        ; };
+idt_asm_panic:
+        sub rsp, 136                    ; allocate stack space
+
+        mov [rsp+0], rax                ; save register rax
+        mov [rsp+8], rcx                ; save register rcx
+        mov [rsp+16], rdx               ; save register rdx
+        mov [rsp+24], rbx               ; save register rbx
+        mov [rsp+32], rbp               ; save register rbp
+        mov [rsp+40], rsi               ; save register rsi
+        mov [rsp+48], rdi               ; save register rdi
+
+        mov [rsp+56], r8                ; save register r8
+        mov [rsp+64], r9                ; save register r9
+        mov [rsp+72], r10               ; save register r10
+        mov [rsp+80], r11               ; save register r11
+        mov [rsp+88], r12               ; save register r12
+        mov [rsp+96], r13               ; save register r13
+        mov [rsp+104], r14              ; save register r14
+        mov [rsp+112], r15              ; save register r15
+
+        mov rax, cr2                    ; rax = cr2
+        mov [rsp+120], eax              ; save register cr2
+        mov rax, cr3                    ; rax = cr3
+        mov [rsp+128], eax              ; save register cr3
+
+        xor ecx, ecx                    ; rcx = 0
+        xor edx, edx                    ; rdx = "NULL"
+        mov r8, rsp                     ; r8 = "context"
+        and rsp, -16                    ; align stack
+        sub rsp, 32                     ; shadow space
+        call idt_panic                  ; idt_panic(0, NULL, context)
+.L1:    hlt                             ; halt instruction
+        jmp short .L1
 
 align 16
         ; void idt_load(const void *idt_ptr)
