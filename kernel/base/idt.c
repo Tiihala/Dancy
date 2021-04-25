@@ -34,6 +34,50 @@ static void *idt_ptr = NULL;
 
 #ifdef DANCY_32
 
+struct idt_context {
+	cpu_native_t eax;
+	cpu_native_t ecx;
+	cpu_native_t edx;
+	cpu_native_t ebx;
+	cpu_native_t ebp;
+	cpu_native_t esi;
+	cpu_native_t edi;
+
+	cpu_native_t cr2;
+	cpu_native_t cr3;
+};
+
+static void idt_print_context(const struct idt_context *context, char *out)
+{
+	const struct task *current = task_current();
+	const size_t n = 1024;
+	int add, off = 0;
+
+	add = snprintf(&out[off], n,
+		"eax=%08X ecx=%08X edx=%08X ebx=%08X\n",
+		context->eax, context->ecx, context->edx, context->ebx);
+	off += (add > 0 ? add : 0);
+
+	add = snprintf(&out[off], n,
+		"esp=%08X ebp=%08X esi=%08X edi=%08X\n",
+		current->iret_frame[3], context->ebp,
+		context->esi, context->edi);
+	off += (add > 0 ? add : 0);
+
+	add = snprintf(&out[off], n,
+		"\ncr2=%08X cr3=%08X\n",
+		context->cr2, context->cr3);
+	off += (add > 0 ? add : 0);
+
+	add = snprintf(&out[off], n,
+		"eip=%08X  cs=%04X\n\neflags=%08X\n",
+		current->iret_frame[0], current->iret_frame[1] & 0xFFFF,
+		current->iret_frame[2]);
+	off += (add > 0 ? add : 0);
+
+	snprintf(&out[off], n, "\033[1A");
+}
+
 static void idt_build(void)
 {
 	int i;
@@ -101,6 +145,69 @@ static void idt_install_global(int num, const uint8_t asm_handler[])
 #endif
 
 #ifdef DANCY_64
+
+struct idt_context {
+	cpu_native_t rax;
+	cpu_native_t rcx;
+	cpu_native_t rdx;
+	cpu_native_t rbx;
+	cpu_native_t rbp;
+	cpu_native_t rsi;
+	cpu_native_t rdi;
+
+	cpu_native_t r8;
+	cpu_native_t r9;
+	cpu_native_t r10;
+	cpu_native_t r11;
+	cpu_native_t r12;
+	cpu_native_t r13;
+	cpu_native_t r14;
+	cpu_native_t r15;
+
+	cpu_native_t cr2;
+	cpu_native_t cr3;
+};
+
+static void idt_print_context(const struct idt_context *context, char *out)
+{
+	const struct task *current = task_current();
+	const size_t n = 1024;
+	int add, off = 0;
+
+	add = snprintf(&out[off], n,
+		"rax=%016llX rcx=%016llX\nrdx=%016llX rbx=%016llX\n",
+		context->rax, context->rcx, context->rdx, context->rbx);
+	off += (add > 0 ? add : 0);
+
+	add = snprintf(&out[off], n,
+		"rsp=%016llX rbp=%016llX\nrsi=%016llX rdi=%016llX\n",
+		current->iret_frame[3], context->rbp,
+		context->rsi, context->rdi);
+	off += (add > 0 ? add : 0);
+
+	add = snprintf(&out[off], n,
+		"\n r8=%016llX  r9=%016llX\nr10=%016llX r11=%016llX\n",
+		context->r8, context->r9, context->r10, context->r11);
+	off += (add > 0 ? add : 0);
+
+	add = snprintf(&out[off], n,
+		"r12=%016llX r13=%016llX\nr14=%016llX r15=%016llX\n",
+		context->r12, context->r13, context->r14, context->r15);
+	off += (add > 0 ? add : 0);
+
+	add = snprintf(&out[off], n,
+		"\ncr2=%016llX cr3=%016llX\n",
+		context->cr2, context->cr3);
+	off += (add > 0 ? add : 0);
+
+	add = snprintf(&out[off], n,
+		"rip=%016llX  cs=%04llX\n\nrflags=%016llX\n",
+		current->iret_frame[0], current->iret_frame[1] & 0xFFFF,
+		current->iret_frame[2]);
+	off += (add > 0 ? add : 0);
+
+	snprintf(&out[off], n, "\033[1A");
+}
 
 static void idt_build(void)
 {
@@ -230,8 +337,10 @@ int idt_init_ap(void)
 	return 0;
 }
 
-static void idt_panic(int num, void *stack)
+void idt_panic(int num, void *stack, struct idt_context *context)
 {
+	static int run_once;
+
 	static const char *names[] = {
 		"#DE - Divide-by-Zero Exception",
 		"#DB - Debug Exception",
@@ -252,21 +361,71 @@ static void idt_panic(int num, void *stack)
 		"#GP - General-Protection Exception",
 		"#PF - Page-Fault Exception"
 	};
+	static char buffer[2048];
 	const int entries = (int)(sizeof(names) / sizeof(names[0]));
-	addr_t ip = *((addr_t *)stack);
-	char b[128];
+	struct task *current = task_current();
+	int add, off = 0;
+
+	if (context == NULL) {
+		cpu_native_t *p = stack;
+
+		if (!spin_trylock(&current->iret_lock))
+			cpu_halt(0);
+
+		current->iret_frame[0] = p[0];
+		current->iret_frame[1] = p[1];
+		current->iret_frame[2] = p[2];
+
+#ifdef DANCY_32
+		if ((current->iret_frame[1] & 3) == 0) {
+			cpu_native_t iret_esp, iret_ss;
+
+			iret_esp = (cpu_native_t)sizeof(cpu_native_t) * 3;
+			iret_esp += (cpu_native_t)stack;
+			iret_ss = (cpu_native_t)gdt_kernel_data;
+
+			current->iret_frame[3] = iret_esp;
+			current->iret_frame[4] = iret_ss;
+		} else {
+			current->iret_frame[3] = p[3];
+			current->iret_frame[4] = p[4];
+		}
+#endif
+
+#ifdef DANCY_64
+		current->iret_frame[3] = p[3];
+		current->iret_frame[4] = p[4];
+#endif
+		current->iret_num = num;
+
+		p[0] = (cpu_native_t)&idt_asm_panic[0];
+		p[1] = (cpu_native_t)gdt_kernel_code;
+		p[2] = (cpu_native_t)0x00000002;
+		p[3] = (cpu_native_t)stack;
+		p[4] = (cpu_native_t)gdt_kernel_data;
+
+		return;
+	}
+
+	if (!spin_trylock(&run_once))
+		cpu_halt(0);
+
+	num = current->iret_num;
 
 	if (num < entries)
-		snprintf(&b[0], 128, "%s at %p", names[num], (void *)ip);
+		add = snprintf(&buffer[0], 128, "%s\n\n", names[num]);
 	else
-		snprintf(&b[0], 128, "Interrupt %d", num);
+		add = snprintf(&buffer[0], 128, "Interrupt %d\n\n", num);
 
-	kernel->panic(&b[0]);
+	off += (add > 0 ? add : 0);
+	idt_print_context(context, &buffer[off]);
+
+	kernel->panic(&buffer[0]);
 }
 
 void idt_handler(int num, void *stack)
 {
-	idt_panic(num, stack);
+	idt_panic(num, stack, NULL);
 }
 
 void idt_install_asm(int num, const uint8_t asm_handler[])

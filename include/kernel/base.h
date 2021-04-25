@@ -96,6 +96,7 @@ void *heap_alloc_static_page(void);
 extern uint8_t idt_asm_array[256][16];
 extern const uint8_t idt_asm_gp_handler[];
 extern const uint8_t idt_asm_handler[];
+extern const uint8_t idt_asm_panic[];
 
 int idt_init(void);
 int idt_init_ap(void);
