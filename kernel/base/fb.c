@@ -493,18 +493,38 @@ int fb_init(void)
 
 void fb_panic(void)
 {
+	cpu_native_t cr3;
 	int i;
 
 	if (!fb_ready)
 		return;
 
+	/*
+	 * The caller is responsible for stopping other
+	 * running threads of execution. Try to lock the
+	 * mutex but ignore the return value. The mutex
+	 * is not unlocked in this fb_panic function.
+	 */
+	(void)mtx_trylock(&fb_mtx);
+
+	task_switch_disable();
+
+	if ((cr3 = cpu_read_cr3()) != pg_kernel)
+		cpu_write_cr3(pg_kernel);
+
 	for (i = 0; i < fb_page_count; i++)
 		fb_blit(i);
+
+	if (cr3 != pg_kernel)
+		cpu_write_cr3(cr3);
+
+	task_switch_enable();
 }
 
 void fb_render(void)
 {
 	const uint32_t d_bit = 0x40;
+	cpu_native_t cr3;
 	int i;
 
 	if (!fb_ready)
@@ -512,6 +532,11 @@ void fb_render(void)
 
 	if (mtx_lock(&fb_mtx) != thrd_success)
 		return;
+
+	task_switch_disable();
+
+	if ((cr3 = cpu_read_cr3()) != pg_kernel)
+		cpu_write_cr3(pg_kernel);
 
 	for (i = 0; i < fb_page_count; i++) {
 		uint32_t *p = (uint32_t *)fb_page_array[i].pte;
@@ -525,6 +550,11 @@ void fb_render(void)
 			fb_blit(i);
 		}
 	}
+
+	if (cr3 != pg_kernel)
+		cpu_write_cr3(cr3);
+
+	task_switch_enable();
 
 	mtx_unlock(&fb_mtx);
 }
