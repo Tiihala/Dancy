@@ -138,6 +138,7 @@ task_switch_asm:
         jb short task_switch_asm_rsp0
 
         or dword [rax+28], 1            ; set bit 0 if switching is skipped
+        mov dword [rcx+16], 0           ; clear active flag (next task)
         jmp short task_switch_asm_end
 
 task_switch_asm_rsp0:

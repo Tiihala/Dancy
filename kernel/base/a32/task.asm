@@ -133,6 +133,7 @@ _task_switch_asm:
         jb short _task_switch_asm_esp0
 
         or dword [eax+28], 1            ; set bit 0 if switching is skipped
+        mov dword [ecx+16], 0           ; clear active flag (next task)
         jmp short _task_switch_asm_end
 
 _task_switch_asm_esp0:
