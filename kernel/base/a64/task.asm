@@ -22,6 +22,7 @@
 section .text
 
         extern task_exit
+        extern task_yield
         global task_create_asm
         global task_current
         global task_jump_asm
@@ -133,9 +134,13 @@ task_switch_asm:
         jz short stack_error
 
         and eax, 0xFFFFE000             ; rax = address of current task
-        cmp dword [rax+28], 0           ; skip if ndisable is non-zero
-        jne short task_switch_asm_end
+        cmp dword [rax+28], 2           ; check if task switching is enabled
+        jb short task_switch_asm_rsp0
 
+        or dword [rax+28], 1            ; set bit 0 if switching is skipped
+        jmp short task_switch_asm_end
+
+task_switch_asm_rsp0:
         lea ebx, [rcx+0x1FF0]           ; ebx = value of rsp0 (32-bit)
         mov [rdx+4], ebx                ; update rsp0 (task-state segment)
 
@@ -177,17 +182,30 @@ align 16
 task_switch_disable:
         mov eax, esp                    ; rax = stack pointer (32-bit)
         and eax, 0xFFFFE000             ; rax = address of current task
-        lock add dword [rax+28], 1      ; increment ndisable value
+        add dword [rax+28], 2           ; increment ndisable (ignore bit 0)
         js short state_error
         ret
 
 align 16
         ; void task_switch_enable(void)
 task_switch_enable:
+        push rbp                        ; save register rbp
         mov eax, esp                    ; rax = stack pointer (32-bit)
         and eax, 0xFFFFE000             ; rax = address of current task
-        lock sub dword [rax+28], 1      ; decrement ndisable value
+        sub dword [rax+28], 2           ; decrement ndisable (ignore bit 0)
         js short state_error
+
+        cmp dword [rax+28], 1           ; test if switching was skipped
+        jne short .L1
+        and dword [rax+28], 0xFFFFFFFE  ; clear bit 0
+
+        mov ebp, esp                    ; save stack pointer
+        and esp, 0xFFFFFFF0             ; align stack
+        sub esp, 32                     ; shadow space
+        call task_yield                 ; switch to another task
+        mov esp, ebp                    ; restore stack pointer
+
+.L1:    pop rbp                         ; restore register rpb
         ret
 
 state_error:
