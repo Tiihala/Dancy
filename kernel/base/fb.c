@@ -493,7 +493,6 @@ int fb_init(void)
 
 void fb_panic(void)
 {
-	cpu_native_t cr3;
 	int i;
 
 	if (!fb_ready)
@@ -508,23 +507,18 @@ void fb_panic(void)
 	(void)mtx_trylock(&fb_mtx);
 
 	task_switch_disable();
-
-	if ((cr3 = cpu_read_cr3()) != pg_kernel)
-		cpu_write_cr3(pg_kernel);
+	pg_enter_kernel();
 
 	for (i = 0; i < fb_page_count; i++)
 		fb_blit(i);
 
-	if (cr3 != pg_kernel)
-		cpu_write_cr3(cr3);
-
+	pg_leave_kernel();
 	task_switch_enable();
 }
 
 void fb_render(void)
 {
 	const uint32_t d_bit = 0x40;
-	cpu_native_t cr3;
 	int i;
 
 	if (!fb_ready)
@@ -534,9 +528,7 @@ void fb_render(void)
 		return;
 
 	task_switch_disable();
-
-	if ((cr3 = cpu_read_cr3()) != pg_kernel)
-		cpu_write_cr3(pg_kernel);
+	pg_enter_kernel();
 
 	for (i = 0; i < fb_page_count; i++) {
 		uint32_t *p = (uint32_t *)fb_page_array[i].pte;
@@ -551,9 +543,7 @@ void fb_render(void)
 		}
 	}
 
-	if (cr3 != pg_kernel)
-		cpu_write_cr3(cr3);
-
+	pg_leave_kernel();
 	task_switch_enable();
 
 	mtx_unlock(&fb_mtx);
