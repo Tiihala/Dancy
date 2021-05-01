@@ -124,8 +124,13 @@ extern cpu_native_t pg_kernel;
 int pg_init(void);
 int pg_init_ap(void);
 
+int pg_create(void);
+void pg_enter_kernel(void);
+void pg_leave_kernel(void);
+
 void *pg_get_entry(const void *pte);
 void *pg_map_kernel(phys_addr_t addr, size_t size, int type);
+void *pg_map_user(addr_t vaddr, phys_addr_t addr, size_t size);
 
 /*
  * Declarations of start.c

@@ -20,13 +20,34 @@
 #include <dancy.h>
 
 cpu_native_t pg_kernel;
+static void *pg_kernel_pde;
 
 static mtx_t pg_mtx;
 static int pg_ready;
 
 static addr_t pg_apic_base_vaddr;
 
+static void *pg_alloc_user_page(void)
+{
+	void *page = aligned_alloc(0x1000, 0x1000);
+
+	if (page)
+		memset(page, 0, 0x1000);
+
+	return page;
+}
+
 #ifdef DANCY_32
+
+static void *pg_create_cr3(void)
+{
+	uint32_t *pde = pg_alloc_user_page();
+
+	if (pde)
+		memcpy(pde, pg_kernel_pde, 256);
+
+	return pde;
+}
 
 static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 {
@@ -38,6 +59,9 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	 * Page-directory table.
 	 */
 	ptr = (uint32_t *)pg_kernel;
+
+	if (!pg_kernel_pde)
+		pg_kernel_pde = ptr;
 
 	if (large_page) {
 		if ((ptr[offset] & 1) != 0 && (ptr[offset] & 0x80) == 0)
@@ -87,6 +111,37 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	return 0;
 }
 
+static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
+{
+	uint32_t page_bits = 0x27;
+	int offset = (int)(vaddr >> 22);
+	uint32_t page, *ptr;
+
+	/*
+	 * Page-directory table.
+	 */
+	ptr = (uint32_t *)cr3;
+
+	if ((ptr[offset] & 1) == 0) {
+		if ((page = (uint32_t)pg_alloc_user_page()) == 0)
+			return 1;
+		ptr[offset] = page | page_bits;
+	} else if ((ptr[offset] & 0x80) != 0) {
+		return 1;
+	}
+
+	/*
+	 * Page table.
+	 */
+	page = (uint32_t)(addr & 0xFFFFF000);
+	ptr = (uint32_t *)(ptr[offset] & 0xFFFFF000);
+
+	offset = (int)((vaddr >> 12) & 0x3FF);
+	ptr[offset] = page | page_bits;
+
+	return 0;
+}
+
 void *pg_get_entry(const void *pte)
 {
 	addr_t addr = (addr_t)pte;
@@ -115,6 +170,32 @@ static const phys_addr_t pg_unit_size = 0x400000;
 #endif
 
 #ifdef DANCY_64
+
+static void *pg_create_cr3(void)
+{
+	uint64_t page_bits = 0x27;
+	uint64_t *pml4e, *pdpe, *pde;
+
+	if ((pml4e = pg_alloc_user_page()) == NULL)
+		return NULL;
+
+	if ((pdpe = pg_alloc_user_page()) == NULL) {
+		free(pml4e);
+		return NULL;
+	}
+
+	if ((pde = pg_alloc_user_page()) == NULL) {
+		free(pdpe), free(pml4e);
+		return NULL;
+	}
+
+	memcpy(pde, pg_kernel_pde, 1024);
+
+	pdpe[0] = (uint64_t)pde | page_bits;
+	pml4e[0] = (uint64_t)pdpe | page_bits;
+
+	return pml4e;
+}
 
 static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 {
@@ -153,6 +234,9 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	 * Page-directory table.
 	 */
 	ptr = (uint64_t *)(ptr[pdpe_offset] & 0xFFFFF000);
+
+	if (!pg_kernel_pde)
+		pg_kernel_pde = ptr;
 
 	if (large_page) {
 		if ((ptr[offset] & 1) != 0 && (ptr[offset] & 0x80) == 0)
@@ -198,6 +282,64 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 		ptr[offset] = (uint64_t)kernel->apic_base_addr | page_bits;
 	else
 		ptr[offset] = page | page_bits | (ptr[offset] & 0x18);
+
+	return 0;
+}
+
+static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
+{
+	uint64_t page_bits = 0x27;
+	int pml4e_offset = (int)(vaddr >> 39);
+	int pdpe_offset = (int)((vaddr >> 30) & 0x1FF);
+	int offset = (int)((vaddr >> 21) & 0x1FF);
+	uint64_t page, *ptr;
+
+	if (pml4e_offset > 0x1FF)
+		return 1;
+
+	/*
+	 * Page-map-level-4 table.
+	 */
+	ptr = (uint64_t *)cr3;
+
+	if ((ptr[pml4e_offset] & 1) == 0) {
+		if ((page = (uint64_t)pg_alloc_user_page()) == 0)
+			return 1;
+		ptr[pml4e_offset] = page | page_bits;
+	}
+
+	/*
+	 * Page-directory-pointer table.
+	 */
+	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFF000);
+
+	if ((ptr[pdpe_offset] & 1) == 0) {
+		if ((page = (uint64_t)pg_alloc_user_page()) == 0)
+			return 1;
+		ptr[pdpe_offset] = page | page_bits;
+	}
+
+	/*
+	 * Page-directory table.
+	 */
+	ptr = (uint64_t *)(ptr[pdpe_offset] & 0xFFFFF000);
+
+	if ((ptr[offset] & 1) == 0) {
+		if ((page = (uint64_t)pg_alloc_user_page()) == 0)
+			return 1;
+		ptr[offset] = page | page_bits;
+	} else if ((ptr[offset] & 0x80) != 0) {
+		return 1;
+	}
+
+	/*
+	 * Page table.
+	 */
+	page = (uint64_t)(addr & 0xFFFFFFFFFFFFF000ull);
+	ptr = (uint64_t *)(ptr[offset] & 0xFFFFF000);
+
+	offset = (int)((vaddr >> 12) & 0x1FF);
+	ptr[offset] = page | page_bits;
 
 	return 0;
 }
@@ -451,6 +593,48 @@ int pg_init_ap(void)
 	return 0;
 }
 
+int pg_create(void)
+{
+	struct task *current = task_current();
+	cpu_native_t cr3;
+
+	if (current->pg_cr3)
+		return DE_UNEXPECTED;
+
+	if ((cr3 = (cpu_native_t)pg_create_cr3()) == 0)
+		return DE_MEMORY;
+
+	current->pg_cr3 = (uint32_t)cr3;
+	current->cr3 = (uint32_t)cr3;
+	cpu_write_cr3(cr3);
+
+	return 0;
+}
+
+void pg_enter_kernel(void)
+{
+	struct task *current = task_current();
+	cpu_native_t cr3 = cpu_read_cr3();
+
+	if (cr3 == pg_kernel)
+		return;
+
+	current->cr3 = (uint32_t)pg_kernel;
+	cpu_write_cr3(pg_kernel);
+}
+
+void pg_leave_kernel(void)
+{
+	struct task *current = task_current();
+	cpu_native_t cr3;
+
+	if ((cr3 = (cpu_native_t)current->pg_cr3) == 0)
+		return;
+
+	current->cr3 = (uint32_t)cr3;
+	cpu_write_cr3(cr3);
+}
+
 void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 {
 	const phys_addr_t page_mask = 0x0FFF;
@@ -490,4 +674,43 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 	cpu_write_cr3(cpu_read_cr3());
 
 	return (void *)addr;
+}
+
+void *pg_map_user(addr_t vaddr, phys_addr_t addr, size_t size)
+{
+	const addr_t page_mask = 0x0FFF;
+	addr_t vaddr_beg, vaddr_end;
+	phys_addr_t addr_beg;
+
+	struct task *current = task_current();
+	cpu_native_t cr3 = cpu_read_cr3();
+
+	if (cr3 == pg_kernel || cr3 != (cpu_native_t)current->cr3)
+		return NULL;
+
+	if (size == 0 || vaddr < 0x10000000)
+		return NULL;
+
+	if ((vaddr > (SIZE_MAX - size) + 1) || (addr > (SIZE_MAX - size) + 1))
+		return NULL;
+
+	vaddr_beg = vaddr & (~page_mask);
+	vaddr_end = ((addr_t)(vaddr + size) + page_mask) & (~page_mask);
+
+	addr_beg = addr & (~page_mask);
+
+	pg_enter_kernel();
+
+	while ((vaddr_end - vaddr_beg) != 0) {
+		if (pg_map_virtual(cr3, vaddr_beg, addr_beg)) {
+			vaddr = 0;
+			break;
+		}
+
+		vaddr_beg += 0x1000, addr_beg += 0x1000;
+	}
+
+	pg_leave_kernel();
+
+	return (void *)vaddr;
 }

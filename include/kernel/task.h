@@ -37,6 +37,8 @@ struct task {
 	cpu_native_t iret_frame[5];
 	int iret_lock;
 	int iret_num;
+
+	uint32_t pg_cr3;
 };
 
 int task_init(void);
