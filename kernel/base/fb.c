@@ -402,7 +402,7 @@ int fb_init(void)
 
 	for (i = 0; i < fb_page_count; i++) {
 		const uint8_t *ptr = fb_standard_ptr;
-		void *pte = pg_get_entry(&ptr[i * 0x1000]);
+		void *pte = pg_get_entry(pg_kernel, &ptr[i * 0x1000]);
 
 		if (!pte)
 			return DE_UNEXPECTED;

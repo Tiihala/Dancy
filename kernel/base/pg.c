@@ -142,7 +142,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	return 0;
 }
 
-void *pg_get_entry(const void *pte)
+void *pg_get_entry(cpu_native_t cr3, const void *pte)
 {
 	addr_t addr = (addr_t)pte;
 	int offset = (int)(addr >> 22);
@@ -151,7 +151,7 @@ void *pg_get_entry(const void *pte)
 	/*
 	 * Page-directory table.
 	 */
-	ptr = (uint32_t *)(cpu_read_cr3() & 0xFFFFF000);
+	ptr = (uint32_t *)(cr3 & 0xFFFFF000);
 
 	if ((ptr[offset] & 1) == 0 || (ptr[offset] & 0x80) != 0)
 		return NULL;
@@ -344,7 +344,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	return 0;
 }
 
-void *pg_get_entry(const void *pte)
+void *pg_get_entry(cpu_native_t cr3, const void *pte)
 {
 	addr_t addr = (addr_t)pte;
 	int pml4e_offset = (int)(addr >> 39);
@@ -358,7 +358,7 @@ void *pg_get_entry(const void *pte)
 	/*
 	 * Page-map-level-4 table.
 	 */
-	ptr = (uint64_t *)(cpu_read_cr3() & 0xFFFFF000);
+	ptr = (uint64_t *)(cr3 & 0xFFFFF000);
 
 	if ((ptr[pml4e_offset] & 1) == 0)
 		return NULL;

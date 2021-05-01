@@ -128,7 +128,7 @@ int pg_create(void);
 void pg_enter_kernel(void);
 void pg_leave_kernel(void);
 
-void *pg_get_entry(const void *pte);
+void *pg_get_entry(cpu_native_t cr3, const void *pte);
 void *pg_map_kernel(phys_addr_t addr, size_t size, int type);
 void *pg_map_user(addr_t vaddr, phys_addr_t addr, size_t size);
 
