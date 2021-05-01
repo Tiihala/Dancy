@@ -56,7 +56,7 @@ static void *pg_create_cr3(void)
 
 static void pg_delete_cr3(cpu_native_t cr3)
 {
-	const uint32_t page_mask = 0x0FFF;
+	const uint32_t entry_mask = 0xFFFFF000;
 	uint32_t *pde, *ptr;
 	int i;
 
@@ -71,7 +71,7 @@ static void pg_delete_cr3(cpu_native_t cr3)
 		if ((pde[i] & 0x80) != 0)
 			continue;
 
-		ptr = (uint32_t *)(pde[i] & (~page_mask));
+		ptr = (uint32_t *)(pde[i] & entry_mask);
 		pg_free_user_page(ptr);
 	}
 
@@ -229,7 +229,7 @@ static void *pg_create_cr3(void)
 
 static void pg_delete_cr3(cpu_native_t cr3)
 {
-	const phys_addr_t page_mask = 0x0FFF;
+	const uint64_t entry_mask = 0x000FFFFFFFFFF000ull;
 	uint64_t *pml4e, *pdpe, *pde, *ptr;
 	int i, j, k;
 
@@ -245,7 +245,7 @@ static void pg_delete_cr3(cpu_native_t cr3)
 		/*
 		 * Page-directory-pointer table.
 		 */
-		pdpe = (uint64_t *)(pml4e[i] & (~page_mask));
+		pdpe = (uint64_t *)(pml4e[i] & entry_mask);
 
 		for (j = 0; j < 512; j++) {
 			if ((pdpe[j] & 1) == 0)
@@ -254,7 +254,7 @@ static void pg_delete_cr3(cpu_native_t cr3)
 			/*
 			 * Page-directory table.
 			 */
-			pde = (uint64_t *)(pdpe[j] & (~page_mask));
+			pde = (uint64_t *)(pdpe[j] & entry_mask);
 
 			for (k = (j > 0 ? 0 : 128); k < 512; k++) {
 				if ((pde[k] & 0x01) == 0)
@@ -262,7 +262,7 @@ static void pg_delete_cr3(cpu_native_t cr3)
 				if ((pde[k] & 0x80) != 0)
 					continue;
 
-				ptr = (uint64_t *)(pde[k] & (~page_mask));
+				ptr = (uint64_t *)(pde[k] & entry_mask);
 				pg_free_user_page(ptr);
 			}
 
