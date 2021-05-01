@@ -111,7 +111,7 @@ static int identity_map(phys_addr_t addr, int cached, int single_page)
 	uint64_t pde_offset = (uint64_t)((addr >> 21) & 0x1FF);
 	uint64_t i = 0, page, *ptr;
 
-	if (pml4e_offset > 0x1FF)
+	if (pml4e_offset > 0xFF)
 		return 1;
 
 	/*

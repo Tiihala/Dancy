@@ -205,7 +205,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	int offset = (int)((addr >> 21) & 0x1FF);
 	uint64_t page, *ptr;
 
-	if (pml4e_offset > 0x1FF)
+	if (pml4e_offset > 0xFF)
 		return 1;
 
 	/*
@@ -294,7 +294,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	int offset = (int)((vaddr >> 21) & 0x1FF);
 	uint64_t page, *ptr;
 
-	if (pml4e_offset > 0x1FF)
+	if (pml4e_offset > 0xFF)
 		return 1;
 
 	/*
@@ -352,7 +352,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 	int offset = (int)((addr >> 21) & 0x1FF);
 	uint64_t *ptr;
 
-	if (pml4e_offset > 0x1FF)
+	if (pml4e_offset > 0xFF)
 		return NULL;
 
 	/*
