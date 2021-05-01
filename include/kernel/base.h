@@ -125,6 +125,7 @@ int pg_init(void);
 int pg_init_ap(void);
 
 int pg_create(void);
+void pg_delete(void);
 void pg_enter_kernel(void);
 void pg_leave_kernel(void);
 

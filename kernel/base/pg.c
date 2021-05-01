@@ -37,6 +37,11 @@ static void *pg_alloc_user_page(void)
 	return page;
 }
 
+static void pg_free_user_page(void *page)
+{
+	free(page);
+}
+
 #ifdef DANCY_32
 
 static void *pg_create_cr3(void)
@@ -47,6 +52,30 @@ static void *pg_create_cr3(void)
 		memcpy(pde, pg_kernel_pde, 256);
 
 	return pde;
+}
+
+static void pg_delete_cr3(cpu_native_t cr3)
+{
+	const uint32_t page_mask = 0x0FFF;
+	uint32_t *pde, *ptr;
+	int i;
+
+	/*
+	 * Page-directory table.
+	 */
+	pde = (uint32_t *)cr3;
+
+	for (i = 64; i < 1024; i++) {
+		if ((pde[i] & 0x01) == 0)
+			continue;
+		if ((pde[i] & 0x80) != 0)
+			continue;
+
+		ptr = (uint32_t *)(pde[i] & (~page_mask));
+		pg_free_user_page(ptr);
+	}
+
+	pg_free_user_page(pde);
 }
 
 static int pg_map_identity(phys_addr_t addr, int type, int large_page)
@@ -180,12 +209,13 @@ static void *pg_create_cr3(void)
 		return NULL;
 
 	if ((pdpe = pg_alloc_user_page()) == NULL) {
-		free(pml4e);
+		pg_free_user_page(pml4e);
 		return NULL;
 	}
 
 	if ((pde = pg_alloc_user_page()) == NULL) {
-		free(pdpe), free(pml4e);
+		pg_free_user_page(pdpe);
+		pg_free_user_page(pml4e);
 		return NULL;
 	}
 
@@ -195,6 +225,54 @@ static void *pg_create_cr3(void)
 	pml4e[0] = (uint64_t)pdpe | page_bits;
 
 	return pml4e;
+}
+
+static void pg_delete_cr3(cpu_native_t cr3)
+{
+	const phys_addr_t page_mask = 0x0FFF;
+	uint64_t *pml4e, *pdpe, *pde, *ptr;
+	int i, j, k;
+
+	/*
+	 * Page-map-level-4 table.
+	 */
+	pml4e = (uint64_t *)cr3;
+
+	for (i = 0; i < 256; i++) {
+		if ((pml4e[i] & 1) == 0)
+			continue;
+
+		/*
+		 * Page-directory-pointer table.
+		 */
+		pdpe = (uint64_t *)(pml4e[i] & (~page_mask));
+
+		for (j = 0; j < 512; j++) {
+			if ((pdpe[j] & 1) == 0)
+				continue;
+
+			/*
+			 * Page-directory table.
+			 */
+			pde = (uint64_t *)(pdpe[j] & (~page_mask));
+
+			for (k = (j > 0 ? 0 : 128); k < 512; k++) {
+				if ((pde[k] & 0x01) == 0)
+					continue;
+				if ((pde[k] & 0x80) != 0)
+					continue;
+
+				ptr = (uint64_t *)(pde[k] & (~page_mask));
+				pg_free_user_page(ptr);
+			}
+
+			pg_free_user_page(pde);
+		}
+
+		pg_free_user_page(pdpe);
+	}
+
+	pg_free_user_page(pml4e);
 }
 
 static int pg_map_identity(phys_addr_t addr, int type, int large_page)
@@ -609,6 +687,21 @@ int pg_create(void)
 	cpu_write_cr3(cr3);
 
 	return 0;
+}
+
+void pg_delete(void)
+{
+	struct task *current = task_current();
+	cpu_native_t cr3;
+
+	if ((cr3 = (cpu_native_t)current->pg_cr3) == 0)
+		return;
+
+	current->pg_cr3 = (uint32_t)pg_kernel;
+	current->cr3 = (uint32_t)pg_kernel;
+	cpu_write_cr3(pg_kernel);
+
+	pg_delete_cr3(cr3);
 }
 
 void pg_enter_kernel(void)
