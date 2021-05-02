@@ -177,6 +177,8 @@ void task_exit(int retval)
 	current->retval = retval;
 	current->stopped = 1;
 
+	pg_delete();
+
 	while (task_switch(next))
 		next = (!next) ? task_head : next->next;
 
