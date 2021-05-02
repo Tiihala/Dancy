@@ -175,7 +175,7 @@ int fs_update_config_at(struct b_video_info *vi)
 	static const char *name = "system/config.at";
 	unsigned char config_at[128];
 	const int fd = 0;
-	unsigned crc, val;
+	unsigned long crc, val;
 	size_t size;
 	int r;
 
