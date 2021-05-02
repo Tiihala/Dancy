@@ -261,6 +261,12 @@ void table_init(void)
 		kernel->apic_base_addr = apic_base_addr;
 		kernel->apic_bsp_id = apic_bsp_id;
 
+		/*
+		 * Use the virtual slot if the APIC base address is not set.
+		 */
+		if (!kernel->apic_base_addr)
+			kernel->apic_base_addr = kernel->apic_base_vaddr;
+
 		kernel->io_apic_enabled = apic_mode;
 		kernel->io_apic_count = (int)acpi->num_io_apic;
 
