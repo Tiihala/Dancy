@@ -27,29 +27,16 @@ static int pg_ready;
 
 static addr_t pg_apic_base_vaddr;
 
-static void *pg_alloc_user_page(void)
-{
-	void *page = aligned_alloc(0x1000, 0x1000);
-
-	if (page)
-		memset(page, 0, 0x1000);
-
-	return page;
-}
-
-static void pg_free_user_page(void *page)
-{
-	free(page);
-}
-
 #ifdef DANCY_32
 
 static void *pg_create_cr3(void)
 {
-	uint32_t *pde = pg_alloc_user_page();
+	uint32_t *pde = (uint32_t *)mm_alloc_pages(mm_addr32, 0);
 
-	if (pde)
+	if (pde) {
+		memset(pde, 0, 0x1000);
 		memcpy(pde, pg_kernel_pde, 256);
+	}
 
 	return pde;
 }
@@ -72,10 +59,10 @@ static void pg_delete_cr3(cpu_native_t cr3)
 			continue;
 
 		ptr = (uint32_t *)(pde[i] & entry_mask);
-		pg_free_user_page(ptr);
+		mm_free_page((phys_addr_t)ptr);
 	}
 
-	pg_free_user_page(pde);
+	mm_free_page((phys_addr_t)pde);
 }
 
 static int pg_map_identity(phys_addr_t addr, int type, int large_page)
@@ -152,8 +139,9 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	ptr = (uint32_t *)cr3;
 
 	if ((ptr[offset] & 1) == 0) {
-		if ((page = (uint32_t)pg_alloc_user_page()) == 0)
+		if ((page = (uint32_t)mm_alloc_page()) == 0)
 			return 1;
+		memset((void *)page, 0, 0x1000);
 		ptr[offset] = page | page_bits;
 	} else if ((ptr[offset] & 0x80) != 0) {
 		return 1;
@@ -205,19 +193,23 @@ static void *pg_create_cr3(void)
 	uint64_t page_bits = 0x27;
 	uint64_t *pml4e, *pdpe, *pde;
 
-	if ((pml4e = pg_alloc_user_page()) == NULL)
+	if ((pml4e = (uint64_t *)mm_alloc_pages(mm_addr32, 0)) == NULL)
 		return NULL;
 
-	if ((pdpe = pg_alloc_user_page()) == NULL) {
-		pg_free_user_page(pml4e);
+	if ((pdpe = (uint64_t *)mm_alloc_page()) == NULL) {
+		mm_free_page((phys_addr_t)pml4e);
 		return NULL;
 	}
 
-	if ((pde = pg_alloc_user_page()) == NULL) {
-		pg_free_user_page(pdpe);
-		pg_free_user_page(pml4e);
+	if ((pde = (uint64_t *)mm_alloc_page()) == NULL) {
+		mm_free_page((phys_addr_t)pdpe);
+		mm_free_page((phys_addr_t)pml4e);
 		return NULL;
 	}
+
+	memset(pml4e, 0, 0x1000);
+	memset(pdpe, 0, 0x1000);
+	memset(pde, 0, 0x1000);
 
 	memcpy(pde, pg_kernel_pde, 1024);
 
@@ -263,16 +255,16 @@ static void pg_delete_cr3(cpu_native_t cr3)
 					continue;
 
 				ptr = (uint64_t *)(pde[k] & entry_mask);
-				pg_free_user_page(ptr);
+				mm_free_page((phys_addr_t)ptr);
 			}
 
-			pg_free_user_page(pde);
+			mm_free_page((phys_addr_t)pde);
 		}
 
-		pg_free_user_page(pdpe);
+		mm_free_page((phys_addr_t)pdpe);
 	}
 
-	pg_free_user_page(pml4e);
+	mm_free_page((phys_addr_t)pml4e);
 }
 
 static int pg_map_identity(phys_addr_t addr, int type, int large_page)
@@ -381,8 +373,9 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	ptr = (uint64_t *)cr3;
 
 	if ((ptr[pml4e_offset] & 1) == 0) {
-		if ((page = (uint64_t)pg_alloc_user_page()) == 0)
+		if ((page = (uint64_t)mm_alloc_page()) == 0)
 			return 1;
+		memset((void *)page, 0, 0x1000);
 		ptr[pml4e_offset] = page | page_bits;
 	}
 
@@ -392,8 +385,9 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFF000);
 
 	if ((ptr[pdpe_offset] & 1) == 0) {
-		if ((page = (uint64_t)pg_alloc_user_page()) == 0)
+		if ((page = (uint64_t)mm_alloc_page()) == 0)
 			return 1;
+		memset((void *)page, 0, 0x1000);
 		ptr[pdpe_offset] = page | page_bits;
 	}
 
@@ -403,8 +397,9 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	ptr = (uint64_t *)(ptr[pdpe_offset] & 0xFFFFF000);
 
 	if ((ptr[offset] & 1) == 0) {
-		if ((page = (uint64_t)pg_alloc_user_page()) == 0)
+		if ((page = (uint64_t)mm_alloc_page()) == 0)
 			return 1;
+		memset((void *)page, 0, 0x1000);
 		ptr[offset] = page | page_bits;
 	} else if ((ptr[offset] & 0x80) != 0) {
 		return 1;
