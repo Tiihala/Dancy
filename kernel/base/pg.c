@@ -41,10 +41,21 @@ static void *pg_create_cr3(void)
 	return pde;
 }
 
+static void pg_free_pte(uint32_t *pte)
+{
+	int i;
+
+	for (i = 0; i < 1024; i++) {
+		if ((pte[i] & 0x01) == 0)
+			continue;
+		mm_free_page((phys_addr_t)pte[i]);
+	}
+}
+
 static void pg_delete_cr3(cpu_native_t cr3)
 {
 	const uint32_t entry_mask = 0xFFFFF000;
-	uint32_t *pde, *ptr;
+	uint32_t *pde, *pte;
 	int i;
 
 	/*
@@ -57,9 +68,13 @@ static void pg_delete_cr3(cpu_native_t cr3)
 			continue;
 		if ((pde[i] & 0x80) != 0)
 			continue;
+		/*
+		 * Page table.
+		 */
+		pte = (uint32_t *)(pde[i] & entry_mask);
+		pg_free_pte(pte);
 
-		ptr = (uint32_t *)(pde[i] & entry_mask);
-		mm_free_page((phys_addr_t)ptr);
+		mm_free_page((phys_addr_t)pte);
 	}
 
 	mm_free_page((phys_addr_t)pde);
@@ -154,7 +169,11 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	ptr = (uint32_t *)(ptr[offset] & 0xFFFFF000);
 
 	offset = (int)((vaddr >> 12) & 0x3FF);
-	ptr[offset] = page | page_bits;
+
+	if ((ptr[offset] & 1) == 0)
+		ptr[offset] = page | page_bits;
+	else
+		mm_free_page(addr);
 
 	return 0;
 }
@@ -219,10 +238,21 @@ static void *pg_create_cr3(void)
 	return pml4e;
 }
 
+static void pg_free_pte(uint64_t *pte)
+{
+	int i;
+
+	for (i = 0; i < 512; i++) {
+		if ((pte[i] & 0x01) == 0)
+			continue;
+		mm_free_page((phys_addr_t)pte[i]);
+	}
+}
+
 static void pg_delete_cr3(cpu_native_t cr3)
 {
 	const uint64_t entry_mask = 0x000FFFFFFFFFF000ull;
-	uint64_t *pml4e, *pdpe, *pde, *ptr;
+	uint64_t *pml4e, *pdpe, *pde, *pte;
 	int i, j, k;
 
 	/*
@@ -253,9 +283,13 @@ static void pg_delete_cr3(cpu_native_t cr3)
 					continue;
 				if ((pde[k] & 0x80) != 0)
 					continue;
+				/*
+				 * Page table.
+				 */
+				pte = (uint64_t *)(pde[k] & entry_mask);
+				pg_free_pte(pte);
 
-				ptr = (uint64_t *)(pde[k] & entry_mask);
-				mm_free_page((phys_addr_t)ptr);
+				mm_free_page((phys_addr_t)pte);
 			}
 
 			mm_free_page((phys_addr_t)pde);
@@ -412,7 +446,11 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	ptr = (uint64_t *)(ptr[offset] & 0xFFFFFFFFFFFFF000ull);
 
 	offset = (int)((vaddr >> 12) & 0x1FF);
-	ptr[offset] = page | page_bits;
+
+	if ((ptr[offset] & 1) == 0)
+		ptr[offset] = page | page_bits;
+	else
+		mm_free_page(addr);
 
 	return 0;
 }
@@ -796,6 +834,7 @@ void *pg_map_user(addr_t vaddr, size_t size)
 		memset((void *)addr, 0, 0x1000);
 
 		if (pg_map_virtual(cr3, vaddr_beg, addr)) {
+			mm_free_page(addr);
 			vaddr = 0;
 			break;
 		}
