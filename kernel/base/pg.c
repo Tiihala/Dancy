@@ -292,7 +292,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	/*
 	 * Page-directory-pointer table.
 	 */
-	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFF000);
+	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFFFFFFFFFF000ull);
 
 	if ((ptr[pdpe_offset] & 1) == 0) {
 		if ((page = (uint64_t)heap_alloc_static_page()) == 0)
@@ -303,7 +303,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	/*
 	 * Page-directory table.
 	 */
-	ptr = (uint64_t *)(ptr[pdpe_offset] & 0xFFFFF000);
+	ptr = (uint64_t *)(ptr[pdpe_offset] & 0xFFFFFFFFFFFFF000ull);
 
 	if (!pg_kernel_pde)
 		pg_kernel_pde = ptr;
@@ -338,7 +338,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	 * Page table.
 	 */
 	page = (uint64_t)(addr & 0xFFFFFFFFFFFFF000ull);
-	ptr = (uint64_t *)(ptr[offset] & 0xFFFFF000);
+	ptr = (uint64_t *)(ptr[offset] & 0xFFFFFFFFFFFFF000ull);
 
 	if ((type & pg_uncached) != 0)
 		page_bits |= 0x18;
@@ -382,7 +382,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	/*
 	 * Page-directory-pointer table.
 	 */
-	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFF000);
+	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFFFFFFFFFF000ull);
 
 	if ((ptr[pdpe_offset] & 1) == 0) {
 		if ((page = (uint64_t)mm_alloc_page()) == 0)
@@ -394,7 +394,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	/*
 	 * Page-directory table.
 	 */
-	ptr = (uint64_t *)(ptr[pdpe_offset] & 0xFFFFF000);
+	ptr = (uint64_t *)(ptr[pdpe_offset] & 0xFFFFFFFFFFFFF000ull);
 
 	if ((ptr[offset] & 1) == 0) {
 		if ((page = (uint64_t)mm_alloc_page()) == 0)
@@ -409,7 +409,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	 * Page table.
 	 */
 	page = (uint64_t)(addr & 0xFFFFFFFFFFFFF000ull);
-	ptr = (uint64_t *)(ptr[offset] & 0xFFFFF000);
+	ptr = (uint64_t *)(ptr[offset] & 0xFFFFFFFFFFFFF000ull);
 
 	offset = (int)((vaddr >> 12) & 0x1FF);
 	ptr[offset] = page | page_bits;
@@ -764,11 +764,11 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 	return (void *)addr;
 }
 
-void *pg_map_user(addr_t vaddr, phys_addr_t addr, size_t size)
+void *pg_map_user(addr_t vaddr, size_t size)
 {
 	const addr_t page_mask = 0x0FFF;
 	addr_t vaddr_beg, vaddr_end;
-	phys_addr_t addr_beg;
+	phys_addr_t addr;
 
 	struct task *current = task_current();
 	cpu_native_t cr3 = cpu_read_cr3();
@@ -779,23 +779,28 @@ void *pg_map_user(addr_t vaddr, phys_addr_t addr, size_t size)
 	if (size == 0 || vaddr < 0x10000000)
 		return NULL;
 
-	if ((vaddr > (SIZE_MAX - size) + 1) || (addr > (SIZE_MAX - size) + 1))
+	if ((vaddr > (SIZE_MAX - size) + 1))
 		return NULL;
 
 	vaddr_beg = vaddr & (~page_mask);
 	vaddr_end = ((addr_t)(vaddr + size) + page_mask) & (~page_mask);
 
-	addr_beg = addr & (~page_mask);
-
 	pg_enter_kernel();
 
 	while ((vaddr_end - vaddr_beg) != 0) {
-		if (pg_map_virtual(cr3, vaddr_beg, addr_beg)) {
+		if ((addr = mm_alloc_page()) == 0) {
 			vaddr = 0;
 			break;
 		}
 
-		vaddr_beg += 0x1000, addr_beg += 0x1000;
+		memset((void *)addr, 0, 0x1000);
+
+		if (pg_map_virtual(cr3, vaddr_beg, addr)) {
+			vaddr = 0;
+			break;
+		}
+
+		vaddr_beg += 0x1000;
 	}
 
 	pg_leave_kernel();
