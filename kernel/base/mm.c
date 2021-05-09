@@ -302,7 +302,7 @@ void mm_free_page(phys_addr_t addr)
 	b = (unsigned int)(page_frame & 7u);
 	mm_bitmap[i] = (uint8_t)(mm_bitmap[i] & (~(1u << b)));
 
-	if (mm_bitmap_used < (i = (mm_bitmap_size - i) - 1))
+	if (mm_bitmap_used > (i = (mm_bitmap_size - i) - 1))
 		mm_bitmap_used = i;
 
 	mtx_unlock(&mm_mtx);
@@ -328,7 +328,7 @@ void mm_free_pages(phys_addr_t addr, int order)
 
 	mm_bitmap_clear(page_frame, page_count);
 
-	if (mm_bitmap_used < (i = (mm_bitmap_size - i) - 1))
+	if (mm_bitmap_used > (i = (mm_bitmap_size - i) - 1))
 		mm_bitmap_used = i;
 
 	mtx_unlock(&mm_mtx);
