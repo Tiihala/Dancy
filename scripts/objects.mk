@@ -41,6 +41,9 @@
 ./o32/base/idt.o: ./kernel/base/idt.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/idt.c
 
+./o32/base/mm.o: ./kernel/base/mm.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/mm.c
+
 ./o32/base/mtx.o: ./kernel/base/mtx.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/mtx.c
 
@@ -244,6 +247,9 @@
 
 ./o64/base/idt.o: ./kernel/base/idt.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/idt.c
+
+./o64/base/mm.o: ./kernel/base/mm.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/mm.c
 
 ./o64/base/mtx.o: ./kernel/base/mtx.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/mtx.c

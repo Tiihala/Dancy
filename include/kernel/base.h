@@ -106,6 +106,23 @@ void idt_install_asm(int num, const uint8_t asm_handler[]);
 void idt_load(const void *idt_ptr);
 
 /*
+ * Declarations of mm.c
+ */
+enum mm_type {
+	mm_normal = 0x00,
+	mm_addr32 = 0x01,
+	mm_legacy = 0x02
+};
+
+int mm_init(void);
+
+phys_addr_t mm_alloc_page(void);
+phys_addr_t mm_alloc_pages(int type, int order);
+
+void mm_free_page(phys_addr_t addr);
+void mm_free_pages(phys_addr_t addr, int order);
+
+/*
  * Declarations of panic.c
  */
 extern int panic_lock;
