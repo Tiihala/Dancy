@@ -740,13 +740,14 @@ void pg_delete(void)
 void pg_enter_kernel(void)
 {
 	struct task *current = task_current();
-	cpu_native_t cr3 = cpu_read_cr3();
 
 	current->cr3 = (uint32_t)pg_kernel;
 	cpu_add32(&current->pg_state, 1);
 
-	if (cr3 != pg_kernel)
-		cpu_write_cr3(pg_kernel);
+	if (cpu_read_cr3() == pg_kernel)
+		return;
+
+	cpu_write_cr3(pg_kernel);
 }
 
 void pg_leave_kernel(void)
