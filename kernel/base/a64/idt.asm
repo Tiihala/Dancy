@@ -125,9 +125,9 @@ idt_asm_panic:
         mov [rsp+112], r15              ; save register r15
 
         mov rax, cr2                    ; rax = cr2
-        mov [rsp+120], eax              ; save register cr2
+        mov [rsp+120], rax              ; save register cr2
         mov rax, cr3                    ; rax = cr3
-        mov [rsp+128], eax              ; save register cr3
+        mov [rsp+128], rax              ; save register cr3
 
         xor ecx, ecx                    ; rcx = 0
         xor edx, edx                    ; rdx = "NULL"
