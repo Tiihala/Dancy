@@ -39,6 +39,7 @@ struct task {
 	int iret_num;
 
 	uint32_t pg_cr3;
+	uint32_t pg_state;
 };
 
 int task_init(void);
