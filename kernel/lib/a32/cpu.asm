@@ -30,6 +30,8 @@ section .text
         global _cpu_rdtsc_diff
         global _cpu_rdmsr
         global _cpu_wrmsr
+        global _cpu_add32
+        global _cpu_sub32
         global _cpu_in8
         global _cpu_in16
         global _cpu_in32
@@ -173,6 +175,40 @@ _cpu_wrmsr:
         mov eax, [esp+8]                ; eax = a
         mov edx, [esp+12]               ; edx = d
         wrmsr                           ; write the register
+        ret
+
+align 16
+        ; uint32_t cpu_add32(void *address, uint32_t value)
+_cpu_add32:
+        push ebx                        ; save register ebx
+        mov ebx, [esp+8]                ; ebx = address
+        mov edx, [esp+12]               ; edx = value
+
+.L1:    mov eax, [ebx]                  ; eax = *((uint32_t *)address)
+        mov ecx, eax                    ; ecx = current
+        add ecx, edx                    ; ecx = current + value
+        lock cmpxchg [ebx], ecx         ; try to update
+        jnz short .L1                   ; retry if needed
+
+        mov eax, ecx                    ; eax = latest value
+        pop ebx                         ; restore register ebx
+        ret
+
+align 16
+        ; uint32_t cpu_sub32(void *address, uint32_t value)
+_cpu_sub32:
+        push ebx                        ; save register ebx
+        mov ebx, [esp+8]                ; ebx = address
+        mov edx, [esp+12]               ; edx = value
+
+.L1:    mov eax, [ebx]                  ; eax = *((uint32_t *)address)
+        mov ecx, eax                    ; ecx = current
+        sub ecx, edx                    ; ecx = current - value
+        lock cmpxchg [ebx], ecx         ; try to update
+        jnz short .L1                   ; retry if needed
+
+        mov eax, ecx                    ; eax = latest value
+        pop ebx                         ; restore register ebx
         ret
 
 align 16

@@ -57,6 +57,9 @@ void cpu_rdtsc_diff(uint32_t *a, uint32_t *d);
 void cpu_rdmsr(uint32_t msr, uint32_t *a, uint32_t *d);
 void cpu_wrmsr(uint32_t msr, uint32_t a, uint32_t d);
 
+uint32_t cpu_add32(void *address, uint32_t value);
+uint32_t cpu_sub32(void *address, uint32_t value);
+
 uint8_t cpu_in8(uint16_t port);
 uint16_t cpu_in16(uint16_t port);
 uint32_t cpu_in32(uint16_t port);
