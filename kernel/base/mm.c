@@ -152,6 +152,11 @@ int mm_init(void)
 		mm_count += 1;
 	}
 
+	/*
+	 * The bitmap will cover at least memory from 0 to 0x0FFFFFFF.
+	 */
+	mm_bitmap_size = 0x2000;
+
 	for (i = 0; i < mm_count; i++) {
 		const size_t page_mask = 0x0FFF;
 		const size_t seven = 7, eight = 8;
@@ -167,9 +172,6 @@ int mm_init(void)
 		if (mm_bitmap_size < size)
 			mm_bitmap_size = size;
 	}
-
-	if (!mm_bitmap_size)
-		return free(mm_array), 0;
 
 	mm_bitmap = aligned_alloc(0x1000, mm_bitmap_size);
 
@@ -258,11 +260,17 @@ phys_addr_t mm_alloc_pages(int type, int order)
 		if (type == mm_addr32) {
 			if (page_frame > 0x100000)
 				page_frame = 0x100000;
-		}
 
-		if (type == mm_legacy) {
+		} else if (type == mm_kernel) {
+			if (page_frame > 0x10000)
+				page_frame = 0x10000;
+
+		} else if (type == mm_legacy) {
 			if (page_frame > 0x1000)
 				page_frame = 0x1000;
+
+		} else /* unknown memory type */ {
+			page_frame = 0;
 		}
 	}
 

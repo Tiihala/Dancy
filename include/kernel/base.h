@@ -111,7 +111,8 @@ void idt_load(const void *idt_ptr);
 enum mm_type {
 	mm_normal = 0x00,
 	mm_addr32 = 0x01,
-	mm_legacy = 0x02
+	mm_kernel = 0x02,
+	mm_legacy = 0x04
 };
 
 int mm_init(void);
