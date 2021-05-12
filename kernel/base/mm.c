@@ -100,6 +100,7 @@ int mm_init(void)
 
 	size_t map_size = kernel->memory_map_size;
 	int map_entries = (int)(map_size / sizeof(kernel->memory_map[0]));
+	void *heap_reserved, *ptr;
 	int i;
 
 	if (!spin_trylock(&run_once))
@@ -188,6 +189,22 @@ int mm_init(void)
 	}
 
 	free(mm_array);
+
+	/*
+	 * Give almost all heap memory to the physical memory manager.
+	 */
+	if ((heap_reserved = aligned_alloc(0x1000, 0x400000)) != NULL) {
+		while ((ptr = aligned_alloc(0x1000, 0x400000)) != NULL) {
+			phys_addr_t addr = (phys_addr_t)ptr;
+
+			size_t page_frame = (size_t)(addr / 0x1000);
+			size_t page_count = 0x400;
+
+			mm_bitmap_clear(page_frame, page_count);
+		}
+
+		free(heap_reserved);
+	}
 
 	cpu_write32((uint32_t *)&mm_ready, 1);
 
