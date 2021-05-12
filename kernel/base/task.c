@@ -150,7 +150,7 @@ int task_init_ap(void)
 uint64_t task_create(int (*func)(void *), void *arg)
 {
 	uint64_t id = 0;
-	struct task *new_task = aligned_alloc(0x2000, 0x2000);
+	struct task *new_task = (struct task *)mm_alloc_pages(mm_kernel, 1);
 	uint8_t *fstate;
 
 	if (new_task) {
