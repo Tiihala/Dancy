@@ -194,6 +194,51 @@ int mm_init(void)
 	return 0;
 }
 
+size_t mm_available_pages(int type)
+{
+	size_t page_frame = mm_bitmap_size * 8;
+	size_t pages = 0;
+	size_t i;
+
+	if (!mm_ready)
+		return 0;
+
+	if (type != mm_normal) {
+		if (type == mm_addr32) {
+			if (page_frame > 0x100000)
+				page_frame = 0x100000;
+
+		} else if (type == mm_kernel) {
+			if (page_frame > 0x10000)
+				page_frame = 0x10000;
+
+		} else if (type == mm_legacy) {
+			if (page_frame > 0x1000)
+				page_frame = 0x1000;
+
+		} else /* unknown memory type */ {
+			return 0;
+		}
+	}
+
+	if (mtx_lock(&mm_mtx) != thrd_success)
+		return 0;
+
+	for (i = 0; i < (page_frame >> 3); i++) {
+		unsigned int val = mm_bitmap[i];
+		unsigned int b;
+
+		for (b = 0; b < 8; b++) {
+			if ((val & (1u << b)) == 0)
+				pages += 1;
+		}
+	}
+
+	mtx_unlock(&mm_mtx);
+
+	return pages;
+}
+
 phys_addr_t mm_alloc_page(void)
 {
 	size_t page_frame, size;

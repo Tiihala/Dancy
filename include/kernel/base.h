@@ -116,6 +116,7 @@ enum mm_type {
 };
 
 int mm_init(void);
+size_t mm_available_pages(int type);
 
 phys_addr_t mm_alloc_page(void);
 phys_addr_t mm_alloc_pages(int type, int order);
