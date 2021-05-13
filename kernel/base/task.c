@@ -149,25 +149,33 @@ int task_init_ap(void)
 
 uint64_t task_create(int (*func)(void *), void *arg, int type)
 {
-	uint64_t id = 0;
-	struct task *new_task = (struct task *)mm_alloc_pages(mm_kernel, 1);
+	uint64_t id;
+	struct task *new_task = NULL;
 	uint8_t *fstate;
 
-	if (new_task) {
+	if (!new_task) {
+		new_task = (struct task *)mm_alloc_pages(mm_kernel, 1);
+
+		if (!new_task)
+			return 0;
+
 		memset(new_task, 0, 0x2000);
-		new_task->cr3 = (uint32_t)pg_kernel;
-		new_task->id = (id = task_create_id());
-		new_task->id_owner = task_current()->id;
-
-		fstate = (uint8_t *)new_task + 0x0C00;
-		memcpy(fstate, &task_default_fstate[0], 512);
-
-		if ((type & task_detached) != 0)
-			new_task->detached = 1;
-
-		task_create_asm(new_task, func, arg);
+		spin_trylock(&new_task->active);
 		task_append(new_task);
 	}
+
+	new_task->cr3 = (uint32_t)pg_kernel;
+	new_task->id = (id = task_create_id());
+	new_task->id_owner = task_current()->id;
+
+	fstate = (uint8_t *)new_task + 0x0C00;
+	memcpy(fstate, &task_default_fstate[0], 512);
+
+	if ((type & task_detached) != 0)
+		new_task->detached = 1;
+
+	task_create_asm(new_task, func, arg);
+	spin_unlock(&new_task->active);
 
 	return id;
 }
