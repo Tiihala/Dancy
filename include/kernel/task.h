@@ -28,16 +28,16 @@ enum task_type {
 };
 
 struct task {
-	uint32_t esp;    /* Offset: 0 */
-	uint32_t cr3;    /* Offset: 4 */
-	uint64_t id;     /* Offset: 8 */
-	int active;      /* Offset: 16 + 0 * sizeof(int) */
-	int retval;      /* Offset: 16 + 1 * sizeof(int) */
-	int stopped;     /* Offset: 16 + 2 * sizeof(int) */
-	int ndisable;    /* Offset: 16 + 3 * sizeof(int) */
+	uint32_t esp;       /* Offset: 0 */
+	uint32_t cr3;       /* Offset: 4 */
+	uint64_t id;        /* Offset: 8 */
+	int active;         /* Offset: 16 + 0 * sizeof(int) */
+	int retval;         /* Offset: 16 + 1 * sizeof(int) */
+	int stopped;        /* Offset: 16 + 2 * sizeof(int) */
+	int ndisable;       /* Offset: 16 + 3 * sizeof(int) */
+	struct task *next;  /* Offset: 16 + 4 * sizeof(int) */
 
 	uint64_t id_owner;
-	struct task *next;
 
 	cpu_native_t iret_frame[5];
 	int iret_lock;
