@@ -147,7 +147,7 @@ int task_init_ap(void)
 	return 0;
 }
 
-uint64_t task_create(int (*func)(void *), void *arg)
+uint64_t task_create(int (*func)(void *), void *arg, int type)
 {
 	uint64_t id = 0;
 	struct task *new_task = (struct task *)mm_alloc_pages(mm_kernel, 1);
@@ -161,6 +161,9 @@ uint64_t task_create(int (*func)(void *), void *arg)
 
 		fstate = (uint8_t *)new_task + 0x0C00;
 		memcpy(fstate, &task_default_fstate[0], 512);
+
+		if ((type & task_detached) != 0)
+			new_task->detached = 1;
 
 		task_create_asm(new_task, func, arg);
 		task_append(new_task);
@@ -212,6 +215,74 @@ int task_switch(struct task *next)
 	cpu_ints(r);
 
 	return 0;
+}
+
+int task_test(uint64_t id, int *retval)
+{
+	struct task *current = task_current();
+	struct task *next = current->next;
+	int r = 1;
+
+	if (retval)
+		*retval = 0;
+
+	if (!id || current->id == id)
+		return 1;
+
+	while (current != next && next) {
+		if (next->id == id) {
+			while (!next->stopped || !spin_trylock(&next->active))
+				return 1;
+
+			if (next->id == id && next->stopped) {
+				if (retval)
+					*retval = next->retval;
+				next->detached = 1;
+				next->id = 0;
+				r = 0;
+			}
+
+			spin_unlock(&next->active);
+			return r;
+		}
+		next = next->next;
+	}
+
+	return 1;
+}
+
+int task_wait(uint64_t id, int *retval)
+{
+	struct task *current = task_current();
+	struct task *next = current->next;
+	int r = 1;
+
+	if (retval)
+		*retval = 0;
+
+	if (!id || current->id == id)
+		return 1;
+
+	while (current != next && next) {
+		if (next->id == id) {
+			while (!next->stopped || !spin_trylock(&next->active))
+				task_yield();
+
+			if (next->id == id && next->stopped) {
+				if (retval)
+					*retval = next->retval;
+				next->detached = 1;
+				next->id = 0;
+				r = 0;
+			}
+
+			spin_unlock(&next->active);
+			return r;
+		}
+		next = next->next;
+	}
+
+	return 1;
 }
 
 void task_yield(void)
