@@ -31,18 +31,29 @@ static int task_lock;
 static struct task *task_head;
 static struct task *task_tail;
 
+static int task_struct_count;
+static int task_struct_limit;
+
 static int task_id_lock;
 static uint64_t task_id;
 
-static void task_append(struct task *new_task)
+static int task_append(struct task *new_task)
 {
 	void *lock_local = &task_lock;
 
 	new_task->next = task_head;
 
 	spin_enter(&lock_local);
+
+	if (task_struct_count >= task_struct_limit)
+		return spin_leave(&lock_local), 1;
+
+	task_struct_count += 1;
 	task_tail = (task_tail->next = new_task);
+
 	spin_leave(&lock_local);
+
+	return 0;
 }
 
 static uint64_t task_create_id(void)
@@ -101,9 +112,16 @@ int task_init(void)
 	struct task *current;
 	const uint8_t *fstate;
 	uint32_t ap_count;
+	int pages;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
+
+	task_struct_limit = 16384;
+	pages = (int)mm_available_pages(mm_addr32);
+
+	while (task_struct_limit > (pages / 16))
+		task_struct_limit /= 2;
 
 #ifdef DANCY_32
 	if ((cpu_read_cr4() & (1u << 9)) == 0) {
@@ -150,6 +168,8 @@ int task_init(void)
 	memcpy(&task_default_fstate[0], fstate, 512);
 
 	task_head = (task_tail = current);
+	task_struct_count = 1;
+
 	cpu_write32((uint32_t *)&task_ready, 1);
 
 	ap_count = (uint32_t)kernel->smp_ap_count;
@@ -173,7 +193,9 @@ int task_init_ap(void)
 
 	task_switch_asm(current, gdt_get_tss());
 	current->active = 1;
-	task_append(current);
+
+	if (task_append(current))
+		panic("task_init_ap: unexpected behavior");
 
 	spin_lock(&task_lock);
 	task_ap_count += 1;
@@ -198,7 +220,11 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 
 		memset(new_task, 0, 0x2000);
 		spin_trylock(&new_task->active);
-		task_append(new_task);
+
+		if (task_append(new_task)) {
+			mm_free_pages((phys_addr_t)new_task, 1);
+			return id;
+		}
 	}
 
 	new_task->cr3 = (uint32_t)pg_kernel;
