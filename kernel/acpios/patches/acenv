@@ -1,0 +1,18 @@
+--- a/external/tmp/acpica/source/include/platform/acenv.h
++++ b/external/tmp/acpica/source/include/platform/acenv.h
+@@ -296,3 +296,6 @@
+
++#if !defined(DANCY_32) && !defined(DANCY_64)
++#error "Define DANCY_32 or DANCY_64"
++
+ #if defined(__GNUC__) && !defined(__INTEL_COMPILER)
+ #include "acgcc.h"
+@@ -366,3 +369,8 @@
+ #endif
+
++#error "Define DANCY_32 or DANCY_64"
++#endif
++
++#include <acpios/acdancy.h>
++
+ /*! [End] no source code translation !*/

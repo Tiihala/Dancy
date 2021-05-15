@@ -1,0 +1,15 @@
+--- a/external/tmp/acpica/source/components/resources/rsdump.c
++++ b/external/tmp/acpica/source/components/resources/rsdump.c
+@@ -151,3 +151,6 @@
+
++#if !defined(DANCY_32) && !defined(DANCY_64)
++#error "Define DANCY_32 or DANCY_64"
++
+ #include "acpi.h"
+ #include "accommon.h"
+@@ -831,2 +834,5 @@
+     }
+ }
++
++#error "Define DANCY_32 or DANCY_64"
++#endif

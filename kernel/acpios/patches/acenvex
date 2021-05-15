@@ -1,0 +1,16 @@
+--- a/external/tmp/acpica/source/include/platform/acenvex.h
++++ b/external/tmp/acpica/source/include/platform/acenvex.h
+@@ -163,3 +163,6 @@
+
++#if !defined(DANCY_32) && !defined(DANCY_64)
++#error "Define DANCY_32 or DANCY_64"
++
+ #if defined(_LINUX) || defined(__linux__)
+ #include "aclinuxex.h"
+@@ -186,3 +189,6 @@
+ #endif
+
++#error "Define DANCY_32 or DANCY_64"
++#endif
++
+ /*! [End] no source code translation !*/
