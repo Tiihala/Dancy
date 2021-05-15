@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-ACPICA_TAG=R02_15_19
+ACPICA_TAG=R03_31_21
 ACPICA_GIT=https://github.com/acpica/acpica.git
 
 if [ ! -f "scripts/acpica.sh" ]; then
@@ -18,11 +18,6 @@ mkdir -p kernel/acpica
 if [ ! -d "external/tmp/acpica" ]; then
     git clone $ACPICA_GIT external/tmp/acpica
     git -C external/tmp/acpica checkout $ACPICA_TAG
-    rm -rf external/tmp/acpica/.git
-    rm -rf external/tmp/acpica/generate
-    rm -rf external/tmp/acpica/tests
-    rm -f external/tmp/acpica/.gitignore
-    rm -f external/tmp/acpica/Makefile
     bin/dy-patch -p1 -i kernel/acpios/patches/acenv
     bin/dy-patch -p1 -i kernel/acpios/patches/acenvex
     bin/dy-patch -p1 -i kernel/acpios/patches/rsdump

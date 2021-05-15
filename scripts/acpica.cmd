@@ -1,7 +1,7 @@
 @ECHO OFF
 SETLOCAL
 
-SET ACPICA_TAG=R02_15_19
+SET ACPICA_TAG=R03_31_21
 SET ACPICA_GIT=https://github.com/acpica/acpica.git
 
 IF NOT EXIST "scripts\acpica.cmd" (
@@ -18,11 +18,6 @@ MKDIR kernel\acpica > NUL 2>&1
 IF NOT EXIST "external\tmp\acpica" (
     git.exe clone %ACPICA_GIT% external\tmp\acpica
     git.exe -C external\tmp\acpica checkout %ACPICA_TAG%
-    RMDIR /S /Q external\tmp\acpica\.git
-    RMDIR /S /Q external\tmp\acpica\generate
-    RMDIR /S /Q external\tmp\acpica\tests
-    DEL external\tmp\acpica\.gitignore
-    DEL external\tmp\acpica\Makefile
     bin\dy-patch.exe -p1 -i kernel\acpios\patches\acenv
     bin\dy-patch.exe -p1 -i kernel\acpios\patches\acenvex
     bin\dy-patch.exe -p1 -i kernel\acpios\patches\rsdump
