@@ -291,7 +291,7 @@ int task_switch(struct task *next)
 	return 0;
 }
 
-int task_test(uint64_t id, int *retval)
+int task_trywait(uint64_t id, int *retval)
 {
 	struct task *current = task_current();
 	struct task *next = current->next;

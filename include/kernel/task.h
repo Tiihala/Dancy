@@ -62,7 +62,7 @@ int task_switch(struct task *next);
 void task_switch_disable(void);
 void task_switch_enable(void);
 
-int task_test(uint64_t id, int *retval);
+int task_trywait(uint64_t id, int *retval);
 int task_wait(uint64_t id, int *retval);
 void task_yield(void);
 
