@@ -293,8 +293,9 @@ static void *memory_aligned_alloc(size_t alignment, size_t size)
 		memory[i].type = B_MEM_INIT_ALLOC_MIN;
 	} else {
 		const phys_addr_t kernel_top = 0x10000000ul;
+		uint32_t next_base_low = memory[i + 1].base_low;
 
-		if (addr < kernel_top)
+		if (addr < kernel_top && (next_base_low & 0x3FFFFFu) == 0)
 			memory[i].type = B_MEM_KERNEL;
 		else
 			memory[i].type = B_MEM_KERNEL_RESERVED;
