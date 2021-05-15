@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -35,16 +35,20 @@
 #define ACPI_MACHINE_WIDTH 64
 
 #else
-#error Define DANCY_32 or DANCY_64
+#error "Define DANCY_32 or DANCY_64"
 #endif
 
 #if !defined (ULLONG_MAX)
-#error The platform does not support unsigned long long
+#error "The platform does not support unsigned long long"
 #endif
 
+#define ACPI_USE_LOCAL_CACHE
 #define ACPI_USE_NATIVE_MATH64
 #define ACPI_USE_NATIVE_DIVIDE
 #define ACPI_USE_SYSTEM_CLIBRARY
+
+void cpu_wbinvd(void);
+#define ACPI_FLUSH_CPU_CACHE() cpu_wbinvd()
 
 int acpios_acquire_global_lock(void *facs);
 int acpios_release_global_lock(void *facs);
