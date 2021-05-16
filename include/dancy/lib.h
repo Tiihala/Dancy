@@ -49,6 +49,7 @@ void cpu_halt(uint32_t counter);
 
 int cpu_ints(int enable);
 void cpu_invlpg(const void *address);
+void cpu_wbinvd(void);
 
 void cpu_rdtsc(uint32_t *a, uint32_t *d);
 void cpu_rdtsc_delay(uint32_t a, uint32_t d);

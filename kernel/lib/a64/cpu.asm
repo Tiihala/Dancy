@@ -25,6 +25,7 @@ section .text
         global cpu_halt
         global cpu_ints
         global cpu_invlpg
+        global cpu_wbinvd
         global cpu_rdtsc
         global cpu_rdtsc_delay
         global cpu_rdtsc_diff
@@ -108,6 +109,12 @@ align 16
         ; void cpu_invlpg(const void *address)
 cpu_invlpg:
         invlpg [rcx]                    ; invalidate tlb entry
+        ret
+
+align 16
+        ; void cpu_wbinvd(void)
+cpu_wbinvd:
+        wbinvd                          ; write back and invalidate cache
         ret
 
 align 16
