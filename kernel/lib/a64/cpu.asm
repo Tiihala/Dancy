@@ -80,6 +80,7 @@ cpu_id:
 align 16
         ; void cpu_halt(uint32_t counter)
 cpu_halt:
+        call __serialize_execution      ; (registers preserved)
         test ecx, ecx                   ; zero is infinite
         jnz short .spin2
 .spin1: hlt                             ; halt instruction
@@ -250,6 +251,7 @@ cpu_out32:
 align 16
         ; uint8_t cpu_read8(const void *address)
 cpu_read8:
+        call __serialize_execution      ; (registers preserved)
         mov al, [rcx]                   ; al = value
         and eax, 0xFF                   ; clear upper bits
         ret
@@ -257,6 +259,7 @@ cpu_read8:
 align 16
         ; uint16_t cpu_read16(const void *address)
 cpu_read16:
+        call __serialize_execution      ; (registers preserved)
         mov ax, [rcx]                   ; ax = value
         and eax, 0xFFFF                 ; clear upper bits
         ret
@@ -264,6 +267,7 @@ cpu_read16:
 align 16
         ; uint32_t cpu_read32(const void *address)
 cpu_read32:
+        call __serialize_execution      ; (registers preserved)
         mov eax, [rcx]                  ; eax = value
         ret
 
@@ -294,22 +298,25 @@ cpu_read_cr4:
 align 16
         ; void cpu_write8(void *address, uint8_t value)
 cpu_write8:
+        call __serialize_execution      ; (registers preserved)
         mov [rcx], dl                   ; write
-        wbinvd                          ; flush internal caches
+        call __serialize_execution      ; (registers preserved)
         ret
 
 align 16
         ; void cpu_write16(void *address, uint16_t value)
 cpu_write16:
+        call __serialize_execution      ; (registers preserved)
         mov [rcx], dx                   ; write
-        wbinvd                          ; flush internal caches
+        call __serialize_execution      ; (registers preserved)
         ret
 
 align 16
         ; void cpu_write32(void *address, uint32_t value)
 cpu_write32:
+        call __serialize_execution      ; (registers preserved)
         mov [rcx], edx                  ; write
-        wbinvd                          ; flush internal caches
+        call __serialize_execution      ; (registers preserved)
         ret
 
 align 16
@@ -334,4 +341,21 @@ align 16
         ; void cpu_write_cr4(cpu_native_t value)
 cpu_write_cr4:
         mov cr4, rcx                    ; cr4 = value
+        ret
+
+align 16
+        ; Internal procedure for serializing instruction execution
+        ;
+        ; All registers are preserved.
+__serialize_execution:
+        push rax                        ; save register rax
+        push rcx                        ; save register rcx
+        push rdx                        ; save register rdx
+        push rbx                        ; save register rbx
+        xor eax, eax                    ; eax = 0
+        cpuid                           ; serializing instruction
+        pop rbx                         ; restore register rbx
+        pop rdx                         ; restore register rdx
+        pop rcx                         ; restore register rcx
+        pop rax                         ; restore register rax
         ret
