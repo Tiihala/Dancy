@@ -78,6 +78,7 @@ void kernel_start(void)
 	checked_init(fb_init, "Framebuffer");
 
 	checked_init(con_init, "Console");
+	checked_init(irq_init, "IRQ");
 
 	kernel->panic = panic;
 	kernel->print = con_print;

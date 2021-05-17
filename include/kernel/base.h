@@ -110,6 +110,14 @@ void idt_install_asm(int num, const uint8_t asm_handler[]);
 void idt_load(const void *idt_ptr);
 
 /*
+ * Declarations of irq.c
+ */
+extern int (*irq_handler_apic)(int irq);
+extern int (*irq_handler_pic)(int irq);
+
+int irq_init(void);
+
+/*
  * Declarations of mm.c
  */
 enum mm_type {
