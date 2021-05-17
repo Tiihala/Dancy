@@ -31,6 +31,10 @@ uint32_t apic_id(void);
 void apic_send(uint32_t icr_low, uint32_t icr_high);
 int apic_wait_delivery(void);
 
+void ioapic_disable(int irq);
+void ioapic_enable(int irq);
+uint64_t ioapic_redtbl(int irq);
+
 /*
  * Declarations of console.c
  */
