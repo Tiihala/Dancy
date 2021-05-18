@@ -19,6 +19,8 @@
 
 #include <dancy.h>
 
+static int irq_lock;
+
 static int irq_nop_apic(int irq)
 {
 	return (irq < 0) ? 0 : 1;
@@ -54,4 +56,60 @@ int irq_init(void)
 		return DE_UNEXPECTED;
 
 	return 0;
+}
+
+void irq_disable(int irq)
+{
+	void *lock_local;
+
+	if (kernel->io_apic_enabled) {
+		ioapic_disable(irq);
+		return;
+	}
+
+	lock_local = &irq_lock;
+	spin_enter(&lock_local);
+
+	if (irq >= 0 && irq != 2 && irq <= 7) {
+		unsigned int val = (unsigned int)cpu_in8(0x21);
+
+		val |= (unsigned int)(1 << irq);
+		cpu_out8(0x21, (uint8_t)val);
+
+	} else if (irq >= 8 && irq <= 15) {
+		unsigned int val = (unsigned int)cpu_in8(0xA1);
+
+		val |= (unsigned int)(1 << (irq - 8));
+		cpu_out8(0xA1, (uint8_t)val);
+	}
+
+	spin_leave(&lock_local);
+}
+
+void irq_enable(int irq)
+{
+	void *lock_local;
+
+	if (kernel->io_apic_enabled) {
+		ioapic_enable(irq);
+		return;
+	}
+
+	lock_local = &irq_lock;
+	spin_enter(&lock_local);
+
+	if (irq >= 0 && irq != 2 && irq <= 7) {
+		unsigned int val = (unsigned int)cpu_in8(0x21);
+
+		val &= ~((unsigned int)(1 << irq));
+		cpu_out8(0x21, (uint8_t)val);
+
+	} else if (irq >= 8 && irq <= 15) {
+		unsigned int val = (unsigned int)cpu_in8(0xA1);
+
+		val &= ~((unsigned int)(1 << (irq - 8)));
+		cpu_out8(0xA1, (uint8_t)val);
+	}
+
+	spin_leave(&lock_local);
 }

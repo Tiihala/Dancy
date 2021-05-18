@@ -117,6 +117,10 @@ extern int (*irq_handler_pic)(int irq);
 
 int irq_init(void);
 
+void irq_disable(int irq);
+void irq_enable(int irq);
+
+
 /*
  * Declarations of mm.c
  */
