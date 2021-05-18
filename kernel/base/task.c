@@ -274,6 +274,7 @@ void task_jump(addr_t user_ip, addr_t user_sp)
 
 int task_switch(struct task *next)
 {
+	void *tss;
 	int r;
 
 	if (!next || !spin_trylock(&next->active))
@@ -284,8 +285,16 @@ int task_switch(struct task *next)
 		return 1;
 	}
 
+	/*
+	 * Disable interrupts. The TSS must not change before
+	 * completing the task_switch_asm function. The original
+	 * interrupt flag state will be restored.
+	 */
 	r = cpu_ints(0);
-	task_switch_asm(next, gdt_get_tss());
+
+	tss = gdt_get_tss();
+	task_switch_asm(next, tss);
+
 	cpu_ints(r);
 
 	return 0;
