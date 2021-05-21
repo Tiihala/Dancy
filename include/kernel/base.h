@@ -120,6 +120,8 @@ int irq_init(void);
 void irq_disable(int irq);
 void irq_enable(int irq);
 
+void *irq_install(int irq, void *arg, void (*func)(int irq, void *arg));
+void irq_uninstall(void *irq);
 
 /*
  * Declarations of mm.c
