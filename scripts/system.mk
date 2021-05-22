@@ -6,12 +6,10 @@ DANCY_DB_FILES= \
  ./o32/init.at \
  ./o32/lib.at \
  ./o32/base.at \
- ./o32/acpios.at \
  $(ACPICA_O32_AT) \
  ./o64/init.at \
  ./o64/lib.at \
  ./o64/base.at \
- ./o64/acpios.at \
  $(ACPICA_O64_AT) \
  ./share/fonts/dcysan.ttf \
  ./share/fonts/dcysanb.ttf \

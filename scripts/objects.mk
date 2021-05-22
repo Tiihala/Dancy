@@ -2,9 +2,6 @@
 
 ##############################################################################
 
-./o32/acpios/a32/glblock.o: ./kernel/acpios/a32/glblock.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/acpios/a32/glblock.asm
-
 ./o32/base/a32/fb.o: ./kernel/base/a32/fb.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/base/a32/fb.asm
 
@@ -211,9 +208,6 @@
 
 ./o32/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/string.c
-
-./o64/acpios/a64/glblock.o: ./kernel/acpios/a64/glblock.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/acpios/a64/glblock.asm
 
 ./o64/base/a64/fb.o: ./kernel/base/a64/fb.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/base/a64/fb.asm

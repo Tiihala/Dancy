@@ -376,14 +376,14 @@ ACPICA_HEADERS= \
  ./include/acpica/amlresrc.h \
  ./include/acpios/acdancy.h
 
-ACPICA_DEPS=$(DANCY_EXT) $(ACPICA_HEADERS)
+ACPICA_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(ACPICA_HEADERS)
 ACPICA_TEMP=./include/acpica/acpi.h
 
-./o32/acpica.at: $(ACPICA_OBJECTS_32) ./bin/dy-link$(DANCY_EXE)
-	$(DY_LINK) -o$@ -fat --export-all $(ACPICA_OBJECTS_32)
+./o32/acpica.at: $(ACPICA_OBJECTS_32) ./o32/acpios.at
+	$(DY_LINK) -o$@ -fat --export-all $(ACPICA_OBJECTS_32) ./o32/acpios.at
 
-./o64/acpica.at: $(ACPICA_OBJECTS_64) ./bin/dy-link$(DANCY_EXE)
-	$(DY_LINK) -o$@ -fat --export-all $(ACPICA_OBJECTS_64)
+./o64/acpica.at: $(ACPICA_OBJECTS_64) ./o64/acpios.at
+	$(DY_LINK) -o$@ -fat --export-all $(ACPICA_OBJECTS_64) ./o64/acpios.at
 
 ##############################################################################
 

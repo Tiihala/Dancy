@@ -59,4 +59,6 @@ int acpios_release_global_lock(void *facs);
 #define ACPI_RELEASE_GLOBAL_LOCK(FacsPtr, Pending) \
 	( Pending = (BOOLEAN)acpios_release_global_lock((FacsPtr)) )
 
+int acpios_init(void);
+
 #endif
