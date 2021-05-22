@@ -27,6 +27,10 @@ static int pg_ready;
 
 static addr_t pg_apic_base_vaddr;
 
+static int pg_rw_lock;
+static addr_t pg_rw_entry;
+static addr_t pg_rw_vaddr;
+
 #ifdef DANCY_32
 
 static void *pg_create_cr3(void)
@@ -129,7 +133,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	if ((type & pg_uncached) != 0)
 		page_bits |= 0x18;
 
-	if (page < 0x10000000)
+	if (page < 0x10000000 && page != pg_rw_vaddr)
 		page_bits |= 0x100;
 
 	offset = (int)((addr >> 12) & 0x3FF);
@@ -377,7 +381,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	if ((type & pg_uncached) != 0)
 		page_bits |= 0x18;
 
-	if (page < 0x10000000)
+	if (page < 0x10000000 && page != pg_rw_vaddr)
 		page_bits |= 0x100;
 
 	offset = (int)((addr >> 12) & 0x1FF);
@@ -520,6 +524,9 @@ int pg_init(void)
 	if ((pg_kernel = (cpu_native_t)heap_alloc_static_page()) == 0)
 		return DE_MEMORY;
 
+	if ((pg_rw_vaddr = (addr_t)heap_alloc_static_page()) == 0)
+		return DE_MEMORY;
+
 	pg_apic_base_vaddr = kernel->apic_base_vaddr;
 	if (pg_apic_base_vaddr == 0 || (pg_apic_base_vaddr & 0x0FFF) != 0)
 		return DE_UNEXPECTED;
@@ -580,6 +587,15 @@ int pg_init(void)
 			addr += 0x1000;
 		}
 	}
+
+	/*
+	 * Map the memory slot for read and write functions.
+	 */
+	pg_map_kernel((phys_addr_t)pg_rw_vaddr, 0x1000, pg_uncached);
+	pg_rw_entry = (addr_t)pg_get_entry(pg_kernel, (void *)pg_rw_vaddr);
+
+	if (pg_rw_entry == 0)
+		return DE_UNEXPECTED;
 
 	/*
 	 * Create a special mapping for Local APIC registers.
@@ -849,4 +865,77 @@ void *pg_map_user(addr_t vaddr, size_t size)
 	pg_leave_kernel();
 
 	return (void *)vaddr;
+}
+
+uint64_t pg_read_memory(phys_addr_t addr, size_t size)
+{
+	void *lock_local = &pg_rw_lock;
+	uint64_t r = 0;
+
+	const cpu_native_t page_mask = 0x0FFF;
+	cpu_native_t page_addr = (cpu_native_t)addr & (~page_mask);
+	cpu_native_t *entry = (cpu_native_t *)pg_rw_entry;
+
+	int offset = (int)((cpu_native_t)addr & page_mask);
+	addr_t access_vaddr = pg_rw_vaddr + (addr_t)offset;
+
+#ifdef DANCY_64
+	if ((page_addr & 0xFFF0000000000000ull) != 0)
+		return r;
+#endif
+	spin_enter(&lock_local);
+
+	*entry = (*entry & page_mask) | page_addr;
+	cpu_invlpg((const void *)access_vaddr);
+
+	if (size == 1)
+		r = (uint64_t)cpu_read8((const void *)access_vaddr);
+
+	else if (size == 2 && offset <= 0x0FFE)
+		r = (uint64_t)cpu_read16((const void *)access_vaddr);
+
+	else if (size == 4 && offset <= 0x0FFC)
+		r = (uint64_t)cpu_read32((const void *)access_vaddr);
+
+	else if (size == 8 && offset <= 0x0FF8)
+		r = (uint64_t)cpu_read64((const void *)access_vaddr);
+
+	spin_leave(&lock_local);
+
+	return r;
+}
+
+void pg_write_memory(phys_addr_t addr, uint64_t val, size_t size)
+{
+	void *lock_local = &pg_rw_lock;
+
+	const cpu_native_t page_mask = 0x0FFF;
+	cpu_native_t page_addr = (cpu_native_t)addr & (~page_mask);
+	cpu_native_t *entry = (cpu_native_t *)pg_rw_entry;
+
+	int offset = (int)((cpu_native_t)addr & page_mask);
+	addr_t access_vaddr = pg_rw_vaddr + (addr_t)offset;
+
+#ifdef DANCY_64
+	if ((page_addr & 0xFFF0000000000000ull) != 0)
+		return;
+#endif
+	spin_enter(&lock_local);
+
+	*entry = (*entry & page_mask) | page_addr;
+	cpu_invlpg((const void *)access_vaddr);
+
+	if (size == 1)
+		cpu_write8((void *)access_vaddr, (uint8_t)val);
+
+	else if (size == 2 && offset <= 0x0FFE)
+		cpu_write16((void *)access_vaddr, (uint16_t)val);
+
+	else if (size == 4 && offset <= 0x0FFC)
+		cpu_write32((void *)access_vaddr, (uint32_t)val);
+
+	else if (size == 8 && offset <= 0x0FF8)
+		cpu_write64((void *)access_vaddr, (uint64_t)val);
+
+	spin_leave(&lock_local);
 }
