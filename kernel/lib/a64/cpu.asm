@@ -42,6 +42,7 @@ section .text
         global cpu_read8
         global cpu_read16
         global cpu_read32
+        global cpu_read64
         global cpu_read_cr0
         global cpu_read_cr2
         global cpu_read_cr3
@@ -49,6 +50,7 @@ section .text
         global cpu_write8
         global cpu_write16
         global cpu_write32
+        global cpu_write64
         global cpu_write_cr0
         global cpu_write_cr2
         global cpu_write_cr3
@@ -279,6 +281,13 @@ cpu_read32:
         ret
 
 align 16
+        ; uint64_t cpu_read64(const void *address)
+cpu_read64:
+        call __serialize_execution      ; (registers preserved)
+        mov rax, [rcx]                  ; rax = value
+        ret
+
+align 16
         ; cpu_native_t cpu_read_cr0(void)
 cpu_read_cr0:
         mov rax, cr0                    ; rax = control register cr0
@@ -323,6 +332,14 @@ align 16
 cpu_write32:
         call __serialize_execution      ; (registers preserved)
         mov [rcx], edx                  ; write
+        call __serialize_execution      ; (registers preserved)
+        ret
+
+align 16
+        ; void cpu_write64(void *address, uint64_t value)
+cpu_write64:
+        call __serialize_execution      ; (registers preserved)
+        mov [rcx], rdx                  ; write
         call __serialize_execution      ; (registers preserved)
         ret
 

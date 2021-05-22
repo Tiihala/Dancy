@@ -42,6 +42,7 @@ section .text
         global _cpu_read8
         global _cpu_read16
         global _cpu_read32
+        global _cpu_read64
         global _cpu_read_cr0
         global _cpu_read_cr2
         global _cpu_read_cr3
@@ -49,6 +50,7 @@ section .text
         global _cpu_write8
         global _cpu_write16
         global _cpu_write32
+        global _cpu_write64
         global _cpu_write_cr0
         global _cpu_write_cr2
         global _cpu_write_cr3
@@ -293,6 +295,15 @@ _cpu_read32:
         ret
 
 align 16
+        ; uint64_t cpu_read64(const void *address)
+_cpu_read64:
+        mov ecx, [esp+4]                ; ecx = address
+        call __serialize_execution      ; (registers preserved)
+        mov eax, [ecx+0]                ; eax = value (low dword)
+        mov edx, [ecx+4]                ; edx = value (high dword)
+        ret
+
+align 16
         ; cpu_native_t cpu_read_cr0(void)
 _cpu_read_cr0:
         mov eax, cr0                    ; eax = control register cr0
@@ -343,6 +354,18 @@ _cpu_write32:
         mov edx, [esp+8]                ; edx = value
         call __serialize_execution      ; (registers preserved)
         mov [ecx], edx                  ; write
+        call __serialize_execution      ; (registers preserved)
+        ret
+
+align 16
+        ; void cpu_write64(void *address, uint64_t value)
+_cpu_write64:
+        mov ecx, [esp+4]                ; ecx = address
+        mov eax, [esp+8]                ; eax = value (low dword)
+        mov edx, [esp+12]               ; edx = value (high dword)
+        call __serialize_execution      ; (registers preserved)
+        mov [ecx+0], eax                ; write (low dword)
+        mov [ecx+4], edx                ; write (high dword)
         call __serialize_execution      ; (registers preserved)
         ret
 
