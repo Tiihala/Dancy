@@ -22,11 +22,15 @@
 #ifdef DANCY_32
 struct kernel_table _dancy_kernel_table;
 struct kernel_table *kernel = &_dancy_kernel_table;
+
+static const char *optional_names[] = { "_acpios_init" };
 #endif
 
 #ifdef DANCY_64
 struct kernel_table __dancy_kernel_table;
 struct kernel_table *kernel = &__dancy_kernel_table;
+
+static const char *optional_names[] = { "acpios_init" };
 #endif
 
 static int ap_count;
@@ -47,6 +51,8 @@ static void checked_init(int (*func)(void), const char *desc)
 void kernel_start(void)
 {
 	static int run_once;
+	int names = (int)(sizeof(optional_names) / sizeof(*optional_names));
+	int i, j;
 
 	if (!spin_trylock(&run_once))
 		return;
@@ -85,6 +91,23 @@ void kernel_start(void)
 	kernel->detach_init_module(&timer_ticks);
 
 	checked_init(task_init, "Task");
+
+	/*
+	 * Call all optional init functions, e.g. ACPICA.
+	 */
+	for (i = 0; i < names; i++) {
+		const char *name = optional_names[i];
+		int (*func)(void);
+
+		for (j = 0; j < kernel->symbol_count; j++) {
+			if (!strcmp(kernel->symbol[j].name, name)) {
+				addr_t a = (addr_t)kernel->symbol[j].value;
+
+				func = (int (*)(void))a;
+				checked_init(func, name);
+			}
+		}
+	}
 
 	cpu_halt(0);
 }
