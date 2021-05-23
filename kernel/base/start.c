@@ -105,6 +105,7 @@ void kernel_start(void)
 
 				func = (int (*)(void))a;
 				checked_init(func, name);
+				break;
 			}
 		}
 	}
