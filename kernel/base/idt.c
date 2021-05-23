@@ -432,14 +432,18 @@ void idt_handler(int num, void *stack)
 	/*
 	 * IRQ 0 - 15 (PIC).
 	 */
-	if (num >= 0x20 && num <= 0x2F && !irq_handler_pic(num - 0x20))
+	if (num >= 0x20 && num <= 0x2F) {
+		irq_handler_pic(num - 0x20);
 		return;
+	}
 
 	/*
 	 * IRQ 0 - 15 (I/O APIC).
 	 */
-	if (num >= 0x40 && num <= 0x4F && !irq_handler_apic(num - 0x40))
+	if (num >= 0x40 && num <= 0x4F) {
+		irq_handler_apic(num - 0x40);
 		return;
+	}
 
 	/*
 	 * Spurious APIC interrupt.

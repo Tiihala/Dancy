@@ -112,8 +112,8 @@ void idt_load(const void *idt_ptr);
 /*
  * Declarations of irq.c
  */
-extern int (*irq_handler_apic)(int irq);
-extern int (*irq_handler_pic)(int irq);
+extern void (*irq_handler_apic)(int irq);
+extern void (*irq_handler_pic)(int irq);
 
 int irq_init(void);
 

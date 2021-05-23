@@ -39,7 +39,7 @@ static void irq_empty_func(int irq, void *arg)
 	(void)arg;
 }
 
-static int irq_apic(int irq)
+static void irq_apic(int irq)
 {
 	int offset = (int)((unsigned int)irq & 15u);
 	struct irq_entry *entry = irq_array[offset];
@@ -57,11 +57,9 @@ static int irq_apic(int irq)
 	apic_eoi();
 
 	task_switch_enable();
-
-	return 0;
 }
 
-static int irq_pic(int irq)
+static void irq_pic(int irq)
 {
 	int offset = (int)((unsigned int)irq & 15u);
 	struct irq_entry *entry = irq_array[offset];
@@ -90,7 +88,7 @@ static int irq_pic(int irq)
 		if (!isr) {
 			if (irq == 15)
 				cpu_out8(0x20, 0x20);
-			return 0;
+			return;
 		}
 	}
 
@@ -109,36 +107,30 @@ static int irq_pic(int irq)
 	cpu_out8(0x20, 0x20);
 
 	task_switch_enable();
-
-	return 0;
 }
 
-static int irq_nop_apic(int irq)
+static void irq_nop_apic(int irq)
 {
-	return (irq < 0) ? 0 : 1;
+	(void)irq;
 }
 
-static int irq_nop_pic(int irq)
+static void irq_nop_pic(int irq)
 {
 	/*
 	 * Spurious IRQ 7 (PIC 1).
 	 */
 	if (irq == 7)
-		return 0;
+		return;
 
 	/*
 	 * Spurious IRQ 15 (PIC 2).
 	 */
-	if (irq == 15) {
+	if (irq == 15)
 		cpu_out8(0x20, 0x20);
-		return 0;
-	}
-
-	return (irq < 0) ? 0 : 1;
 }
 
-int (*irq_handler_apic)(int irq) = irq_nop_apic;
-int (*irq_handler_pic)(int irq) = irq_nop_pic;
+void (*irq_handler_apic)(int irq) = irq_nop_apic;
+void (*irq_handler_pic)(int irq) = irq_nop_pic;
 
 int irq_init(void)
 {
