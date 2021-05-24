@@ -79,3 +79,47 @@ ACPI_STATUS AcpiOsWriteMemory(
 
 	return (AE_OK);
 }
+
+ACPI_STATUS AcpiOsReadPort(
+	ACPI_IO_ADDRESS Address, UINT32 *Value, UINT32 Width)
+{
+	uint16_t port = (uint16_t)Address;
+	uint32_t val;
+
+	if ((ACPI_IO_ADDRESS)port != Address)
+		return (AE_BAD_PARAMETER);
+
+	if (Width == 8)
+		val = cpu_in8(port);
+	else if (Width == 16)
+		val = cpu_in16(port);
+	else if (Width == 32)
+		val = cpu_in32(port);
+	else
+		return (AE_BAD_PARAMETER);
+
+	if (Value)
+		*Value = (UINT32)val;
+
+	return (AE_OK);
+}
+
+ACPI_STATUS AcpiOsWritePort(
+	ACPI_IO_ADDRESS Address, UINT32 Value, UINT32 Width)
+{
+	uint16_t port = (uint16_t)Address;
+
+	if ((ACPI_IO_ADDRESS)port != Address)
+		return (AE_BAD_PARAMETER);
+
+	if (Width == 8)
+		cpu_out8(port, (uint8_t)Value);
+	else if (Width == 16)
+		cpu_out16(port, (uint16_t)Value);
+	else if (Width == 32)
+		cpu_out32(port, (uint32_t)Value);
+	else
+		return (AE_BAD_PARAMETER);
+
+	return (AE_OK);
+}
