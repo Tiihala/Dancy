@@ -163,3 +163,58 @@ void AcpiOsReleaseLock(ACPI_SPINLOCK Handle, ACPI_CPU_FLAGS Flags)
 	spin_unlock(lock);
 	cpu_ints(r);
 }
+
+static struct {
+	ACPI_OSD_HANDLER routine;
+	void *native;
+	int lock;
+} acpios_irq[16];
+
+static void acpios_irq_route(int irq, void *arg)
+{
+	acpios_irq[irq].routine(arg);
+}
+
+ACPI_STATUS AcpiOsInstallInterruptHandler(
+	UINT32 InterruptNumber, ACPI_OSD_HANDLER ServiceRoutine,
+	void *Context)
+{
+	int irq = (int)InterruptNumber;
+
+	if (irq <= 0 || irq == 2 || irq > 15)
+		return (AE_BAD_PARAMETER);
+
+	if (!spin_trylock(&acpios_irq[irq].lock))
+		return (AE_ALREADY_EXISTS);
+
+	acpios_irq[irq].routine = ServiceRoutine;
+	acpios_irq[irq].native = irq_install(irq, Context, acpios_irq_route);
+
+	if (!acpios_irq[irq].native) {
+		spin_unlock(&acpios_irq[irq].lock);
+		return (AE_BAD_PARAMETER);
+	}
+
+	return (AE_OK);
+}
+
+ACPI_STATUS AcpiOsRemoveInterruptHandler(
+	UINT32 InterruptNumber, ACPI_OSD_HANDLER ServiceRoutine)
+{
+	int irq = (int)InterruptNumber;
+
+	if (irq <= 0 || irq == 2 || irq > 15)
+		return (AE_BAD_PARAMETER);
+
+	(void)ServiceRoutine;
+
+	if (!acpios_irq[irq].lock)
+		return (AE_NOT_EXIST);
+
+	irq_uninstall(acpios_irq[irq].native);
+	acpios_irq[irq].native = NULL;
+
+	spin_unlock(&acpios_irq[irq].lock);
+
+	return (AE_OK);
+}
