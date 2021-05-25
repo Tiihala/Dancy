@@ -123,3 +123,43 @@ ACPI_STATUS AcpiOsWritePort(
 
 	return (AE_OK);
 }
+
+ACPI_STATUS AcpiOsCreateLock(ACPI_SPINLOCK *OutHandle)
+{
+	int *i;
+
+	if (!OutHandle)
+		return (AE_BAD_PARAMETER);
+
+	if (!(i = malloc(sizeof(int))))
+		return (AE_NO_MEMORY);
+
+	*i = 0;
+	*OutHandle = (ACPI_SPINLOCK)i;
+
+	return (AE_OK);
+}
+
+void AcpiOsDeleteLock(ACPI_SPINLOCK Handle)
+{
+	free(Handle);
+}
+
+ACPI_CPU_FLAGS AcpiOsAcquireLock(ACPI_SPINLOCK Handle)
+{
+	int r = cpu_ints(0);
+	int *lock = (int *)Handle;
+
+	spin_lock(lock);
+
+	return (ACPI_CPU_FLAGS)r;
+}
+
+void AcpiOsReleaseLock(ACPI_SPINLOCK Handle, ACPI_CPU_FLAGS Flags)
+{
+	int r = (int)Flags;
+	int *lock = (int *)Handle;
+
+	spin_unlock(lock);
+	cpu_ints(r);
+}
