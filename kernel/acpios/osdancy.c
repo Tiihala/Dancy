@@ -218,3 +218,38 @@ ACPI_STATUS AcpiOsRemoveInterruptHandler(
 
 	return (AE_OK);
 }
+
+void *AcpiOsAllocate(ACPI_SIZE Size)
+{
+	size_t size = (size_t)Size;
+
+	if ((ACPI_SIZE)size != Size)
+		return NULL;
+
+	return malloc(size);
+}
+
+void AcpiOsFree(void *Memory)
+{
+	free(Memory);
+}
+
+void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS Where, ACPI_SIZE Size)
+{
+	phys_addr_t addr = (phys_addr_t)Where;
+	size_t size = (size_t)Size;
+
+	if ((ACPI_PHYSICAL_ADDRESS)addr != Where || addr < 0x1000)
+		return NULL;
+
+	if ((ACPI_SIZE)size != Size)
+		return NULL;
+
+	return pg_map_kernel(addr, size, pg_normal);
+}
+
+void AcpiOsUnmapMemory(void *LogicalAddress, ACPI_SIZE Size)
+{
+	(void)LogicalAddress;
+	(void)Size;
+}
