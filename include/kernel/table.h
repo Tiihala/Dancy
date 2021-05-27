@@ -73,7 +73,25 @@ struct kernel_table {
 	uint32_t *smp_ap_id;
 
 	/*
-	 * Advanced Programmable Interrupt Controller (APIC)
+	 * Advanced Configuration and Power Interface (ACPI).
+	 */
+	int acpi_enabled;
+
+	struct {
+		phys_addr_t rsdp_addr;
+		phys_addr_t rsdt_addr;
+		phys_addr_t xsdt_addr;
+		phys_addr_t fadt_addr;
+		phys_addr_t madt_addr;
+		phys_addr_t mcfg_addr;
+		phys_addr_t hpet_addr;
+
+		unsigned int rtc_century_idx;
+		unsigned int iapc_boot_arch;
+	} *acpi;
+
+	/*
+	 * Advanced Programmable Interrupt Controller (APIC).
 	 */
 	int apic_enabled;
 	phys_addr_t apic_base_addr;

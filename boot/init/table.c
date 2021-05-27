@@ -251,6 +251,31 @@ void table_init(void)
 	}
 
 	/*
+	 * Write ACPI variables.
+	 */
+	{
+		const struct acpi_information *acpi = acpi_get_information();
+
+		if (acpi) {
+			kernel->acpi_enabled = 1;
+
+			size = sizeof((kernel->acpi[0]));
+			kernel->acpi = table_alloc(size);
+
+			kernel->acpi->rsdp_addr = acpi->rsdp_addr;
+			kernel->acpi->rsdt_addr = acpi->rsdt_addr;
+			kernel->acpi->xsdt_addr = acpi->xsdt_addr;
+			kernel->acpi->fadt_addr = acpi->fadt_addr;
+			kernel->acpi->madt_addr = acpi->madt_addr;
+			kernel->acpi->mcfg_addr = acpi->mcfg_addr;
+			kernel->acpi->hpet_addr = acpi->hpet_addr;
+
+			kernel->acpi->rtc_century_idx = acpi->rtc_century_idx;
+			kernel->acpi->iapc_boot_arch = acpi->iapc_boot_arch;
+		}
+	}
+
+	/*
 	 * Write the APIC and I/O APIC variables.
 	 */
 	{
@@ -268,7 +293,11 @@ void table_init(void)
 			kernel->apic_base_addr = kernel->apic_base_vaddr;
 
 		kernel->io_apic_enabled = apic_mode;
-		kernel->io_apic_count = (int)acpi->num_io_apic;
+
+		if (acpi)
+			kernel->io_apic_count = (int)acpi->num_io_apic;
+		else
+			kernel->io_apic_count = 0;
 
 		size = sizeof((kernel->io_apic[0]));
 		size *= (size_t)kernel->io_apic_count;
