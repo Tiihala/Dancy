@@ -34,6 +34,16 @@ int acpios_init(void)
 	return 0;
 }
 
+ACPI_STATUS AcpiOsInitialize(void)
+{
+	return (AE_OK);
+}
+
+ACPI_STATUS AcpiOsTerminate(void)
+{
+	return (AE_OK);
+}
+
 ACPI_STATUS AcpiOsReadMemory(
 	ACPI_PHYSICAL_ADDRESS Address, UINT64 *Value, UINT32 Width)
 {
