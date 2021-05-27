@@ -28,6 +28,9 @@ int acpios_init(void)
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
 
+	if (!kernel->acpi_enabled)
+		return 0;
+
 	return 0;
 }
 
@@ -287,4 +290,9 @@ ACPI_STATUS AcpiOsPhysicalTableOverride(
 	*NewTableLength = 0;
 
 	return (AE_OK);
+}
+
+ACPI_PHYSICAL_ADDRESS AcpiOsGetRootPointer(void)
+{
+	return (ACPI_PHYSICAL_ADDRESS)kernel->acpi->rsdp_addr;
 }
