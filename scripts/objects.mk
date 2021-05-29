@@ -50,6 +50,9 @@
 ./o32/base/panic.o: ./kernel/base/panic.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/panic.c
 
+./o32/base/pci.o: ./kernel/base/pci.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/pci.c
+
 ./o32/base/pg.o: ./kernel/base/pg.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/pg.c
 
@@ -256,6 +259,9 @@
 
 ./o64/base/panic.o: ./kernel/base/panic.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/panic.c
+
+./o64/base/pci.o: ./kernel/base/pci.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/pci.c
 
 ./o64/base/pg.o: ./kernel/base/pg.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/pg.c

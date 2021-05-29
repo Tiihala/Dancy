@@ -166,7 +166,7 @@ struct kernel_table {
 	 */
 	int pci_device_count;
 
-	struct {
+	struct pci_id {
 		int group;
 		int bus;
 		int device;
