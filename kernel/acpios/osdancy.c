@@ -21,6 +21,8 @@
 #include "acpi.h"
 #include "accommon.h"
 
+static int acpios_task(void *arg);
+
 int acpios_init(void)
 {
 	static int run_once;
@@ -30,6 +32,9 @@ int acpios_init(void)
 
 	if (!kernel->acpi_enabled)
 		return 0;
+
+	if (!task_create(acpios_task, NULL, task_detached))
+		return DE_MEMORY;
 
 	return 0;
 }
@@ -305,4 +310,147 @@ ACPI_STATUS AcpiOsPhysicalTableOverride(
 ACPI_PHYSICAL_ADDRESS AcpiOsGetRootPointer(void)
 {
 	return (ACPI_PHYSICAL_ADDRESS)kernel->acpi->rsdp_addr;
+}
+
+ACPI_THREAD_ID AcpiOsGetThreadId(void)
+{
+	return (ACPI_THREAD_ID)task_current()->id;
+}
+
+static struct {
+	ACPI_OSD_EXEC_CALLBACK Function;
+	void *Context;
+} acpios_task_array[2][32];
+
+static int acpios_task_count[2];
+static int acpios_task_lock[2];
+
+static int acpios_task(void *arg)
+{
+	void *lock_local;
+	int count, i;
+
+	while (!arg) {
+		int execute_function = 0;
+		ACPI_OSD_EXEC_CALLBACK Function;
+		void *Context;
+
+		/*
+		 * All OSL_NOTIFY_HANDLER functions are executed first.
+		 */
+		for (i = 0; i < 2 && execute_function == 0; i++) {
+			lock_local = &acpios_task_lock[i];
+			spin_enter(&lock_local);
+
+			count = acpios_task_count[i];
+
+			if (count > 0) {
+				void *dst = &acpios_task_array[i][0];
+				void *src = &acpios_task_array[i][1];
+				size_t size = sizeof(acpios_task_array[0][0]);
+
+				size *= (size_t)count;
+				Function = acpios_task_array[i][0].Function;
+				Context = acpios_task_array[i][0].Context;
+
+				/*
+				 * The last entry is always unused.
+				 */
+				memmove(dst, src, size);
+
+				acpios_task_count[i] = (count - 1);
+				execute_function = 1;
+			}
+
+			spin_leave(&lock_local);
+		}
+
+		if (execute_function) {
+			task_switch_disable();
+			Function(Context);
+			task_switch_enable();
+			continue;
+		}
+
+		task_yield();
+	}
+
+	return 0;
+}
+
+ACPI_STATUS AcpiOsExecute(
+	ACPI_EXECUTE_TYPE Type, ACPI_OSD_EXEC_CALLBACK Function,
+	void *Context)
+{
+	ACPI_STATUS status = (AE_ERROR);
+	void *lock_local;
+	int i, type;
+
+	if (Type == OSL_NOTIFY_HANDLER)
+		type = 0;
+	else if (Type == OSL_GPE_HANDLER)
+		type = 1;
+	else
+		return status;
+
+	lock_local = &acpios_task_lock[type];
+	spin_enter(&lock_local);
+
+	i = acpios_task_count[type];
+
+	/*
+	 * The last entry is always unused.
+	 */
+	if (i <= 30) {
+		acpios_task_array[type][i].Function = Function;
+		acpios_task_array[type][i].Context = Context;
+
+		acpios_task_count[type] = (i + 1);
+		status = (AE_OK);
+	}
+
+	spin_leave(&lock_local);
+
+	return status;
+}
+
+void AcpiOsSleep(UINT64 Milliseconds)
+{
+	uint64_t current = timer_read();
+
+	while ((timer_read() - current) < (uint64_t)Milliseconds)
+		task_yield();
+}
+
+void AcpiOsStall(UINT32 Microseconds)
+{
+	uint32_t q = (uint32_t)(Microseconds / 1000);
+	uint32_t r = (uint32_t)((Microseconds % 1000) * 1000);
+
+	while (q--)
+		delay(1000000);
+	if (r)
+		delay(r);
+}
+
+void AcpiOsWaitEventsComplete(void)
+{
+	void *lock_local;
+	int i;
+
+	for (;;) {
+		int count_total = 0;
+
+		for (i = 0; i < 2; i++) {
+			lock_local = &acpios_task_lock[i];
+			spin_enter(&lock_local);
+			count_total += acpios_task_count[i];
+			spin_leave(&lock_local);
+		}
+
+		if (!count_total)
+			break;
+
+		task_yield();
+	}
 }
