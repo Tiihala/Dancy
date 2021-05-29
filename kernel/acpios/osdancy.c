@@ -325,6 +325,8 @@ static struct {
 static int acpios_task_count[2];
 static int acpios_task_lock[2];
 
+static uint32_t acpios_events;
+
 static int acpios_task(void *arg)
 {
 	void *lock_local;
@@ -368,6 +370,7 @@ static int acpios_task(void *arg)
 		if (execute_function) {
 			task_switch_disable();
 			Function(Context);
+			cpu_sub32(&acpios_events, 1);
 			task_switch_enable();
 			continue;
 		}
@@ -405,6 +408,7 @@ ACPI_STATUS AcpiOsExecute(
 		acpios_task_array[type][i].Function = Function;
 		acpios_task_array[type][i].Context = Context;
 
+		cpu_add32(&acpios_events, 1);
 		acpios_task_count[type] = (i + 1);
 		status = (AE_OK);
 	}
@@ -435,22 +439,6 @@ void AcpiOsStall(UINT32 Microseconds)
 
 void AcpiOsWaitEventsComplete(void)
 {
-	void *lock_local;
-	int i;
-
-	for (;;) {
-		int count_total = 0;
-
-		for (i = 0; i < 2; i++) {
-			lock_local = &acpios_task_lock[i];
-			spin_enter(&lock_local);
-			count_total += acpios_task_count[i];
-			spin_leave(&lock_local);
-		}
-
-		if (!count_total)
-			break;
-
+	while (cpu_read32(&acpios_events))
 		task_yield();
-	}
 }
