@@ -442,3 +442,174 @@ void AcpiOsWaitEventsComplete(void)
 	while (cpu_read32(&acpios_events))
 		task_yield();
 }
+
+ACPI_STATUS AcpiOsReadPciConfiguration(
+	ACPI_PCI_ID *PciId, UINT32 Reg, UINT64 *Value, UINT32 Width)
+{
+	int offset = (int)Reg;
+	struct pci_id *id = NULL;
+	uint64_t val = 0;
+	int i;
+
+	if (!Value || offset < 0 || offset > 0x0FFF)
+		return (AE_BAD_PARAMETER);
+
+	for (i = 0; i < kernel->pci_device_count; i++) {
+		if (kernel->pci_device[i].group != (int)PciId->Segment)
+			continue;
+		if (kernel->pci_device[i].bus != (int)PciId->Bus)
+			continue;
+		if (kernel->pci_device[i].device != (int)PciId->Device)
+			continue;
+		if (kernel->pci_device[i].func != (int)PciId->Function)
+			continue;
+
+		id = &kernel->pci_device[i];
+		break;
+	}
+
+	if (Width == 8) {
+		int r = offset % 4;
+
+		if (id)
+			val = pci_read(id, (offset & 0x0FFC)) >> (8 * r);
+		else if (offset < 4)
+			val = 0xFF;
+
+		val &= 0xFF;
+		*Value = val;
+		return (AE_OK);
+	}
+
+	if (Width == 16) {
+		int r = offset % 4;
+
+		if ((offset & 1) != 0)
+			return (AE_BAD_PARAMETER);
+
+		if (id)
+			val = pci_read(id, (offset & 0x0FFC)) >> (8 * r);
+		else if (offset < 4)
+			val = 0xFFFF;
+
+		val &= 0xFFFF;
+		*Value = val;
+		return (AE_OK);
+	}
+
+	if (Width == 32) {
+		if ((offset & 3) != 0)
+			return (AE_BAD_PARAMETER);
+
+		if (id)
+			val = pci_read(id, offset);
+		else if (offset < 4)
+			val = 0xFFFFFFFF;
+
+		*Value = val;
+		return (AE_OK);
+	}
+
+	if (Width == 64) {
+		uint64_t val_lo, val_hi;
+
+		if ((offset & 3) != 0)
+			return (AE_BAD_PARAMETER);
+
+		if (id) {
+			val_lo = pci_read(id, offset);
+			val_hi = pci_read(id, offset + 4);
+			val = ((val_hi << 16) << 16) | val_lo;
+		} else if (offset < 4) {
+			val = 0xFFFFFFFF;
+		}
+
+		*Value = val;
+		return (AE_OK);
+	}
+
+	return (AE_BAD_PARAMETER);
+}
+
+ACPI_STATUS AcpiOsWritePciConfiguration(
+	ACPI_PCI_ID *PciId, UINT32 Reg, UINT64 Value, UINT32 Width)
+{
+	int offset = (int)Reg;
+	struct pci_id *id = NULL;
+	uint32_t val = 0;
+	int i;
+
+	if (offset < 0 || offset > 0x0FFF)
+		return (AE_BAD_PARAMETER);
+
+	for (i = 0; i < kernel->pci_device_count; i++) {
+		if (kernel->pci_device[i].group != (int)PciId->Segment)
+			continue;
+		if (kernel->pci_device[i].bus != (int)PciId->Bus)
+			continue;
+		if (kernel->pci_device[i].device != (int)PciId->Device)
+			continue;
+		if (kernel->pci_device[i].func != (int)PciId->Function)
+			continue;
+
+		id = &kernel->pci_device[i];
+		break;
+	}
+
+	if (Width == 8) {
+		int r = offset % 4;
+
+		if (id) {
+			val = pci_read(id, (offset & 0x0FFC));
+
+			val &= ~((uint32_t)(0xFFu << (8 * r)));
+			val |= ((uint32_t)Value & 0xFF) << (8 * r);
+
+			pci_write(id, (offset & 0x0FFC), val);
+		}
+
+		return (AE_OK);
+	}
+
+	if (Width == 16) {
+		int r = offset % 4;
+
+		if ((offset & 1) != 0)
+			return (AE_BAD_PARAMETER);
+
+		if (id) {
+			val = pci_read(id, (offset & 0x0FFC));
+
+			val &= ~((uint32_t)(0xFFFFu << (8 * r)));
+			val |= ((uint32_t)Value & 0xFFFF) << (8 * r);
+
+			pci_write(id, (offset & 0x0FFC), val);
+		}
+
+		return (AE_OK);
+	}
+
+	if (Width == 32) {
+		if ((offset & 3) != 0)
+			return (AE_BAD_PARAMETER);
+
+		if (id)
+			pci_write(id, offset, val);
+
+		return (AE_OK);
+	}
+
+	if (Width == 64) {
+		if ((offset & 3) != 0)
+			return (AE_BAD_PARAMETER);
+
+		if (id) {
+			pci_write(id, offset, val);
+			pci_write(id, offset + 4, val);
+		}
+
+		return (AE_OK);
+	}
+
+	return (AE_BAD_PARAMETER);
+}
