@@ -61,4 +61,7 @@ int acpios_release_global_lock(void *facs);
 
 int acpios_init(void);
 
+extern size_t acpios_log_size;
+extern char acpios_log[];
+
 #endif
