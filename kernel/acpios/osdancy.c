@@ -593,8 +593,10 @@ ACPI_STATUS AcpiOsWritePciConfiguration(
 		if ((offset & 3) != 0)
 			return (AE_BAD_PARAMETER);
 
-		if (id)
+		if (id) {
+			val = (uint32_t)Value;
 			pci_write(id, offset, val);
+		}
 
 		return (AE_OK);
 	}
@@ -604,7 +606,10 @@ ACPI_STATUS AcpiOsWritePciConfiguration(
 			return (AE_BAD_PARAMETER);
 
 		if (id) {
+			val = (uint32_t)Value;
 			pci_write(id, offset, val);
+
+			val = (uint32_t)((Value >> 16) >> 16);
 			pci_write(id, offset + 4, val);
 		}
 
