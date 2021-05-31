@@ -655,3 +655,10 @@ void AcpiOsVprintf(const char *Format, va_list Args)
 
 	spin_leave(&lock_local);
 }
+
+UINT64 AcpiOsGetTimer(void)
+{
+	uint64_t msec = timer_read();
+
+	return (msec * (uint64_t)(ACPI_100NSEC_PER_MSEC));
+}
