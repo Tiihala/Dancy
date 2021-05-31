@@ -662,3 +662,13 @@ UINT64 AcpiOsGetTimer(void)
 
 	return (msec * (uint64_t)(ACPI_100NSEC_PER_MSEC));
 }
+
+ACPI_STATUS AcpiOsEnterSleep(
+	UINT8 SleepState, UINT32 RegaValue, UINT32 RegbValue)
+{
+	(void)SleepState;
+	(void)RegaValue;
+	(void)RegbValue;
+
+	return (AE_OK);
+}
