@@ -680,3 +680,100 @@ ACPI_STATUS AcpiOsSignal(UINT32 Function, void *Info)
 
 	return (AE_OK);
 }
+
+struct acpios_semaphore {
+	uint32_t max_units;
+	uint32_t units;
+	int lock;
+	int yield;
+};
+
+ACPI_STATUS AcpiOsCreateSemaphore(
+	UINT32 MaxUnits, UINT32 InitialUnits, ACPI_SEMAPHORE *OutHandle)
+{
+	struct acpios_semaphore *s;
+
+	if (!OutHandle || MaxUnits < InitialUnits)
+		return (AE_BAD_PARAMETER);
+
+	if ((s = malloc(sizeof(*s))) == NULL)
+		return (AE_NO_MEMORY);
+
+	memset(s, 0, sizeof(*s));
+	cpu_add32(&s->max_units, (uint32_t)MaxUnits);
+	cpu_add32(&s->units, (uint32_t)InitialUnits);
+
+	*OutHandle = (ACPI_SEMAPHORE)s;
+	return (AE_OK);
+}
+
+ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE Handle)
+{
+	free((void *)Handle);
+	return (AE_OK);
+}
+
+ACPI_STATUS AcpiOsWaitSemaphore(
+	ACPI_SEMAPHORE Handle, UINT32 Units, UINT16 Timeout)
+{
+	struct acpios_semaphore *s = (struct acpios_semaphore *)Handle;
+	uint64_t current = timer_read();
+	void *lock_local;
+
+	if (!s)
+		return (AE_BAD_PARAMETER);
+
+	lock_local = &s->lock;
+
+	for (;;) {
+		spin_enter(&lock_local);
+
+		if (s->units >= (uint32_t)Units) {
+			s->units -= (uint32_t)Units;
+
+			spin_leave(&lock_local);
+			break;
+		}
+
+		s->yield = 1;
+		spin_leave(&lock_local);
+
+		if (Timeout != 0xFFFF) {
+			if ((timer_read() - current) >= (uint64_t)Timeout)
+				return (AE_TIME);
+		}
+
+		task_yield();
+	}
+
+	return (AE_OK);
+}
+
+ACPI_STATUS AcpiOsSignalSemaphore(ACPI_SEMAPHORE Handle, UINT32 Units)
+{
+	struct acpios_semaphore *s = (struct acpios_semaphore *)Handle;
+	ACPI_STATUS status = (AE_OK);
+	void *lock_local;
+	int yield;
+
+	if (!s)
+		return (AE_BAD_PARAMETER);
+
+	lock_local = &s->lock;
+	spin_enter(&lock_local);
+
+	if ((uint64_t)s->units + (uint64_t)Units <= (uint64_t)s->max_units)
+		s->units += (uint32_t)Units;
+	else
+		status = (AE_LIMIT);
+
+	yield = s->yield;
+	s->yield = 0;
+
+	spin_leave(&lock_local);
+
+	if (yield)
+		task_yield();
+
+	return status;
+}
