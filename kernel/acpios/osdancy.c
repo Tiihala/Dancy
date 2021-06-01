@@ -672,3 +672,11 @@ ACPI_STATUS AcpiOsEnterSleep(
 
 	return (AE_OK);
 }
+
+ACPI_STATUS AcpiOsSignal(UINT32 Function, void *Info)
+{
+	(void)Function;
+	(void)Info;
+
+	return (AE_OK);
+}
