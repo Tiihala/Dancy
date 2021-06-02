@@ -213,6 +213,8 @@ ACPI_STATUS AcpiOsInstallInterruptHandler(
 		return (AE_BAD_PARAMETER);
 	}
 
+	irq_enable(irq);
+
 	return (AE_OK);
 }
 
