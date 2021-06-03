@@ -127,21 +127,24 @@ int mm_init(void)
 
 		if (next != 0 && base > next)
 			return DE_UNEXPECTED;
-#ifdef DANCY_32
-		if (next > 0x100000000ull)
-			break;
-#endif
+
 		if (base < 0x10000)
 			base = 0x10000;
 
 		base = (base + page_mask) & (~page_mask);
 		next = (next & (~page_mask));
 
+#ifdef DANCY_32
+		if (next > 0x100000000ull)
+			next = 0x100000000ull;
+#else
+		if (next > 0x10000000000ull)
+			next = 0x10000000000ull;
+#endif
 		if (base >= next)
 			continue;
-		size = next - base;
 
-		if (size < 0x2000)
+		if ((size = next - base) < 0x2000)
 			continue;
 
 		/*
@@ -161,14 +164,10 @@ int mm_init(void)
 	for (i = 0; i < mm_count; i++) {
 		const size_t page_mask = 0x0FFF;
 		const size_t seven = 7, eight = 8;
-		const size_t size_limit = 0x2000000;
 		size_t size = mm_array[i].page_frame + mm_array[i].page_count;
 
 		size = ((size + seven) & (~seven)) / eight;
 		size = ((size + page_mask) & (~page_mask));
-
-		if (size > size_limit)
-			size = size_limit;
 
 		if (mm_bitmap_size < size)
 			mm_bitmap_size = size;
