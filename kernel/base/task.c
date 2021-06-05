@@ -26,6 +26,7 @@ static int task_ready;
 static int task_ap_count;
 
 static uint8_t task_default_fstate[512];
+static void *task_uniproc_tss;
 
 static int task_lock;
 static struct task *task_head;
@@ -116,6 +117,8 @@ int task_init(void)
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
+
+	task_uniproc_tss = gdt_get_tss();
 
 	task_struct_limit = 16384;
 	pages = (int)mm_available_pages(mm_addr32);
@@ -237,6 +240,9 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	if ((type & task_detached) != 0)
 		new_task->detached = 1;
 
+	if ((type & task_uniproc) != 0)
+		new_task->uniproc = 1;
+
 	task_create_asm(new_task, func, arg);
 	spin_unlock(&new_task->active);
 
@@ -272,12 +278,11 @@ void task_jump(addr_t user_ip, addr_t user_sp)
 	task_jump_asm(user_ip, cs, user_sp, ss);
 }
 
-int task_switch(struct task *next)
+static int task_switch_generic(struct task *next, void *tss)
 {
-	void *tss;
 	int r;
 
-	if (!next || !spin_trylock(&next->active))
+	if (!spin_trylock(&next->active))
 		return 1;
 
 	if (next->stopped) {
@@ -285,19 +290,63 @@ int task_switch(struct task *next)
 		return 1;
 	}
 
-	/*
-	 * Disable interrupts. The TSS must not change before
-	 * completing the task_switch_asm function. The original
-	 * interrupt flag state will be restored.
-	 */
-	r = cpu_ints(0);
+	if (!tss) {
+		/*
+		 * This variable has already been checked in the
+		 * task_switch function without locking the task
+		 * structure. Check that it has not changed.
+		 */
+		if (next->uniproc) {
+			spin_unlock(&next->active);
+			return 1;
+		}
 
-	tss = gdt_get_tss();
-	task_switch_asm(next, tss);
+		/*
+		 * Disable interrupts. The TSS must not change before
+		 * completing the task_switch_asm function. The original
+		 * interrupt flag state will be restored.
+		 */
+		r = cpu_ints(0);
 
-	cpu_ints(r);
+		tss = gdt_get_tss();
+		task_switch_asm(next, tss);
+
+		cpu_ints(r);
+
+	} else {
+		/*
+		 * The caller has already disabled interrupts.
+		 */
+		task_switch_asm(next, tss);
+	}
 
 	return 0;
+}
+
+int task_switch(struct task *next)
+{
+	int r0, r1 = 1;
+
+	if (!next)
+		return 1;
+
+	/*
+	 * The typical case is to allow execution on all processors.
+	 */
+	if (!next->uniproc)
+		return task_switch_generic(next, NULL);
+
+	/*
+	 * Allow execution on the bootstrap processor only.
+	 */
+	r0 = cpu_ints(0);
+
+	if (gdt_get_tss() == task_uniproc_tss)
+		r1 = task_switch_generic(next, task_uniproc_tss);
+
+	cpu_ints(r0);
+
+	return r1;
 }
 
 int task_trywait(uint64_t id, int *retval)

@@ -24,7 +24,8 @@
 
 enum task_type {
 	task_normal   = 0x00,
-	task_detached = 0x01
+	task_detached = 0x01,
+	task_uniproc  = 0x02
 };
 
 struct task {
@@ -47,6 +48,7 @@ struct task {
 	uint32_t pg_state;
 
 	int detached;
+	int uniproc;
 };
 
 int task_init(void);
