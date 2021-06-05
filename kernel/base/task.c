@@ -254,6 +254,9 @@ void task_exit(int retval)
 	struct task *current = task_current();
 	struct task *next = current->next;
 
+	if (!current->id_owner)
+		panic("task_exit: system task stopped");
+
 	current->retval = retval;
 	current->stopped = 1;
 
