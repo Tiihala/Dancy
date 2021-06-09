@@ -60,6 +60,7 @@ int acpios_release_global_lock(void *facs);
 	( Pending = (BOOLEAN)acpios_release_global_lock((FacsPtr)) )
 
 int acpios_init(void);
+int acpios_shutdown(void);
 
 extern size_t acpios_log_size;
 extern char acpios_log[];

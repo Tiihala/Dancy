@@ -90,6 +90,68 @@ int acpios_init(void)
 	return 0;
 }
 
+static uint32_t acpios_shutdown_status;
+
+int acpios_shutdown(void)
+{
+	static int run_once;
+
+	if (!spin_trylock(&run_once))
+		cpu_halt(0);
+
+	/*
+	 * The caller of acpios_shutdown is responsible for making
+	 * sure that it is safe to shutdown the computer. Also,
+	 * only the bootstrap processor should be active.
+	 */
+	if (apic_id() != kernel->apic_bsp_id)
+		cpu_halt(0);
+
+	cpu_write32(&acpios_shutdown_status, 1);
+
+	while (cpu_read32(&acpios_shutdown_status))
+		task_yield();
+
+	return DE_UNEXPECTED;
+}
+
+static void acpios_shutdown_prepare(void)
+{
+	static int run_once;
+
+	if (!spin_trylock(&run_once))
+		return;
+
+	/*
+	 * Prepare to enter a sleep state (S5).
+	 */
+	AcpiEnterSleepStatePrep(5);
+
+	cpu_write32(&acpios_shutdown_status, 2);
+}
+
+static void acpios_shutdown_finish(void)
+{
+	static int run_once;
+	int r;
+
+	if (!spin_trylock(&run_once))
+		return;
+
+	/*
+	 * Disable interrupts before AcpiEnterSleepState(5).
+	 */
+	r = cpu_ints(0);
+
+	/*
+	 * Enter a sleep state (S5). This function should not return.
+	 */
+	AcpiEnterSleepState(5);
+
+	cpu_ints(r);
+	cpu_write32(&acpios_shutdown_status, 0);
+}
+
 ACPI_STATUS AcpiOsInitialize(void)
 {
 	return (AE_OK);
@@ -425,6 +487,16 @@ static int acpios_task(void *arg)
 			Function(Context);
 			cpu_sub32(&acpios_events, 1);
 			task_switch_enable();
+			continue;
+		}
+
+		if (cpu_read32(&acpios_shutdown_status) == 1) {
+			acpios_shutdown_prepare();
+			continue;
+		}
+
+		if (cpu_read32(&acpios_shutdown_status) == 2) {
+			acpios_shutdown_finish();
 			continue;
 		}
 
