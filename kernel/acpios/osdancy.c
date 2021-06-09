@@ -23,9 +23,20 @@
 
 static int acpios_task(void *arg);
 
+static int acpios_failure(ACPI_STATUS status, const char *name)
+{
+	kernel->print("ACPICA Initialization Failure\n\n");
+	kernel->print("\t%s: %08X\n\n", name, (unsigned int)status);
+
+	cpu_halt(4000);
+
+	return 0;
+}
+
 int acpios_init(void)
 {
 	static int run_once;
+	ACPI_STATUS status;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
@@ -33,8 +44,48 @@ int acpios_init(void)
 	if (!kernel->acpi_enabled)
 		return 0;
 
-	if (!task_create(acpios_task, NULL, task_detached))
+	if (!task_create(acpios_task, NULL, task_detached | task_uniproc))
 		return DE_MEMORY;
+
+	/*
+	 * Initialize the ACPICA Subsystem.
+	 */
+	status = AcpiInitializeSubsystem();
+
+	if (ACPI_FAILURE(status))
+		return acpios_failure(status, "AcpiInitializeSubsystem");
+
+	/*
+	 * Initialize the ACPICA Table Manager.
+	 */
+	status = AcpiInitializeTables(NULL, 32, FALSE);
+
+	if (ACPI_FAILURE(status))
+		return acpios_failure(status, "AcpiInitializeTables");
+
+	/*
+	 * Create the ACPI namespace.
+	 */
+	status = AcpiLoadTables();
+
+	if (ACPI_FAILURE(status))
+		return acpios_failure(status, "AcpiLoadTables");
+
+	/*
+	 * Initialize the ACPI hardware.
+	 */
+	status = AcpiEnableSubsystem(ACPI_FULL_INITIALIZATION);
+
+	if (ACPI_FAILURE(status))
+		return acpios_failure(status, "AcpiEnableSubsystem");
+
+	/*
+	 * Complete the ACPICA initialization.
+	 */
+	status = AcpiInitializeObjects(ACPI_FULL_INITIALIZATION);
+
+	if (ACPI_FAILURE(status))
+		return acpios_failure(status, "AcpiInitializeObjects");
 
 	return 0;
 }
