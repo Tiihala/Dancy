@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Antti Tiihala
+ * Copyright (c) 2020, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,6 +27,8 @@ DANCY_X(DE_SUCCESS                   , "success"                         )
 DANCY_X(DE_UNEXPECTED                , "unexpected behavior"             )
 DANCY_X(DE_MEMORY                    , "not enough memory"               )
 DANCY_X(DE_CHECKSUM                  , "checksum does not match"         )
+DANCY_X(DE_ARGUMENT                  , "function argument"               )
+DANCY_X(DE_RETRY                     , "resource unavailable"            )
 
 #endif
 
