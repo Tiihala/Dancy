@@ -180,6 +180,13 @@ uint64_t pg_read_memory(phys_addr_t addr, size_t size);
 void pg_write_memory(phys_addr_t addr, uint64_t val, size_t size);
 
 /*
+ * Declarations of runlevel.c
+ */
+int runlevel_init(void);
+int runlevel_current(void);
+int runlevel_set(int id);
+
+/*
  * Declarations of start.c
  */
 extern struct kernel_table *kernel;

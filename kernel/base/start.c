@@ -91,6 +91,7 @@ void kernel_start(void)
 	kernel->detach_init_module(&timer_ticks);
 
 	checked_init(task_init, "Task");
+	checked_init(runlevel_init, "Runlevel");
 
 	/*
 	 * Call all optional init functions, e.g. ACPICA.
