@@ -87,6 +87,33 @@ static void runlevel_shutdown(void)
 	cpu_halt(0);
 }
 
+static void runlevel_reset(void)
+{
+	int i;
+	int (*func)(void);
+
+#ifdef DANCY_32
+	const char *name = "_acpios_reset";
+#else
+	const char *name = "acpios_reset";
+#endif
+
+	for (i = 0; i < kernel->symbol_count; i++) {
+		if (!strcmp(kernel->symbol[i].name, name)) {
+			addr_t a = (addr_t)kernel->symbol[i].value;
+
+			func = (int (*)(void))a;
+			func();
+			break;
+		}
+	}
+
+	task_switch_disable();
+	con_panic("It is safe to reset the computer.");
+
+	cpu_halt(0);
+}
+
 static int runlevel_task(void *arg)
 {
 	uint32_t id;
@@ -104,6 +131,11 @@ static int runlevel_task(void *arg)
 		if (id == 0) {
 			runlevel_prepare_shutdown();
 			runlevel_shutdown();
+		}
+
+		if (id == 6) {
+			runlevel_prepare_shutdown();
+			runlevel_reset();
 		}
 
 		spin_unlock(&runlevel_lock);
@@ -148,6 +180,14 @@ int runlevel_set(int id)
 	 */
 	if (id == 1) {
 		cpu_write32(&runlevel_id[1], 1);
+		return 0;
+	}
+
+	/*
+	 * Reset the computer.
+	 */
+	if (id == 6) {
+		cpu_write32(&runlevel_id[1], 6);
 		return 0;
 	}
 

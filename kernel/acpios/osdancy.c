@@ -115,6 +115,29 @@ int acpios_shutdown(void)
 	return DE_UNEXPECTED;
 }
 
+int acpios_reset(void)
+{
+	static int run_once;
+
+	if (!spin_trylock(&run_once))
+		cpu_halt(0);
+
+	/*
+	 * The caller of acpios_reset is responsible for making
+	 * sure that it is safe to reset the computer. Also,
+	 * only the bootstrap processor should be active.
+	 */
+	if (apic_id() != kernel->apic_bsp_id)
+		cpu_halt(0);
+
+	cpu_write32(&acpios_shutdown_status, 3);
+
+	while (cpu_read32(&acpios_shutdown_status))
+		task_yield();
+
+	return DE_UNEXPECTED;
+}
+
 static void acpios_shutdown_prepare(void)
 {
 	static int run_once;
@@ -149,6 +172,22 @@ static void acpios_shutdown_finish(void)
 	AcpiEnterSleepState(5);
 
 	cpu_ints(r);
+	cpu_write32(&acpios_shutdown_status, 0);
+}
+
+static void acpios_reset_finish(void)
+{
+	static int run_once;
+	int r;
+
+	if (!spin_trylock(&run_once))
+		return;
+
+	/*
+	 * Perform a system reset.
+	 */
+	AcpiReset();
+
 	cpu_write32(&acpios_shutdown_status, 0);
 }
 
@@ -497,6 +536,11 @@ static int acpios_task(void *arg)
 
 		if (cpu_read32(&acpios_shutdown_status) == 2) {
 			acpios_shutdown_finish();
+			continue;
+		}
+
+		if (cpu_read32(&acpios_shutdown_status) == 3) {
+			acpios_reset_finish();
 			continue;
 		}
 
