@@ -109,8 +109,70 @@ static void runlevel_reset(void)
 	}
 
 	task_switch_disable();
-	con_panic("It is safe to reset the computer.");
 
+	/*
+	 * Try to use the ACPI reset register "manually" if the
+	 * acpios_reset function was not available or did not work.
+	 */
+	if (kernel->acpi_enabled && kernel->acpi->fadt_addr) {
+		phys_addr_t addr = kernel->acpi->fadt_addr;
+		uint64_t length = pg_read_memory(addr + 4, 4);
+
+		if (length > 128) {
+			phys_addr_t reset_reg_offset = addr + 116;
+			phys_addr_t reset_val_offset = addr + 128;
+			uint64_t addr_space_id, reset_val;
+			uint64_t a_lo, a_hi;
+
+			addr_space_id = pg_read_memory(reset_reg_offset, 1);
+			reset_val = pg_read_memory(reset_val_offset, 1);
+
+			a_lo = pg_read_memory(reset_reg_offset + 4, 4);
+			a_hi = pg_read_memory(reset_reg_offset + 8, 4);
+
+			addr = (phys_addr_t)(((a_hi << 16) << 16) | a_lo);
+
+			/*
+			 * System memory space.
+			 */
+			if (addr_space_id == 0)
+				pg_write_memory(addr, reset_val, 1);
+
+			/*
+			 * System I/O space.
+			 */
+			if (addr_space_id == 1)
+				cpu_out8((uint16_t)addr, (uint8_t)reset_val);
+		}
+	}
+
+	/*
+	 * Disable interrupts and load a zero-length IDT.
+	 */
+	{
+		static uint32_t null_idt[3];
+
+		cpu_ints(0);
+		idt_load(&null_idt[0]);
+	}
+
+	/*
+	 * Try to use the "8042" method. The existence of the controller
+	 * is not checked because the state of the system is ready for a
+	 * triple fault.
+	 */
+	for (i = 0; i < 16; i++) {
+		cpu_out8(0x64, 0xFE);
+		delay(10000000);
+	}
+
+	/*
+	 * Enable interrupts and let a timer interrupt (or some other)
+	 * to triple fault the CPU.
+	 */
+	cpu_ints(1);
+
+	con_panic("It is safe to reset the computer.");
 	cpu_halt(0);
 }
 
