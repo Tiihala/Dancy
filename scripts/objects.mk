@@ -56,6 +56,9 @@
 ./o32/base/pg.o: ./kernel/base/pg.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/pg.c
 
+./o32/base/ps2.o: ./kernel/base/ps2.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/ps2.c
+
 ./o32/base/runlevel.o: ./kernel/base/runlevel.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/runlevel.c
 
@@ -268,6 +271,9 @@
 
 ./o64/base/pg.o: ./kernel/base/pg.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/pg.c
+
+./o64/base/ps2.o: ./kernel/base/ps2.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/ps2.c
 
 ./o64/base/runlevel.o: ./kernel/base/runlevel.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/runlevel.c

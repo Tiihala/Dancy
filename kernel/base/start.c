@@ -85,6 +85,7 @@ void kernel_start(void)
 
 	checked_init(con_init, "Console");
 	checked_init(irq_init, "IRQ");
+	checked_init(ps2_init, "PS/2 Controller");
 
 	kernel->panic = panic;
 	kernel->print = con_print;
