@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019 Antti Tiihala
+ * Copyright (c) 2018, 2019, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -120,21 +120,34 @@ enum dancy_key {
 	DANCY_KEY_PAD8,
 	DANCY_KEY_PAD9,
 	DANCY_KEY_PAD0,
-	DANCY_KEY_PADDELETE
+	DANCY_KEY_PADDELETE,
+
+	dancy_key_223 = 223,
+
+	DANCY_KEY_LCTRL,
+	DANCY_KEY_LSHIFT,
+	DANCY_KEY_LALT,
+	DANCY_KEY_LGUI,
+	DANCY_KEY_RCTRL,
+	DANCY_KEY_RSHIFT,
+	DANCY_KEY_RALT,
+	DANCY_KEY_RGUI,
+
+	dancy_key_255 = 255
 };
 
-#define DANCY_KEYMOD_LCTRL      (0x00010000ul)
-#define DANCY_KEYMOD_LSHIFT     (0x00020000ul)
-#define DANCY_KEYMOD_LALT       (0x00040000ul)
-#define DANCY_KEYMOD_LGUI       (0x00080000ul)
-#define DANCY_KEYMOD_RCTRL      (0x00100000ul)
-#define DANCY_KEYMOD_RSHIFT     (0x00200000ul)
-#define DANCY_KEYMOD_RALT       (0x00400000ul)
-#define DANCY_KEYMOD_RGUI       (0x00800000ul)
+#define DANCY_KEYMOD_LCTRL      (0x00010000)
+#define DANCY_KEYMOD_LSHIFT     (0x00020000)
+#define DANCY_KEYMOD_LALT       (0x00040000)
+#define DANCY_KEYMOD_LGUI       (0x00080000)
+#define DANCY_KEYMOD_RCTRL      (0x00100000)
+#define DANCY_KEYMOD_RSHIFT     (0x00200000)
+#define DANCY_KEYMOD_RALT       (0x00400000)
+#define DANCY_KEYMOD_RGUI       (0x00800000)
 
-#define DANCY_KEYMOD_NUMLOCK    (0x01000000ul)
-#define DANCY_KEYMOD_CAPSLOCK   (0x02000000ul)
-#define DANCY_KEYMOD_SCROLLLOCK (0x04000000ul)
+#define DANCY_KEYMOD_NUMLOCK    (0x01000000)
+#define DANCY_KEYMOD_CAPSLOCK   (0x02000000)
+#define DANCY_KEYMOD_SCROLLLOCK (0x04000000)
 
 #define DANCY_KEYMOD_CTRL       (DANCY_KEYMOD_LCTRL  | DANCY_KEYMOD_RCTRL)
 #define DANCY_KEYMOD_SHIFT      (DANCY_KEYMOD_LSHIFT | DANCY_KEYMOD_RSHIFT)
