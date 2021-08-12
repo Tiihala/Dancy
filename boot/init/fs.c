@@ -252,14 +252,14 @@ void fs_write_logs(void)
 	size_t size;
 	int r;
 
-	name = "system/logs/log_init.txt";
+	name = "system/log_init.txt";
 	if ((r = fat_open(fat, fd_init, name, "wb")) != 0) {
 		fs_print_error(r, name);
 		return;
 	}
 
 	if (boot_loader_type == BOOT_LOADER_TYPE_UEFI) {
-		name = "system/logs/log_uefi.txt";
+		name = "system/log_uefi.txt";
 		if ((r = fat_open(fat, fd_uefi, name, "wb")) != 0) {
 			fs_print_error(r, name);
 
@@ -269,6 +269,10 @@ void fs_write_logs(void)
 	}
 
 	size = boot_log_size;
+	if (size >= 4) {
+		if (!memcmp(&boot_log[size - 4], "\r\n\r\n", 4))
+			size -= 2;
+	}
 	if ((r = fat_write(fat, fd_init, &size, boot_log)) != 0)
 		fs_print_error(r, name);
 
@@ -283,6 +287,10 @@ void fs_write_logs(void)
 			const char *data = ui.log;
 
 			size = ui.log_size;
+			if (size >= 4) {
+				if (!memcmp(&data[size - 4], "\r\n\r\n", 4))
+					size -= 2;
+			}
 			if ((r = fat_write(fat, fd_uefi, &size, data)) != 0)
 				fs_print_error(r, name);
 		}
