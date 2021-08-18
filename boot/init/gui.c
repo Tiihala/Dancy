@@ -937,9 +937,13 @@ void gui_print(const char *format, ...)
 		create_window("Dancy Operating System", x1, y1, x2, y2);
 	}
 
-	print_message(&buf[0]);
+	if (buf[0] != '\b') {
+		print_message(&buf[0]);
+		blit();
+	} else {
+		print_message(&buf[1]);
+	}
 
-	blit();
 	gui_mtx_unlock(&gui_mtx);
 }
 
