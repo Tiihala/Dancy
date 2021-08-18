@@ -70,7 +70,7 @@ static void detach_init_module(volatile uint32_t *ticks)
 	if (kernel->print == gui_print)
 		kernel->panic("kernel->print() not overridden");
 
-	while (*ticks < 3000)
+	while (*ticks < 6000)
 		cpu_halt(1);
 
 	if (gui_detach())
