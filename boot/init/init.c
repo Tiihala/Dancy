@@ -331,7 +331,7 @@ void init(void)
 	usb_init();
 
 	/*
-	 * Print a message before initializing the kernel. This will create
+	 * Print messages before initializing the kernel. This will create
 	 * a GUI window if not already created.
 	 */
 	{
@@ -341,10 +341,48 @@ void init(void)
 			"Oct", "Nov", "Dec"
 		};
 		int m = (bt.month <= 12) ? (int)bt.month : 0;
+		unsigned int mhz = (unsigned)((delay_tsc_hz / 10000000) * 10);
+		int dancy_bit = (int)(sizeof(void *)) * 8;
 
-		b_print("Started on %u %s %u %02u:%02u\n\n",
+		/*
+		 * If starting the message with '\b', the blit function
+		 * is not called and output is not immediately drawn.
+		 */
+		b_print("\b\nStarted on %u %s %u %02u:%02u\n",
 			(unsigned)bt.day, months[m], (unsigned)bt.year,
 			(unsigned)bt.hour, (unsigned)bt.minute);
+
+		ttf = ttf_array[1];
+		b_print("\b\nSystem Summary\n");
+		ttf = ttf_array[0];
+
+		if (!smp_ap_count) {
+			b_print("\b  Uniprocessor configuration"
+				" (~ %u Mhz)\n", mhz);
+		} else {
+			b_print("\b  Symmetric multiprocessing,"
+				" %u units (~ %u Mhz)\n",
+				(unsigned int)(smp_ap_count + 1), mhz);
+		}
+
+		if (pci_device_count > 1) {
+			const char *ecam = (pci_devices[0].ecam != 0) ?
+				"ECAM" : "Mechanism #1";
+
+			b_print("\b  Found %u PCI devices (%s)\n",
+				(unsigned)pci_device_count, ecam);
+		}
+
+		if (hpet_mode)
+			b_print("\b  High Precision Event Timer (HPET)\n");
+
+		ttf = ttf_array[1];
+		b_print("\b\nSoftware Environment\n");
+		ttf = ttf_array[0];
+
+		b_print("  Dancy Operating System %i.%i (%i-bit)\n"
+			"  Written by Antti Tiihala\n\n\n",
+			DANCY_MAJOR, DANCY_MINOR, dancy_bit);
 	}
 
 	/*
