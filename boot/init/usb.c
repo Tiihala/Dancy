@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Antti Tiihala
+ * Copyright (c) 2020, 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,6 +18,22 @@
  */
 
 #include <boot/init.h>
+
+static void usb_handle_success(unsigned type)
+{
+	static unsigned count[4];
+	static const char *types[4] = {
+		"Universal Host Controller Interface (UHCI)",
+		"Open Host Controller Interface (OHCI)",
+		"Enhanced Host Controller Interface (EHCI)",
+		"Extensible Host Controller Interface (xHCI)"
+	};
+
+	type &= 3u;
+
+	if ((count[type]++) == 0u)
+		b_print("\b%s: OK\n", types[type]);
+}
 
 static phys_addr_t usb_get_base(struct pci_device *pci, int off, int early)
 {
@@ -165,6 +181,8 @@ static int usb_init_uhci(struct pci_device *pci, int early)
 	val = 0x0000;
 	cpu_out16((uint16_t)(base + 0), (uint16_t)val);
 
+	usb_handle_success(0);
+
 	return 0;
 }
 
@@ -307,6 +325,8 @@ static int usb_init_ohci(struct pci_device *pci, int early)
 		val = 0x00000100;
 		cpu_write32((uint32_t *)(base + 0x100), val);
 	}
+
+	usb_handle_success(1);
 
 	return 0;
 }
@@ -558,6 +578,8 @@ static int usb_init_ehci(struct pci_device *pci, int early)
 		val = 0x00000000;
 		cpu_write32(usbint_addr, val);
 	}
+
+	usb_handle_success(2);
 
 	return 0;
 }
@@ -816,6 +838,8 @@ static int usb_init_xhci(struct pci_device *pci, int early)
 			delay(100000);
 		}
 	}
+
+	usb_handle_success(3);
 
 	return 0;
 }
