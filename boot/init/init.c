@@ -342,13 +342,14 @@ void init(void)
 		};
 		int m = (bt.month <= 12) ? (int)bt.month : 0;
 		unsigned int mhz = (unsigned)((delay_tsc_hz / 10000000) * 10);
+		unsigned int usb_controllers = 0;
 		int dancy_bit = (int)(sizeof(void *)) * 8;
 
 		/*
 		 * If starting the message with '\b', the blit function
 		 * is not called and output is not immediately drawn.
 		 */
-		b_print("\b\nStarted on %u %s %u %02u:%02u\n",
+		b_print("\bStarted on %u %s %u %02u:%02u\n",
 			(unsigned)bt.day, months[m], (unsigned)bt.year,
 			(unsigned)bt.hour, (unsigned)bt.minute);
 
@@ -371,6 +372,45 @@ void init(void)
 
 			b_print("\b  Found %u PCI devices (%s)\n",
 				(unsigned)pci_device_count, ecam);
+		}
+
+		usb_controllers += usb_uhci_count;
+		usb_controllers += usb_ohci_count;
+		usb_controllers += usb_ehci_count;
+		usb_controllers += usb_xhci_count;
+
+		if (usb_controllers) {
+			int printed_flag = 0;
+
+			b_print("\b  Initialized ");
+
+			if (usb_uhci_count) {
+				b_print("\b%u UHCI", usb_uhci_count);
+				printed_flag = 1;
+			}
+
+			if (usb_ohci_count) {
+				b_print("\b%s%u OHCI",
+					((printed_flag != 0) ? ", " : ""),
+					usb_ohci_count);
+				printed_flag = 1;
+			}
+
+			if (usb_ehci_count) {
+				b_print("\b%s%u EHCI",
+					((printed_flag != 0) ? ", " : ""),
+					usb_ehci_count);
+				printed_flag = 1;
+			}
+
+			if (usb_xhci_count) {
+				b_print("\b%s%u xHCI",
+					((printed_flag != 0) ? ", " : ""),
+					usb_xhci_count);
+			}
+
+			b_print("\b device%s\n",
+				(usb_controllers > 1) ? "s" : "");
 		}
 
 		if (hpet_mode)

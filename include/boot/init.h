@@ -366,6 +366,11 @@ void table_init(void);
 /*
  * Declarations of usb.c
  */
+extern unsigned int usb_uhci_count;
+extern unsigned int usb_ohci_count;
+extern unsigned int usb_ehci_count;
+extern unsigned int usb_xhci_count;
+
 int usb_init_early(void);
 void usb_init(void);
 
