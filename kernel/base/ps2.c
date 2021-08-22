@@ -177,7 +177,7 @@ int ps2_init(void)
 		 */
 		ps2_clear_status(1), cpu_out8(0x64, 0x60);
 		ps2_delay();
-		ps2_clear_status(0), cpu_out8(0x60, (uint8_t)val);
+		ps2_clear_status(1), cpu_out8(0x60, (uint8_t)val);
 		ps2_delay();
 
 		/*
