@@ -589,10 +589,7 @@ ACPI_STATUS AcpiOsExecute(
 
 void AcpiOsSleep(UINT64 Milliseconds)
 {
-	uint64_t current = timer_read();
-
-	while ((timer_read() - current) < (uint64_t)Milliseconds)
-		task_yield();
+	task_sleep((uint64_t)Milliseconds);
 }
 
 void AcpiOsStall(UINT32 Microseconds)
