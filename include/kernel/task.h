@@ -40,6 +40,11 @@ struct task {
 
 	uint64_t id_owner;
 
+	struct {
+		int (*func)(uint64_t *data);
+		uint64_t data[2];
+	} event;
+
 	cpu_native_t iret_frame[5];
 	int iret_lock;
 	int iret_num;
@@ -59,6 +64,7 @@ uint64_t task_create(int (*func)(void *), void *arg, int type);
 
 void task_exit(int retval);
 void task_jump(addr_t user_ip, addr_t user_sp);
+void task_sleep(uint64_t milliseconds);
 
 int task_switch(struct task *next);
 void task_switch_disable(void);

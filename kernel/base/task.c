@@ -70,6 +70,12 @@ static uint64_t task_create_id(void)
 	return id;
 }
 
+static int task_null_func(uint64_t *data)
+{
+	(void)data;
+	return 0;
+}
+
 static struct task *task_reuse(void)
 {
 	struct task *t = task_head;
@@ -163,6 +169,7 @@ int task_init(void)
 	current = memset((void *)task_current(), 0, 0x1000);
 	current->cr3 = (uint32_t)pg_kernel;
 	current->id = task_create_id();
+	current->event.func = task_null_func;
 
 	task_switch_asm(current, gdt_get_tss());
 	current->active = 1;
@@ -193,6 +200,7 @@ int task_init_ap(void)
 	current = memset((void *)task_current(), 0, 0x1000);
 	current->cr3 = (uint32_t)pg_kernel;
 	current->id = task_create_id();
+	current->event.func = task_null_func;
 
 	task_switch_asm(current, gdt_get_tss());
 	current->active = 1;
@@ -233,6 +241,7 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	new_task->cr3 = (uint32_t)pg_kernel;
 	new_task->id = (id = task_create_id());
 	new_task->id_owner = task_current()->id;
+	new_task->event.func = task_null_func;
 
 	fstate = (uint8_t *)new_task + 0x0C00;
 	memcpy(fstate, &task_default_fstate[0], 512);
@@ -281,6 +290,27 @@ void task_jump(addr_t user_ip, addr_t user_sp)
 	task_jump_asm(user_ip, cs, user_sp, ss);
 }
 
+static int task_sleep_func(uint64_t *data)
+{
+	return (data[0] > timer_read());
+}
+
+void task_sleep(uint64_t milliseconds)
+{
+	uint64_t data = timer_read() + milliseconds;
+	struct task *current = task_current();
+
+	if (data < milliseconds)
+		data = (uint64_t)(ULLONG_MAX);
+
+	cpu_write64(&current->event.data[0], data);
+	current->event.func = task_sleep_func;
+
+	do {
+		task_yield();
+	} while (current->event.func(&current->event.data[0]));
+}
+
 static int task_switch_generic(struct task *next, void *tss)
 {
 	int r;
@@ -291,6 +321,23 @@ static int task_switch_generic(struct task *next, void *tss)
 	if (next->stopped) {
 		spin_unlock(&next->active);
 		return 1;
+	}
+
+	/*
+	 * Call the event function if that has been set for this task.
+	 */
+	if (next->event.func != task_null_func) {
+		if (next->event.func(&next->event.data[0])) {
+			spin_unlock(&next->active);
+			return 1;
+		}
+
+		/*
+		 * The same event function is not called again if
+		 * task switching continues.
+		 */
+		next->event.func = task_null_func;
+		memset(&next->event.data[0], 0, sizeof(next->event.data));
 	}
 
 	if (!tss) {
