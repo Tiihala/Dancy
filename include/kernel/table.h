@@ -177,6 +177,11 @@ struct kernel_table {
 		uint32_t device_id;
 		uint32_t class_code;
 	} *pci_device;
+
+	/*
+	 * Task scheduler function pointer.
+	 */
+	void (*schedule)(void);
 };
 
 #endif

@@ -113,6 +113,18 @@ static struct task *task_reuse(void)
 	return NULL;
 }
 
+static void task_schedule_default(void)
+{
+	struct task *current = task_current();
+	struct task *next = current->next;
+
+	while (task_switch(next)) {
+		if (!next || next == current)
+			break;
+		next = next->next;
+	}
+}
+
 int task_init(void)
 {
 	static int run_once;
@@ -180,6 +192,7 @@ int task_init(void)
 	task_head = (task_tail = current);
 	task_struct_count = 1;
 
+	kernel->schedule = task_schedule_default;
 	cpu_write32((uint32_t *)&task_ready, 1);
 
 	ap_count = (uint32_t)kernel->smp_ap_count;
@@ -469,12 +482,8 @@ int task_wait(uint64_t id, int *retval)
 
 void task_yield(void)
 {
-	struct task *current = task_current();
-	struct task *next = current->next;
+	if (!task_ready)
+		return;
 
-	while (task_switch(next)) {
-		if (!next || next == current)
-			break;
-		next = next->next;
-	}
+	kernel->schedule();
 }
