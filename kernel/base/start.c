@@ -22,16 +22,23 @@
 #ifdef DANCY_32
 struct kernel_table _dancy_kernel_table;
 struct kernel_table *kernel = &_dancy_kernel_table;
-
-static const char *optional_names[] = { "_acpios_init" };
+#define SYMBOL_PREFIX "_"
 #endif
 
 #ifdef DANCY_64
 struct kernel_table __dancy_kernel_table;
 struct kernel_table *kernel = &__dancy_kernel_table;
-
-static const char *optional_names[] = { "acpios_init" };
+#define SYMBOL_PREFIX ""
 #endif
+
+static struct {
+	int optional; addr_t addr; const char *name; const char *desc;
+} dynamic_init[] = {
+	/*
+	 * Dynamically linked initialization functions.
+	 */
+	{ 1, 0, SYMBOL_PREFIX "acpios_init", "ACPICA" }
+};
 
 static int ap_count;
 static int ap_lock;
@@ -51,7 +58,7 @@ static void checked_init(int (*func)(void), const char *desc)
 void kernel_start(void)
 {
 	static int run_once;
-	int names = (int)(sizeof(optional_names) / sizeof(*optional_names));
+	int funcs = (int)(sizeof(dynamic_init) / sizeof(*dynamic_init));
 	int i, j;
 
 	if (!spin_trylock(&run_once))
@@ -95,20 +102,37 @@ void kernel_start(void)
 	checked_init(runlevel_init, "Runlevel");
 
 	/*
-	 * Call all optional init functions, e.g. ACPICA.
+	 * Find all dynamically linked initialization functions.
 	 */
-	for (i = 0; i < names; i++) {
-		const char *name = optional_names[i];
-		int (*func)(void);
+	for (i = 0; i < funcs; i++) {
+		const char *name = dynamic_init[i].name;
 
 		for (j = 0; j < kernel->symbol_count; j++) {
 			if (!strcmp(kernel->symbol[j].name, name)) {
-				addr_t a = (addr_t)kernel->symbol[j].value;
-
-				func = (int (*)(void))a;
-				checked_init(func, name);
+				addr_t addr = (addr_t)kernel->symbol[j].value;
+				dynamic_init[i].addr = addr;
 				break;
 			}
+		}
+	}
+
+	/*
+	 * Call the initialization functions in a defined order.
+	 */
+	for (i = 0; i < funcs; i++) {
+		addr_t addr = dynamic_init[i].addr;
+		int (*func)(void);
+
+		if (addr) {
+			func = (int (*)(void))addr;
+			checked_init(func, dynamic_init[i].desc);
+
+		} else if (!dynamic_init[i].optional) {
+			char msg[128];
+
+			snprintf(&msg[0], 128, "%s (%s): symbol not found",
+				dynamic_init[i].name, dynamic_init[i].desc);
+			kernel->panic(msg);
 		}
 	}
 
