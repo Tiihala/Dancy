@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2021 Antti Tiihala
+ * Copyright (c) 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,43 +13,21 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy.h
+ * kernel/pci.h
  *      Header of Dancy Operating System
  */
 
-#ifndef DANCY_H
-#define DANCY_H
+#ifndef KERNEL_PCI_H
+#define KERNEL_PCI_H
 
-#include <dancy/blob.h>
-
-#if defined(DANCY_32) || defined(DANCY_64)
-
-#include <dancy/ctype.h>
-#include <dancy/keys.h>
-#include <dancy/lib.h>
-#include <dancy/limits.h>
-#include <dancy/stdarg.h>
-#include <dancy/stdio.h>
-#include <dancy/stdlib.h>
-#include <dancy/string.h>
-#include <dancy/symbol.h>
-#include <dancy/threads.h>
-#include <dancy/time.h>
 #include <dancy/types.h>
-
-enum dancy_error {
-
-#define DANCY_X(a, b) a,
-#include <dancy/error.h>
-#undef DANCY_X
-
-	dancy_error_end
-};
-
-#include <kernel/base.h>
-#include <kernel/pci.h>
 #include <kernel/table.h>
-#include <kernel/task.h>
 
-#endif
+/*
+ * Declarations of pci.c
+ */
+int pci_init(void);
+uint32_t pci_read(struct pci_id *pci, int offset);
+void pci_write(struct pci_id *pci, int offset, uint32_t value);
+
 #endif

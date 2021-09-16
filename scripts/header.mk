@@ -90,6 +90,7 @@ DANCY_HEADERS= \
  ./include/dancy/time.h \
  ./include/dancy/types.h \
  ./include/kernel/base.h \
+ ./include/kernel/pci.h \
  ./include/kernel/table.h \
  ./include/kernel/task.h \
  ./include/dancy.h

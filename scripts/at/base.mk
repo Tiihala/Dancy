@@ -19,7 +19,6 @@ DANCY_BASE_OBJECTS_32= \
  ./o32/base/mm.o \
  ./o32/base/mtx.o \
  ./o32/base/panic.o \
- ./o32/base/pci.o \
  ./o32/base/pg.o \
  ./o32/base/ps2.o \
  ./o32/base/runlevel.o \
@@ -44,7 +43,6 @@ DANCY_BASE_OBJECTS_64= \
  ./o64/base/mm.o \
  ./o64/base/mtx.o \
  ./o64/base/panic.o \
- ./o64/base/pci.o \
  ./o64/base/pg.o \
  ./o64/base/ps2.o \
  ./o64/base/runlevel.o \

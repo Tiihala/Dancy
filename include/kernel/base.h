@@ -149,12 +149,6 @@ extern int panic_lock;
 void panic(const char *message);
 
 /*
- * Declarations of pci.c
- */
-uint32_t pci_read(struct pci_id *pci, int offset);
-void pci_write(struct pci_id *pci, int offset, uint32_t value);
-
-/*
  * Declarations of pg.c
  */
 enum pg_type {
