@@ -51,6 +51,16 @@ static void pci_write32_locked(int b, int d, int f, int off, uint32_t val)
 	cpu_out32(pci_config_data, val);
 }
 
+int pci_init(void)
+{
+	static int run_once;
+
+	if (!spin_trylock(&run_once))
+		return DE_UNEXPECTED;
+
+	return 0;
+}
+
 uint32_t pci_read(struct pci_id *pci, int offset)
 {
 	uint32_t ret = 0;
