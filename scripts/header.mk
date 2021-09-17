@@ -91,6 +91,7 @@ DANCY_HEADERS= \
  ./include/dancy/types.h \
  ./include/kernel/base.h \
  ./include/kernel/pci.h \
+ ./include/kernel/ps2.h \
  ./include/kernel/table.h \
  ./include/kernel/task.h \
  ./include/dancy.h

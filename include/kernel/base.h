@@ -174,16 +174,6 @@ uint64_t pg_read_memory(phys_addr_t addr, size_t size);
 void pg_write_memory(phys_addr_t addr, uint64_t val, size_t size);
 
 /*
- * Declarations of ps2.c
- */
-extern void (*ps2_receive_port1)(uint8_t val);
-extern void (*ps2_receive_port2)(uint8_t val);
-
-int ps2_init(void);
-int ps2_send_port1(uint8_t val);
-int ps2_send_port2(uint8_t val);
-
-/*
  * Declarations of runlevel.c
  */
 int runlevel_init(void);

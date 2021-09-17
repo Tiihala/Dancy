@@ -53,9 +53,6 @@
 ./o32/base/pg.o: ./kernel/base/pg.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/pg.c
 
-./o32/base/ps2.o: ./kernel/base/ps2.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/base/ps2.c
-
 ./o32/base/runlevel.o: ./kernel/base/runlevel.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/runlevel.c
 
@@ -218,6 +215,9 @@
 ./o32/pci/pci.o: ./kernel/pci/pci.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/pci/pci.c
 
+./o32/ps2/8042.o: ./kernel/ps2/8042.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/ps2/8042.c
+
 ./o64/base/a64/fb.o: ./kernel/base/a64/fb.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/base/a64/fb.asm
 
@@ -268,9 +268,6 @@
 
 ./o64/base/pg.o: ./kernel/base/pg.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/pg.c
-
-./o64/base/ps2.o: ./kernel/base/ps2.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/base/ps2.c
 
 ./o64/base/runlevel.o: ./kernel/base/runlevel.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/runlevel.c
@@ -433,6 +430,9 @@
 
 ./o64/pci/pci.o: ./kernel/pci/pci.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/pci/pci.c
+
+./o64/ps2/8042.o: ./kernel/ps2/8042.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/ps2/8042.c
 
 ./o64/uefi/a64/cpu.o: ./boot/uefi/a64/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./boot/uefi/a64/cpu.asm

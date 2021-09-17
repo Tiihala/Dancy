@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2021 Antti Tiihala
+ * Copyright (c) 2021 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,44 +13,23 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy.h
+ * kernel/ps2.h
  *      Header of Dancy Operating System
  */
 
-#ifndef DANCY_H
-#define DANCY_H
+#ifndef KERNEL_PS2_H
+#define KERNEL_PS2_H
 
-#include <dancy/blob.h>
-
-#if defined(DANCY_32) || defined(DANCY_64)
-
-#include <dancy/ctype.h>
-#include <dancy/keys.h>
-#include <dancy/lib.h>
-#include <dancy/limits.h>
-#include <dancy/stdarg.h>
-#include <dancy/stdio.h>
-#include <dancy/stdlib.h>
-#include <dancy/string.h>
-#include <dancy/symbol.h>
-#include <dancy/threads.h>
-#include <dancy/time.h>
 #include <dancy/types.h>
 
-enum dancy_error {
+/*
+ * Declarations of ps2.c
+ */
+extern void (*ps2_receive_port1)(uint8_t val);
+extern void (*ps2_receive_port2)(uint8_t val);
 
-#define DANCY_X(a, b) a,
-#include <dancy/error.h>
-#undef DANCY_X
+int ps2_init(void);
+int ps2_send_port1(uint8_t val);
+int ps2_send_port2(uint8_t val);
 
-	dancy_error_end
-};
-
-#include <kernel/base.h>
-#include <kernel/pci.h>
-#include <kernel/ps2.h>
-#include <kernel/table.h>
-#include <kernel/task.h>
-
-#endif
 #endif

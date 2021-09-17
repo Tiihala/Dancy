@@ -13,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * base/ps2.c
+ * ps2/8042.c
  *      PS/2 Controller
  */
 
@@ -110,7 +110,7 @@ int ps2_init(void)
 	/*
 	 * The init module is responsible for initializing all the USB
 	 * controllers and disabling the "USB Legacy Support" features
-	 * before executing the kernel base module.
+	 * before executing this module.
 	 *
 	 * The ACPI table (FADT) has an "IA-PC Boot Architecture Flags"
 	 * which indicates the availability of an "8042 Controller". If
