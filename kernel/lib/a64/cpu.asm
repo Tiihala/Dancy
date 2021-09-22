@@ -47,6 +47,7 @@ section .text
         global cpu_read_cr2
         global cpu_read_cr3
         global cpu_read_cr4
+        global cpu_read_flags
         global cpu_write8
         global cpu_write16
         global cpu_write32
@@ -309,6 +310,13 @@ align 16
         ; cpu_native_t cpu_read_cr4(void)
 cpu_read_cr4:
         mov rax, cr4                    ; rax = control register cr4
+        ret
+
+align 16
+        ; cpu_native_t cpu_read_flags(void)
+cpu_read_flags:
+        pushfq                          ; push rflags
+        pop rax                         ; rax = rflags
         ret
 
 align 16

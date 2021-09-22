@@ -79,6 +79,9 @@ cpu_native_t cpu_read_cr2(void);
 cpu_native_t cpu_read_cr3(void);
 cpu_native_t cpu_read_cr4(void);
 
+cpu_native_t cpu_read_flags(void);
+#define CPU_INTERRUPT_FLAG (512u)
+
 void cpu_write8(void *address, uint8_t value);
 void cpu_write16(void *address, uint16_t value);
 void cpu_write32(void *address, uint32_t value);
