@@ -73,6 +73,9 @@ int mtx_lock(mtx_t *mtx)
 	if (null_mxt)
 		return thrd_error;
 
+	if ((cpu_read_flags() & CPU_INTERRUPT_FLAG) == 0)
+		return thrd_error;
+
 	while (!spin_trylock(&this_mtx->lock)) {
 		this_mtx->yield = 1;
 		task_yield();
@@ -84,6 +87,9 @@ int mtx_lock(mtx_t *mtx)
 int mtx_trylock(mtx_t *mtx)
 {
 	if (null_mxt)
+		return thrd_error;
+
+	if ((cpu_read_flags() & CPU_INTERRUPT_FLAG) == 0)
 		return thrd_error;
 
 	if (!spin_trylock(&this_mtx->lock))
