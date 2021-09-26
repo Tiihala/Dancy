@@ -90,7 +90,7 @@ void event_signal(event_t event)
 
 static int event_wait_func(uint64_t *data)
 {
-	void *event = (void *)data[0];
+	void *event = (void *)((cpu_native_t)data[0]);
 
 	if (this_event->signaled == 1 || data[1] <= timer_read())
 		return 0;
@@ -101,7 +101,7 @@ static int event_wait_func(uint64_t *data)
 int event_wait(event_t event, uint16_t milliseconds)
 {
 	struct task *current = task_current();
-	uint64_t data0 = (uint64_t)event;
+	uint64_t data0 = (uint64_t)((cpu_native_t)event);
 	uint64_t data1 = timer_read() + (uint64_t)milliseconds;
 	int r = 1;
 
