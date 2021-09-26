@@ -54,4 +54,6 @@ typedef unsigned long long cpu_native_t;
 #error "Definition of SIZE_MAX is not compatible"
 #endif
 
+typedef void *event_t;
+
 #endif

@@ -50,6 +50,21 @@ void con_write(const void *data, size_t size);
 void delay(uint32_t nanoseconds);
 
 /*
+ * Declarations of event.c
+ */
+enum event_type {
+	event_type_manual_reset = 0x01,
+	event_type_set_signaled = 0x02
+};
+
+event_t event_create(int type);
+void event_delete(event_t event);
+
+void event_reset(event_t event);
+void event_signal(event_t event);
+int event_wait(event_t event, uint16_t milliseconds);
+
+/*
  * Declarations of fb.c
  */
 int fb_init(void);

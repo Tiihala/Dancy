@@ -26,6 +26,9 @@
 ./o32/base/delay.o: ./kernel/base/delay.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/delay.c
 
+./o32/base/event.o: ./kernel/base/event.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/event.c
+
 ./o32/base/fb.o: ./kernel/base/fb.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/fb.c
 
@@ -241,6 +244,9 @@
 
 ./o64/base/delay.o: ./kernel/base/delay.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/delay.c
+
+./o64/base/event.o: ./kernel/base/event.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/event.c
 
 ./o64/base/fb.o: ./kernel/base/fb.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/fb.c
