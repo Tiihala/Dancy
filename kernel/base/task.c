@@ -76,43 +76,6 @@ static int task_null_func(uint64_t *data)
 	return 0;
 }
 
-static struct task *task_reuse(void)
-{
-	struct task *t = task_head;
-
-	/*
-	 * The "t->active" value is locked and the "t->next" pointer
-	 * is preserved if a non-NULL task structure is returned.
-	 */
-	while (t != NULL) {
-		if (!t->id && spin_trylock(&t->active)) {
-			if (!t->id && t->detached && t->stopped) {
-				unsigned char *p;
-				size_t offset, size;
-
-				t->retval = 0;
-				t->stopped  = 0;
-				t->ndisable = 0;
-
-				p = (unsigned char *)&t->next;
-				p += sizeof(t->next);
-
-				offset = (size_t)(p - (unsigned char *)t);
-				size = 0x2000 - offset;
-
-				p = (unsigned char *)t + offset;
-				memset(p, 0, size);
-
-				return t;
-			}
-			spin_unlock(&t->active);
-		}
-		t = (t->next != task_head) ? t->next : NULL;
-	}
-
-	return NULL;
-}
-
 static void task_schedule_default(void)
 {
 	struct task *current = task_current();
@@ -233,7 +196,7 @@ int task_init_ap(void)
 uint64_t task_create(int (*func)(void *), void *arg, int type)
 {
 	uint64_t id = 0;
-	struct task *new_task = task_reuse();
+	struct task *new_task = NULL;
 	uint8_t *fstate;
 
 	if (!new_task) {
