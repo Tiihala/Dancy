@@ -82,9 +82,9 @@ static void task_schedule_default(void)
 	struct task *next = current->next;
 
 	while (task_switch(next)) {
-		if (!next || next == current)
+		if (next == current)
 			break;
-		next = next->next;
+		next = (!next) ? task_head : next->next;
 	}
 }
 
