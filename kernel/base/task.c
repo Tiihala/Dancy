@@ -247,9 +247,6 @@ void task_exit(int retval)
 
 	pg_delete();
 
-	if (current->detached)
-		current->id = 0;
-
 	while (task_switch(next))
 		next = (!next) ? task_head : next->next;
 
