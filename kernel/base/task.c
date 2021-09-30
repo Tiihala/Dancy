@@ -38,23 +38,15 @@ static int task_struct_limit;
 static int task_id_lock;
 static uint64_t task_id;
 
-static int task_append(struct task *new_task)
+static void task_append(struct task *new_task)
 {
 	void *lock_local = &task_lock;
 
 	new_task->next = task_head;
 
 	spin_enter(&lock_local);
-
-	if (task_struct_count >= task_struct_limit)
-		return spin_leave(&lock_local), 1;
-
-	task_struct_count += 1;
 	task_tail = (task_tail->next = new_task);
-
 	spin_leave(&lock_local);
-
-	return 0;
 }
 
 static uint64_t task_create_id(void)
@@ -180,14 +172,16 @@ int task_init_ap(void)
 
 	task_switch_asm(current, gdt_get_tss());
 	current->active = 1;
-
-	if (task_append(current))
-		panic("task_init_ap: unexpected behavior");
+	task_append(current);
 
 	spin_lock(&task_lock);
+
 	task_ap_count += 1;
+	task_struct_count += 1;
+
 	if (task_ap_count > kernel->smp_ap_count)
 		panic("task_init_ap: called too many times");
+
 	spin_unlock(&task_lock);
 
 	return 0;
@@ -200,6 +194,9 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	uint8_t *fstate;
 
 	if (!new_task) {
+		void *lock_local = &task_lock;
+		int task_overflow = 0;
+
 		new_task = (struct task *)mm_alloc_pages(mm_kernel, 1);
 
 		if (!new_task)
@@ -208,10 +205,21 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 		memset(new_task, 0, 0x2000);
 		spin_trylock(&new_task->active);
 
-		if (task_append(new_task)) {
+		spin_enter(&lock_local);
+
+		if (task_struct_count < task_struct_limit)
+			task_struct_count += 1;
+		else
+			task_overflow = 1;
+
+		spin_leave(&lock_local);
+
+		if (task_overflow) {
 			mm_free_pages((phys_addr_t)new_task, 1);
 			return id;
 		}
+
+		task_append(new_task);
 	}
 
 	new_task->cr3 = (uint32_t)pg_kernel;
