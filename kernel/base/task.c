@@ -45,10 +45,10 @@ static void task_append(struct task *new_task)
 {
 	void *lock_local = &task_lock;
 
-	new_task->next = task_head;
+	task_write_next(new_task, task_head);
 
 	spin_enter(&lock_local);
-	task_tail = (task_tail->next = new_task);
+	task_tail = task_write_next(task_tail, new_task);
 	spin_leave(&lock_local);
 }
 
@@ -76,9 +76,9 @@ static struct task *task_create_from_pool(void)
 		new_task = task_pool_head;
 
 		task_pool_count -= 1;
-		task_pool_head = task_pool_head->next;
+		task_pool_head = task_read_next(task_pool_head);
 
-		task_tail = (task_tail->next = new_task);
+		task_tail = task_write_next(task_tail, new_task);
 
 		if (!new_task->active)
 			panic("Error: inconsistent task structures");
@@ -101,12 +101,12 @@ static int task_null_func(uint64_t *data)
 static void task_schedule_default(void)
 {
 	struct task *current = task_current();
-	struct task *next = current->next;
+	struct task *next = task_read_next(current);
 
 	while (task_switch(next)) {
 		if (next == current)
 			break;
-		next = (!next) ? task_head : next->next;
+		next = (!next) ? task_head : task_read_next(next);
 	}
 }
 
@@ -119,14 +119,15 @@ static int task_caretaker(void *arg)
 
 		while (t != NULL) {
 			struct task *t0 = t;
-			struct task *t1 = t->next;
+			struct task *t1 = task_read_next(t);
 			struct task *t2;
 
 			int error_assumption;
 			unsigned char *p;
 			size_t offset, size;
 
-			t = (t->next != task_head) ? t->next : NULL;
+			if ((t = task_read_next(t)) == task_head)
+				t = NULL;
 
 			/*
 			 * Do a quick test without locking the structure.
@@ -142,7 +143,7 @@ static int task_caretaker(void *arg)
 				continue;
 			}
 
-			t2 = t1->next;
+			t2 = task_read_next(t1);
 			error_assumption = 0;
 
 			/*
@@ -153,10 +154,13 @@ static int task_caretaker(void *arg)
 			if (t1 == task_head)
 				error_assumption = 1;
 
-			if (t0->next != t1 || t1->next != t2 || t2 == NULL)
+			if (task_read_next(t0) != t1)
 				error_assumption = 1;
 
-			if (t0 == t1 || t0 == t2 || t1 == t2)
+			if (task_read_next(t1) != t2)
+				error_assumption = 1;
+
+			if (t0 == t1 || t0 == t2 || t1 == t2 || t2 == NULL)
 				error_assumption = 1;
 
 			if (error_assumption) {
@@ -174,7 +178,7 @@ static int task_caretaker(void *arg)
 			/*
 			 * Remove the middle structure from the list.
 			 */
-			t0->next = t2;
+			task_write_next(t0, t2);
 
 			t1->esp = 0;
 			t1->cr3 = 0;
@@ -205,7 +209,7 @@ static int task_caretaker(void *arg)
 			 */
 			spin_enter(&lock_local);
 
-			t1->next = task_pool_head;
+			task_write_next(t1, task_pool_head);
 
 			task_pool_count += 1;
 			task_pool_head = t1;
@@ -398,7 +402,7 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 void task_exit(int retval)
 {
 	struct task *current = task_current();
-	struct task *next = current->next;
+	struct task *next = task_read_next(current);
 
 	if (!current->id_owner)
 		panic("task_exit: system task stopped");
@@ -409,7 +413,7 @@ void task_exit(int retval)
 	pg_delete();
 
 	while (task_switch(next))
-		next = (!next) ? task_head : next->next;
+		next = (!next) ? task_head : task_read_next(next);
 
 	panic("task_exit: unexpected behavior");
 }

@@ -36,7 +36,7 @@ struct task {
 	int retval;         /* Offset: 16 + 1 * sizeof(int) */
 	int stopped;        /* Offset: 16 + 2 * sizeof(int) */
 	int ndisable;       /* Offset: 16 + 3 * sizeof(int) */
-	struct task *next;  /* Offset: 16 + 4 * sizeof(int) */
+	addr_t next;        /* Offset: 16 + 4 * sizeof(int) */
 
 	uint64_t id_owner;
 
@@ -55,6 +55,9 @@ struct task {
 	int detached;
 	int uniproc;
 };
+
+struct task *task_read_next(const struct task *task);
+struct task *task_write_next(struct task *task, struct task *next);
 
 int task_init(void);
 int task_init_ap(void);
