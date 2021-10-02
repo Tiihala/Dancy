@@ -338,6 +338,49 @@ int task_init_ap(void)
 	return 0;
 }
 
+struct task *task_find(uint64_t id)
+{
+	struct task *t = task_head;
+	struct task *r = NULL;
+
+	if ((cpu_read_flags() & CPU_INTERRUPT_FLAG) == 0)
+		panic("Enumerating task structs while interrupts disabled.");
+
+	if (id != 0 && t != NULL) {
+		/*
+		 * Do not disable interrupts. Task switching must be
+		 * temporarily suspended.
+		 */
+		task_switch_disable();
+		spin_lock(&task_lock);
+
+		/*
+		 * The circular linked list must be fully valid when the
+		 * task lock is acquired. No other code can modify task
+		 * structure identifications or the linked list.
+		 */
+		do {
+			if (t->id == id) {
+				r = t;
+				break;
+			}
+
+			t = task_read_next(t);
+
+		} while (t != task_head);
+
+		spin_unlock(&task_lock);
+		task_switch_enable();
+	}
+
+	/*
+	 * The returned task structure is either NULL or the one that
+	 * has or had the specific identification. The caller must lock
+	 * the structure and check it again.
+	 */
+	return r;
+}
+
 uint64_t task_create(int (*func)(void *), void *arg, int type)
 {
 	uint64_t id = 0;

@@ -63,6 +63,8 @@ int task_init(void);
 int task_init_ap(void);
 
 struct task *task_current(void);
+struct task *task_find(uint64_t id);
+
 uint64_t task_create(int (*func)(void *), void *arg, int type);
 
 void task_exit(int retval);
