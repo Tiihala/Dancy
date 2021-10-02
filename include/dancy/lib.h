@@ -92,6 +92,8 @@ void cpu_write_cr2(cpu_native_t value);
 void cpu_write_cr3(cpu_native_t value);
 void cpu_write_cr4(cpu_native_t value);
 
+cpu_native_t cpu_xchg(cpu_native_t *address, cpu_native_t value);
+
 /*
  * Declarations of crc32.c and crc32c.c
  */

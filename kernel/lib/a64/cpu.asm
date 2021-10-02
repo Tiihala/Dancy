@@ -56,6 +56,7 @@ section .text
         global cpu_write_cr2
         global cpu_write_cr3
         global cpu_write_cr4
+        global cpu_xchg
 
 align 16
         ; void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b)
@@ -373,6 +374,13 @@ align 16
         ; void cpu_write_cr4(cpu_native_t value)
 cpu_write_cr4:
         mov cr4, rcx                    ; cr4 = value
+        ret
+
+align 16
+        ; cpu_native_t cpu_xchg(cpu_native_t *address, cpu_native_t value)
+cpu_xchg:
+        mov rax, rdx                    ; rax = value
+        xchg [rcx], rax                 ; exchange memory with register
         ret
 
 align 16
