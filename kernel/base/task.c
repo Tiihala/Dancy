@@ -32,6 +32,9 @@ static int task_lock;
 static struct task *task_head;
 static struct task *task_tail;
 
+static int task_pool_count;
+static struct task *task_pool_head;
+
 static int task_struct_count;
 static int task_struct_limit;
 
@@ -62,6 +65,33 @@ static uint64_t task_create_id(void)
 	return id;
 }
 
+static struct task *task_create_from_pool(void)
+{
+	struct task *new_task = NULL;
+	void *lock_local = &task_lock;
+
+	spin_enter(&lock_local);
+
+	if (task_pool_head) {
+		new_task = task_pool_head;
+
+		task_pool_count -= 1;
+		task_pool_head = task_pool_head->next;
+
+		task_tail = (task_tail->next = new_task);
+
+		if (!new_task->active)
+			panic("Error: inconsistent task structures");
+
+		new_task->id = task_create_id();
+		new_task->id_owner = task_current()->id;
+	}
+
+	spin_leave(&lock_local);
+
+	return new_task;
+}
+
 static int task_null_func(uint64_t *data)
 {
 	(void)data;
@@ -78,6 +108,120 @@ static void task_schedule_default(void)
 			break;
 		next = (!next) ? task_head : next->next;
 	}
+}
+
+static int task_caretaker(void *arg)
+{
+	void *lock_local = &task_lock;
+
+	while (arg == NULL) {
+		struct task *t = task_head;
+
+		while (t != NULL) {
+			struct task *t0 = t;
+			struct task *t1 = t->next;
+			struct task *t2;
+
+			int error_assumption;
+			unsigned char *p;
+			size_t offset, size;
+
+			t = (t->next != task_head) ? t->next : NULL;
+
+			/*
+			 * Do a quick test without locking the structure.
+			 */
+			if (!t1 || !t1->detached || !t1->stopped)
+				continue;
+
+			if (!spin_trylock(&t1->active))
+				continue;
+
+			if (!t1->detached || !t1->stopped) {
+				spin_unlock(&t1->active);
+				continue;
+			}
+
+			t2 = t1->next;
+			error_assumption = 0;
+
+			/*
+			 * Acquire task_lock before doing anything for real.
+			 */
+			spin_enter(&lock_local);
+
+			if (t1 == task_head)
+				error_assumption = 1;
+
+			if (t0->next != t1 || t1->next != t2 || t2 == NULL)
+				error_assumption = 1;
+
+			if (t0 == t1 || t0 == t2 || t1 == t2)
+				error_assumption = 1;
+
+			if (error_assumption) {
+				spin_leave(&lock_local);
+				spin_unlock(&t1->active);
+				continue;
+			}
+
+			/*
+			 * Change the task_tail if needed.
+			 */
+			if (t1 == task_tail)
+				task_tail = t0;
+
+			/*
+			 * Remove the middle structure from the list.
+			 */
+			t0->next = t2;
+
+			t1->esp = 0;
+			t1->cr3 = 0;
+			t1->id = 0;
+
+			t1->retval = 0;
+			t1->stopped  = 0;
+			t1->ndisable = 0;
+
+			/*
+			 * Release task_lock so that interrupts are not
+			 * disabled when doing the memset for the structure.
+			 */
+			spin_leave(&lock_local);
+
+			p = (unsigned char *)&t1->next;
+			p += sizeof(t1->next);
+
+			offset = (size_t)(p - (unsigned char *)t1);
+			size = 0x2000 - offset;
+
+			p = (unsigned char *)t1 + offset;
+			memset(p, 0, size);
+
+			/*
+			 * Add to the head of the pool list. The task
+			 * structure has its t1->active locked.
+			 */
+			spin_enter(&lock_local);
+
+			t1->next = task_pool_head;
+
+			task_pool_count += 1;
+			task_pool_head = t1;
+
+			spin_leave(&lock_local);
+
+			/*
+			 * The next structure for the while loop.
+			 */
+			t = t2;
+		}
+
+		task_sleep(1000);
+	}
+
+	return 0;
 }
 
 int task_init(void)
@@ -155,6 +299,9 @@ int task_init(void)
 	while (cpu_read32((const uint32_t *)&task_ap_count) != ap_count)
 		delay(1000000);
 
+	if (!task_create(task_caretaker, NULL, task_normal))
+		return DE_MEMORY;
+
 	return 0;
 }
 
@@ -193,6 +340,9 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	struct task *new_task = NULL;
 	uint8_t *fstate;
 
+	if (task_pool_head)
+		new_task = task_create_from_pool();
+
 	if (!new_task) {
 		void *lock_local = &task_lock;
 		int task_overflow = 0;
@@ -219,12 +369,15 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 			return id;
 		}
 
+		new_task->id = task_create_id();
+		new_task->id_owner = task_current()->id;
+
 		task_append(new_task);
 	}
 
+	id = new_task->id;
+
 	new_task->cr3 = (uint32_t)pg_kernel;
-	new_task->id = (id = task_create_id());
-	new_task->id_owner = task_current()->id;
 	new_task->event.func = task_null_func;
 
 	fstate = (uint8_t *)new_task + 0x0C00;
