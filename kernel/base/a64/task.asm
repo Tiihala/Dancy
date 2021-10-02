@@ -14,7 +14,7 @@
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
 ;; base/a64/task.asm
-;;      Context switch
+;;      Assembly functions for task management
 ;;
 
         bits 64
@@ -29,6 +29,8 @@ section .text
         global task_switch_asm
         global task_switch_disable
         global task_switch_enable
+        global task_read_next
+        global task_write_next
 
 align 16
         ; void task_create_asm(struct task *new_task,
@@ -42,6 +44,7 @@ align 16
         ;         int retval;      /* Offset: 16 + 1 * sizeof(int) */
         ;         int stopped;     /* Offset: 16 + 2 * sizeof(int) */
         ;         int ndisable;    /* Offset: 16 + 3 * sizeof(int) */
+        ;         addr_t next;     /* Offset: 16 + 4 * sizeof(int) */
         ;         ...
         ; };
 task_create_asm:
@@ -214,3 +217,16 @@ state_error:
         int3                            ; breakpoint exception
 .L1:    hlt                             ; halt instruction
         jmp short .L1
+
+align 16
+        ; struct task *task_read_next(const struct task *task)
+task_read_next:
+        mov rax, [rcx+32]               ; rax = (struct task *)task->next
+        ret
+
+align 16
+        ; struct task *task_write_next(struct task *task, struct task *next)
+task_write_next:
+        mov rax, rdx                    ; rax = next
+        mov [rcx+32], rax               ; task->next = (addr_t)next
+        ret

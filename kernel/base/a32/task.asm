@@ -14,7 +14,7 @@
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
 ;; base/a32/task.asm
-;;      Context switch
+;;      Assembly functions for task management
 ;;
 
         bits 32
@@ -29,6 +29,8 @@ section .text
         global _task_switch_asm
         global _task_switch_disable
         global _task_switch_enable
+        global _task_read_next
+        global _task_write_next
         global _task_patch_fxsave
         global _task_patch_fxrstor
 
@@ -44,6 +46,7 @@ align 16
         ;         int retval;      /* Offset: 16 + 1 * sizeof(int) */
         ;         int stopped;     /* Offset: 16 + 2 * sizeof(int) */
         ;         int ndisable;    /* Offset: 16 + 3 * sizeof(int) */
+        ;         addr_t next;     /* Offset: 16 + 4 * sizeof(int) */
         ;         ...
         ; };
 _task_create_asm:
@@ -207,3 +210,18 @@ _state_error:
         int3                            ; breakpoint exception
 .L1:    hlt                             ; halt instruction
         jmp short .L1
+
+align 16
+        ; struct task *task_read_next(const struct task *task)
+_task_read_next:
+        mov ecx, [esp+4]                ; ecx = task
+        mov eax, [ecx+32]               ; eax = (struct task *)task->next
+        ret
+
+align 16
+        ; struct task *task_write_next(struct task *task, struct task *next)
+_task_write_next:
+        mov ecx, [esp+4]                ; ecx = task
+        mov eax, [esp+8]                ; eax = next
+        mov [ecx+32], eax               ; task->next = (addr_t)next
+        ret
