@@ -607,6 +607,113 @@ int task_switch(struct task *next)
 	return 0;
 }
 
+int task_trywait(uint64_t id, int *retval)
+{
+	struct task *t;
+	int r = 0;
+
+	if (retval)
+		*retval = r;
+
+	if ((t = task_find(id)) == NULL)
+		return DE_ARGUMENT;
+
+	if (!t->stopped || !spin_trylock(&t->active))
+		return DE_RETRY;
+
+	if (!t->stopped) {
+		spin_unlock(&t->active);
+		return DE_RETRY;
+	}
+
+	if (t->id != id || t->detached != 0) {
+		spin_unlock(&t->active);
+		return DE_ARGUMENT;
+	}
+
+	r = t->retval;
+	t->detached = 1;
+
+	spin_unlock(&t->active);
+
+	if (retval)
+		*retval = r;
+
+	return 0;
+}
+
+static int task_wait_func(uint64_t *data)
+{
+	struct task *t = (struct task *)((addr_t)data[0]);
+	unsigned int ticks0 = (unsigned int)data[1];
+	unsigned int ticks1 = (unsigned int)timer_ticks;
+
+	if (!t->active && t->stopped)
+		return 0;
+
+	if ((ticks1 - ticks0) >= 2000)
+		return 0;
+
+	return 1;
+}
+
+int task_wait(uint64_t id, int *retval)
+{
+	struct task *t;
+	int r = 0;
+
+	if (retval)
+		*retval = r;
+
+	if ((t = task_find(id)) == NULL)
+		return DE_ARGUMENT;
+
+	for (;;) {
+		void *lock_local;
+		int id_changed;
+		uint64_t d0, d1;
+
+		if (t->stopped && spin_trylock(&t->active)) {
+			if (t->stopped)
+				break;
+			spin_unlock(&t->active);
+		}
+
+		lock_local = &task_lock;
+		spin_enter(&lock_local);
+
+		id_changed = (t->id != id);
+
+		spin_leave(&lock_local);
+
+		if (id_changed)
+			return DE_ARGUMENT;
+
+		d0 = (uint64_t)((addr_t)t);
+		d1 = (uint64_t)timer_ticks;
+		task_write_event(task_wait_func, d0, d1);
+
+		do {
+			task_yield();
+		} while (task_read_event());
+	}
+
+	if (t->id != id || t->detached != 0) {
+		spin_unlock(&t->active);
+		return DE_ARGUMENT;
+	}
+
+	r = t->retval;
+	t->detached = 1;
+
+	spin_unlock(&t->active);
+
+	if (retval)
+		*retval = r;
+
+	return 0;
+}
+
 void task_yield(void)
 {
 	if (!task_ready)
