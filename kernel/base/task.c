@@ -522,6 +522,90 @@ void task_sleep(uint64_t milliseconds)
 	} while (task_read_event());
 }
 
+int task_switch(struct task *next)
+{
+	void *tss;
+	int r;
+
+	/*
+	 * The next argument can be NULL. Otherwise, do a quick test for
+	 * the "next->active" and "next->stopped" members. These do not
+	 * have to be "thread-safe".
+	 */
+	if (!next || next->active || next->stopped)
+		return 1;
+
+	/*
+	 * Disable interrupts and save the previous status. This is very
+	 * important and essential for many reasons.
+	 */
+	r = cpu_ints(0);
+
+	tss = gdt_get_tss();
+
+	/*
+	 * This quick test does not have to be "thread-safe" either.
+	 */
+	if (next->uniproc && tss != task_uniproc_tss) {
+		cpu_ints(r);
+		return 1;
+	}
+
+	/*
+	 * Try to acquire the "ownership" of the next task. If it succeeds,
+	 * then this thread of execution "owns" two locked task structures.
+	 */
+	if (!spin_trylock(&next->active)) {
+		cpu_ints(r);
+		return 1;
+	}
+
+	if (next->stopped) {
+		spin_unlock(&next->active);
+		cpu_ints(r);
+		return 1;
+	}
+
+	/*
+	 * Typically all processors are allowed to execute the task, but
+	 * some special tasks are allowed only on the bootstrap processor.
+	 */
+	if (next->uniproc && tss != task_uniproc_tss) {
+		spin_unlock(&next->active);
+		cpu_ints(r);
+		return 1;
+	}
+
+	/*
+	 * Call the event function if that has been set. If the function
+	 * returns a non-zero value, this task switching can be skipped.
+	 */
+	if (next->event.func != task_null_func) {
+		if (next->event.func(&next->event.data[0])) {
+			spin_unlock(&next->active);
+			cpu_ints(r);
+			return 1;
+		}
+
+		next->event.data[0] = 0;
+		next->event.data[1] = 0;
+		next->event.func = task_null_func;
+	}
+
+	/*
+	 * Call the assembly function, which will take care of the rest.
+	 */
+	task_switch_asm(next, tss);
+
+	/*
+	 * Restore the interrupts like they were. This step exactly here
+	 * is more fundamental for multitasking than it might seem.
+	 */
+	cpu_ints(r);
+
+	return 0;
+}
+
 void task_yield(void)
 {
 	if (!task_ready)
