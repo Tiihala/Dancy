@@ -78,6 +78,7 @@ static struct task *task_create_from_pool(void)
 		task_pool_count -= 1;
 		task_pool_head = task_read_next(task_pool_head);
 
+		task_write_next(new_task, task_head);
 		task_tail = task_write_next(task_tail, new_task);
 
 		if (!new_task->active)
