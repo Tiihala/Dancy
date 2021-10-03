@@ -67,6 +67,9 @@ struct task *task_find(uint64_t id);
 
 uint64_t task_create(int (*func)(void *), void *arg, int type);
 
+int task_read_event(void);
+void task_write_event(int (*func)(uint64_t *data), uint64_t d0, uint64_t d1);
+
 void task_exit(int retval);
 void task_jump(addr_t user_ip, addr_t user_sp);
 void task_sleep(uint64_t milliseconds);

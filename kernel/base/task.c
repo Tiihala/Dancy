@@ -442,6 +442,38 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	return id;
 }
 
+int task_read_event(void)
+{
+	struct task *current = task_current();
+	int r0, r1;
+
+	r0 = cpu_ints(0);
+
+	if ((r1 = current->event.func(&current->event.data[0])) == 0) {
+		current->event.data[0] = 0;
+		current->event.data[1] = 0;
+		current->event.func = task_null_func;
+	}
+
+	cpu_ints(r0);
+
+	return r1;
+}
+
+void task_write_event(int (*func)(uint64_t *data), uint64_t d0, uint64_t d1)
+{
+	struct task *current = task_current();
+	int r;
+
+	r = cpu_ints(0);
+
+	current->event.data[0] = d0;
+	current->event.data[1] = d1;
+	current->event.func = func;
+
+	cpu_ints(r);
+}
+
 void task_exit(int retval)
 {
 	struct task *current = task_current();
@@ -479,17 +511,15 @@ static int task_sleep_func(uint64_t *data)
 void task_sleep(uint64_t milliseconds)
 {
 	uint64_t data = timer_read() + milliseconds;
-	struct task *current = task_current();
 
 	if (data < milliseconds)
 		data = (uint64_t)(ULLONG_MAX);
 
-	cpu_write64(&current->event.data[0], data);
-	current->event.func = task_sleep_func;
+	task_write_event(task_sleep_func, data, 0);
 
 	do {
 		task_yield();
-	} while (current->event.func(&current->event.data[0]));
+	} while (task_read_event());
 }
 
 static int task_switch_generic(struct task *next, void *tss)
@@ -517,8 +547,9 @@ static int task_switch_generic(struct task *next, void *tss)
 		 * The same event function is not called again if
 		 * task switching continues.
 		 */
+		next->event.data[0] = 0;
+		next->event.data[1] = 0;
 		next->event.func = task_null_func;
-		memset(&next->event.data[0], 0, sizeof(next->event.data));
 	}
 
 	if (!tss) {

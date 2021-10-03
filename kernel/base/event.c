@@ -100,7 +100,6 @@ static int event_wait_func(uint64_t *data)
 
 int event_wait(event_t event, uint16_t milliseconds)
 {
-	struct task *current = task_current();
 	uint64_t data0 = (uint64_t)((cpu_native_t)event);
 	uint64_t data1 = timer_read() + (uint64_t)milliseconds;
 	int r = 1;
@@ -124,13 +123,11 @@ int event_wait(event_t event, uint16_t milliseconds)
 		if (r == 0 || data1 <= timer_read())
 			break;
 
-		cpu_write64(&current->event.data[0], data0);
-		cpu_write64(&current->event.data[1], data1);
-		current->event.func = event_wait_func;
+		task_write_event(event_wait_func, data0, data1);
 
 		do {
 			task_yield();
-		} while (current->event.func(&current->event.data[0]));
+		} while (task_read_event());
 	}
 
 	return r;
