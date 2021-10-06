@@ -449,6 +449,63 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	return id;
 }
 
+int task_list(struct task_list_entry *buf, size_t buf_size)
+{
+	struct task *t = task_head;
+	size_t max_count = buf_size / sizeof(*buf);
+	int count = 0;
+
+	if ((cpu_read_flags() & CPU_INTERRUPT_FLAG) == 0)
+		panic("Enumerating task structs while interrupts disabled.");
+
+	if (!buf || !buf_size) {
+		void *lock_local = &task_lock;
+
+		spin_enter(&lock_local);
+		count = task_struct_count - task_pool_count;
+		spin_leave(&lock_local);
+
+		return count;
+	}
+
+	memset(buf, 0, buf_size);
+
+	if (t != NULL) {
+		/*
+		 * Do not disable interrupts. Task switching must be
+		 * temporarily suspended.
+		 */
+		task_switch_disable();
+		spin_lock(&task_lock);
+
+		/*
+		 * The circular linked list must be fully valid when the
+		 * task lock is acquired. No other code can modify task
+		 * structure identifications or the linked list.
+		 */
+		do {
+			if ((size_t)count < max_count) {
+				buf[count].id = t->id;
+				buf[count].id_owner = t->id_owner;
+
+				if (t->event.func != task_null_func)
+					buf[count].event_active = 1;
+
+				buf[count].stopped = t->stopped;
+			}
+
+			count += 1;
+			t = task_read_next(t);
+
+		} while (t != task_head);
+
+		spin_unlock(&task_lock);
+		task_switch_enable();
+	}
+
+	return count;
+}
+
 int task_read_event(void)
 {
 	struct task *current = task_current();

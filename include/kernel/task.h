@@ -56,6 +56,13 @@ struct task {
 	int uniproc;
 };
 
+struct task_list_entry {
+	uint64_t id;
+	uint64_t id_owner;
+	int event_active;
+	int stopped;
+};
+
 struct task *task_read_next(const struct task *task);
 struct task *task_write_next(struct task *task, struct task *next);
 
@@ -66,6 +73,7 @@ struct task *task_current(void);
 struct task *task_find(uint64_t id);
 
 uint64_t task_create(int (*func)(void *), void *arg, int type);
+int task_list(struct task_list_entry *buf, size_t buf_size);
 
 int task_read_event(void);
 void task_write_event(int (*func)(uint64_t *data), uint64_t d0, uint64_t d1);
