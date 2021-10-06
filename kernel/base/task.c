@@ -24,6 +24,7 @@ void task_switch_asm(struct task *next, void *tss);
 
 static int task_ready;
 static int task_ap_count;
+static int task_ap_sync;
 
 static uint8_t task_default_fstate[512];
 static void *task_uniproc_tss;
@@ -297,15 +298,17 @@ int task_init(void)
 	task_struct_count = 1;
 
 	kernel->schedule = task_schedule_default;
-	cpu_write32((uint32_t *)&task_ready, 1);
 
 	ap_count = (uint32_t)kernel->smp_ap_count;
+	cpu_write32((uint32_t *)&task_ap_sync, 1);
 
 	while (cpu_read32((const uint32_t *)&task_ap_count) != ap_count)
 		delay(1000000);
 
 	if (!task_create(task_caretaker, NULL, task_normal))
 		return DE_MEMORY;
+
+	cpu_write32((uint32_t *)&task_ready, 1);
 
 	return 0;
 }
@@ -314,7 +317,7 @@ int task_init_ap(void)
 {
 	struct task *current;
 
-	while (cpu_read32((const uint32_t *)&task_ready) == 0)
+	while (cpu_read32((const uint32_t *)&task_ap_sync) == 0)
 		delay(1000000);
 
 	current = memset((void *)task_current(), 0, 0x1000);
@@ -335,6 +338,9 @@ int task_init_ap(void)
 		panic("task_init_ap: called too many times");
 
 	spin_unlock(&task_lock);
+
+	while (cpu_read32((const uint32_t *)&task_ready) == 0)
+		delay(1000000);
 
 	return 0;
 }
