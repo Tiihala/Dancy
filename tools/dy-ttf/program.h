@@ -104,7 +104,7 @@ struct options {
 
 struct cmap {
 	unsigned long point;
-	unsigned long index;
+	unsigned long p_idx;
 };
 
 struct hmtx {

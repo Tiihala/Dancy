@@ -185,9 +185,9 @@ static int ttf_cmap_qsort(const void *a, const void *b)
 	if (cmap_a->point < cmap_b->point)
 		return -1;
 
-	if (cmap_a->index > cmap_b->index)
+	if (cmap_a->p_idx > cmap_b->p_idx)
 		return 1;
-	if (cmap_a->index < cmap_b->index)
+	if (cmap_a->p_idx < cmap_b->p_idx)
 		return -1;
 
 	return 0;
@@ -331,7 +331,7 @@ static int ttf_read_cmap(void)
 					return 1;
 
 				ttf_cmap_array[add].point = c;
-				ttf_cmap_array[add].index = glyph_index;
+				ttf_cmap_array[add].p_idx = glyph_index;
 				add += 1;
 			}
 		}
@@ -404,7 +404,7 @@ static int ttf_read_cmap(void)
 					return 1;
 
 				ttf_cmap_array[add].point = c;
-				ttf_cmap_array[add].index = glyph_index++;
+				ttf_cmap_array[add].p_idx = glyph_index++;
 				add += 1;
 			}
 		}
@@ -439,7 +439,7 @@ static unsigned long ttf_search_cmap(unsigned long point)
 	const struct cmap *cmap_entry;
 	struct cmap key;
 
-	key.point = point, key.index = 0;
+	key.point = point, key.p_idx = 0;
 
 	if (ttf_cmap_array == NULL || ttf_cmap_points == 0)
 		return 0;
@@ -447,7 +447,7 @@ static unsigned long ttf_search_cmap(unsigned long point)
 	cmap_entry = bsearch(&key, ttf_cmap_array, ttf_cmap_points,
 		sizeof(struct cmap), ttf_cmap_bsearch);
 
-	return (cmap_entry != NULL) ? cmap_entry->index : 0;
+	return (cmap_entry != NULL) ? cmap_entry->p_idx : 0;
 }
 
 static int ttf_read_loca(void)
@@ -497,9 +497,9 @@ static int ttf_read_loca(void)
 	return 0;
 }
 
-static int ttf_read_glyf(unsigned long point, unsigned long index)
+static int ttf_read_glyf(unsigned long point, unsigned long p_idx)
 {
-	unsigned long i = (point != 0) ? ttf_search_cmap(point) : index;
+	unsigned long i = (point != 0) ? ttf_search_cmap(point) : p_idx;
 	const unsigned char *glyph = ttf_loca_array[i].glyph;
 	size_t size = ttf_loca_array[i].size;
 
@@ -806,7 +806,7 @@ static size_t ttf_build_cmap(size_t offset)
 	struct {
 		unsigned long start;
 		unsigned long end;
-		unsigned long index;
+		unsigned long p_idx;
 		unsigned long delta;
 	} *group_array;
 
@@ -820,12 +820,12 @@ static size_t ttf_build_cmap(size_t offset)
 
 	for (i = 0; i < ttf_cmap_points; i++) {
 		unsigned long point = ttf_cmap_array[i].point;
-		unsigned long index = ttf_cmap_array[i].index;
-		unsigned long delta = (index - point) & 0xFFFFul;
+		unsigned long p_idx = ttf_cmap_array[i].p_idx;
+		unsigned long delta = (p_idx - point) & 0xFFFFul;
 		int repeat = 0;
 
 		if (i != 0 && ttf_cmap_array[i - 1].point + 1 == point) {
-			if (ttf_cmap_array[i - 1].index + 1 == index)
+			if (ttf_cmap_array[i - 1].p_idx + 1 == p_idx)
 				repeat = 1;
 		}
 
@@ -834,7 +834,7 @@ static size_t ttf_build_cmap(size_t offset)
 		} else {
 			group_array[groups].start = point;
 			group_array[groups].end = point;
-			group_array[groups].index = index;
+			group_array[groups].p_idx = p_idx;
 			group_array[groups].delta = delta;
 		}
 
@@ -892,11 +892,11 @@ static size_t ttf_build_cmap(size_t offset)
 	for (i = 0; i < groups; i++) {
 		unsigned long s = group_array[i].start;
 		unsigned long e = group_array[i].end;
-		unsigned long index = group_array[i].index;
+		unsigned long p_idx = group_array[i].p_idx;
 
 		W_BE32(&p[0], s);
 		W_BE32(&p[4], e);
-		W_BE32(&p[8], index);
+		W_BE32(&p[8], p_idx);
 
 		p += 12;
 	}
@@ -915,7 +915,7 @@ static size_t ttf_build_cmap(size_t offset)
 	if (group_array[groups_format4 - 1].end != 0xFFFF) {
 		group_array[groups_format4].start = 0xFFFF;
 		group_array[groups_format4].end = 0xFFFF;
-		group_array[groups_format4].index = 0;
+		group_array[groups_format4].p_idx = 0;
 		group_array[groups_format4].delta = 1;
 		groups_format4 += 1;
 	}
@@ -1156,7 +1156,7 @@ static size_t ttf_build_glyf(size_t offset)
 
 			printf("Empty glyph %04lX", i);
 			for (j = 0; j < ttf_cmap_points; j++) {
-				if (ttf_cmap_array[j].index == i) {
+				if (ttf_cmap_array[j].p_idx == i) {
 					point = ttf_cmap_array[j].point;
 					printf(" (%08lX)", point);
 					break;
