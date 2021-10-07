@@ -282,7 +282,7 @@ static int read_file(const char *name, unsigned char **out, size_t *size)
 	return (void)fclose(fp), 0;
 }
 
-static int parse_time(const char *time, struct tm *out)
+static int parse_time(const char *time_str, struct tm *out)
 {
 	static const char *e = "Error: wrong timestamp format\n";
 	char buf[32];
@@ -292,9 +292,9 @@ static int parse_time(const char *time, struct tm *out)
 	 * "YYYY-MM-DDThh:mm:ss"
 	 */
 	memset(out, 0, sizeof(struct tm));
-	if (strlen(time) != 19)
+	if (strlen(time_str) != 19)
 		return fputs(e, stderr), 1;
-	memcpy(&buf[0], &time[0], 20);
+	memcpy(&buf[0], &time_str[0], 20);
 
 	if (buf[4] != '-' || buf[7] != '-' || buf[10] != 'T')
 		return fputs(e, stderr), 1;
