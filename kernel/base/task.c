@@ -39,9 +39,6 @@ static struct task *task_pool_head;
 static int task_struct_count;
 static int task_struct_limit;
 
-static int task_id_lock;
-static uint64_t task_id;
-
 static void task_append(struct task *new_task)
 {
 	void *lock_local = &task_lock;
@@ -55,12 +52,19 @@ static void task_append(struct task *new_task)
 
 static uint64_t task_create_id(void)
 {
+	static int task_id_lock;
+	static uint64_t task_id;
+
 	void *lock_local = &task_id_lock;
 	uint64_t id;
 
 	spin_enter(&lock_local);
-	if ((id = ++task_id) == 0)
+
+	task_id = (id = cpu_read64(&task_id) + 1);
+
+	if (id == 0 || (id & 0x8000000000000000ull) != 0)
 		panic("Error: task ID");
+
 	spin_leave(&lock_local);
 
 	return id;
