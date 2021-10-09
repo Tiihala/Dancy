@@ -112,7 +112,7 @@ static void task_schedule_default(void)
 	while (task_switch(next)) {
 		if (next == current)
 			break;
-		next = (!next) ? task_head : task_read_next(next);
+		next = !next ? task_read_next(current) : task_read_next(next);
 	}
 }
 
@@ -556,7 +556,7 @@ void task_exit(int retval)
 	pg_delete();
 
 	while (task_switch(next))
-		next = (!next) ? task_head : task_read_next(next);
+		next = !next ? task_read_next(current) : task_read_next(next);
 
 	panic("task_exit: unexpected behavior");
 }
