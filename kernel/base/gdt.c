@@ -29,7 +29,8 @@ struct gdt_block {
 	uint32_t table_addr_high;
 
 	uint32_t id;
-	uint32_t pad2[3];
+	uint32_t tss_addr;
+	uint32_t pad2[2];
 
 	uint8_t table[80];
 	uint8_t tss[144];
@@ -84,6 +85,8 @@ static void gdt_build_block(struct gdt_block *gb)
 	{
 		addr_t tss_addr = (uint32_t)((addr_t)&gb->tss[0]);
 
+		gb->tss_addr = (uint32_t)tss_addr;
+
 		p = &gb->table[gdt_task_state];
 		p[0] = (uint8_t)(sizeof(gb->tss) - 1);
 		p[1] = 0x00;
@@ -98,6 +101,20 @@ static void gdt_build_block(struct gdt_block *gb)
 		p[8] = (uint8_t)gdt_kernel_data;
 		p[9] = 0x00;
 		p[102] = (uint8_t)(sizeof(gb->tss));
+	}
+
+	{
+		addr_t gdt_block_addr = (uint32_t)((addr_t)gb);
+
+		p = &gb->table[gdt_block_data];
+		p[0] = 0xFF;
+		p[1] = 0xFF;
+		p[2] = (uint8_t)(gdt_block_addr);
+		p[3] = (uint8_t)(gdt_block_addr >> 8);
+		p[4] = (uint8_t)(gdt_block_addr >> 16);
+		p[5] = 0x93;
+		p[6] = 0x40;
+		p[7] = (uint8_t)(gdt_block_addr >> 24);
 	}
 }
 
@@ -132,6 +149,8 @@ static void gdt_build_block(struct gdt_block *gb)
 	{
 		addr_t tss_addr = (uint32_t)((addr_t)&gb->tss[0]);
 
+		gb->tss_addr = (uint32_t)tss_addr;
+
 		p = &gb->table[gdt_task_state];
 		p[0] = (uint8_t)(sizeof(gb->tss) - 1);
 		p[1] = 0x00;
@@ -144,6 +163,20 @@ static void gdt_build_block(struct gdt_block *gb)
 
 		p = (uint8_t *)tss_addr;
 		p[102] = (uint8_t)(sizeof(gb->tss));
+	}
+
+	{
+		addr_t gdt_block_addr = (uint32_t)((addr_t)gb);
+
+		p = &gb->table[gdt_block_data];
+		p[0] = 0xFF;
+		p[1] = 0xFF;
+		p[2] = (uint8_t)(gdt_block_addr);
+		p[3] = (uint8_t)(gdt_block_addr >> 8);
+		p[4] = (uint8_t)(gdt_block_addr >> 16);
+		p[5] = 0x93;
+		p[6] = 0x40;
+		p[7] = (uint8_t)(gdt_block_addr >> 24);
 	}
 }
 

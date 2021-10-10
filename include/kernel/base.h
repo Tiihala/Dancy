@@ -81,7 +81,8 @@ enum gdt_sel {
 	gdt_null_2      = 0x18,
 	gdt_user_data   = 0x20,
 	gdt_user_code   = 0x28,
-	gdt_task_state  = 0x30
+	gdt_task_state  = 0x30,
+	gdt_block_data  = 0x40
 };
 
 enum gdt_sys_sel {
@@ -102,6 +103,7 @@ void gdt_load_gs(int sel);
 
 void *gdt_get_tss(void);
 void gdt_load_tss(int sel);
+uint32_t gdt_read_segment(int sel, size_t offset);
 
 /*
  * Declarations of heap.c
