@@ -29,6 +29,7 @@ section .text
         global gdt_load_fs
         global gdt_load_gs
         global gdt_load_tss
+        global gdt_read_segment
 
 align 16
         ; void gdt_load(const void *gdt_ptr)
@@ -89,4 +90,15 @@ align 16
         ; void gdt_load_tss(int sel)
 gdt_load_tss:
         ltr cx                          ; load task register
+        ret
+
+align 16
+        ; uint32_t gdt_read_segment(int sel, size_t offset)
+        ;
+        ; Interrupts should be disabled before calling this function.
+gdt_read_segment:
+        push fs                         ; save segment register fs
+        mov fs, ecx                     ; set segment register fs
+        mov eax, [fs:rdx]               ; eax = return value
+        pop fs                          ; restore segment register fs
         ret
