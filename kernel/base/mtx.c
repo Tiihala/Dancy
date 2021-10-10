@@ -33,6 +33,13 @@ static struct base_mtx base_mtx_array[BASE_MTX_COUNT];
 #define null_mxt (mtx == NULL || *mtx == NULL)
 #define this_mtx ((struct base_mtx *)(*mtx))
 
+static int base_mtx_lock_func(uint64_t *data)
+{
+	struct base_mtx *mtx = (struct base_mtx *)((addr_t)data[0]);
+
+	return mtx->lock;
+}
+
 void mtx_destroy(mtx_t *mtx)
 {
 	if (null_mxt)
@@ -77,8 +84,15 @@ int mtx_lock(mtx_t *mtx)
 		return thrd_error;
 
 	while (!spin_trylock(&this_mtx->lock)) {
+		uint64_t data = (uint64_t)((addr_t)mtx);
+
 		this_mtx->yield = 1;
-		task_yield();
+
+		task_write_event(base_mtx_lock_func, data, 0);
+
+		do {
+			task_yield();
+		} while(task_read_event());
 	}
 
 	return thrd_success;
