@@ -35,9 +35,9 @@ static struct base_mtx base_mtx_array[BASE_MTX_COUNT];
 
 static int base_mtx_lock_func(uint64_t *data)
 {
-	struct base_mtx *mtx = (struct base_mtx *)((addr_t)data[0]);
+	int *lock = (int *)((addr_t)data[0]);
 
-	return mtx->lock;
+	return *lock;
 }
 
 void mtx_destroy(mtx_t *mtx)
@@ -84,7 +84,7 @@ int mtx_lock(mtx_t *mtx)
 		return thrd_error;
 
 	while (!spin_trylock(&this_mtx->lock)) {
-		uint64_t data = (uint64_t)((addr_t)mtx);
+		uint64_t data = (uint64_t)((addr_t)&this_mtx->lock);
 
 		this_mtx->yield = 1;
 
