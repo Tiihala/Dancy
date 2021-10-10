@@ -545,20 +545,16 @@ void task_write_event(int (*func)(uint64_t *data), uint64_t d0, uint64_t d1)
 void task_exit(int retval)
 {
 	struct task *current = task_current();
-	struct task *next = task_read_next(current);
-
-	if (!current->id_owner)
-		panic("task_exit: system task stopped");
 
 	current->retval = retval;
 	current->stopped = 1;
 
 	pg_delete();
 
-	while (task_switch(next))
-		next = !next ? task_read_next(current) : task_read_next(next);
+	while (current->id_owner != 0)
+		task_yield();
 
-	panic("task_exit: unexpected behavior");
+	panic("task_exit: system task stopped");
 }
 
 void task_jump(addr_t user_ip, addr_t user_sp)
