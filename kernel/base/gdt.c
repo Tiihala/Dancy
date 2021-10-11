@@ -36,6 +36,8 @@ struct gdt_block {
 	uint8_t tss[144];
 };
 
+static size_t tss_addr_offset = 0;
+
 static struct gdt_block *gdt_array = NULL;
 static int gdt_count = 0;
 static int gdt_used = 0;
@@ -207,6 +209,15 @@ int gdt_init(void)
 
 	memset(gdt_array, 0, size);
 
+	{
+		addr_t a0, a1;
+
+		a0 = (addr_t)((const unsigned char *)gdt_array);
+		a1 = (addr_t)((const unsigned char *)&gdt_array[0].tss_addr);
+
+		tss_addr_offset = (size_t)(a1 - a0);
+	}
+
 	gb = &gdt_array[gdt_used++];
 
 	spin_unlock(&gdt_lock);
@@ -281,16 +292,14 @@ int gdt_init_ap(void)
 
 void *gdt_get_tss(void)
 {
-	uint32_t id = apic_id();
-	int i;
+	uint32_t tss;
 
-	if (!gdt_ready)
-		return NULL;
+	/*
+	 * The caller of gdt_get_tss is responsible for making
+	 * sure that interrupts are disabled or task switching
+	 * is postponed.
+	 */
+	tss = gdt_read_segment(gdt_block_data, tss_addr_offset);
 
-	for (i = 0; i < gdt_count; i++) {
-		if (gdt_array[i].id == id)
-			return (void *)(&gdt_array[i].tss[0]);
-	}
-
-	return NULL;
+	return (void *)((addr_t)tss);
 }
