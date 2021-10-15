@@ -19,31 +19,64 @@
 
 #include <dancy.h>
 
+event_t ps2_event_port1;
+event_t ps2_event_port2;
+
 static int ps2_lock;
 static int ps2_ready;
 
-static void ps2_default_callback(uint8_t val)
-{
-	(void)val;
-}
+#define PS2_BUFFER_SIZE (0x2000)
 
-void (*ps2_receive_port1)(uint8_t val) = ps2_default_callback;
-void (*ps2_receive_port2)(uint8_t val) = ps2_default_callback;
+/*
+ * Circular buffer. New data will overwrite
+ * existing data if the buffer is full.
+ */
+static struct {
+	int start;
+	int end;
+	uint8_t base[PS2_BUFFER_SIZE];
+} ps2_buffer[2];
 
 static void ps2_irq_func(int irq, void *arg)
 {
-	(void)arg;
+	int start, end;
 
-	if (!ps2_ready)
+	if (!ps2_ready) {
+		(void)arg;
 		return;
+	}
 
 	if (irq == 1) {
-		ps2_receive_port1(cpu_in8(0x60));
+		spin_lock(&ps2_lock);
+
+		end = ps2_buffer[0].end;
+
+		ps2_buffer[0].base[end] = cpu_in8(0x60);
+		ps2_buffer[0].end = (end = (end + 1) % PS2_BUFFER_SIZE);
+
+		if ((start = ps2_buffer[0].start) == end)
+			ps2_buffer[0].start = (start + 1) % PS2_BUFFER_SIZE;
+
+		event_signal(ps2_event_port1);
+		spin_unlock(&ps2_lock);
+
 		return;
 	}
 
 	if (irq == 12) {
-		ps2_receive_port2(cpu_in8(0x60));
+		spin_lock(&ps2_lock);
+
+		end = ps2_buffer[1].end;
+
+		ps2_buffer[1].base[end] = cpu_in8(0x60);
+		ps2_buffer[1].end = (end = (end + 1) % PS2_BUFFER_SIZE);
+
+		if ((start = ps2_buffer[1].start) == end)
+			ps2_buffer[1].start = (start + 1) % PS2_BUFFER_SIZE;
+
+		event_signal(ps2_event_port2);
+		spin_unlock(&ps2_lock);
+
 		return;
 	}
 }
@@ -191,6 +224,15 @@ int ps2_init(void)
 	}
 
 	/*
+	 * Create the PS/2 event objects.
+	 */
+	ps2_event_port1 = event_create(event_type_manual_reset);
+	ps2_event_port2 = event_create(event_type_manual_reset);
+
+	if (!ps2_event_port1 || !ps2_event_port2)
+		return DE_MEMORY;
+
+	/*
 	 * Enable PS/2 devices.
 	 */
 	ps2_clear_status(1), cpu_out8(0x64, 0xAE), ps2_delay();
@@ -214,9 +256,69 @@ int ps2_init(void)
 			(void)cpu_in8(0x60);
 
 		spin_leave(&lock_local);
+
+		for (;;) {
+			int r1 = ps2_receive_port1();
+			int r2 = ps2_receive_port2();
+
+			if (r1 < 0 && r2 < 0)
+				break;
+		}
 	}
 
 	return 0;
+}
+
+int ps2_receive_port1(void)
+{
+	void *lock_local = &ps2_lock;
+	int start, end;
+	int r = -1;
+
+	spin_enter(&lock_local);
+
+	start = ps2_buffer[0].start;
+	end = ps2_buffer[0].end;
+
+	if (start != end) {
+		r = (int)ps2_buffer[0].base[start];
+		ps2_buffer[0].base[start] = 0;
+
+		ps2_buffer[0].start = (start = (start + 1) % PS2_BUFFER_SIZE);
+	}
+
+	if (start == end)
+		event_reset(ps2_event_port1);
+
+	spin_leave(&lock_local);
+
+	return r;
+}
+
+int ps2_receive_port2(void)
+{
+	void *lock_local = &ps2_lock;
+	int start, end;
+	int r = -1;
+
+	spin_enter(&lock_local);
+
+	start = ps2_buffer[1].start;
+	end = ps2_buffer[1].end;
+
+	if (start != end) {
+		r = (int)ps2_buffer[1].base[start];
+		ps2_buffer[1].base[start] = 0;
+
+		ps2_buffer[1].start = (start = (start + 1) % PS2_BUFFER_SIZE);
+	}
+
+	if (start == end)
+		event_reset(ps2_event_port2);
+
+	spin_leave(&lock_local);
+
+	return r;
 }
 
 int ps2_send_port1(uint8_t val)

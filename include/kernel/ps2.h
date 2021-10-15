@@ -25,10 +25,14 @@
 /*
  * Declarations of ps2.c
  */
-extern void (*ps2_receive_port1)(uint8_t val);
-extern void (*ps2_receive_port2)(uint8_t val);
+extern event_t ps2_event_port1;
+extern event_t ps2_event_port2;
 
 int ps2_init(void);
+
+int ps2_receive_port1(void);
+int ps2_receive_port2(void);
+
 int ps2_send_port1(uint8_t val);
 int ps2_send_port2(uint8_t val);
 
