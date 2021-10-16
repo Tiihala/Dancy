@@ -314,6 +314,10 @@ void memory_disable_manager(void)
 	uint32_t mem_kernel_count = 0;
 	size_t i, j;
 
+	/*
+	 * This lock is never released and aligned_alloc,
+	 * calloc, and malloc functions will return NULL.
+	 */
 	spin_lock(&memory_lock);
 
 	memory_manager_disabled = 1;
@@ -398,15 +402,11 @@ void memory_disable_manager(void)
 	}
 
 	fix_memory_map();
-	spin_unlock(&memory_lock);
 }
 
 void *aligned_alloc(size_t alignment, size_t size)
 {
 	void *r;
-
-	if (memory_manager_disabled)
-		return NULL;
 
 	if (!spin_trylock(&memory_lock))
 		return NULL;
@@ -425,9 +425,6 @@ void *calloc(size_t nmemb, size_t size)
 	if (!total || total / nmemb != size)
 		return NULL;
 
-	if (memory_manager_disabled)
-		return NULL;
-
 	if (!spin_trylock(&memory_lock))
 		return NULL;
 
@@ -442,9 +439,6 @@ void *calloc(size_t nmemb, size_t size)
 void *malloc(size_t size)
 {
 	void *r;
-
-	if (memory_manager_disabled)
-		return NULL;
 
 	if (!spin_trylock(&memory_lock))
 		return NULL;
@@ -465,10 +459,13 @@ void free(void *ptr)
 	if (ptr == NULL)
 		return;
 
-	if (memory_manager_disabled)
-		return;
+	for (;;) {
+		if (spin_trylock(&memory_lock))
+			break;
 
-	spin_lock(&memory_lock);
+		if (memory_manager_disabled)
+			return;
+	}
 
 	for (i = 1; (memory[i].flags & B_FLAG_VALID_ENTRY); i++) {
 		if (memory[i].base != addr)
