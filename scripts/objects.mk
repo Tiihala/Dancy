@@ -149,9 +149,6 @@
 ./o32/init/memory.o: ./boot/init/memory.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/memory.c
 
-./o32/init/mtx.o: ./boot/init/mtx.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./boot/init/mtx.c
-
 ./o32/init/panic.o: ./boot/init/panic.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/panic.c
 
@@ -367,9 +364,6 @@
 
 ./o64/init/memory.o: ./boot/init/memory.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/memory.c
-
-./o64/init/mtx.o: ./boot/init/mtx.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./boot/init/mtx.c
 
 ./o64/init/panic.o: ./boot/init/panic.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/panic.c

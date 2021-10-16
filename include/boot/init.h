@@ -168,9 +168,6 @@ void fs_write_logs(void);
 /*
  * Declarations of gui.c
  */
-extern mtx_t gui_mtx;
-extern int (*gui_mtx_lock)(mtx_t *);
-extern int (*gui_mtx_unlock)(mtx_t *);
 extern struct b_video_info *gui_video_info;
 
 int gui_init(void);
@@ -271,10 +268,6 @@ void b_log(const char *format, ...);
  */
 extern size_t memory_entries;
 extern void *memory_map;
-
-extern mtx_t memory_mtx;
-extern int (*memory_mtx_lock)(mtx_t *);
-extern int (*memory_mtx_unlock)(mtx_t *);
 
 int memory_init(void *map);
 void memory_disable_manager(void);

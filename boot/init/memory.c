@@ -22,21 +22,13 @@
 size_t memory_entries;
 void *memory_map;
 
-mtx_t memory_mtx;
-int (*memory_mtx_lock)(mtx_t *);
-int (*memory_mtx_unlock)(mtx_t *);
-
 static int memory_manager_disabled;
+static int memory_lock;
 
 #define TYPE_BOOT       (0x01u)
 #define TYPE_INIT       (0x02u)
 #define TYPE_LOW_END    (0x04u)
 #define TYPE_ALL        (0x07u)
-
-static int memory_mtx_nop(mtx_t *mtx)
-{
-	return (*mtx == NULL) ? thrd_success : thrd_error;
-}
 
 int memory_init(void *map)
 {
@@ -97,9 +89,6 @@ int memory_init(void *map)
 
 	memory_entries = i;
 
-	memory_mtx_lock = memory_mtx_nop;
-	memory_mtx_unlock = memory_mtx_nop;
-
 	return (memory_map = map), 0;
 }
 
@@ -132,7 +121,7 @@ void memory_print_map(void (*print)(const char *, ...))
 	phys_addr_t total = 0;
 	size_t i, j;
 
-	if (memory_mtx_lock(&memory_mtx) != thrd_success)
+	if (!spin_trylock(&memory_lock))
 		return;
 
 	(*print)("Memory Map\n");
@@ -188,7 +177,7 @@ void memory_print_map(void (*print)(const char *, ...))
 	else
 		(*print)("%zd MiB\n\n", (total / 1024));
 
-	memory_mtx_unlock(&memory_mtx);
+	spin_unlock(&memory_lock);
 }
 
 static void fix_memory_map(void)
@@ -325,10 +314,7 @@ void memory_disable_manager(void)
 	uint32_t mem_kernel_count = 0;
 	size_t i, j;
 
-	for (;;) {
-		if (memory_mtx_lock(&memory_mtx) == thrd_success)
-			break;
-	}
+	spin_lock(&memory_lock);
 
 	memory_manager_disabled = 1;
 
@@ -412,7 +398,7 @@ void memory_disable_manager(void)
 	}
 
 	fix_memory_map();
-	memory_mtx_unlock(&memory_mtx);
+	spin_unlock(&memory_lock);
 }
 
 void *aligned_alloc(size_t alignment, size_t size)
@@ -422,11 +408,11 @@ void *aligned_alloc(size_t alignment, size_t size)
 	if (memory_manager_disabled)
 		return NULL;
 
-	if (memory_mtx_lock(&memory_mtx) != thrd_success)
+	if (!spin_trylock(&memory_lock))
 		return NULL;
 
 	r = memory_aligned_alloc(alignment, size);
-	memory_mtx_unlock(&memory_mtx);
+	spin_unlock(&memory_lock);
 
 	return r;
 }
@@ -442,13 +428,13 @@ void *calloc(size_t nmemb, size_t size)
 	if (memory_manager_disabled)
 		return NULL;
 
-	if (memory_mtx_lock(&memory_mtx) != thrd_success)
+	if (!spin_trylock(&memory_lock))
 		return NULL;
 
 	if ((r = memory_aligned_alloc(16, total)) != NULL)
 		memset(r, 0, total);
 
-	memory_mtx_unlock(&memory_mtx);
+	spin_unlock(&memory_lock);
 
 	return r;
 }
@@ -460,11 +446,11 @@ void *malloc(size_t size)
 	if (memory_manager_disabled)
 		return NULL;
 
-	if (memory_mtx_lock(&memory_mtx) != thrd_success)
+	if (!spin_trylock(&memory_lock))
 		return NULL;
 
 	r = memory_aligned_alloc(16, size);
-	memory_mtx_unlock(&memory_mtx);
+	spin_unlock(&memory_lock);
 
 	return r;
 }
@@ -482,8 +468,7 @@ void free(void *ptr)
 	if (memory_manager_disabled)
 		return;
 
-	if (memory_mtx_lock(&memory_mtx) != thrd_success)
-		return;
+	spin_lock(&memory_lock);
 
 	for (i = 1; (memory[i].flags & B_FLAG_VALID_ENTRY); i++) {
 		if (memory[i].base != addr)
@@ -496,5 +481,5 @@ void free(void *ptr)
 		}
 	}
 	fix_memory_map();
-	memory_mtx_unlock(&memory_mtx);
+	spin_unlock(&memory_lock);
 }

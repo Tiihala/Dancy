@@ -63,7 +63,6 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/init/init.o \
  ./o32/init/kernel.o \
  ./o32/init/log.o \
- ./o32/init/mtx.o \
  ./o32/init/panic.o \
  ./o32/init/pci.o \
  ./o32/init/pg.o \
@@ -94,7 +93,6 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/init/init.o \
  ./o64/init/kernel.o \
  ./o64/init/log.o \
- ./o64/init/mtx.o \
  ./o64/init/panic.o \
  ./o64/init/pci.o \
  ./o64/init/pg.o \
