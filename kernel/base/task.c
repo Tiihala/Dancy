@@ -98,6 +98,37 @@ static struct task *task_create_from_pool(void)
 	return new_task;
 }
 
+static int task_read_retval(struct task *t, uint64_t id, int *retval)
+{
+	void *lock_local = &task_lock;
+	int r;
+
+	spin_enter(&lock_local);
+
+	if (t->id != id) {
+		spin_leave(&lock_local);
+		return DE_ARGUMENT;
+	}
+
+	if (!t->stopped) {
+		spin_leave(&lock_local);
+		return DE_RETRY;
+	}
+
+	if (!spin_trylock(&t->detached)) {
+		spin_leave(&lock_local);
+		return DE_ARGUMENT;
+	}
+
+	r = t->retval;
+	spin_leave(&lock_local);
+
+	if (retval)
+		*retval = r;
+
+	return 0;
+}
+
 static int task_null_func(uint64_t *data)
 {
 	(void)data;
@@ -684,28 +715,9 @@ int task_trywait(uint64_t id, int *retval)
 	if ((t = task_find(id)) == NULL)
 		return DE_ARGUMENT;
 
-	if (!t->stopped || !spin_trylock(&t->active))
-		return DE_RETRY;
+	r = task_read_retval(t, id, retval);
 
-	if (!t->stopped) {
-		spin_unlock(&t->active);
-		return DE_RETRY;
-	}
-
-	if (t->id != id || t->detached != 0) {
-		spin_unlock(&t->active);
-		return DE_ARGUMENT;
-	}
-
-	r = t->retval;
-	t->detached = 1;
-
-	spin_unlock(&t->active);
-
-	if (retval)
-		*retval = r;
-
-	return 0;
+	return r;
 }
 
 static int task_wait_func(uint64_t *data)
@@ -714,7 +726,7 @@ static int task_wait_func(uint64_t *data)
 	unsigned int ticks0 = (unsigned int)data[1];
 	unsigned int ticks1 = (unsigned int)timer_ticks;
 
-	if (!t->active && t->stopped)
+	if (t->stopped)
 		return 0;
 
 	if ((ticks1 - ticks0) >= 2000)
@@ -735,25 +747,12 @@ int task_wait(uint64_t id, int *retval)
 		return DE_ARGUMENT;
 
 	for (;;) {
-		void *lock_local;
-		int id_changed;
 		uint64_t d0, d1;
 
-		if (t->stopped && spin_trylock(&t->active)) {
-			if (t->stopped)
-				break;
-			spin_unlock(&t->active);
-		}
+		r = task_read_retval(t, id, retval);
 
-		lock_local = &task_lock;
-		spin_enter(&lock_local);
-
-		id_changed = (t->id != id);
-
-		spin_leave(&lock_local);
-
-		if (id_changed)
-			return DE_ARGUMENT;
+		if (r != DE_RETRY)
+			break;
 
 		d0 = (uint64_t)((addr_t)t);
 		d1 = (uint64_t)timer_ticks;
@@ -764,20 +763,7 @@ int task_wait(uint64_t id, int *retval)
 		} while (task_read_event());
 	}
 
-	if (t->id != id || t->detached != 0) {
-		spin_unlock(&t->active);
-		return DE_ARGUMENT;
-	}
-
-	r = t->retval;
-	t->detached = 1;
-
-	spin_unlock(&t->active);
-
-	if (retval)
-		*retval = r;
-
-	return 0;
+	return r;
 }
 
 void task_yield(void)
