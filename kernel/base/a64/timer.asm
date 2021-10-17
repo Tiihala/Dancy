@@ -22,8 +22,10 @@
 section .text
 
         extern timer_handler
+        extern timer_handler_ap
         global timer_apic_base
         global timer_asm_handler_apic
+        global timer_asm_handler_apic_ap
         global timer_asm_handler_pic
         global timer_read
 
@@ -96,6 +98,39 @@ timer_call_handler:
         and rsp, -16                    ; align stack
         sub rsp, 32                     ; shadow space
         call timer_handler              ; call timer_handler
+        mov rsp, rbx                    ; restore stack
+
+        pop r11                         ; restore register r11
+        pop r10                         ; restore register r10
+        pop r9                          ; restore register r9
+        pop r8                          ; restore register r8
+        pop rbx                         ; restore register rbx
+        pop rdx                         ; restore register rdx
+        pop rcx                         ; restore register rcx
+        pop rax                         ; restore register rax
+        iretq
+
+align 64
+        ; const uint8_t timer_asm_handler_apic_ap[]
+timer_asm_handler_apic_ap:
+        push rax                        ; save register rax
+        push rcx                        ; save register rcx
+        push rdx                        ; save register rdx
+        push rbx                        ; save register rbx
+        push r8                         ; save register r8
+        push r9                         ; save register r9
+        push r10                        ; save register r10
+        push r11                        ; save register r11
+        mov rbx, rsp                    ; save stack
+        cld                             ; clear direction flag
+
+        mov edx, timer_apic_base        ; rdx = address of timer_apic_base
+        mov rax, [rdx]                  ; rax = timer_apic_base
+        mov dword [rax+0xB0], 0         ; end of interrupt
+
+        and rsp, -16                    ; align stack
+        sub rsp, 32                     ; shadow space
+        call timer_handler_ap           ; call timer_handler_ap
         mov rsp, rbx                    ; restore stack
 
         pop r11                         ; restore register r11

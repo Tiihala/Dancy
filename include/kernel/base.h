@@ -210,6 +210,7 @@ void kernel_start_ap(void);
  */
 extern uint8_t timer_apic_base[];
 extern const uint8_t timer_asm_handler_apic[];
+extern const uint8_t timer_asm_handler_apic_ap[];
 extern const uint8_t timer_asm_handler_pic[];
 
 extern volatile uint32_t timer_ticks;
@@ -217,6 +218,7 @@ extern volatile uint64_t timer_ticks_64;
 extern volatile uint32_t timer_ticks_wait;
 
 void timer_handler(void);
+void timer_handler_ap(void);
 uint64_t timer_read(void);
 
 #endif

@@ -22,8 +22,10 @@
 section .text
 
         extern _timer_handler
+        extern _timer_handler_ap
         global _timer_apic_base
         global _timer_asm_handler_apic
+        global _timer_asm_handler_apic_ap
         global _timer_asm_handler_pic
         global _timer_read
 
@@ -121,6 +123,33 @@ _timer_call_handler:
         pop ecx                         ; restore register ecx
         pop eax                         ; restore register eax
         pop ebp                         ; restore register ebp
+        iret
+
+align 64
+        ; const uint8_t timer_asm_handler_apic_ap[]
+_timer_asm_handler_apic_ap:
+        push eax                        ; save register eax
+        push ecx                        ; save register ecx
+        push edx                        ; save register edx
+        push ebx                        ; save register ebx
+        push es                         ; save segment register es
+        push ds                         ; save segment register ds
+        mov ebx, esp                    ; save stack
+        cld                             ; clear direction flag
+
+        mov eax, [_timer_apic_base]     ; eax = _timer_apic_base
+        mov dword [eax+0xB0], 0         ; end of interrupt
+
+        and esp, 0xFFFFFFF0             ; align stack
+        call _timer_handler_ap          ; call _timer_handler_ap
+        mov esp, ebx                    ; restore stack
+
+        pop ds                          ; restore segment register ds
+        pop es                          ; restore segment register es
+        pop ebx                         ; restore register ebx
+        pop edx                         ; restore register edx
+        pop ecx                         ; restore register ecx
+        pop eax                         ; restore register eax
         iret
 
 align 16

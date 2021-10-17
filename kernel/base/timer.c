@@ -25,3 +25,8 @@ void timer_handler(void)
 
 	timer_ticks_wait = ticks;
 }
+
+void timer_handler_ap(void)
+{
+
+}

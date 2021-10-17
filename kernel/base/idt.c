@@ -315,6 +315,15 @@ int idt_init(void)
 		idt_install_asm(irq0_pic, timer_asm_handler_pic);
 	}
 
+	/*
+	 * Install the periodic APIC timer handler (application processors).
+	 */
+	if (kernel->io_apic_enabled) {
+		const int periodic_timer = 239;
+
+		idt_install_asm(periodic_timer, timer_asm_handler_apic_ap);
+	}
+
 	idt_load(idt_ptr);
 
 	return 0;
