@@ -323,6 +323,9 @@ int task_init(void)
 	current->id = task_create_id();
 	current->event.func = task_null_func;
 
+	if (current->id != 1 || current->id_owner != 0)
+		return DE_UNEXPECTED;
+
 	task_switch_asm(current, gdt_get_tss());
 	current->active = 1;
 
@@ -358,10 +361,12 @@ int task_init_ap(void)
 	current = memset((void *)task_current(), 0, 0x1000);
 	current->cr3 = (uint32_t)pg_kernel;
 	current->id = task_create_id();
+	current->id_owner = 1;
 	current->event.func = task_null_func;
 
 	task_switch_asm(current, gdt_get_tss());
 	current->active = 1;
+	current->detached = 1;
 	task_append(current);
 
 	spin_lock(&task_lock);
