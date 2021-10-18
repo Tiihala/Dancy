@@ -24,7 +24,7 @@ volatile int delay_error = 0;
 volatile uint64_t delay_tsc_hz = 0;
 
 #define DELAY_COUNTER 10
-#define DELAY_RETRIES 200
+#define DELAY_RETRIES 400
 
 static int delay_counter = DELAY_COUNTER;
 static int delay_retries = DELAY_RETRIES;
@@ -54,6 +54,14 @@ void delay_calibrate(void)
 	uint32_t tsc_a, tsc_d;
 	uint64_t tsc_diff, tsc_val;
 
+	if (delay_error != 0)
+		return;
+
+	if (delay_retries <= 0) {
+		delay_error = 1;
+		return;
+	}
+
 	cpu_rdtsc(&tsc_a, &tsc_d);
 	tsc_val = (((uint64_t)tsc_d << 16) << 16) | (uint64_t)tsc_a;
 
@@ -62,11 +70,6 @@ void delay_calibrate(void)
 	 */
 	if (delay_prev_value == 0) {
 		delay_prev_value = tsc_val;
-		return;
-	}
-
-	if (delay_retries <= 0 || delay_error != 0) {
-		delay_error = 1;
 		return;
 	}
 
@@ -104,7 +107,6 @@ void delay_calibrate(void)
 	 */
 	{
 		uint64_t value_diff = delay_max_value - delay_min_value;
-		uint64_t value_average;
 		int value_rsh = (delay_retries < (DELAY_RETRIES / 2)) ? 3 : 8;
 
 		if (value_diff > (delay_min_value >> value_rsh)) {
@@ -113,21 +115,19 @@ void delay_calibrate(void)
 			return;
 		}
 
-		value_average = (delay_min_value + delay_max_value) >> 1;
-
 		/*
-		 * Check that value_average can be an uint32_t. This is mostly
+		 * Check that the max value can be an uint32_t. This is mostly
 		 * theoretical because CPU specifications say that Time-Stamp
 		 * Counters will not wraparound very soon. For example, Intel:
 		 *
 		 * "...will not wraparound within 10 years after being reset."
 		 */
-		if (value_average > 0xFFFFFFFF) {
+		if (delay_max_value > 0xFFFFFFFF) {
 			delay_error = 3;
 			return;
 		}
 
-		delay_tsc_hz = value_average * 1000;
+		delay_tsc_hz = delay_max_value * 1000;
 	}
 
 	delay_clear(1);

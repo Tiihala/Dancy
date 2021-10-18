@@ -299,6 +299,7 @@ void init(void)
 			snprintf(&msg[0], 64, "%s (%d)", e, delay_error);
 			panic(&msg[0]);
 		}
+		cpu_halt(1);
 	}
 
 	/*
