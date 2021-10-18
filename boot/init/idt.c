@@ -19,7 +19,7 @@
 
 #include <boot/init.h>
 
-volatile unsigned idt_irq0;
+volatile uint32_t idt_irq0;
 
 static void idt_panic(unsigned num, const void *stack)
 {
@@ -91,7 +91,20 @@ static void end(unsigned irq)
 void idt_handler(unsigned num, const void *stack)
 {
 	const unsigned pic_irq_base = 32;
+	const unsigned apic_timer = 239;
 	unsigned irq;
+
+	/*
+	 * The APIC timer (application processors), and spurious interrupts.
+	 */
+	if (apic_mode) {
+		if (num == apic_timer) {
+			apic_eoi();
+			return;
+		}
+		if (num == apic_spurious_vector)
+			return;
+	}
 
 	/*
 	 * Handle CPU exceptions.
@@ -107,12 +120,6 @@ void idt_handler(unsigned num, const void *stack)
 	}
 
 	/*
-	 * Ignore AP interrupts.
-	 */
-	if (apic_bsp_id != apic_id())
-		return;
-
-	/*
 	 * Translate num to irq. Unsigned integer modulo wrapping is defined.
 	 */
 	irq = apic_mode ? (num - ioapic_irq_base) : (num - pic_irq_base);
@@ -121,7 +128,7 @@ void idt_handler(unsigned num, const void *stack)
 	 * Timer interrupt (IRQ 0).
 	 */
 	if (irq == 0) {
-		idt_irq0 += 1;
+		cpu_add32((void *)&idt_irq0, 1);
 
 		if (!delay_ready)
 			delay_calibrate();
@@ -169,12 +176,6 @@ void idt_handler(unsigned num, const void *stack)
 		cpu_out8(0x20, 0x20);
 		return;
 	}
-
-	/*
-	 * Spurious APIC interrupt.
-	 */
-	if (num == apic_spurious_vector)
-		return;
 
 	idt_panic(num, stack);
 }

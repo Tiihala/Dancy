@@ -192,7 +192,7 @@ void hpet_init(void);
 /*
  * Declarations of idt.asm and idt.c
  */
-extern volatile unsigned idt_irq0;
+extern volatile uint32_t idt_irq0;
 
 void idt_init(void);
 void idt_handler(unsigned num, const void *stack);
