@@ -24,6 +24,8 @@ void delay(uint32_t nanoseconds)
 	uint32_t tsc_a, tsc_d;
 	uint64_t tsc_add, tsc_base, tsc_val;
 
+	task_switch_disable();
+
 	cpu_rdtsc(&tsc_a, &tsc_d);
 
 	/*
@@ -40,4 +42,6 @@ void delay(uint32_t nanoseconds)
 		cpu_rdtsc(&tsc_a, &tsc_d);
 		tsc_val = (((uint64_t)tsc_d << 16) << 16) | (uint64_t)tsc_a;
 	}
+
+	task_switch_enable();
 }
