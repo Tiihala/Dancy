@@ -111,6 +111,7 @@ int apic_init(void);
 void apic_eoi(void);
 uint32_t apic_id(void);
 void apic_send(uint32_t icr_low, uint32_t icr_high);
+void apic_start_timer(void);
 int apic_wait_delivery(void);
 
 void ioapic_init(void);

@@ -439,6 +439,12 @@ void init_ap(uint32_t id)
 	cpu_ints(1);
 
 	/*
+	 * Enable the APIC periodic timer and have a few halt instructions
+	 * for testing purposes. Interrupts must wake up the halted CPU.
+	 */
+	apic_start_timer(), cpu_halt(4);
+
+	/*
 	 * Initialize the kernel (application processors).
 	 */
 	kernel_init_ap(id);

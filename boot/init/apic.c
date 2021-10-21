@@ -262,6 +262,105 @@ void apic_send(uint32_t icr_low, uint32_t icr_high)
 	cpu_write32(icr_300, icr_low);
 }
 
+static void prepare_timer(int periodic)
+{
+	/*
+	 * Initial Count Register (Timer). Set to zero temporarily.
+	 */
+	{
+		void *r = (void *)(apic_base_addr + 0x380);
+
+		cpu_write32(r, 0x00000000);
+	}
+
+	/*
+	 * Divide Configuration Register (Timer). Set to "Divide by 16".
+	 */
+	{
+		void *r = (void *)(apic_base_addr + 0x3E0);
+
+		cpu_write32(r, 0x00000003);
+	}
+
+	/*
+	 * LVT Timer Register. Use periodic or one-shot mode, vector 0xEF.
+	 */
+	{
+		void *r = (void *)(apic_base_addr + 0x320);
+		uint32_t v;
+
+		if (periodic)
+			v = 0x000200EF;
+		else
+			v = 0x000000EF;
+
+		cpu_write32(r, v);
+	}
+}
+
+static void start_timer(uint32_t initial_count)
+{
+	/*
+	 * Initial Count Register (Timer). Set the specific value.
+	 */
+	void *r = (void *)(apic_base_addr + 0x380);
+
+	cpu_write32(r, initial_count);
+}
+
+static uint32_t read_timer(void)
+{
+	/*
+	 * Current Count Register (Timer). Read the value.
+	 */
+	void *r = (void *)(apic_base_addr + 0x390);
+
+	return cpu_read32(r);
+}
+
+void apic_start_timer(void)
+{
+	const uint32_t max_count = 0xFFFFFFFF;
+	uint32_t initial_count;
+	uint32_t t0, t1;
+
+	/*
+	 * The APIC timer is started only on application processors.
+	 */
+	if (!apic_mode || apic_bsp_id == apic_id())
+		panic("apic_start_timer: called in a wrong context");
+
+	prepare_timer(0);
+
+	t0 = t1 = cpu_read32((void *)&idt_irq0);
+
+	while (t0 == t1)
+		t1 = cpu_read32((void *)&idt_irq0);
+
+	start_timer(max_count);
+
+	/*
+	 * Wait 10 milliseconds and then calculate the initial count.
+	 */
+	for (t0 = t1; (t1 - t0) < 10; /* void*/)
+		t1 = cpu_read32((void *)&idt_irq0);
+
+	initial_count = max_count - read_timer();
+
+	/*
+	 * The counter should not have reached zero (divide by 16) in
+	 * 10 milliseconds, but it definitely should have changed.
+	 */
+	if (initial_count == 0 || initial_count == max_count)
+		panic("APIC Timer: calibration failed");
+
+	/*
+	 * Start the periodic timer, approximately 100 Hz.
+	 */
+	prepare_timer(1);
+	start_timer(initial_count);
+}
+
 int apic_wait_delivery(void)
 {
 	const void *icr_300 = (const void *)(apic_base_addr + 0x300);
