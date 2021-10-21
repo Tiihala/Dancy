@@ -203,6 +203,11 @@ static void fix_memory_map(void)
 			continue;
 		}
 
+		if (m1->base_low == m2->base_low) {
+			if (m1->base_high == m2->base_high)
+				memcpy(m1, m2, sizeof(struct b_mem_raw));
+		}
+
 		if (m1->type == m2->type && m1->flags == m2->flags) {
 			size_t size, other;
 
