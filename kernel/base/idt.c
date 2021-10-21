@@ -20,6 +20,7 @@
 #include <dancy.h>
 
 static int idt_lock = 1;
+static int idt_lock_ap = 1;
 static int idt_count = 0;
 
 static struct {
@@ -325,21 +326,22 @@ int idt_init(void)
 	}
 
 	idt_load(idt_ptr);
+	spin_unlock(&idt_lock_ap);
 
 	return 0;
 }
 
 int idt_init_ap(void)
 {
-	spin_lock(&idt_lock);
+	spin_lock(&idt_lock_ap);
 
 	if (idt_count >= kernel->smp_ap_count + 1) {
-		spin_unlock(&idt_lock);
+		spin_unlock(&idt_lock_ap);
 		return DE_UNEXPECTED;
 	}
 
 	idt_count += 1;
-	spin_unlock(&idt_lock);
+	spin_unlock(&idt_lock_ap);
 
 	idt_load(idt_ptr);
 
