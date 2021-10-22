@@ -74,8 +74,6 @@ void kernel_start(void)
 	if (cpu_read32((uint32_t *)&kernel->table_size) != sizeof(*kernel))
 		return;
 
-	kernel->print("Welcome to Dancy Operating System\n");
-
 	/*
 	 * The BSP calls this kernel_start function after all application
 	 * processors have called the kernel_start_ap function. Check that
