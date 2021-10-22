@@ -793,9 +793,10 @@ static void handle_newline(void)
 {
 	unsigned win_width = gui_window_stack->win_width - 2;
 	unsigned win_height = gui_window_stack->win_height - 3;
-	size_t y_limit = win_height - (2 * ttf_height);
+	size_t y_value = ttf_height + (ttf_height / 4);
+	size_t y_limit = win_height - (2 * y_value);
 
-	gui_window_stack->y += (unsigned)ttf_height;
+	gui_window_stack->y += (unsigned)y_value;
 
 	if (gui_window_stack->y > y_limit) {
 		unsigned char *dst = gui_window_stack->win_buffer;
@@ -803,20 +804,20 @@ static void handle_newline(void)
 		size_t x, y;
 
 		dst += (ttf_height + 2) * vi.width + 1;
-		src = dst + (ttf_height * vi.width);
+		src = dst + (y_value * vi.width);
 
-		for (y = (2 * ttf_height); y < win_height; y++) {
+		for (y = (2 * y_value); y < win_height; y++) {
 			for (x = 0; x < win_width; x++)
 				dst[x] = src[x];
 			src += vi.width;
 			dst += vi.width;
 		}
-		for (y = 0; y < ttf_height; y++) {
+		for (y = 0; y < y_value; y++) {
 			for (x = 0; x < win_width; x++)
 				dst[x] = ttf_colors[0];
 			dst += vi.width;
 		}
-		gui_window_stack->y -= (unsigned)ttf_height;
+		gui_window_stack->y -= (unsigned)y_value;
 	}
 	gui_window_stack->x = 0;
 }
