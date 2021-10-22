@@ -328,7 +328,7 @@ void init(void)
 			"Oct", "Nov", "Dec"
 		};
 		int m = (bt.month <= 12) ? (int)bt.month : 0;
-		unsigned int mhz = (unsigned)((delay_tsc_hz / 10000000) * 10);
+		unsigned int mhz = (unsigned)(delay_tsc_hz / 1000000);
 		unsigned int usb_controllers = 0;
 		int dancy_bit = (int)(sizeof(void *)) * 8;
 
@@ -344,14 +344,13 @@ void init(void)
 		b_print("\b\nSystem Summary\n");
 		ttf = ttf_array[0];
 
-		if (!smp_ap_count) {
-			b_print("\b  Uniprocessor configuration"
-				" (~ %u Mhz)\n", mhz);
-		} else {
-			b_print("\b  Symmetric multiprocessing,"
-				" %u units (~ %u Mhz)\n",
-				(unsigned int)(smp_ap_count + 1), mhz);
-		}
+		if (!smp_ap_count)
+			b_print("\b  Uniprocessor configuration\n");
+		else
+			b_print("\b  Symmetric multiprocessing, %u units\n",
+				(unsigned int)(smp_ap_count + 1));
+
+		b_print("\b  Time-Stamp Counter (%u Mhz)\n", mhz);
 
 		if (pci_device_count > 1) {
 			const char *ecam = (pci_devices[0].ecam != 0) ?
