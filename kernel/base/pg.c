@@ -238,6 +238,7 @@ static void *pg_create_cr3(void)
 
 	pdpe[0] = (uint64_t)pde | page_bits;
 	pml4e[0] = (uint64_t)pdpe | page_bits;
+	pml4e[511] = *(((uint64_t *)pg_kernel) + 511);
 
 	return pml4e;
 }
@@ -317,6 +318,22 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 		return 1;
 
 	/*
+	 * The extended type is not identity mapped. The last entry of the
+	 * Page-map-level-4 is used. It is able to map the address range:
+	 *
+	 *   Physical                Virtual
+	 *   0000 0000 0000 0000     FFFF FF80 0000 0000
+	 *        .... ....               .... ....
+	 *   0000 007F FFFF FFFF     FFFF FFFF FFFF FFFF
+	 */
+	if ((type & pg_extended) != 0) {
+		if (pml4e_offset)
+			return 1;
+
+		pml4e_offset = 511;
+	}
+
+	/*
 	 * Page-map-level-4 table.
 	 */
 	ptr = (uint64_t *)pg_kernel;
@@ -355,7 +372,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 		if ((type & pg_uncached) != 0)
 			page_bits |= 0x18;
 
-		if (page < 0x10000000)
+		if (page < 0x10000000 || (type & pg_extended) != 0)
 			page_bits |= 0x100;
 
 		page_bits |= 0x80;
@@ -381,8 +398,10 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	if ((type & pg_uncached) != 0)
 		page_bits |= 0x18;
 
-	if (page < 0x10000000 && page != pg_rw_vaddr)
-		page_bits |= 0x100;
+	if (page != pg_rw_vaddr) {
+		if (page < 0x10000000 || (type & pg_extended) != 0)
+			page_bits |= 0x100;
+	}
 
 	offset = (int)((addr >> 12) & 0x1FF);
 
@@ -818,6 +837,15 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 	mtx_unlock(&pg_mtx);
 
 	cpu_write_cr3(cpu_read_cr3());
+
+#ifdef DANCY_64
+	if ((type & pg_extended) != 0) {
+		const uint64_t extended_base = 0xFFFFFF8000000000ull;
+		addr_t vaddr = (addr_t)((uint64_t)addr | extended_base);
+
+		return (void *)vaddr;
+	}
+#endif
 
 	return (void *)addr;
 }
