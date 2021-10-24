@@ -342,7 +342,9 @@ static struct {
 
 static void acpios_irq_route(int irq, void *arg)
 {
+	pg_enter_kernel();
 	acpios_irq[irq].routine(arg);
+	pg_leave_kernel();
 }
 
 ACPI_STATUS AcpiOsInstallInterruptHandler(
