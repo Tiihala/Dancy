@@ -219,6 +219,39 @@ int mm_init(void)
 
 	memset(mm_bitmap, 0xFF, mm_bitmap_size);
 
+	/*
+	 * Verify that the bitmap really has all pages "allocated"
+	 * initially. The memory manager would behave in a really
+	 * bad way if some bits were hardwired to value zero.
+	 */
+	{
+		size_t t0 = 0, t1 = mm_bitmap_size - 1;
+
+		/*
+		 * Prevent reading any cached results. The compiler
+		 * must assume that cpu_read8 could change the whole
+		 * bitmap content, although they do nothing.
+		 */
+		(void)cpu_read8(mm_bitmap + t0), cpu_wbinvd();
+		(void)cpu_read8(mm_bitmap + t1), cpu_wbinvd();
+
+		while (t0 <= t1) {
+			if (mm_bitmap[t0] != 0xFF) {
+				char msg[64];
+
+				snprintf(&msg[0], sizeof(msg),
+					"mm_init: address %p unavailable",
+					&mm_bitmap[t0]);
+
+				kernel->panic(&msg[0]);
+			}
+			t0 += 1;
+		}
+	}
+
+	/*
+	 * Clear all bitmap bits that refer to free pages.
+	 */
 	for (i = 0; i < mm_count; i++) {
 		size_t page_frame = mm_array[i].page_frame;
 		size_t page_count = mm_array[i].page_count;
