@@ -138,8 +138,8 @@ int mm_init(void)
 		if (next > 0x100000000ull)
 			next = 0x100000000ull;
 #else
-		if (next > 0x10000000000ull)
-			next = 0x10000000000ull;
+		if (next > 0x800000000000ull)
+			next = 0x800000000000ull;
 #endif
 		if (base >= next)
 			continue;
@@ -173,8 +173,47 @@ int mm_init(void)
 			mm_bitmap_size = size;
 	}
 
+#ifdef DANCY_32
 	mm_bitmap = aligned_alloc(0x1000, mm_bitmap_size);
+#else
+	for (i = mm_count - 1; i >= 0; i--) {
+		size_t bitmap_page_count = mm_bitmap_size / 0x1000;
 
+		size_t page_frame = mm_array[i].page_frame;
+		size_t page_count = mm_array[i].page_count;
+		phys_addr_t addr;
+
+		/*
+		 * Check the size of the block and avoid having
+		 * equal sizes (an "untested" corner case).
+		 */
+		if (page_count <= bitmap_page_count)
+			continue;
+
+		page_frame += bitmap_page_count;
+		page_count -= bitmap_page_count;
+
+		addr = (phys_addr_t)(page_frame * 0x1000);
+
+		/*
+		 * Make sure that extended mapping is possible. The limit
+		 * is arbitrary, but clearly below the hard limit. This
+		 * also avoids an extremely unlikely scenario: mapping the
+		 * highest possible virtual addresses.
+		 */
+		if (addr > 0x7800000000ull)
+			continue;
+
+		/*
+		 * On 64-bit systems, the bitmap size can be quite large.
+		 */
+		mm_bitmap = pg_map_kernel(addr, mm_bitmap_size, pg_extended);
+
+		mm_array[i].page_frame = page_frame;
+		mm_array[i].page_count = page_count;
+		break;
+	}
+#endif
 	if (!mm_bitmap)
 		return free(mm_array), DE_MEMORY;
 
