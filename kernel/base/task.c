@@ -141,8 +141,11 @@ static void task_schedule_default(void)
 	struct task *next = task_read_next(current);
 
 	while (task_switch(next)) {
-		if (next == current)
+		if (next == current) {
+			if ((cpu_read_flags() & CPU_INTERRUPT_FLAG) != 0)
+				cpu_halt(1);
 			break;
+		}
 		next = !next ? task_read_next(current) : task_read_next(next);
 	}
 }
