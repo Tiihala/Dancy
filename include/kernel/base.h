@@ -196,7 +196,7 @@ void pg_write_memory(phys_addr_t addr, uint64_t val, size_t size);
  */
 int runlevel_init(void);
 int runlevel_current(void);
-int runlevel_set(int id);
+int runlevel_send_request(int id);
 
 /*
  * Declarations of start.c

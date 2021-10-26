@@ -229,7 +229,7 @@ int runlevel_current(void)
 	return (int)cpu_read32(&runlevel_id[0]);
 }
 
-int runlevel_set(int id)
+int runlevel_send_request(int id)
 {
 	/*
 	 * Run levels from 1 to 5.
@@ -261,7 +261,7 @@ int runlevel_set(int id)
 		event_signal(runlevel_event);
 
 		task_sleep(forever);
-		panic("runlevel_set: unexpected behavior");
+		panic("runlevel_send_request: unexpected behavior");
 	}
 
 	return DE_ARGUMENT;
