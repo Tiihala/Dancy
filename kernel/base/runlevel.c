@@ -20,7 +20,9 @@
 #include <dancy.h>
 
 static uint32_t runlevel_id[2] = { 1, 1 };
+
 static int runlevel_lock = 0;
+static event_t runlevel_event = NULL;
 
 static void runlevel_prepare_shutdown(void)
 {
@@ -184,7 +186,7 @@ static int runlevel_task(void *arg)
 		id = cpu_read32(&runlevel_id[1]);
 
 		if (id == cpu_read32(&runlevel_id[0])) {
-			task_yield();
+			event_wait(runlevel_event, 0xFFFF);
 			continue;
 		}
 
@@ -199,8 +201,6 @@ static int runlevel_task(void *arg)
 			runlevel_prepare_shutdown();
 			runlevel_reset();
 		}
-
-		spin_unlock(&runlevel_lock);
 	}
 
 	return 0;
@@ -212,6 +212,11 @@ int runlevel_init(void)
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
+
+	runlevel_event = event_create(0);
+
+	if (!runlevel_event)
+		return DE_MEMORY;
 
 	if (!task_create(runlevel_task, NULL, task_detached | task_uniproc))
 		return DE_MEMORY;
@@ -226,31 +231,37 @@ int runlevel_current(void)
 
 int runlevel_set(int id)
 {
-	if (!spin_trylock(&runlevel_lock))
-		return DE_RETRY;
-
 	/*
-	 * Shut down the computer.
+	 * Run levels from 1 to 5.
 	 */
-	if (id == 0) {
-		cpu_write32(&runlevel_id[1], 0);
+	if (id >= 1 && id <= 5) {
+		while (!spin_trylock(&runlevel_lock))
+			task_yield();
+
+		cpu_write32(&runlevel_id[1], (uint32_t)id);
+		event_signal(runlevel_event);
+
+		while (runlevel_current() != id)
+			task_yield();
+
+		spin_unlock(&runlevel_lock);
 		return 0;
 	}
 
 	/*
-	 * Normal mode.
+	 * Shut down or reset the computer.
 	 */
-	if (id == 1) {
-		cpu_write32(&runlevel_id[1], 1);
-		return 0;
-	}
+	if (id == 0 || id == 6) {
+		const uint64_t forever = (uint64_t)ULLONG_MAX;
 
-	/*
-	 * Reset the computer.
-	 */
-	if (id == 6) {
-		cpu_write32(&runlevel_id[1], 6);
-		return 0;
+		while (!spin_trylock(&runlevel_lock))
+			task_yield();
+
+		cpu_write32(&runlevel_id[1], (uint32_t)id);
+		event_signal(runlevel_event);
+
+		task_sleep(forever);
+		panic("runlevel_set: unexpected behavior");
 	}
 
 	return DE_ARGUMENT;
