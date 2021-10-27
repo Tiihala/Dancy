@@ -135,7 +135,7 @@ static int task_null_func(uint64_t *data)
 	return 0;
 }
 
-static void task_schedule_default(void)
+static void task_default_yield(void)
 {
 	struct task *current = task_current();
 	struct task *next = task_read_next(current);
@@ -338,7 +338,9 @@ int task_init(void)
 	task_head = (task_tail = current);
 	task_struct_count = 1;
 
-	kernel->schedule = task_schedule_default;
+	kernel->scheduler.yield = task_default_yield;
+	kernel->scheduler.task_lock = &task_lock;
+	kernel->scheduler.task_head = task_head;
 
 	ap_count = (uint32_t)kernel->smp_ap_count;
 	cpu_write32((uint32_t *)&task_ap_sync, 1);
@@ -779,5 +781,5 @@ void task_yield(void)
 	if (!task_ready)
 		return;
 
-	kernel->schedule();
+	kernel->scheduler.yield();
 }

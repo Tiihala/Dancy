@@ -179,9 +179,14 @@ struct kernel_table {
 	} *pci_device;
 
 	/*
-	 * Task scheduler function pointer.
+	 * Task scheduler interface.
 	 */
-	void (*schedule)(void);
+	struct {
+		void (*yield)(void);
+
+		int *task_lock;
+		void *task_head;
+	} scheduler;
 };
 
 #endif
