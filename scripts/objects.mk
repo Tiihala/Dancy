@@ -218,6 +218,9 @@
 ./o32/ps2/8042.o: ./kernel/ps2/8042.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/ps2/8042.c
 
+./o32/sched/sched.o: ./kernel/sched/sched.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/sched/sched.c
+
 ./o64/base/a64/fb.o: ./kernel/base/a64/fb.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/base/a64/fb.asm
 
@@ -433,6 +436,9 @@
 
 ./o64/ps2/8042.o: ./kernel/ps2/8042.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/ps2/8042.c
+
+./o64/sched/sched.o: ./kernel/sched/sched.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/sched/sched.c
 
 ./o64/uefi/a64/cpu.o: ./boot/uefi/a64/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./boot/uefi/a64/cpu.asm

@@ -8,12 +8,14 @@ DANCY_DB_FILES= \
  ./o32/base.at \
  ./o32/pci.at \
  ./o32/ps2.at \
+ ./o32/sched.at \
  $(ACPICA_O32_AT) \
  ./o64/init.at \
  ./o64/lib.at \
  ./o64/base.at \
  ./o64/pci.at \
  ./o64/ps2.at \
+ ./o64/sched.at \
  $(ACPICA_O64_AT) \
  ./share/fonts/dcysan.ttf \
  ./share/fonts/dcysanb.ttf \

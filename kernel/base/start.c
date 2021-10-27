@@ -37,6 +37,7 @@ static struct {
 	/*
 	 * Dynamically linked initialization functions.
 	 */
+	{ 0, 0, SYMBOL_PREFIX "sched_init", "Scheduler" },
 	{ 0, 0, SYMBOL_PREFIX "pci_init", "PCI" },
 	{ 0, 0, SYMBOL_PREFIX "ps2_init", "PS/2 Controller" },
 	{ 1, 0, SYMBOL_PREFIX "acpios_init", "ACPICA" }

@@ -51,6 +51,7 @@ path: ./bin/dy-path$(DANCY_EXE)
 !include .\scripts\at\lib.mk
 !include .\scripts\at\pci.mk
 !include .\scripts\at\ps2.mk
+!include .\scripts\at\sched.mk
 !include .\scripts\at\uefi.mk
 
 !include .\scripts\dirs.mk
