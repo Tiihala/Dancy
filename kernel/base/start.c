@@ -58,6 +58,13 @@ static void checked_init(int (*func)(void), const char *desc)
 	}
 }
 
+static uint32_t empty_yield_count;
+
+static void empty_yield(void)
+{
+	cpu_add32(&empty_yield_count, 1);
+}
+
 void kernel_start(void)
 {
 	static int run_once;
@@ -82,6 +89,8 @@ void kernel_start(void)
 	 */
 	if ((int)cpu_read32((uint32_t *)&ap_count) != kernel->smp_ap_count)
 		kernel->panic("SMP: kernel synchronization failure");
+
+	kernel->scheduler.yield = empty_yield;
 
 	checked_init(heap_init, "Heap memory manager");
 	checked_init(gdt_init, "GDT (BSP)");

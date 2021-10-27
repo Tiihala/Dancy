@@ -338,10 +338,6 @@ int task_init(void)
 	task_head = (task_tail = current);
 	task_struct_count = 1;
 
-	kernel->scheduler.yield = task_default_yield;
-	kernel->scheduler.task_lock = &task_lock;
-	kernel->scheduler.task_head = task_head;
-
 	ap_count = (uint32_t)kernel->smp_ap_count;
 	cpu_write32((uint32_t *)&task_ap_sync, 1);
 
@@ -351,7 +347,12 @@ int task_init(void)
 	if (!task_create(task_caretaker, NULL, task_normal))
 		return DE_MEMORY;
 
+	kernel->scheduler.task_lock = &task_lock;
+	kernel->scheduler.task_head = task_head;
+
 	cpu_write32((uint32_t *)&task_ready, 1);
+
+	kernel->scheduler.yield = task_default_yield;
 
 	return 0;
 }
@@ -778,8 +779,5 @@ int task_wait(uint64_t id, int *retval)
 
 void task_yield(void)
 {
-	if (!task_ready)
-		return;
-
 	kernel->scheduler.yield();
 }
