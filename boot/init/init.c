@@ -159,9 +159,32 @@ void init(void)
 	 * are still available. The actual GUI does not require them.
 	 */
 	if (gui_init()) {
-		b_print("*****************************************\n");
-		b_print("**** Graphical Mode is not supported ****\n");
-		b_print("*****************************************\n\n");
+		const char *message =
+			"*************************************\n"
+			"** Graphical mode is not supported **\n"
+			"*************************************\n\n"
+			"The operating system does not use any\n"
+			"graphics without a video framebuffer.\n\n";
+
+		const char *vertical_bar = "\xE2\x94\x82";
+		const char *empty_space = " ";
+
+		if (boot_loader_type != BOOT_LOADER_TYPE_BIOS)
+			vertical_bar = "|";
+
+		b_output_control(B_CLEAR_CONSOLE, 0);
+		b_print(message);
+
+		b_print("%33s" "%s" "\r" "%3s" "%s",
+			empty_space, vertical_bar,
+			empty_space, vertical_bar);
+
+		for (i = 0; i < 29; i++) {
+			b_output_string_hl(empty_space, 1);
+			b_pause();
+		}
+
+		b_output_control(B_CLEAR_CONSOLE, 0);
 	}
 
 	/*
@@ -347,10 +370,13 @@ void init(void)
 		if (!smp_ap_count)
 			b_print("\b  Uniprocessor configuration\n");
 		else
-			b_print("\b  Symmetric multiprocessing, %u units\n",
+			b_print("\b  Symmetric multiprocessing (%u units)\n",
 				(unsigned int)(smp_ap_count + 1));
 
 		b_print("\b  Time-Stamp Counter (%u Mhz)\n", mhz);
+
+		if (hpet_mode)
+			b_print("\b  High Precision Event Timer (HPET)\n");
 
 		if (pci_device_count > 1) {
 			const char *ecam = (pci_devices[0].ecam != 0) ?
@@ -398,9 +424,6 @@ void init(void)
 			b_print("\b device%s\n",
 				(usb_controllers > 1) ? "s" : "");
 		}
-
-		if (hpet_mode)
-			b_print("\b  High Precision Event Timer (HPET)\n");
 
 		ttf = ttf_array[1];
 		b_print("\b\nSoftware Environment\n");
