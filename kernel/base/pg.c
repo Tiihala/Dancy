@@ -31,6 +31,11 @@ static int pg_rw_lock;
 static addr_t pg_rw_entry;
 static addr_t pg_rw_vaddr;
 
+enum pg_size_type {
+	pg_mega_type = 1,
+	pg_giga_type = 2
+};
+
 #ifdef DANCY_32
 
 static void *pg_create_cr3(void)
@@ -84,7 +89,7 @@ static void pg_delete_cr3(cpu_native_t cr3)
 	mm_free_page((phys_addr_t)pde);
 }
 
-static int pg_map_identity(phys_addr_t addr, int type, int large_page)
+static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 {
 	uint32_t page_bits = 0x23;
 	int offset = (int)(addr >> 22);
@@ -98,7 +103,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	if (!pg_kernel_pde)
 		pg_kernel_pde = ptr;
 
-	if (large_page) {
+	if (page_type == pg_mega_type) {
 		if ((ptr[offset] & 1) != 0 && (ptr[offset] & 0x80) == 0)
 			return 1;
 
@@ -120,6 +125,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 		if ((page = (uint32_t)heap_alloc_static_page()) == 0)
 			return 1;
 		ptr[offset] = page | page_bits;
+
 	} else if ((ptr[offset] & 0x80) != 0) {
 		return 1;
 	}
@@ -162,6 +168,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 			return 1;
 		memset((void *)page, 0, 0x1000);
 		ptr[offset] = page | page_bits;
+
 	} else if ((ptr[offset] & 0x80) != 0) {
 		return 1;
 	}
@@ -205,7 +212,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 	return &ptr[offset];
 }
 
-static const phys_addr_t pg_unit_size = 0x400000;
+static const phys_addr_t pg_mega_size = 0x400000;
 
 #endif
 
@@ -275,7 +282,9 @@ static void pg_delete_cr3(cpu_native_t cr3)
 		pdpe = (uint64_t *)(pml4e[i] & entry_mask);
 
 		for (j = 0; j < 512; j++) {
-			if ((pdpe[j] & 1) == 0)
+			if ((pdpe[j] & 0x01) == 0)
+				continue;
+			if ((pdpe[j] & 0x80) != 0)
 				continue;
 
 			/*
@@ -306,7 +315,7 @@ static void pg_delete_cr3(cpu_native_t cr3)
 	mm_free_page((phys_addr_t)pml4e);
 }
 
-static int pg_map_identity(phys_addr_t addr, int type, int large_page)
+static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 {
 	uint64_t page_bits = 0x23;
 	int pml4e_offset = (int)(addr >> 39);
@@ -353,6 +362,9 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 		if ((page = (uint64_t)heap_alloc_static_page()) == 0)
 			return 1;
 		ptr[pdpe_offset] = page | page_bits;
+
+	} else if ((ptr[pdpe_offset] & 0x80) != 0) {
+		return 1;
 	}
 
 	/*
@@ -363,7 +375,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 	if (!pg_kernel_pde)
 		pg_kernel_pde = ptr;
 
-	if (large_page) {
+	if (page_type == pg_mega_type) {
 		if ((ptr[offset] & 1) != 0 && (ptr[offset] & 0x80) == 0)
 			return 1;
 
@@ -385,6 +397,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int large_page)
 		if ((page = (uint64_t)heap_alloc_static_page()) == 0)
 			return 1;
 		ptr[offset] = page | page_bits;
+
 	} else if ((ptr[offset] & 0x80) != 0) {
 		return 1;
 	}
@@ -446,6 +459,9 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 			return 1;
 		memset((void *)page, 0, 0x1000);
 		ptr[pdpe_offset] = page | page_bits;
+
+	} else if ((ptr[pdpe_offset] & 0x80) != 0) {
+		return 1;
 	}
 
 	/*
@@ -458,6 +474,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 			return 1;
 		memset((void *)page, 0, 0x1000);
 		ptr[offset] = page | page_bits;
+
 	} else if ((ptr[offset] & 0x80) != 0) {
 		return 1;
 	}
@@ -502,7 +519,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 	 */
 	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFF000);
 
-	if ((ptr[pdpe_offset] & 1) == 0)
+	if ((ptr[pdpe_offset] & 1) == 0 || (ptr[pdpe_offset] & 0x80) != 0)
 		return NULL;
 
 	/*
@@ -522,7 +539,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 	return &ptr[offset];
 }
 
-static const phys_addr_t pg_unit_size = 0x200000;
+static const phys_addr_t pg_mega_size = 0x200000;
 
 #endif
 
@@ -803,7 +820,7 @@ void pg_leave_kernel(void)
 void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 {
 	const phys_addr_t page_mask = 0x0FFF;
-	const phys_addr_t unit_mask = pg_unit_size - 1;
+	const phys_addr_t mega_mask = pg_mega_size - 1;
 	phys_addr_t addr_beg, addr_end, addr_sub;
 
 	if (size == 0 || addr > (SIZE_MAX - size) + 1)
@@ -819,9 +836,9 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 		return NULL;
 
 	while ((addr_sub = addr_end - addr_beg) != 0) {
-		if ((addr_beg & unit_mask) == 0 && addr_sub >= pg_unit_size) {
-			if (!pg_map_identity(addr_beg, type, 1)) {
-				addr_beg += pg_unit_size;
+		if ((addr_beg & mega_mask) == 0 && addr_sub >= pg_mega_size) {
+			if (!pg_map_identity(addr_beg, type, pg_mega_type)) {
+				addr_beg += pg_mega_size;
 				continue;
 			}
 		}
