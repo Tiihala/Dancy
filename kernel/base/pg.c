@@ -708,6 +708,7 @@ int pg_init(void)
 
 		uint32_t type = kernel->memory_map[i].type;
 		uint64_t base, next, size;
+		phys_addr_t addr;
 
 		if (type != type_kernel && type != type_kernel_reserved)
 			continue;
@@ -715,14 +716,23 @@ int pg_init(void)
 		base = kernel->memory_map[i + 0].base;
 		next = kernel->memory_map[i + 1].base;
 
-		if (next != 0 && base > next)
+		if (next != 0 && base >= next)
 			return DE_UNEXPECTED;
 #ifdef DANCY_32
 		if (next > 0x100000000ull)
 			break;
 #endif
+		if (base < 0x1000)
+			base = 0x1000;
+
+		if (base >= next)
+			continue;
+
+		addr = (phys_addr_t)base;
 		size = next - base;
-		pg_map_kernel((phys_addr_t)base, (size_t)size, pg_normal);
+
+		if (!pg_map_kernel(addr, (size_t)size, pg_normal))
+			return DE_MEMORY;
 	}
 
 	cpu_write32((uint32_t *)&pg_ready, 1);
@@ -832,6 +842,7 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 	const phys_addr_t page_mask = 0x0FFF;
 	const phys_addr_t mega_mask = pg_mega_size - 1;
 	phys_addr_t addr_beg, addr_end, addr_sub;
+	cpu_native_t cr3;
 
 	if (size == 0 || addr > (SIZE_MAX - size) + 1)
 		return NULL;
@@ -840,10 +851,14 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 	addr_end = ((phys_addr_t)(addr + size) + page_mask) & (~page_mask);
 
 	if (addr_beg == 0)
-		addr_beg += 0x1000;
-
-	if (mtx_lock(&pg_mtx) != thrd_success)
 		return NULL;
+
+	if (pg_ready) {
+		if ((cr3 = cpu_read_cr3()) != pg_kernel)
+			return NULL;
+		if (mtx_lock(&pg_mtx) != thrd_success)
+			return NULL;
+	}
 
 	while ((addr_sub = addr_end - addr_beg) != 0) {
 		if ((addr_beg & mega_mask) == 0 && addr_sub >= pg_mega_size) {
@@ -854,19 +869,20 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 		}
 
 		if (pg_map_identity(addr_beg, type, 0)) {
-			mtx_unlock(&pg_mtx);
-			return NULL;
+			addr = 0;
+			break;
 		}
 
 		addr_beg += 0x1000;
 	}
 
-	mtx_unlock(&pg_mtx);
-
-	cpu_write_cr3(cpu_read_cr3());
+	if (pg_ready) {
+		mtx_unlock(&pg_mtx);
+		cpu_write_cr3(cr3);
+	}
 
 #ifdef DANCY_64
-	if ((type & pg_extended) != 0) {
+	if (addr != 0 && (type & pg_extended) != 0) {
 		const uint64_t extended_base = 0xFFFFFF8000000000ull;
 		addr_t vaddr = (addr_t)((uint64_t)addr | extended_base);
 
