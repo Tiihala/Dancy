@@ -698,7 +698,7 @@ int pg_init(void)
 	}
 
 	/*
-	 * Map other kernel memory areas. Use large pages if possible.
+	 * Map other kernel memory areas from address 0 to 0xFFFFFFFF.
 	 * It is safe to run the pg_map_kernel function for areas that
 	 * have been mapped already.
 	 */
@@ -718,10 +718,16 @@ int pg_init(void)
 
 		if (next != 0 && base >= next)
 			return DE_UNEXPECTED;
-#ifdef DANCY_32
-		if (next > 0x100000000ull)
+
+		/*
+		 * The memory map must contain this entry.
+		 */
+		if (base == 0x100000000ull)
 			break;
-#endif
+
+		if (next > 0x100000000ull)
+			return DE_UNEXPECTED;
+
 		if (base < 0x1000)
 			base = 0x1000;
 
@@ -889,7 +895,6 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 		return (void *)vaddr;
 	}
 #endif
-
 	return (void *)addr;
 }
 
