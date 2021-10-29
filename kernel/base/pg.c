@@ -860,7 +860,6 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 	const phys_addr_t page_mask = 0x0FFF;
 	const phys_addr_t mega_mask = pg_mega_size - 1;
 	phys_addr_t addr_beg, addr_end, addr_sub;
-	cpu_native_t cr3;
 
 	if (size == 0 || addr > (SIZE_MAX - size) + 1)
 		return NULL;
@@ -872,7 +871,7 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 		return NULL;
 
 	if (pg_ready) {
-		if ((cr3 = cpu_read_cr3()) != pg_kernel)
+		if (cpu_read_cr3() != pg_kernel)
 			return NULL;
 		if (mtx_lock(&pg_mtx) != thrd_success)
 			return NULL;
@@ -896,7 +895,7 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 
 	if (pg_ready) {
 		mtx_unlock(&pg_mtx);
-		cpu_write_cr3(cr3);
+		cpu_write_cr3(pg_kernel);
 	}
 
 #ifdef DANCY_64
