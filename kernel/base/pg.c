@@ -225,7 +225,19 @@ static const phys_addr_t pg_mega_size = 0x400000;
 
 static uint64_t pg_alloc_static_page(void)
 {
-	return (uint64_t)((phys_addr_t)heap_alloc_static_page());
+	uint64_t page = 0;
+	void *p;
+
+	if (pg_ready) {
+		if ((p = (void *)mm_alloc_pages(mm_addr32, 0)) != NULL)
+			memset(p, 0, 4096);
+		page = (uint64_t)((phys_addr_t)p);
+	}
+
+	if (!page)
+		page = (uint64_t)((phys_addr_t)heap_alloc_static_page());
+
+	return page;
 }
 
 static void *pg_create_cr3(void)
