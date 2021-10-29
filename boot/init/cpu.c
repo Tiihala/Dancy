@@ -19,7 +19,10 @@
 
 #include <boot/init.h>
 
-static int cpu_osfxr_support;
+int cpu_osfxr_support;
+int cpu_nxbit_support;
+int cpu_gpage_support;
+int cpu_rdtscp_support;
 
 int cpu_test_features(void)
 {
@@ -57,6 +60,25 @@ int cpu_test_features(void)
 		cpu_osfxr_support = 1;
 	}
 
+#ifdef DANCY_64
+	eax = 0x80000001, edx = 0;
+	cpu_id(&eax, &ecx, &edx, &ebx);
+
+	if ((edx & (1u << 20)) != 0) {
+		b_log("\tNo-Execute Bit (NX)\n");
+		cpu_nxbit_support = 1;
+	}
+
+	if ((edx & (1u << 26)) != 0) {
+		b_log("\tLarge Pages (1 GiB)\n");
+		cpu_gpage_support = 1;
+	}
+
+	if ((edx & (1u << 27)) != 0) {
+		b_log("\tRDTSCP Instruction\n");
+		cpu_rdtscp_support = 1;
+	}
+#endif
 	b_log("\n");
 	return ret;
 }

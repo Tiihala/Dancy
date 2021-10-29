@@ -117,6 +117,16 @@ struct kernel_table {
 	} io_apic_override[16];
 
 	/*
+	 * Supported processor features.
+	 */
+	struct {
+		int osfxr;
+		int nxbit;
+		int gpage;
+		int rdtscp;
+	} cpu_feature;
+
+	/*
 	 * Time-Stamp Counter (TSC).
 	 */
 	uint64_t delay_tsc_hz;

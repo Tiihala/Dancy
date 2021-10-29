@@ -98,6 +98,14 @@ void table_init(void)
 	kernel->print = gui_print;
 
 	/*
+	 * Write the supported processor features.
+	 */
+	kernel->cpu_feature.osfxr = cpu_osfxr_support;
+	kernel->cpu_feature.nxbit = cpu_nxbit_support;
+	kernel->cpu_feature.gpage = cpu_gpage_support;
+	kernel->cpu_feature.rdtscp = cpu_rdtscp_support;
+
+	/*
 	 * Write the TSC frequency variable.
 	 */
 	kernel->delay_tsc_hz = delay_tsc_hz;

@@ -121,6 +121,11 @@ void ioapic_enable(unsigned isa_irq);
 /*
  * Declarations of cpu.c
  */
+extern int cpu_osfxr_support;
+extern int cpu_nxbit_support;
+extern int cpu_gpage_support;
+extern int cpu_rdtscp_support;
+
 int cpu_test_features(void);
 void cpu_init_control_registers(void);
 
