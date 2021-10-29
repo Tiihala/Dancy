@@ -279,6 +279,27 @@ int mm_init(void)
 
 	cpu_write32((uint32_t *)&mm_ready, 1);
 
+	/*
+	 * Now the physical memory manager has been initialized and
+	 * all free memory areas from 4 GiB to 128 TiB can be mapped.
+	 *
+	 * It is important to use 1 GiB pages if those are available.
+	 */
+#ifdef DANCY_64
+	for (i = 0; i < mm_count; i++) {
+		phys_addr_t addr;
+		size_t size;
+
+		addr = (phys_addr_t)(mm_array[i].page_frame * 0x1000);
+
+		if (addr >= 0x100000000ull) {
+			size = mm_array[i].page_count * 0x1000;
+
+			if (!pg_map_kernel(addr, size, pg_normal))
+				return DE_MEMORY;
+		}
+	}
+#endif
 	return 0;
 }
 
