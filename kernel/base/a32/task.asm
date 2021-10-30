@@ -58,7 +58,7 @@ _task_create_asm:
         mov [eax], edx                  ; save _func_start
 
         lea eax, [eax-24]               ; space for pushed registers
-        mov [ecx], eax                  ; new_task->esp = stack pointer
+        mov [ecx], eax                  ; new_task->sp = stack pointer
         ret
 
 align 16
