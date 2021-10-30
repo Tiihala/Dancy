@@ -29,16 +29,19 @@ enum task_type {
 };
 
 struct task {
-	uint32_t esp;       /* Offset: 0 */
-	uint32_t cr3;       /* Offset: 4 */
-	uint64_t id;        /* Offset: 8 */
+	uint64_t sp;        /* Offset: 0 */
+	uint64_t cr3;       /* Offset: 8 */
 	int active;         /* Offset: 16 + 0 * sizeof(int) */
-	int retval;         /* Offset: 16 + 1 * sizeof(int) */
-	int stopped;        /* Offset: 16 + 2 * sizeof(int) */
-	int ndisable;       /* Offset: 16 + 3 * sizeof(int) */
-	addr_t next;        /* Offset: 16 + 4 * sizeof(int) */
+	int ndisable;       /* Offset: 16 + 1 * sizeof(int) */
+	addr_t next;        /* Offset: 16 + 2 * sizeof(int) */
 
+	uint64_t id;
 	uint64_t id_owner;
+
+	int detached;
+	int retval;
+	int stopped;
+	int uniproc;
 
 	struct {
 		int (*func)(uint64_t *data);
@@ -51,9 +54,6 @@ struct task {
 
 	uint32_t pg_cr3;
 	uint32_t pg_state;
-
-	int detached;
-	int uniproc;
 };
 
 struct task_list_entry {

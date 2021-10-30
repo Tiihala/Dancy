@@ -39,14 +39,11 @@ align 16
         ;                      int (*func)(void *), void *arg)
         ;
         ; struct task {
-        ;         uint32_t esp;    /* Offset: 0 */
-        ;         uint32_t cr3;    /* Offset: 4 */
-        ;         uint64_t id;     /* Offset: 8 */
+        ;         uint64_t sp;     /* Offset: 0 */
+        ;         uint64_t cr3;    /* Offset: 8 */
         ;         int active;      /* Offset: 16 + 0 * sizeof(int) */
-        ;         int retval;      /* Offset: 16 + 1 * sizeof(int) */
-        ;         int stopped;     /* Offset: 16 + 2 * sizeof(int) */
-        ;         int ndisable;    /* Offset: 16 + 3 * sizeof(int) */
-        ;         addr_t next;     /* Offset: 16 + 4 * sizeof(int) */
+        ;         int ndisable;    /* Offset: 16 + 1 * sizeof(int) */
+        ;         addr_t next;     /* Offset: 16 + 2 * sizeof(int) */
         ;         ...
         ; };
 _task_create_asm:
@@ -132,10 +129,10 @@ _task_switch_asm:
         jz short _stack_error
 
         and eax, 0xFFFFE000             ; eax = address of current task
-        cmp dword [eax+28], 2           ; check if task switching is enabled
+        cmp dword [eax+20], 2           ; check if task switching is enabled
         jb short _task_switch_asm_esp0
 
-        or dword [eax+28], 1            ; set bit 0 if switching is skipped
+        or dword [eax+20], 1            ; set bit 0 if switching is skipped
         mov dword [ecx+16], 0           ; clear active flag (next task)
         jmp short _task_switch_asm_end
 
@@ -150,8 +147,8 @@ _task_switch_asm_esp0:
 _task_patch_fxsave:
         db 0x0F, 0xAE, 0x03             ; "fxsave [ebx]"
 
-        mov esp, [ecx]                  ; esp = next->esp
-        mov edx, [ecx+4]                ; edx = next->cr3
+        mov esp, [ecx]                  ; esp = next->sp
+        mov edx, [ecx+8]                ; edx = next->cr3
         lea ebx, [ecx+0x0C00]           ; ebx = address of fxrstor area
 
         ; uint8_t task_patch_fxrstor[3]
@@ -180,7 +177,7 @@ align 16
 _task_switch_disable:
         mov eax, esp                    ; eax = stack pointer
         and eax, 0xFFFFE000             ; eax = address of current task
-        add dword [eax+28], 2           ; increment ndisable (ignore bit 0)
+        add dword [eax+20], 2           ; increment ndisable (ignore bit 0)
         js short _state_error
         ret
 
@@ -190,12 +187,12 @@ _task_switch_enable:
         push ebp                        ; save register ebp
         mov eax, esp                    ; eax = stack pointer
         and eax, 0xFFFFE000             ; eax = address of current task
-        sub dword [eax+28], 2           ; decrement ndisable (ignore bit 0)
+        sub dword [eax+20], 2           ; decrement ndisable (ignore bit 0)
         js short _state_error
 
-        cmp dword [eax+28], 1           ; test if switching was skipped
+        cmp dword [eax+20], 1           ; test if switching was skipped
         jne short .L1
-        and dword [eax+28], 0xFFFFFFFE  ; clear bit 0
+        and dword [eax+20], 0xFFFFFFFE  ; clear bit 0
 
         mov ebp, esp                    ; save stack pointer
         and esp, 0xFFFFFFF0             ; align stack
@@ -206,7 +203,7 @@ _task_switch_enable:
         ret
 
 _state_error:
-        mov dword [eax+28], 0x88000000  ; set erroneous state value
+        mov dword [eax+20], 0x88000000  ; set erroneous state value
         int3                            ; breakpoint exception
 .L1:    hlt                             ; halt instruction
         jmp short .L1
@@ -215,7 +212,7 @@ align 16
         ; struct task *task_read_next(const struct task *task)
 _task_read_next:
         mov ecx, [esp+4]                ; ecx = task
-        mov eax, [ecx+32]               ; eax = (struct task *)task->next
+        mov eax, [ecx+24]               ; eax = (struct task *)task->next
         ret
 
 align 16
@@ -223,5 +220,5 @@ align 16
 _task_write_next:
         mov ecx, [esp+4]                ; ecx = task
         mov eax, [esp+8]                ; eax = next
-        mov [ecx+32], eax               ; task->next = (addr_t)next
+        mov [ecx+24], eax               ; task->next = (addr_t)next
         ret

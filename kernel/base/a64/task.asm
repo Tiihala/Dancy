@@ -37,14 +37,11 @@ align 16
         ;                      int (*func)(void *), void *arg)
         ;
         ; struct task {
-        ;         uint32_t esp;    /* Offset: 0 */
-        ;         uint32_t cr3;    /* Offset: 4 */
-        ;         uint64_t id;     /* Offset: 8 */
+        ;         uint64_t sp;     /* Offset: 0 */
+        ;         uint64_t cr3;    /* Offset: 8 */
         ;         int active;      /* Offset: 16 + 0 * sizeof(int) */
-        ;         int retval;      /* Offset: 16 + 1 * sizeof(int) */
-        ;         int stopped;     /* Offset: 16 + 2 * sizeof(int) */
-        ;         int ndisable;    /* Offset: 16 + 3 * sizeof(int) */
-        ;         addr_t next;     /* Offset: 16 + 4 * sizeof(int) */
+        ;         int ndisable;    /* Offset: 16 + 1 * sizeof(int) */
+        ;         addr_t next;     /* Offset: 16 + 2 * sizeof(int) */
         ;         ...
         ; };
 task_create_asm:
@@ -137,22 +134,22 @@ task_switch_asm:
         jz short stack_error
 
         and eax, 0xFFFFE000             ; rax = address of current task
-        cmp dword [rax+28], 2           ; check if task switching is enabled
+        cmp dword [rax+20], 2           ; check if task switching is enabled
         jb short task_switch_asm_rsp0
 
-        or dword [rax+28], 1            ; set bit 0 if switching is skipped
+        or dword [rax+20], 1            ; set bit 0 if switching is skipped
         mov dword [rcx+16], 0           ; clear active flag (next task)
         jmp short task_switch_asm_end
 
 task_switch_asm_rsp0:
-        lea ebx, [rcx+0x1FF0]           ; ebx = value of rsp0 (32-bit)
-        mov [rdx+4], ebx                ; update rsp0 (task-state segment)
+        lea rbx, [rcx+0x1FF0]           ; rbx = value of rsp0
+        mov [rdx+4], rbx                ; update rsp0 (task-state segment)
 
         mov [rax], esp                  ; save stack pointer
         fxsave [rax+0x0C00]             ; save fpu, mmx, and sse state
 
-        mov esp, [rcx]                  ; rsp = next->esp (32-bit)
-        mov edx, [rcx+4]                ; rdx = next->cr3 (32-bit)
+        mov rsp, [rcx]                  ; rsp = next->sp
+        mov rdx, [rcx+8]                ; rdx = next->cr3
         fxrstor [rcx+0x0C00]            ; restore fpu, mmx, and sse state
 
         mov cr3, rdx                    ; change virtual address space
@@ -186,7 +183,7 @@ align 16
 task_switch_disable:
         mov eax, esp                    ; rax = stack pointer (32-bit)
         and eax, 0xFFFFE000             ; rax = address of current task
-        add dword [rax+28], 2           ; increment ndisable (ignore bit 0)
+        add dword [rax+20], 2           ; increment ndisable (ignore bit 0)
         js short state_error
         ret
 
@@ -196,12 +193,12 @@ task_switch_enable:
         push rbp                        ; save register rbp
         mov eax, esp                    ; rax = stack pointer (32-bit)
         and eax, 0xFFFFE000             ; rax = address of current task
-        sub dword [rax+28], 2           ; decrement ndisable (ignore bit 0)
+        sub dword [rax+20], 2           ; decrement ndisable (ignore bit 0)
         js short state_error
 
-        cmp dword [rax+28], 1           ; test if switching was skipped
+        cmp dword [rax+20], 1           ; test if switching was skipped
         jne short .L1
-        and dword [rax+28], 0xFFFFFFFE  ; clear bit 0
+        and dword [rax+20], 0xFFFFFFFE  ; clear bit 0
 
         mov ebp, esp                    ; save stack pointer
         and esp, 0xFFFFFFF0             ; align stack
@@ -213,7 +210,7 @@ task_switch_enable:
         ret
 
 state_error:
-        mov dword [rax+28], 0x88000000  ; set erroneous state value
+        mov dword [rax+20], 0x88000000  ; set erroneous state value
         int3                            ; breakpoint exception
 .L1:    hlt                             ; halt instruction
         jmp short .L1
@@ -221,12 +218,12 @@ state_error:
 align 16
         ; struct task *task_read_next(const struct task *task)
 task_read_next:
-        mov rax, [rcx+32]               ; rax = (struct task *)task->next
+        mov rax, [rcx+24]               ; rax = (struct task *)task->next
         ret
 
 align 16
         ; struct task *task_write_next(struct task *task, struct task *next)
 task_write_next:
         mov rax, rdx                    ; rax = next
-        mov [rcx+32], rax               ; task->next = (addr_t)next
+        mov [rcx+24], rax               ; task->next = (addr_t)next
         ret

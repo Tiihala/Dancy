@@ -220,13 +220,15 @@ static int task_caretaker(void *arg)
 			 */
 			task_write_next(t0, t2);
 
-			t1->esp = 0;
+			t1->sp = 0;
 			t1->cr3 = 0;
-			t1->id = 0;
-
-			t1->retval = 0;
-			t1->stopped  = 0;
 			t1->ndisable = 0;
+
+			t1->id = 0;
+			t1->id_owner = 0;
+
+			t1->detached = 0;
+			t1->stopped = 0;
 
 			/*
 			 * Release task_lock so that interrupts are not
@@ -322,7 +324,7 @@ int task_init(void)
 	}
 #endif
 	current = memset((void *)task_current(), 0, 0x1000);
-	current->cr3 = (uint32_t)pg_kernel;
+	current->cr3 = (uint64_t)pg_kernel;
 	current->id = task_create_id();
 	current->event.func = task_null_func;
 
@@ -365,7 +367,7 @@ int task_init_ap(void)
 		delay(1000000);
 
 	current = memset((void *)task_current(), 0, 0x1000);
-	current->cr3 = (uint32_t)pg_kernel;
+	current->cr3 = (uint64_t)pg_kernel;
 	current->id = task_create_id();
 	current->id_owner = 1;
 	current->event.func = task_null_func;
@@ -477,7 +479,7 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 
 	id = new_task->id;
 
-	new_task->cr3 = (uint32_t)pg_kernel;
+	new_task->cr3 = (uint64_t)pg_kernel;
 	new_task->event.func = task_null_func;
 
 	fstate = (uint8_t *)new_task + 0x0C00;
