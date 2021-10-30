@@ -932,21 +932,20 @@ void *pg_map_user(addr_t vaddr, size_t size)
 
 	pg_enter_kernel();
 
-	while ((vaddr_end - vaddr_beg) != 0) {
+	while (vaddr_beg < vaddr_end) {
 		if ((addr = mm_alloc_page()) == 0) {
 			vaddr = 0;
 			break;
 		}
 
 		memset((void *)addr, 0, 0x1000);
+		vaddr_end -= 0x1000;
 
-		if (pg_map_virtual(cr3, vaddr_beg, addr)) {
+		if (pg_map_virtual(cr3, vaddr_end, addr)) {
 			mm_free_page(addr);
 			vaddr = 0;
 			break;
 		}
-
-		vaddr_beg += 0x1000;
 	}
 
 	pg_leave_kernel();
