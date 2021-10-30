@@ -97,7 +97,6 @@ void kernel_start(void)
 	checked_init(idt_init, "IDT (BSP)");
 
 	checked_init(pg_init, "Paging (BSP)");
-	checked_init(mm_init, "Physical memory manager");
 	checked_init(fb_init, "Framebuffer");
 
 	checked_init(con_init, "Console");
@@ -107,6 +106,7 @@ void kernel_start(void)
 	kernel->print = con_print;
 	kernel->detach_init_module(&timer_ticks);
 
+	checked_init(mm_init, "Physical memory manager");
 	checked_init(task_init, "Task");
 	checked_init(runlevel_init, "Runlevel");
 
