@@ -564,9 +564,8 @@ int task_list(struct task_list_entry *buf, size_t buf_size)
 					buf[count].event_active = 1;
 
 				buf[count].stopped = t->stopped;
+				count += 1;
 			}
-
-			count += 1;
 			t = task_read_next(t);
 
 		} while (t != task_head);
