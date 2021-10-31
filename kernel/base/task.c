@@ -449,14 +449,6 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 		void *lock_local = &task_lock;
 		int task_overflow = 0;
 
-		new_task = (struct task *)mm_alloc_pages(mm_kernel, 1);
-
-		if (!new_task)
-			return id;
-
-		memset(new_task, 0, 0x2000);
-		spin_trylock(&new_task->active);
-
 		spin_enter(&lock_local);
 
 		if (task_struct_count < task_struct_limit)
@@ -466,10 +458,38 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 
 		spin_leave(&lock_local);
 
-		if (task_overflow) {
-			mm_free_pages((phys_addr_t)new_task, 1);
+		if (task_overflow)
+			return id;
+#ifdef DANCY_32
+		new_task = (struct task *)mm_alloc_pages(mm_kernel, 1);
+#else
+		new_task = (struct task *)mm_alloc_pages(mm_addr36, 1);
+
+		if (new_task) {
+			const size_t size = 0x2000;
+			const addr_t high_bit = 0x8000000000000000ull;
+
+			phys_addr_t nt = (phys_addr_t)new_task;
+			addr_t vaddr;
+
+			vaddr = (addr_t)pg_map_kernel(nt, size, pg_extended);
+
+			if ((vaddr & high_bit) == 0) {
+				mm_free_pages((phys_addr_t)new_task, 1);
+				vaddr = 0;
+			}
+			new_task = (struct task *)vaddr;
+		}
+#endif
+		if (!new_task) {
+			spin_enter(&lock_local);
+			task_struct_count -= 1;
+			spin_leave(&lock_local);
 			return id;
 		}
+
+		memset(new_task, 0, 0x2000);
+		spin_trylock(&new_task->active);
 
 		new_task->id = task_create_id();
 		new_task->id_owner = task_current()->id;
