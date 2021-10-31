@@ -145,9 +145,10 @@ void irq_uninstall(void *irq);
  */
 enum mm_type {
 	mm_normal = 0x00,
-	mm_addr32 = 0x01,
-	mm_kernel = 0x02,
-	mm_legacy = 0x04
+	mm_addr36 = 0x01,
+	mm_addr32 = 0x02,
+	mm_kernel = 0x04,
+	mm_legacy = 0x08
 };
 
 int mm_init(void);

@@ -313,7 +313,11 @@ size_t mm_available_pages(int type)
 		return 0;
 
 	if (type != mm_normal) {
-		if (type == mm_addr32) {
+		if (type == mm_addr36) {
+			if (page_frame > 0x1000000)
+				page_frame = 0x1000000;
+
+		} else if (type == mm_addr32) {
 			if (page_frame > 0x100000)
 				page_frame = 0x100000;
 
@@ -411,7 +415,11 @@ phys_addr_t mm_alloc_pages(int type, int order)
 	}
 
 	if (type != mm_normal) {
-		if (type == mm_addr32) {
+		if (type == mm_addr36) {
+			if (page_frame > 0x1000000)
+				page_frame = 0x1000000;
+
+		} else if (type == mm_addr32) {
 			if (page_frame > 0x100000)
 				page_frame = 0x100000;
 
