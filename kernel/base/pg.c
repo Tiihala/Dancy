@@ -381,13 +381,21 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFFFFFFFFFF000ull);
 
 	if (page_type == pg_giga_type) {
+		/*
+		 * "EDX bit 26 as returned by CPUID function 8000_0001h
+		 *  indicates 1-Gbyte page support." - AMD64 Manual
+		 *
+		 * From Intel (CPUID Instruction):
+		 *
+		 * Initial EAX   Information Provided about the Processor
+		 *  80000001H    EDX  Bit 26: 1-Gbyte pages are available if 1
+		 */
 		if (kernel->cpu_feature.gpage == 0)
 			return 1;
 
-		offset = (int)((addr >> 30) & 0x1FF);
-
-		if ((ptr[offset] & 1) != 0 && (ptr[offset] & 0x80) == 0)
-			return 1;
+		if ((ptr[pdpe_offset] & 1) != 0)
+			if ((ptr[pdpe_offset] & 0x80) == 0)
+				return 1;
 
 		page = (uint64_t)(addr & 0xFFFFFFFFC0000000ull);
 
@@ -398,7 +406,7 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 			page_bits |= 0x100;
 
 		page_bits |= 0x80;
-		ptr[offset] = page | page_bits;
+		ptr[pdpe_offset] = page | page_bits;
 
 		return 0;
 	}
