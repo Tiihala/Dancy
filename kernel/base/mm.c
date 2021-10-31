@@ -190,10 +190,10 @@ int mm_init(void)
 		if (page_count <= bitmap_page_count)
 			continue;
 
+		addr = (phys_addr_t)(page_frame * 0x1000);
+
 		page_frame += bitmap_page_count;
 		page_count -= bitmap_page_count;
-
-		addr = (phys_addr_t)(page_frame * 0x1000);
 
 		/*
 		 * Make sure that extended mapping is possible. The limit
