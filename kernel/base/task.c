@@ -283,9 +283,13 @@ int task_init(void)
 
 	task_uniproc_tss = gdt_get_tss();
 
+#ifdef DANCY_32
 	task_struct_limit = 16384;
 	pages = (int)mm_available_pages(mm_addr32);
-
+#else
+	task_struct_limit = 131072;
+	pages = (int)mm_available_pages(mm_addr36);
+#endif
 	while (task_struct_limit > (pages / 16))
 		task_struct_limit /= 2;
 
