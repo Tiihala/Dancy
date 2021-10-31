@@ -380,6 +380,29 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 	 */
 	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFFFFFFFFFF000ull);
 
+	if (page_type == pg_giga_type) {
+		if (kernel->cpu_feature.gpage == 0)
+			return 1;
+
+		offset = (int)((addr >> 30) & 0x1FF);
+
+		if ((ptr[offset] & 1) != 0 && (ptr[offset] & 0x80) == 0)
+			return 1;
+
+		page = (uint64_t)(addr & 0xFFFFFFFFC0000000ull);
+
+		if ((type & pg_uncached) != 0)
+			page_bits |= 0x18;
+
+		if ((type & pg_extended) != 0)
+			page_bits |= 0x100;
+
+		page_bits |= 0x80;
+		ptr[offset] = page | page_bits;
+
+		return 0;
+	}
+
 	if ((ptr[pdpe_offset] & 1) == 0) {
 		if ((page = pg_alloc_static_page()) == 0)
 			return 1;
@@ -562,6 +585,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 }
 
 static const phys_addr_t pg_mega_size = 0x200000;
+static const phys_addr_t pg_giga_size = 0x40000000;
 
 #endif
 
@@ -858,7 +882,6 @@ void pg_leave_kernel(void)
 void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 {
 	const phys_addr_t page_mask = 0x0FFF;
-	const phys_addr_t mega_mask = pg_mega_size - 1;
 	phys_addr_t addr_beg, addr_end, addr_sub;
 
 	if (size == 0 || addr > (SIZE_MAX - size) + 1)
@@ -878,6 +901,17 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 	}
 
 	while ((addr_sub = addr_end - addr_beg) != 0) {
+		const phys_addr_t mega_mask = pg_mega_size - 1;
+#ifdef DANCY_64
+		const phys_addr_t giga_mask = pg_giga_size - 1;
+
+		if ((addr_beg & giga_mask) == 0 && addr_sub >= pg_giga_size) {
+			if (!pg_map_identity(addr_beg, type, pg_giga_type)) {
+				addr_beg += pg_giga_size;
+				continue;
+			}
+		}
+#endif
 		if ((addr_beg & mega_mask) == 0 && addr_sub >= pg_mega_size) {
 			if (!pg_map_identity(addr_beg, type, pg_mega_type)) {
 				addr_beg += pg_mega_size;
