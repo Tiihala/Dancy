@@ -219,6 +219,8 @@ extern volatile uint32_t timer_ticks;
 extern volatile uint64_t timer_ticks_64;
 extern volatile uint32_t timer_ticks_wait;
 
+extern volatile uint32_t timer_fault_count;
+
 void timer_handler(void);
 void timer_handler_ap(void);
 uint64_t timer_read(void);

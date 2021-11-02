@@ -95,12 +95,31 @@ timer_call_handler:
         mov rbx, rsp                    ; save stack
         cld                             ; clear direction flag
 
+        mov eax, timer_ticks_wait       ; rax = address of timer_ticks_wait
+        mov dword [rax], 10             ; timer_ticks_wait = 10
+
+        mov rax, rsp                    ; rax = stack pointer
+        and rax, -8192                  ; rax = address of current task
+        mov ecx, 1                      ; ecx = 1
+        xchg [rax+24], ecx              ; task->asm_data2 = 1
+        test ecx, ecx                   ; test zero
+        jz short .L1
+
+        mov eax, timer_fault_count      ; rax = address of timer_fault_count
+        lock add dword [rax], 1         ; timer_fault_count += 1
+        jmp short .end
+
+.L1:    sti                             ; enable interrupts
         and rsp, -16                    ; align stack
         sub rsp, 32                     ; shadow space
         call timer_handler              ; call timer_handler
         mov rsp, rbx                    ; restore stack
 
-        pop r11                         ; restore register r11
+        cli                             ; disable interrupts
+        and rbx, -8192                  ; rbx = address of current task
+        mov dword [rbx+24], 0           ; task->asm_data2 = 0
+
+.end:   pop r11                         ; restore register r11
         pop r10                         ; restore register r10
         pop r9                          ; restore register r9
         pop r8                          ; restore register r8
@@ -128,12 +147,28 @@ timer_asm_handler_apic_ap:
         mov rax, [rdx]                  ; rax = timer_apic_base
         mov dword [rax+0xB0], 0         ; end of interrupt
 
+        mov rax, rsp                    ; rax = stack pointer
+        and rax, -8192                  ; rax = address of current task
+        mov ecx, 1                      ; ecx = 1
+        xchg [rax+24], ecx              ; task->asm_data2 = 1
+        test ecx, ecx                   ; test zero
+        jz short .L1
+
+        mov eax, timer_fault_count      ; rax = address of timer_fault_count
+        lock add dword [rax], 1         ; timer_fault_count += 1
+        jmp short .end
+
+.L1:    sti                             ; enable interrupts
         and rsp, -16                    ; align stack
         sub rsp, 32                     ; shadow space
         call timer_handler_ap           ; call timer_handler_ap
         mov rsp, rbx                    ; restore stack
 
-        pop r11                         ; restore register r11
+        cli                             ; disable interrupts
+        and rbx, -8192                  ; rbx = address of current task
+        mov dword [rbx+24], 0           ; task->asm_data2 = 0
+
+.end:   pop r11                         ; restore register r11
         pop r10                         ; restore register r10
         pop r9                          ; restore register r9
         pop r8                          ; restore register r8
@@ -156,6 +191,7 @@ section .data
         global timer_ticks
         global timer_ticks_64
         global timer_ticks_wait
+        global timer_fault_count
 
 align 16
         ; uint32_t timer_ticks
@@ -166,4 +202,8 @@ timer_ticks_64:
 
         ; uint32_t timer_ticks_wait
 timer_ticks_wait:
+        dd 0
+
+        ; uint32_t timer_fault_count
+timer_fault_count:
         dd 0
