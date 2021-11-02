@@ -40,8 +40,10 @@ align 16
         ;         uint64_t sp;     /* Offset: 0 */
         ;         uint64_t cr3;    /* Offset: 8 */
         ;         int active;      /* Offset: 16 + 0 * sizeof(int) */
-        ;         int ndisable;    /* Offset: 16 + 1 * sizeof(int) */
-        ;         addr_t next;     /* Offset: 16 + 2 * sizeof(int) */
+        ;         int asm_data1;   /* Offset: 16 + 1 * sizeof(int) */
+        ;         int asm_data2;   /* Offset: 16 + 2 * sizeof(int) */
+        ;         int asm_data3;   /* Offset: 16 + 3 * sizeof(int) */
+        ;         addr_t next;     /* Offset: 16 + 4 * sizeof(int) */
         ;         ...
         ; };
 task_create_asm:
@@ -183,7 +185,7 @@ align 16
 task_switch_disable:
         mov rax, rsp                    ; rax = stack pointer
         and rax, -8192                  ; rax = address of current task
-        add dword [rax+20], 2           ; increment ndisable (ignore bit 0)
+        add dword [rax+20], 2           ; increment asm_data1 (ignore bit 0)
         js short state_error
         ret
 
@@ -193,7 +195,7 @@ task_switch_enable:
         push rbp                        ; save register rbp
         mov rax, rsp                    ; rax = stack pointer
         and rax, -8192                  ; rax = address of current task
-        sub dword [rax+20], 2           ; decrement ndisable (ignore bit 0)
+        sub dword [rax+20], 2           ; decrement asm_data1 (ignore bit 0)
         js short state_error
 
         cmp dword [rax+20], 1           ; test if switching was skipped
@@ -218,12 +220,12 @@ state_error:
 align 16
         ; struct task *task_read_next(const struct task *task)
 task_read_next:
-        mov rax, [rcx+24]               ; rax = (struct task *)task->next
+        mov rax, [rcx+32]               ; rax = (struct task *)task->next
         ret
 
 align 16
         ; struct task *task_write_next(struct task *task, struct task *next)
 task_write_next:
         mov rax, rdx                    ; rax = next
-        mov [rcx+24], rax               ; task->next = (addr_t)next
+        mov [rcx+32], rax               ; task->next = (addr_t)next
         ret

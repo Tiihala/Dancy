@@ -32,8 +32,10 @@ struct task {
 	uint64_t sp;        /* Offset: 0 */
 	uint64_t cr3;       /* Offset: 8 */
 	int active;         /* Offset: 16 + 0 * sizeof(int) */
-	int ndisable;       /* Offset: 16 + 1 * sizeof(int) */
-	addr_t next;        /* Offset: 16 + 2 * sizeof(int) */
+	int asm_data1;      /* Offset: 16 + 1 * sizeof(int) */
+	int asm_data2;      /* Offset: 16 + 2 * sizeof(int) */
+	int asm_data3;      /* Offset: 16 + 3 * sizeof(int) */
+	addr_t next;        /* Offset: 16 + 4 * sizeof(int) */
 
 	uint64_t id;
 	uint64_t id_owner;

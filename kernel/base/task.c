@@ -222,7 +222,10 @@ static int task_caretaker(void *arg)
 
 			t1->sp = 0;
 			t1->cr3 = 0;
-			t1->ndisable = 0;
+
+			t1->asm_data1 = 0;
+			t1->asm_data2 = 0;
+			t1->asm_data3 = 0;
 
 			t1->id = 0;
 			t1->id_owner = 0;
