@@ -1279,7 +1279,26 @@ void con_panic(const char *message)
 	 */
 	(void)mtx_trylock(&con_mtx);
 
-	con_reset();
+	/*
+	 * Reset the screen and console buffers.
+	 */
+	{
+		uint32_t *p = (uint32_t *)kernel->fb_standard_addr;
+		int i;
+
+		memset(p, 0, kernel->fb_standard_size);
+
+		con_buffer = con_buffer_main;
+
+		for (i = 0; i < con_cells; i++)
+			con_buffer[i] = con_rendered_bit;
+
+		for (i = 0; i < con_cells; i++)
+			con_buffer_alt[i] = 0;
+
+		con_init_variables();
+	}
+
 	con_write_locked(data, size);
 
 	con_render();
