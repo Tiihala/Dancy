@@ -202,8 +202,9 @@ static void con_reset(void)
 	uint32_t *p = (uint32_t *)kernel->fb_standard_addr;
 	int i;
 
+	fb_enter();
 	memset(p, 0, kernel->fb_standard_size);
-	fb_render();
+	fb_leave();
 
 	con_buffer = con_buffer_main;
 
@@ -1308,8 +1309,9 @@ void con_print(const char *format, ...)
 			memset(data, 0, (size_t)r);
 		}
 
+		fb_enter();
 		con_render();
-		fb_render();
+		fb_leave();
 		mtx_unlock(&con_mtx);
 	}
 }
@@ -1321,8 +1323,9 @@ void con_write(const void *data, size_t size)
 
 	if (size <= (size_t)(INT_MAX)) {
 		con_write_locked(data, (int)size);
+		fb_enter();
 		con_render();
-		fb_render();
+		fb_leave();
 	}
 
 	mtx_unlock(&con_mtx);

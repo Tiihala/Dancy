@@ -69,7 +69,9 @@ int event_wait(event_t event, uint16_t milliseconds);
  */
 int fb_init(void);
 void fb_panic(void);
-void fb_render(void);
+
+void fb_enter(void);
+void fb_leave(void);
 
 /*
  * Declarations of gdt.asm and gdt.c

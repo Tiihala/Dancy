@@ -20,6 +20,7 @@
 #include <dancy.h>
 
 static mtx_t fb_mtx;
+static int fb_lock[2];
 static int fb_ready;
 
 static int fb_width;
@@ -506,6 +507,9 @@ void fb_panic(void)
 	 */
 	(void)mtx_trylock(&fb_mtx);
 
+	fb_lock[0] = 1;
+	fb_lock[1] = 1;
+
 	task_switch_disable();
 	pg_enter_kernel();
 
@@ -516,7 +520,18 @@ void fb_panic(void)
 	task_switch_enable();
 }
 
-void fb_render(void)
+void fb_enter(void)
+{
+	if (!fb_ready)
+		return;
+
+	if (mtx_lock(&fb_mtx) != thrd_success)
+		return;
+
+	fb_lock[0] = 1;
+}
+
+void fb_leave(void)
 {
 	const uint32_t d_bit = 0x40;
 	int i;
@@ -524,8 +539,18 @@ void fb_render(void)
 	if (!fb_ready)
 		return;
 
-	if (mtx_lock(&fb_mtx) != thrd_success)
+	/*
+	 * The caller must call fb_enter() before fb_leave(). This
+	 * fb_lock[0] is a weak "precaution". Nothing depends on it.
+	 */
+	if (fb_lock[0] != 1)
 		return;
+
+	/*
+	 * If functions are called according to the rules, this real
+	 * spin lock must be zero at this point.
+	 */
+	spin_lock(&fb_lock[1]);
 
 	task_switch_disable();
 	pg_enter_kernel();
@@ -545,6 +570,9 @@ void fb_render(void)
 
 	pg_leave_kernel();
 	task_switch_enable();
+
+	spin_unlock(&fb_lock[1]);
+	fb_lock[0] = 0;
 
 	mtx_unlock(&fb_mtx);
 }
