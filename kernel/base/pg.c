@@ -833,14 +833,18 @@ int pg_init(void)
 
 int pg_init_ap(void)
 {
+	int r = cpu_ints(0);
+
 	while (cpu_read32((const uint32_t *)&pg_ready) == 0)
-		cpu_halt(1);
+		delay(1000000);
 
 	if (pg_kernel == 0 || (pg_kernel & 0x0FFF) != 0)
-		return DE_UNEXPECTED;
+		return DE_UNEXPECTED; /* Interrupts are disabled. */
 
 	cpu_write_cr4(cpu_read_cr4() | (1u << 7) | (1u << 4));
 	cpu_write_cr3(pg_kernel);
+
+	cpu_ints(r);
 
 	return 0;
 }
