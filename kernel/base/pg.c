@@ -732,7 +732,7 @@ int pg_init(void)
 	}
 
 	/*
-	 * Map the standard framebuffer (4 KiB pages).
+	 * Map the standard framebuffer (4 KiB pages, no global flag).
 	 */
 	{
 		size_t size = kernel->fb_standard_size;
@@ -740,7 +740,12 @@ int pg_init(void)
 		phys_addr_t addr = kernel->fb_standard_addr;
 
 		for (i = 0; i < map_count; i++) {
-			pg_map_kernel(addr, 0x1000, pg_normal);
+			uint32_t *p = pg_map_kernel(addr, 0x1000, pg_normal);
+
+			if ((p = pg_get_entry(pg_kernel, p)) == NULL)
+				return DE_MEMORY;
+
+			*p = *p & 0xFFFFFEFF;
 			addr += 0x1000;
 		}
 	}
@@ -799,8 +804,6 @@ int pg_init(void)
 			return DE_MEMORY;
 	}
 
-	cpu_write32((uint32_t *)&pg_ready, 1);
-
 	r = cpu_ints(0);
 	cpu_write_cr4(cpu_read_cr4() | (1u << 7) | (1u << 4));
 	cpu_write_cr3(pg_kernel);
@@ -823,13 +826,15 @@ int pg_init(void)
 		cpu_ints(r);
 	}
 
+	cpu_write32((uint32_t *)&pg_ready, 1);
+
 	return 0;
 }
 
 int pg_init_ap(void)
 {
 	while (cpu_read32((const uint32_t *)&pg_ready) == 0)
-		delay(1000000);
+		cpu_halt(1);
 
 	if (pg_kernel == 0 || (pg_kernel & 0x0FFF) != 0)
 		return DE_UNEXPECTED;
