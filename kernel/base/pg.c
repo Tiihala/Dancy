@@ -152,10 +152,13 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 
 	offset = (int)((addr >> 12) & 0x3FF);
 
-	if (page == pg_apic_base_vaddr)
+	if (page == pg_apic_base_vaddr) {
 		ptr[offset] = (uint32_t)kernel->apic_base_addr | page_bits;
-	else
-		ptr[offset] = page | page_bits | (ptr[offset] & 0x18);
+		return 0;
+	}
+
+	if ((ptr[offset] & 1) == 0)
+		ptr[offset] = page | page_bits;
 
 	return 0;
 }
@@ -479,10 +482,13 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 
 	offset = (int)((addr >> 12) & 0x1FF);
 
-	if (page == pg_apic_base_vaddr)
+	if (page == pg_apic_base_vaddr) {
 		ptr[offset] = (uint64_t)kernel->apic_base_addr | page_bits;
-	else
-		ptr[offset] = page | page_bits | (ptr[offset] & 0x18);
+		return 0;
+	}
+
+	if ((ptr[offset] & 1) == 0)
+		ptr[offset] = page | page_bits;
 
 	return 0;
 }
