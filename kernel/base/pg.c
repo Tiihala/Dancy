@@ -109,8 +109,11 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 		pg_kernel_pde = ptr;
 
 	if (page_type == pg_mega_type) {
-		if ((ptr[offset] & 1) != 0 && (ptr[offset] & 0x80) == 0)
-			return 1;
+		if ((ptr[offset] & 1) != 0) {
+			if ((ptr[offset] & 0x80) == 0)
+				return 1;
+			return 0;
+		}
 
 		page = (uint32_t)(addr & 0xFFC00000);
 
@@ -393,9 +396,11 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 		if (kernel->cpu_feature.gpage == 0)
 			return 1;
 
-		if ((ptr[pdpe_offset] & 1) != 0)
+		if ((ptr[pdpe_offset] & 1) != 0) {
 			if ((ptr[pdpe_offset] & 0x80) == 0)
 				return 1;
+			return 0;
+		}
 
 		page = (uint64_t)(addr & 0xFFFFFFFFC0000000ull);
 
@@ -429,8 +434,11 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 		pg_kernel_pde = ptr;
 
 	if (page_type == pg_mega_type) {
-		if ((ptr[offset] & 1) != 0 && (ptr[offset] & 0x80) == 0)
-			return 1;
+		if ((ptr[offset] & 1) != 0) {
+			if ((ptr[offset] & 0x80) == 0)
+				return 1;
+			return 0;
+		}
 
 		page = (uint64_t)(addr & 0xFFFFFFFFFFE00000ull);
 
