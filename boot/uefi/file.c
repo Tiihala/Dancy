@@ -149,7 +149,7 @@ int file_read_all(void)
 		wchar_t wname[24];
 		char name[24];
 
-		snprintf(&name[0], 24, "system\\db_%03d.at", db);
+		snprintf(&name[0], 24, "system\\db_%03d.at", (int)db);
 		for (size = 0; /* void */; size++) {
 			char c = name[size];
 			wname[size] = (wchar_t)c;

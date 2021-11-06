@@ -66,7 +66,8 @@ static void idt_panic(unsigned num, const void *stack)
 		const phys_addr_t *s = (const phys_addr_t *)stack;
 		const void *val = (const void *)s[i];
 
-		add = snprintf(ptr, size, "\n  [%p]  %p", (s + i), val);
+		add = snprintf(ptr, size, "\n  [%p]  %p",
+			(const void *)(s + i), val);
 		ptr += ((add > 0) ? add : 0);
 	}
 

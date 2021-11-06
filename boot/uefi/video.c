@@ -557,11 +557,11 @@ void video_show_menu(void)
 		if (first_run != 0) {
 			snprintf(&buf[n], 128, "\r\n"
 				"  Waiting keyboard input for a few seconds"
-				"...\r", 0);
+				"...\r");
 		} else {
 			snprintf(&buf[n], 128, "\r\n"
 				"  [ESC] Close/Continue    [F1] Default"
-				"    [ENTER] Set Mode\r", 0);
+				"    [ENTER] Set Mode\r");
 		}
 
 		if (no_menu == 0) {
