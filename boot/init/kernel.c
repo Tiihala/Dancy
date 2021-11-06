@@ -264,7 +264,7 @@ void kernel_init(void)
 {
 	int object_count = sizeof(kernel_objects) / sizeof(kernel_objects[0]);
 	void *stack;
-	int i;
+	int i, j;
 
 	/*
 	 * Initialize the dynamic linker.
@@ -469,7 +469,11 @@ void kernel_init(void)
 			const char *name = &global_symbols[i].name[0];
 
 			kernel->symbol[i].value = value;
-			strncpy(&kernel->symbol[i].name[0], name, size);
+
+			for (j = 0; j < (int)size; j++) {
+				if (!(kernel->symbol[i].name[j] = name[j]))
+					break;
+			}
 		}
 	}
 
