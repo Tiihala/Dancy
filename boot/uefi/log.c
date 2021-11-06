@@ -55,7 +55,7 @@ void u_log_dump(void)
 			u_print("\r%8s\n", " ");
 			b_output_control(((rows - 2) << 8), B_SET_CURSOR);
 		}
-		u_print("%.*s", length, (ptr - length));
+		u_print("%.*s", (int)length, (ptr - length));
 		length = 0;
 	}
 }

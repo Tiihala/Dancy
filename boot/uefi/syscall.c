@@ -23,10 +23,13 @@ unsigned long b_output_string(const char *str, unsigned int len)
 {
 	size_t size = (len != 0) ? len : (size_t)strlen(str);
 
+	if (size > 0x10000)
+		return 0;
+
 	if (video_active)
 		video_output_string(str, len, 0, 0);
 	else
-		u_print("%.*s", size, str);
+		u_print("%.*s", (int)size, str);
 	return (unsigned long)size;
 }
 
@@ -34,11 +37,14 @@ unsigned long b_output_string_hl(const char *str, unsigned int len)
 {
 	size_t size = (len != 0) ? len : (size_t)strlen(str);
 
+	if (size > 0x10000)
+		return 0;
+
 	if (video_active) {
 		video_output_string(str, len, 1, 0);
 	} else {
 		u_set_colors(0x70);
-		u_print("%.*s", size, str);
+		u_print("%.*s", (int)size, str);
 		u_set_colors(0x07);
 	}
 	return (unsigned long)size;
