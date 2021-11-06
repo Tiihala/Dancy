@@ -6,6 +6,7 @@ DANCY_DB_FILES= \
  ./o32/init.at \
  ./o32/lib.at \
  ./o32/base.at \
+ ./o32/misc.at \
  ./o32/pci.at \
  ./o32/ps2.at \
  ./o32/sched.at \
@@ -13,6 +14,7 @@ DANCY_DB_FILES= \
  ./o64/init.at \
  ./o64/lib.at \
  ./o64/base.at \
+ ./o64/misc.at \
  ./o64/pci.at \
  ./o64/ps2.at \
  ./o64/sched.at \

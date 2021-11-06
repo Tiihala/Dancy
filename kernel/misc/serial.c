@@ -13,23 +13,18 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * kernel/misc.h
- *      Header of Dancy Operating System
+ * misc/serial.c
+ *      Serial ports
  */
 
-#ifndef KERNEL_MISC_H
-#define KERNEL_MISC_H
+#include <dancy.h>
 
-#include <dancy/types.h>
+int serial_init(void)
+{
+	static int run_once;
 
-/*
- * Declarations of rtc.c
- */
-int rtc_init(void);
+	if (!spin_trylock(&run_once))
+		return DE_UNEXPECTED;
 
-/*
- * Declarations of serial.c
- */
-int serial_init(void);
-
-#endif
+	return 0;
+}

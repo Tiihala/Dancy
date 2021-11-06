@@ -49,6 +49,7 @@ include ./scripts/at/acpios.mk
 include ./scripts/at/base.mk
 include ./scripts/at/init.mk
 include ./scripts/at/lib.mk
+include ./scripts/at/misc.mk
 include ./scripts/at/pci.mk
 include ./scripts/at/ps2.mk
 include ./scripts/at/sched.mk
