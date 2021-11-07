@@ -18,4 +18,4 @@ rm -f ./scripts/dancy.mk
 rm -f ./LOADER.512
 rm -f ./LOADER.AT
 
-rm -f `find -name "*.obj"`
+rm -f `find . -name "*.obj"`
