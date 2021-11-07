@@ -29,7 +29,6 @@ export PREFIX="$DANCY_EXTERNAL"
 export PATH="$PREFIX/bin:$PATH"
 
 mkdir -p external/bin
-mkdir -p external/mingw/include
 mkdir -p external/src
 
 ASM_AVAILABLE=0
@@ -55,12 +54,6 @@ fi
 if [ -f "/usr/bin/x86_64-w64-mingw32-gcc" ]
 then
     GCC_AVAILABLE=1
-fi
-
-if [ $ASM_AVAILABLE -eq 1 ] && [ $GCC_AVAILABLE -eq 1 ]
-then
-    touch external/external.sh
-    exit 0
 fi
 
 if [ $ASM_AVAILABLE -eq 0 ]
@@ -92,16 +85,11 @@ then
     which wget
 fi
 
+if [ $ASM_AVAILABLE -eq 0 ]
+then
 pushd external/src
     wget $ASM_LINK
-    wget $BIN_LINK
-    wget $GCC_LINK
     tar -xf nasm-$ASM_VERSION.tar.xz
-    tar -xf binutils-$BIN_VERSION.tar.xz
-    tar -xf gcc-$GCC_VERSION.tar.xz
-    rm nasm-$ASM_VERSION.tar.xz
-    rm binutils-$BIN_VERSION.tar.xz
-    rm gcc-$GCC_VERSION.tar.xz
 popd
 
 pushd external/src/nasm-$ASM_VERSION
@@ -109,6 +97,18 @@ pushd external/src/nasm-$ASM_VERSION
     make
     make install
 popd
+fi
+
+if [ $GCC_AVAILABLE -eq 0 ]
+then
+pushd external/src
+    wget $BIN_LINK
+    wget $GCC_LINK
+    tar -xf binutils-$BIN_VERSION.tar.xz
+    tar -xf gcc-$GCC_VERSION.tar.xz
+popd
+
+mkdir -p external/mingw/include
 
 pushd external/mingw/include
     touch limits.h
@@ -146,6 +146,7 @@ pushd external/src/gcc-build
     make all-gcc
     make install-gcc
 popd
+fi
 
 rm -rf external/src/*
 touch external/external.sh
