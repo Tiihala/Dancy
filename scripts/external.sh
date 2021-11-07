@@ -87,65 +87,65 @@ fi
 
 if [ $ASM_AVAILABLE -eq 0 ]
 then
-pushd external/src
-    wget $ASM_LINK
-    tar -xf nasm-$ASM_VERSION.tar.xz
-popd
+    pushd external/src
+        wget $ASM_LINK
+        tar -xf nasm-$ASM_VERSION.tar.xz
+    popd
 
-pushd external/src/nasm-$ASM_VERSION
-    ./configure --prefix=$PREFIX
-    make
-    make install
-popd
+    pushd external/src/nasm-$ASM_VERSION
+        ./configure --prefix=$PREFIX
+        make
+        make install
+    popd
 fi
 
 if [ $GCC_AVAILABLE -eq 0 ]
 then
-pushd external/src
-    wget $BIN_LINK
-    wget $GCC_LINK
-    tar -xf binutils-$BIN_VERSION.tar.xz
-    tar -xf gcc-$GCC_VERSION.tar.xz
-popd
+    pushd external/src
+        wget $BIN_LINK
+        wget $GCC_LINK
+        tar -xf binutils-$BIN_VERSION.tar.xz
+        tar -xf gcc-$GCC_VERSION.tar.xz
+    popd
 
-mkdir -p external/mingw/include
+    mkdir -p external/mingw/include
 
-pushd external/mingw/include
-    touch limits.h
-    touch stdarg.h
-    touch stddef.h
-popd
+    pushd external/mingw/include
+        touch limits.h
+        touch stdarg.h
+        touch stddef.h
+    popd
 
-pushd external/src/gcc-$GCC_VERSION
-    contrib/download_prerequisites
-popd
+    pushd external/src/gcc-$GCC_VERSION
+        contrib/download_prerequisites
+    popd
 
-mkdir external/src/binutils-build
-pushd external/src/binutils-build
-    ../binutils-$BIN_VERSION/configure \
-        --prefix=$PREFIX \
-        --target=x86_64-w64-mingw32 \
-        --enable-targets=x86_64-w64-mingw32,i686-w64-mingw32 \
-        --disable-nls \
-        --with-sysroot=$PREFIX
-    make
-    make install
-popd
+    mkdir external/src/binutils-build
+    pushd external/src/binutils-build
+        ../binutils-$BIN_VERSION/configure \
+            --prefix=$PREFIX \
+            --target=x86_64-w64-mingw32 \
+            --enable-targets=x86_64-w64-mingw32,i686-w64-mingw32 \
+            --disable-nls \
+            --with-sysroot=$PREFIX
+        make
+        make install
+    popd
 
-mkdir external/src/gcc-build
-pushd external/src/gcc-build
-    which -- x86_64-w64-mingw32-as
-    ../gcc-$GCC_VERSION/configure \
-        --prefix=$PREFIX \
-        --target=x86_64-w64-mingw32 \
-        --enable-targets=all \
-        --enable-languages=c \
-        --without-headers \
-        --disable-nls \
-        --with-sysroot=$PREFIX
-    make all-gcc
-    make install-gcc
-popd
+    mkdir external/src/gcc-build
+    pushd external/src/gcc-build
+        which -- x86_64-w64-mingw32-as
+        ../gcc-$GCC_VERSION/configure \
+            --prefix=$PREFIX \
+            --target=x86_64-w64-mingw32 \
+            --enable-targets=all \
+            --enable-languages=c \
+            --without-headers \
+            --disable-nls \
+            --with-sysroot=$PREFIX
+        make all-gcc
+        make install-gcc
+    popd
 fi
 
 rm -rf external/src/*
