@@ -25,17 +25,40 @@ then
 fi
 
 export DANCY_EXTERNAL=`pwd`/external
+export PREFIX="$DANCY_EXTERNAL"
+export PATH="$PREFIX/bin:$PATH"
+
+mkdir -p external/bin
+mkdir -p external/mingw/include
+mkdir -p external/src
+
+ASM_AVAILABLE=0
+GCC_AVAILABLE=0
+
+if [ -f "/usr/bin/nasm" ]
+then
+    ASM_AVAILABLE=1
+fi
+
+if [ -f "/usr/bin/yasm" ]
+then
+    ASM_AVAILABLE=1
+fi
 
 if [ -f "/usr/bin/x86_64-pc-msys-gcc.exe" ]
 then
-    mkdir -p $DANCY_EXTERNAL/bin
-    touch external/external.sh
-    exit 0
+    # Assume that ASM and GCC both are available
+    ASM_AVAILABLE=1
+    GCC_AVAILABLE=1
 fi
 
-if [ -f "/usr/bin/nasm" ] && [ -f "/usr/bin/x86_64-w64-mingw32-gcc" ]
+if [ -f "/usr/bin/x86_64-w64-mingw32-gcc" ]
 then
-    mkdir -p $DANCY_EXTERNAL/bin
+    GCC_AVAILABLE=1
+fi
+
+if [ $ASM_AVAILABLE -eq 1 ] && [ $GCC_AVAILABLE -eq 1 ]
+then
     touch external/external.sh
     exit 0
 fi
@@ -49,22 +72,10 @@ echo ""
 sleep 5
 
 which gcc
+which g++
 which make
 which tar
 which wget
-
-mkdir -p $DANCY_EXTERNAL/bin
-mkdir -p $DANCY_EXTERNAL/mingw/include
-mkdir -p $DANCY_EXTERNAL/src
-
-export PREFIX="$DANCY_EXTERNAL"
-export PATH="$PREFIX/bin:$PATH"
-
-pushd external/mingw/include
-    touch limits.h
-    touch stdarg.h
-    touch stddef.h
-popd
 
 pushd external/src
     wget $ASM_LINK
@@ -82,6 +93,12 @@ pushd external/src/nasm-$ASM_VERSION
     ./configure --prefix=$PREFIX
     make
     make install
+popd
+
+pushd external/mingw/include
+    touch limits.h
+    touch stdarg.h
+    touch stddef.h
 popd
 
 pushd external/src/gcc-$GCC_VERSION
