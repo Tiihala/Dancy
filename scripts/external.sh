@@ -63,19 +63,34 @@ then
     exit 0
 fi
 
-echo ""
-echo -e "\e[33mBuilding a cross compiler:\e[0m"
-echo -e "\e[33m    nasm-$ASM_VERSION\e[0m"
-echo -e "\e[33m    binutils-$BIN_VERSION\e[0m"
-echo -e "\e[33m    gcc-$GCC_VERSION\e[0m"
-echo ""
-sleep 5
+if [ $ASM_AVAILABLE -eq 0 ]
+then
+    echo -e "\e[33mBuilding an assembler:"
+    echo -e "\e[1m    nasm-$ASM_VERSION"
+    echo -e "\e[0m"
+fi
 
-which gcc
-which g++
-which make
-which tar
-which wget
+if [ $GCC_AVAILABLE -eq 0 ]
+then
+    echo -e "\e[33mBuilding a cross compiler:"
+    echo -e "\e[1m    binutils-$BIN_VERSION"
+    echo -e "\e[1m    gcc-$GCC_VERSION"
+    echo -e "\e[0m"
+fi
+
+if [ $ASM_AVAILABLE -eq 0 ] || [ $GCC_AVAILABLE -eq 0 ]
+then
+    echo -e "\e[33mDownloading and building external code may take some time!"
+    echo -e "All files are put in the \e[34m./external\e[33m directory."
+    echo -e "\e[0m"
+    sleep 5
+
+    which gcc
+    which g++
+    which make
+    which tar
+    which wget
+fi
 
 pushd external/src
     wget $ASM_LINK
@@ -132,7 +147,5 @@ pushd external/src/gcc-build
     make install-gcc
 popd
 
-rm -rf external/src
+rm -rf external/src/*
 touch external/external.sh
-echo -e "scripts/external.sh: \e[32mREADY\e[0m"
-echo ""
