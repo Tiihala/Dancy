@@ -83,13 +83,15 @@ then
     which make
     which tar
     which wget
+    which xz
 fi
 
 if [ $ASM_AVAILABLE -eq 0 ]
 then
     pushd external/src
         wget $ASM_LINK
-        tar -xf nasm-$ASM_VERSION.tar.xz
+        xz --decompress nasm-$ASM_VERSION.tar.xz
+        tar -xf nasm-$ASM_VERSION.tar
     popd
 
     pushd external/src/nasm-$ASM_VERSION
@@ -104,8 +106,10 @@ then
     pushd external/src
         wget $BIN_LINK
         wget $GCC_LINK
-        tar -xf binutils-$BIN_VERSION.tar.xz
-        tar -xf gcc-$GCC_VERSION.tar.xz
+        xz --decompress binutils-$BIN_VERSION.tar.xz
+        tar -xf binutils-$BIN_VERSION.tar
+        xz --decompress gcc-$GCC_VERSION.tar.xz
+        tar -xf gcc-$GCC_VERSION.tar
     popd
 
     mkdir -p external/mingw/include
