@@ -7,21 +7,22 @@ then
     exit 1
 fi
 
-if [ -f "./external/bin/x86_64-w64-mingw32-gcc" ]
+export DANCY_ROOT=`pwd`
+export PATH="$DANCY_ROOT/bin:$DANCY_ROOT/external/bin:$PATH"
+
+COMPILER_BIN=`which x86_64-w64-mingw32-gcc || true`
+
+if [ -n "$COMPILER_BIN" ]
 then
-    echo "./external/bin/x86_64-w64-mingw32-gcc"
+    x86_64-w64-mingw32-gcc "$@"
     exit 0
 fi
 
-if [ -f "/usr/bin/x86_64-pc-msys-gcc.exe" ]
-then
-    echo "x86_64-pc-msys-gcc"
-    exit 0
-fi
+COMPILER_BIN=`which x86_64-pc-msys-gcc.exe || true`
 
-if [ -f "/usr/bin/x86_64-w64-mingw32-gcc" ]
+if [ -n "$COMPILER_BIN" ]
 then
-    echo "/usr/bin/x86_64-w64-mingw32-gcc"
+    x86_64-pc-msys-gcc.exe "$@"
     exit 0
 fi
 

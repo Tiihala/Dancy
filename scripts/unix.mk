@@ -18,7 +18,7 @@ DANCY_AS=./scripts/asm.sh
 DANCY_A32=$(DANCY_AS) -fwin32 -o
 DANCY_A64=$(DANCY_AS) -fwin64 -o
 
-DANCY_CC=`./scripts/gcc.sh`
+DANCY_CC=./scripts/gcc.sh
 DANCY_O32=$(DANCY_CC) $(DANCY_CPPFLAGS_32) $(DANCY_CFLAGS_32) -c -m32 -o
 DANCY_O64=$(DANCY_CC) $(DANCY_CPPFLAGS_64) $(DANCY_CFLAGS_64) -c -m64 -o
 
