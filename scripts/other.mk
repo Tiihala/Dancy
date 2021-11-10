@@ -8,7 +8,6 @@ DANCY_EXT=
 !include .\scripts\header.mk
 
 DANCY_MK=copy NUL scripts\dancy.mk
-DANCY_PATH=$(MAKEDIR)\bin;$(PATH)
 
 HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
 HOST_CFLAGS=/O2 /nologo
@@ -40,9 +39,6 @@ clean:
 
 distclean: clean
 	@if exist external rmdir external /S /Q
-
-path: ./bin/dy-path$(DANCY_EXE)
-	@cmd /C "set PATH=$(DANCY_PATH) && bin\dy-path$(DANCY_EXE)"
 
 !include .\scripts\at\acpica.mk
 !include .\scripts\at\acpios.mk

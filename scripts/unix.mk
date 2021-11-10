@@ -8,18 +8,17 @@ include ./VERSION
 include ./scripts/header.mk
 
 DANCY_MK=touch ./scripts/dancy.mk
-DANCY_PATH=`./scripts/path.sh`
 
 HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
 HOST_CFLAGS=-O2 -std=c89 $(DANCY_WARNINGS)
 DANCY_HOST_BINARY=$(CC) -o
 DANCY_HOST_OBJECT=$(CC) -c $(HOST_CPPFLAGS) $(HOST_CFLAGS) -o
 
-DANCY_AS=PATH=$(DANCY_PATH) `./scripts/asm.sh`
+DANCY_AS=`./scripts/asm.sh`
 DANCY_A32=$(DANCY_AS) -fwin32 -o
 DANCY_A64=$(DANCY_AS) -fwin64 -o
 
-DANCY_CC=PATH=$(DANCY_PATH) `./scripts/gcc.sh`
+DANCY_CC=`./scripts/gcc.sh`
 DANCY_O32=$(DANCY_CC) $(DANCY_CPPFLAGS_32) $(DANCY_CFLAGS_32) -c -m32 -o
 DANCY_O64=$(DANCY_CC) $(DANCY_CPPFLAGS_64) $(DANCY_CFLAGS_64) -c -m64 -o
 
@@ -40,9 +39,6 @@ clean:
 
 distclean: clean
 	@rm -rf external
-
-path: ./bin/dy-path$(DANCY_EXE)
-	@PATH=$(DANCY_PATH) ./bin/dy-path$(DANCY_EXE)
 
 include ./scripts/at/acpica.mk
 include ./scripts/at/acpios.mk
