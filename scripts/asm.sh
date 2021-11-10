@@ -7,21 +7,22 @@ then
     exit 1
 fi
 
-if [ -f "./external/bin/nasm" ]
+export DANCY_ROOT=`pwd`
+export PATH="$DANCY_ROOT/bin:$DANCY_ROOT/external/bin:$PATH"
+
+ASSEMBLER_BIN=`which nasm || true`
+
+if [ -n "$ASSEMBLER_BIN" ]
 then
-    echo "./external/bin/nasm"
+    nasm "$@"
     exit 0
 fi
 
-if [ -f "/usr/bin/nasm" ]
-then
-    echo "/usr/bin/nasm"
-    exit 0
-fi
+ASSEMBLER_BIN=`which yasm || true`
 
-if [ -f "/usr/bin/yasm" ]
+if [ -n "$ASSEMBLER_BIN" ]
 then
-    echo "/usr/bin/yasm"
+    yasm "$@"
     exit 0
 fi
 

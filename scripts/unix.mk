@@ -14,7 +14,7 @@ HOST_CFLAGS=-O2 -std=c89 $(DANCY_WARNINGS)
 DANCY_HOST_BINARY=$(CC) -o
 DANCY_HOST_OBJECT=$(CC) -c $(HOST_CPPFLAGS) $(HOST_CFLAGS) -o
 
-DANCY_AS=`./scripts/asm.sh`
+DANCY_AS=./scripts/asm.sh
 DANCY_A32=$(DANCY_AS) -fwin32 -o
 DANCY_A64=$(DANCY_AS) -fwin64 -o
 
