@@ -159,4 +159,19 @@ then
 fi
 
 rm -rf external/src/*
-touch external/external.sh
+echo "External Tools" > external/VERSION
+
+if [ $ASM_AVAILABLE -eq 0 ]
+then
+    echo -e "\n** $ASM_LINK **\n"    >> external/VERSION
+    nasm --version                   >> external/VERSION
+fi
+
+if [ $GCC_AVAILABLE -eq 0 ]
+then
+    echo -e "\n** $BIN_LINK **\n"    >> external/VERSION
+    x86_64-w64-mingw32-as --version  >> external/VERSION
+
+    echo -e "\n** $GCC_LINK **\n"    >> external/VERSION
+    x86_64-w64-mingw32-gcc --version >> external/VERSION
+fi

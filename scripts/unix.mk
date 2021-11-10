@@ -2,7 +2,7 @@
 
 DANCY_DY=./bin/dy
 DANCY_EXE=
-DANCY_EXT=./external/external.sh
+DANCY_EXT=./external/VERSION
 
 include ./VERSION
 include ./scripts/header.mk

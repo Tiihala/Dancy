@@ -2,5 +2,5 @@
 
 ##############################################################################
 
-./external/external.sh:
+./external/VERSION:
 	@bash ./scripts/external.sh
