@@ -10,21 +10,19 @@ fi
 export DANCY_ROOT=`pwd`
 export PATH="$DANCY_ROOT/bin:$DANCY_ROOT/external/bin:$PATH"
 
-COMPILER_BIN=`which x86_64-w64-mingw32-gcc || true`
-
-if [ -n "$COMPILER_BIN" ]
+if
+    which x86_64-w64-mingw32-gcc > /dev/null 2>&1
 then
     x86_64-w64-mingw32-gcc "$@"
     exit 0
 fi
 
-COMPILER_BIN=`which x86_64-pc-msys-gcc.exe || true`
-
-if [ -n "$COMPILER_BIN" ]
+if
+    which x86_64-pc-msys-gcc.exe > /dev/null 2>&1
 then
     x86_64-pc-msys-gcc.exe "$@"
     exit 0
 fi
 
-echo "Error: compiler is not found" 1>&2
+echo "Error: a compatible compiler was not found" 1>&2
 exit 1
