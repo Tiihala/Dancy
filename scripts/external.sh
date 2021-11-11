@@ -34,33 +34,11 @@ mkdir -p external/src
 ASM_AVAILABLE=0
 GCC_AVAILABLE=0
 
-WHICH_OUTPUT=`which nasm || true`
+which nasm > /dev/null 2>&1 && ASM_AVAILABLE=1
+which yasm > /dev/null 2>&1 && ASM_AVAILABLE=1
 
-if [ -n "$WHICH_OUTPUT" ]
-then
-    ASM_AVAILABLE=1
-fi
-
-WHICH_OUTPUT=`which yasm || true`
-
-if [ -n "$WHICH_OUTPUT" ]
-then
-    ASM_AVAILABLE=1
-fi
-
-WHICH_OUTPUT=`which x86_64-w64-mingw32-gcc || true`
-
-if [ -n "$WHICH_OUTPUT" ]
-then
-    GCC_AVAILABLE=1
-fi
-
-WHICH_OUTPUT=`which x86_64-pc-msys-gcc.exe || true`
-
-if [ -n "$WHICH_OUTPUT" ]
-then
-    GCC_AVAILABLE=1
-fi
+which x86_64-w64-mingw32-gcc > /dev/null 2>&1 && GCC_AVAILABLE=1
+which x86_64-pc-msys-gcc.exe > /dev/null 2>&1 && GCC_AVAILABLE=1
 
 if [ $ASM_AVAILABLE -eq 0 ]
 then
