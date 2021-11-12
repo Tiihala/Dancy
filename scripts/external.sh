@@ -24,12 +24,12 @@ then
     exit 1
 fi
 
+mkdir -p external/bin
+mkdir -p external/src
+
 export DANCY_EXTERNAL=`pwd`/external
 export PREFIX="$DANCY_EXTERNAL"
 export PATH="$PREFIX/bin:$PATH"
-
-mkdir -p external/bin
-mkdir -p external/src
 
 ASM_AVAILABLE=0
 GCC_AVAILABLE=0
@@ -55,6 +55,16 @@ then
     echo -e "\e[0m"
 fi
 
+check_dependency () {
+    if
+        which $1 > /dev/null 2>&1
+    then
+        return 0
+    fi
+    echo -e "\e[35mMissing dependency: $1\e[0m" 1>&2
+    return 1
+}
+
 if [ $ASM_AVAILABLE -eq 0 ] || [ $GCC_AVAILABLE -eq 0 ]
 then
     echo -e "\e[33mDownloading and building external code may take some time!"
@@ -62,12 +72,16 @@ then
     echo -e "\e[0m"
     sleep 5
 
-    which gcc
-    which g++
-    which make
-    which tar
-    which wget
-    which xz
+    which egcc  > /dev/null 2>&1 && ln -s `which egcc`  external/bin/gcc
+    which eg++  > /dev/null 2>&1 && ln -s `which eg++`  external/bin/g++
+    which gmake > /dev/null 2>&1 && ln -s `which gmake` external/bin/make
+
+    check_dependency gcc
+    check_dependency g++
+    check_dependency make
+    check_dependency tar
+    check_dependency wget
+    check_dependency xz
 fi
 
 if [ $ASM_AVAILABLE -eq 0 ]
