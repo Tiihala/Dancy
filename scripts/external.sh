@@ -72,13 +72,12 @@ then
     echo -e "\e[0m"
     sleep 5
 
-    which egcc  > /dev/null 2>&1 && ln -s `which egcc`  external/bin/gcc
-    which eg++  > /dev/null 2>&1 && ln -s `which eg++`  external/bin/g++
-    which gmake > /dev/null 2>&1 && ln -s `which gmake` external/bin/make
+    which cc  > /dev/null 2>&1 || check_dependency gcc
+    which c++ > /dev/null 2>&1 || check_dependency g++
 
-    check_dependency gcc
-    check_dependency g++
+    which gmake > /dev/null 2>&1 && ln -s `which gmake` external/bin/make
     check_dependency make
+
     check_dependency tar
     check_dependency wget
     check_dependency xz
