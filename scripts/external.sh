@@ -118,7 +118,13 @@ then
     popd
 
     pushd external/src/gcc-$GCC_VERSION
-        contrib/download_prerequisites
+        if
+            which sha512sum > /dev/null 2>&1
+        then
+            contrib/download_prerequisites
+        else
+            contrib/download_prerequisites --no-verify
+        fi
     popd
 
     mkdir external/src/binutils-build
