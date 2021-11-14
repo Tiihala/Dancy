@@ -68,7 +68,7 @@ check_dependency () {
 if [ $ASM_AVAILABLE -eq 0 ] || [ $GCC_AVAILABLE -eq 0 ]
 then
     echo -e "\e[33mDownloading and building external code may take some time!"
-    echo -e "All files are put in the \e[34m./external\e[33m directory."
+    echo -e "All files are put in the \e[36m./external\e[33m directory."
     echo -e "\e[0m"
     sleep 5
 
