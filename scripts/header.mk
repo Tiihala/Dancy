@@ -3,19 +3,22 @@
 DANCY_VERSION=-DDANCY_MAJOR=$(DANCY_MAJOR) -DDANCY_MINOR=$(DANCY_MINOR)
 
 DANCY_CPPFLAGS=-I./include $(DANCY_VERSION)
-DANCY_CFLAGS=-ffreestanding -O2 -mno-mmx -mno-sse -mno-sse2 -fno-ident
-DANCY_WARNINGS=-Wall -Wconversion -Wextra -Wshadow -Wwrite-strings -pedantic \
- -Wpointer-arith -Wcast-align -Wstrict-prototypes
+
+DANCY_CFLAGS=-ffreestanding -O2 -mno-80387 -mno-mmx -mno-sse -mno-sse2\
+-mno-3dnow -mno-aes -mno-avx -fno-ident
+
+DANCY_WARNINGS=-Wall -Wconversion -Wextra -Wshadow -Wwrite-strings -pedantic\
+-Wpointer-arith -Wcast-align -Wstrict-prototypes
 
 DANCY_CPPFLAGS_32=$(DANCY_CPPFLAGS) -DDANCY_32
 DANCY_CPPFLAGS_64=$(DANCY_CPPFLAGS) -DDANCY_64
-DANCY_CFLAGS_32=$(DANCY_CFLAGS) $(DANCY_WARNINGS)
-DANCY_CFLAGS_64=$(DANCY_CFLAGS) $(DANCY_WARNINGS)
+DANCY_CFLAGS_32=-m32 -march=i686 $(DANCY_CFLAGS) $(DANCY_WARNINGS)
+DANCY_CFLAGS_64=-m64 -march=x86-64 $(DANCY_CFLAGS) $(DANCY_WARNINGS)
 
 ACPICA_CPPFLAGS_32=-I./include/acpica $(DANCY_CPPFLAGS) -DDANCY_32
 ACPICA_CPPFLAGS_64=-I./include/acpica $(DANCY_CPPFLAGS) -DDANCY_64
-ACPICA_CFLAGS_32=$(DANCY_CFLAGS)
-ACPICA_CFLAGS_64=$(DANCY_CFLAGS)
+ACPICA_CFLAGS_32=-m32 -march=i686 $(DANCY_CFLAGS)
+ACPICA_CFLAGS_64=-m64 -march=x86-64 $(DANCY_CFLAGS)
 
 DY_BLOB=$(DANCY_DY)-blob$(DANCY_EXE)
 DY_CONF=$(DANCY_DY)-conf$(DANCY_EXE)
