@@ -10,14 +10,13 @@ IF NOT EXIST "scripts\acpica.cmd" (
 )
 
 MKDIR external > NUL 2>&1
-MKDIR external\tmp > NUL 2>&1
 MKDIR include\acpica > NUL 2>&1
 MKDIR include\acpica\platform > NUL 2>&1
 MKDIR kernel\acpica > NUL 2>&1
 
-IF NOT EXIST "external\tmp\acpica" (
-    git.exe clone %ACPICA_GIT% external\tmp\acpica
-    git.exe -C external\tmp\acpica checkout %ACPICA_TAG%
+IF NOT EXIST "external\acpica" (
+    git.exe clone %ACPICA_GIT% external\acpica
+    git.exe -C external\acpica checkout %ACPICA_TAG%
     bin\dy-patch.exe -p1 -i kernel\acpios\patches\acenv
     bin\dy-patch.exe -p1 -i kernel\acpios\patches\acenvex
     bin\dy-patch.exe -p1 -i kernel\acpios\patches\rsdump
@@ -26,8 +25,8 @@ IF NOT EXIST "external\tmp\acpica" (
 FOR /F %%i IN ("%1") DO SET ACPICA_EXT=%%~xi
 FOR /F %%i IN ("%1") DO SET ACPICA_FILE=%%~nxi
 
-SET ACPICA_H=external\tmp\acpica\source\include
-SET ACPICA_C=external\tmp\acpica\source\components
+SET ACPICA_H=external\acpica\source\include
+SET ACPICA_C=external\acpica\source\components
 
 IF "%ACPICA_EXT%" == ".h" (
     FOR /F %%i IN ('DIR "%ACPICA_H%\*.h" /S /B ^| FIND "%ACPICA_FILE%"') DO (

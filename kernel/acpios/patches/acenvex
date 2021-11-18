@@ -1,5 +1,5 @@
---- a/external/tmp/acpica/source/include/platform/acenvex.h
-+++ b/external/tmp/acpica/source/include/platform/acenvex.h
+--- a/external/acpica/source/include/platform/acenvex.h
++++ b/external/acpica/source/include/platform/acenvex.h
 @@ -163,3 +163,6 @@
 
 +#if !defined(DANCY_32) && !defined(DANCY_64)

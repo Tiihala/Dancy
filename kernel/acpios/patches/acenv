@@ -1,5 +1,5 @@
---- a/external/tmp/acpica/source/include/platform/acenv.h
-+++ b/external/tmp/acpica/source/include/platform/acenv.h
+--- a/external/acpica/source/include/platform/acenv.h
++++ b/external/acpica/source/include/platform/acenv.h
 @@ -296,3 +296,6 @@
 
 +#if !defined(DANCY_32) && !defined(DANCY_64)
