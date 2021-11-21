@@ -30,6 +30,14 @@ int rtc_init(void);
 /*
  * Declarations of serial.c
  */
+extern event_t serial_event[4];
+
 int serial_init(void);
+
+int serial_get_baud(int port);
+int serial_set_baud(int port, int baud);
+
+size_t serial_receive(int port, void *buf, size_t size);
+size_t serial_send(int port, void *buf, size_t size);
 
 #endif
