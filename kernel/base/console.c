@@ -1163,6 +1163,17 @@ static void con_write_locked(const unsigned char *data, int size)
 		if (c < 0 || c > 0xFFFFF)
 			c = 0xFFFD;
 
+		if (c == '\f' || c == '\v')
+			c = '\n';
+
+		if (c == 0x18 || c == 0x1A) {
+			char *p = &con_escape_buffer[0];
+
+			memset(p, 0, sizeof(con_escape_buffer));
+			con_escape_size = 0;
+			continue;
+		}
+
 		if (con_escape_size) {
 			char *p = &con_escape_buffer[0];
 
@@ -1194,6 +1205,8 @@ static void con_write_locked(const unsigned char *data, int size)
 		}
 
 		switch (c) {
+		case '\a':
+			break;
 		case '\b':
 			con_column -= ((con_column > 0) ? 1 : 0);
 			break;
@@ -1218,6 +1231,10 @@ static void con_write_locked(const unsigned char *data, int size)
 		case '\r':
 			con_column = 0;
 			break;
+		case 0x0E:
+			break;
+		case 0x0F:
+			break;
 		case 0x1B:
 			if (con_escape_size) {
 				char *p = &con_escape_buffer[0];
@@ -1225,6 +1242,17 @@ static void con_write_locked(const unsigned char *data, int size)
 				con_escape_size = 0;
 			}
 			con_escape_buffer[con_escape_size++] = 0x1B;
+			break;
+		case 0x7F:
+			break;
+		case 0x9B:
+			if (con_escape_size) {
+				char *p = &con_escape_buffer[0];
+				memset(p, 0, sizeof(con_escape_buffer));
+				con_escape_size = 0;
+			}
+			con_escape_buffer[con_escape_size++] = 0x1B;
+			con_escape_buffer[con_escape_size++] = '[';
 			break;
 		default:
 			c = (c != ' ') ? c : 0;
