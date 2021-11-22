@@ -224,6 +224,12 @@
 ./o32/ps2/8042.o: ./kernel/ps2/8042.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/ps2/8042.c
 
+./o32/ps2/keyboard.o: ./kernel/ps2/keyboard.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/ps2/keyboard.c
+
+./o32/ps2/mouse.o: ./kernel/ps2/mouse.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/ps2/mouse.c
+
 ./o32/sched/sched.o: ./kernel/sched/sched.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/sched/sched.c
 
@@ -448,6 +454,12 @@
 
 ./o64/ps2/8042.o: ./kernel/ps2/8042.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/ps2/8042.c
+
+./o64/ps2/keyboard.o: ./kernel/ps2/keyboard.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/ps2/keyboard.c
+
+./o64/ps2/mouse.o: ./kernel/ps2/mouse.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/ps2/mouse.c
 
 ./o64/sched/sched.o: ./kernel/sched/sched.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/sched/sched.c

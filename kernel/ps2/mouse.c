@@ -13,37 +13,13 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * kernel/ps2.h
- *      Header of Dancy Operating System
+ * ps2/mouse.c
+ *      PS/2 Mouse
  */
 
-#ifndef KERNEL_PS2_H
-#define KERNEL_PS2_H
+#include <dancy.h>
 
-#include <dancy/types.h>
-
-/*
- * Declarations of 8042.c
- */
-extern event_t ps2_event_port1;
-extern event_t ps2_event_port2;
-
-int ps2_init(void);
-
-int ps2_receive_port1(void);
-int ps2_receive_port2(void);
-
-int ps2_send_port1(uint8_t val);
-int ps2_send_port2(uint8_t val);
-
-/*
- * Declarations of keyboard.c
- */
-int ps2_kbd_init(void);
-
-/*
- * Declarations of mouse.c
- */
-int ps2_mse_init(void);
-
-#endif
+int ps2_mse_init(void)
+{
+	return 0;
+}
