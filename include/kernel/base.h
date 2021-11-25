@@ -62,7 +62,9 @@ void event_delete(event_t event);
 
 void event_reset(event_t event);
 void event_signal(event_t event);
+
 int event_wait(event_t event, uint16_t milliseconds);
+int event_wait_array(int count, event_t *events, uint16_t milliseconds);
 
 /*
  * Declarations of fb.c

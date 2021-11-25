@@ -88,47 +88,9 @@ void event_signal(event_t event)
 	spin_leave(&lock_local);
 }
 
-static int event_wait_func(uint64_t *data)
-{
-	void *event = (void *)((cpu_native_t)data[0]);
-
-	if (this_event->signaled == 1 || data[1] <= timer_read())
-		return 0;
-
-	return 1;
-}
-
 int event_wait(event_t event, uint16_t milliseconds)
 {
-	uint64_t data0 = (uint64_t)((cpu_native_t)event);
-	uint64_t data1 = timer_read() + (uint64_t)milliseconds;
-	int r = 1;
+	event_t events[1] = { event };
 
-	if (null_event || this_event->ready != EVENT_READY)
-		return 1;
-
-	for (;;) {
-		void *lock_local = &this_event->lock;
-
-		spin_enter(&lock_local);
-
-		if (this_event->signaled) {
-			if (!this_event->manual_reset)
-				this_event->signaled = 0;
-			r = 0;
-		}
-
-		spin_leave(&lock_local);
-
-		if (r == 0 || data1 <= timer_read())
-			break;
-
-		task_write_event(event_wait_func, data0, data1);
-
-		do {
-			task_yield();
-		} while (task_read_event());
-	}
-
-	return r;
+	return event_wait_array(1, &events[0], milliseconds);
 }
