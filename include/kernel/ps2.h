@@ -40,10 +40,12 @@ int ps2_send_port2(uint8_t val);
  * Declarations of keyboard.c
  */
 int ps2_kbd_init(void);
+void ps2_kbd_handler(void);
 
 /*
  * Declarations of mouse.c
  */
 int ps2_mse_init(void);
+void ps2_mse_handler(void);
 
 #endif

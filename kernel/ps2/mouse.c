@@ -23,3 +23,12 @@ int ps2_mse_init(void)
 {
 	return 0;
 }
+
+void ps2_mse_handler(void)
+{
+	int b;
+
+	while ((b = ps2_receive_port2()) >= 0) {
+
+	}
+}

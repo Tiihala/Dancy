@@ -23,3 +23,12 @@ int ps2_kbd_init(void)
 {
 	return 0;
 }
+
+void ps2_kbd_handler(void)
+{
+	int b;
+
+	while ((b = ps2_receive_port1()) >= 0) {
+
+	}
+}

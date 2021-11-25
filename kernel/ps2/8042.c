@@ -133,9 +133,28 @@ static unsigned int ps2_read_config(void)
 	return UINT_MAX;
 }
 
+static int ps2_task(void *arg)
+{
+	event_t events[2] = { ps2_event_port1, ps2_event_port2 };
+
+	while (!arg) {
+		int r = event_wait_array(2, &events[0], 0xFFFF);
+
+		if (r < -1)
+			panic("ps2_task: unexpected behavior");
+		else if (r == 0)
+			ps2_kbd_handler();
+		else if (r == 1)
+			ps2_mse_handler();
+	}
+
+	return 0;
+}
+
 int ps2_init(void)
 {
 	static int run_once;
+	int r;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
@@ -265,6 +284,20 @@ int ps2_init(void)
 				break;
 		}
 	}
+
+	/*
+	 * Initialize PS/2 devices.
+	 */
+	if ((r = ps2_kbd_init()) != 0)
+		return r;
+	if ((r = ps2_mse_init()) != 0)
+		return r;
+
+	/*
+	 * Create a task for handling the PS/2 devices.
+	 */
+	if (!task_create(ps2_task, NULL, task_detached))
+		return DE_MEMORY;
 
 	return 0;
 }
