@@ -94,3 +94,87 @@ int event_wait(event_t event, uint16_t milliseconds)
 
 	return event_wait_array(1, &events[0], milliseconds);
 }
+
+struct event_wait_array_data {
+	int count;
+	event_t *events;
+	uint32_t ticks[2];
+};
+
+static int event_wait_array_func(uint64_t *data)
+{
+	struct event_wait_array_data *d = (void *)((cpu_native_t)data[0]);
+	int i;
+
+	for (i = 0; i < d->count; i++) {
+		event_t event = d->events[i];
+
+		if (this_event->signaled == 1)
+			return 0;
+	}
+
+	if (d->ticks[1] != 0xFFFF) {
+		if ((timer_ticks - d->ticks[0]) >= d->ticks[1])
+			return 0;
+	}
+
+	return 1;
+}
+
+int event_wait_array(int count, event_t *events, uint16_t milliseconds)
+{
+	struct event_wait_array_data data;
+	int i, r = -1;
+
+	if (count <= 0 || count > 256)
+		return -2;
+
+	data.count = count;
+	data.events = events;
+	data.ticks[0] = timer_ticks;
+	data.ticks[1] = milliseconds;
+
+	for (i = 0; i < count; i++) {
+		event_t event = events[i];
+
+		if (null_event || this_event->ready != EVENT_READY)
+			return -3;
+	}
+
+	for (;;) {
+		uint64_t data0, data1;
+
+		for (i = 0; i < count && r < 0; i++) {
+			event_t event = events[i];
+			void *lock_local = &this_event->lock;
+
+			spin_enter(&lock_local);
+
+			if (this_event->signaled) {
+				if (!this_event->manual_reset)
+					this_event->signaled = 0;
+				r = (int)i;
+			}
+
+			spin_leave(&lock_local);
+		}
+
+		if (r >= 0 || milliseconds == 0)
+			break;
+
+		if (milliseconds != 0xFFFF) {
+			if ((timer_ticks - data.ticks[0]) >= data.ticks[1])
+				break;
+		}
+
+		data0 = (uint64_t)((addr_t)&data), data1 = 0;
+
+		task_write_event(event_wait_array_func, data0, data1);
+
+		do {
+			task_yield();
+		} while (task_read_event());
+	}
+
+	return r;
+}
