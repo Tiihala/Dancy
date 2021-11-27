@@ -32,3 +32,8 @@ void ps2_kbd_handler(void)
 
 	}
 }
+
+void ps2_kbd_probe(void)
+{
+
+}

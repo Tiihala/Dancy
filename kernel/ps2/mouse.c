@@ -32,3 +32,8 @@ void ps2_mse_handler(void)
 
 	}
 }
+
+void ps2_mse_probe(void)
+{
+
+}

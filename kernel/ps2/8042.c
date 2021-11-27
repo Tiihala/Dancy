@@ -138,7 +138,7 @@ static int ps2_task(void *arg)
 	event_t events[2] = { ps2_event_port1, ps2_event_port2 };
 
 	while (!arg) {
-		int r = event_wait_array(2, &events[0], 0xFFFF);
+		int r = event_wait_array(2, &events[0], 2500);
 
 		if (r < -1)
 			panic("ps2_task: unexpected behavior");
@@ -146,6 +146,9 @@ static int ps2_task(void *arg)
 			ps2_kbd_handler();
 		else if (r == 1)
 			ps2_mse_handler();
+
+		ps2_kbd_probe();
+		ps2_mse_probe();
 	}
 
 	return 0;
