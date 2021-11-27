@@ -111,10 +111,8 @@ void ps2_kbd_handler(void)
 	}
 
 	while (kbd_ready == 0) {
-		if (ps2_receive_port1() < 0) {
-			probe_state = 2;
+		if (ps2_receive_port1() < 0)
 			return;
-		}
 	}
 
 	while ((b = ps2_receive_port1()) >= 0) {
@@ -127,7 +125,7 @@ void ps2_kbd_probe(void)
 	/*
 	 * Send an echo command to the keyboard.
 	 */
-	if (probe_state == 0) {
+	if (probe_state == 0 && kbd_ready != 0) {
 		ps2_send_port1(0xEE);
 		probe_state = 1;
 		return;
