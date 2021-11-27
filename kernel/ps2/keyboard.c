@@ -111,8 +111,10 @@ void ps2_kbd_handler(void)
 	}
 
 	while (kbd_ready == 0) {
-		if (ps2_receive_port1() < 0)
+		if (ps2_receive_port1() < 0) {
+			probe_state = 2;
 			return;
+		}
 	}
 
 	while ((b = ps2_receive_port1()) >= 0) {
