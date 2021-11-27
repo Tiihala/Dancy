@@ -142,13 +142,12 @@ static int ps2_task(void *arg)
 
 		if (r < -1)
 			panic("ps2_task: unexpected behavior");
+		else if (r == -1)
+			ps2_kbd_probe(), ps2_mse_probe();
 		else if (r == 0)
 			ps2_kbd_handler();
 		else if (r == 1)
 			ps2_mse_handler();
-
-		ps2_kbd_probe();
-		ps2_mse_probe();
 	}
 
 	return 0;
@@ -157,7 +156,6 @@ static int ps2_task(void *arg)
 int ps2_init(void)
 {
 	static int run_once;
-	int r;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
@@ -291,10 +289,8 @@ int ps2_init(void)
 	/*
 	 * Initialize PS/2 devices.
 	 */
-	if ((r = ps2_kbd_init()) != 0)
-		return r;
-	if ((r = ps2_mse_init()) != 0)
-		return r;
+	(void)ps2_kbd_init();
+	(void)ps2_mse_init();
 
 	/*
 	 * Create a task for handling the PS/2 devices.
