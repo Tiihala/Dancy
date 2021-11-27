@@ -147,6 +147,9 @@ void kernel_start(void)
 		}
 	}
 
+	while (panic_lock == 0)
+		task_yield();
+
 	cpu_halt(0);
 }
 
@@ -175,5 +178,5 @@ void kernel_start_ap(void)
 	checked_init(pg_init_ap, "Paging (AP)");
 	checked_init(task_init_ap, "Task (AP)");
 
-	cpu_halt(0);
+	task_exit(0);
 }
