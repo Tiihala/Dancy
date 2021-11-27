@@ -187,7 +187,17 @@ struct acpi_information *acpi_get_information(void)
 	 */
 	if (information.fadt_addr) {
 		const uint8_t *fadt = (const uint8_t *)information.fadt_addr;
+
 		length = (uint32_t)LE32(fadt + 4);
+		revision = fadt[8];
+
+		/*
+		 * Assume architecture flags and override these if the
+		 * table revision is 3 or above.
+		 */
+		information.iapc_boot_arch = 0;
+		information.iapc_boot_arch |= INIT_ARCH_LEGACY_DEVICES;
+		information.iapc_boot_arch |= INIT_ARCH_8042;
 
 		b_log("\n\t---- FADT ----\n");
 
@@ -217,7 +227,15 @@ struct acpi_information *acpi_get_information(void)
 		if (length >= 109 + 2) {
 			unsigned a = (unsigned)fadt[109];
 			unsigned b = a + ((unsigned)fadt[110] << 8);
-			information.iapc_boot_arch = b;
+
+			/*
+			 * The fixed ACPI description table does not have the
+			 * flags until "ACPI Revision 2.0, July 27, 2000".
+			 *
+			 * The table revision is 3 in that specification.
+			 */
+			if (revision >= 3)
+				information.iapc_boot_arch = b;
 
 			if (b & INIT_ARCH_LEGACY_DEVICES)
 				b_log("\tLegacy Devices flag is set\n");
