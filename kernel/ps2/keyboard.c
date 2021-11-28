@@ -22,16 +22,23 @@
 static int probe_state = 0;
 static int kbd_ready = 0;
 
+static int response_reset = 0;
+static int response_type[2] = { 0, 0 };
+
 static const int data_none = -1;
 static int data_led_state = 0x00;
 static int data_scan_code = 0x02;
 static int data_typematic = 0x00;
 
-static int send_command(int command, int data)
+static int send_command(int command, int data, int count, int *response)
 {
+	uint32_t ticks_timeout = (uint32_t)((command == 0xFF) ? 2000 : 100);
 	uint32_t ticks;
 	int resend = 0;
-	int b;
+	int b, i;
+
+	for (i = 0; i < count; i++)
+		response[i] = 0;
 
 	ps2_send_port1((uint8_t)command);
 
@@ -43,19 +50,28 @@ static int send_command(int command, int data)
 			resend += 1;
 			continue;
 		}
-		if ((timer_ticks - ticks) >= 100)
+		if ((timer_ticks - ticks) >= ticks_timeout)
 			return 1;
 	}
 
 	if (data != data_none) {
 		ps2_send_port1((uint8_t)data);
-
 		ticks = timer_ticks;
 
 		while ((b = ps2_receive_port1()) != 0xFA) {
-			if ((timer_ticks - ticks) >= 100)
+			if ((timer_ticks - ticks) >= ticks_timeout)
 				return 2;
 		}
+	}
+
+	for (i = 0; i < count; i++) {
+		ticks = timer_ticks;
+
+		while ((b = ps2_receive_port1()) < 0) {
+			if ((timer_ticks - ticks) >= ticks_timeout)
+				return 3;
+		}
+		response[i] = b;
 	}
 
 	while (ps2_receive_port1() >= 0) { /* void */ }
@@ -66,33 +82,44 @@ static int send_command(int command, int data)
 int ps2_kbd_init(void)
 {
 	/*
+	 * Reset the keyboard device.
+	 */
+	(void)send_command(0xFF, data_none, 1, &response_reset);
+
+	/*
 	 * Disable keyboard scanning.
 	 */
-	if (send_command(0xF5, data_none))
+	if (send_command(0xF5, data_none, 0, NULL))
+		return 1;
+
+	/*
+	 * Read the keyboard type.
+	 */
+	if (send_command(0xF2, data_none, 2, &response_type[0]))
 		return 1;
 
 	/*
 	 * Set scan code set 2 (will be translated to code set 1).
 	 */
-	if (send_command(0xF0, data_scan_code))
+	if (send_command(0xF0, data_scan_code, 0, NULL))
 		return 1;
 
 	/*
 	 * Set keyboard LEDs.
 	 */
-	if (send_command(0xED, data_led_state))
+	if (send_command(0xED, data_led_state, 0, NULL))
 		return 1;
 
 	/*
 	 * Set keyboard typematic rate and delay.
 	 */
-	if (send_command(0xF3, data_typematic))
+	if (send_command(0xF3, data_typematic, 0, NULL))
 		return 1;
 
 	/*
 	 * Enable keyboard scanning.
 	 */
-	(void)send_command(0xF4, data_none);
+	(void)send_command(0xF4, data_none, 0, NULL);
 
 	kbd_ready = 1;
 
