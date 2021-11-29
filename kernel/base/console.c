@@ -839,10 +839,8 @@ static void con_handle_escape(void)
 			t1 = con_cells;
 		}
 
-		for (i = t0; i < t1; i++) {
-			con_buffer[i] &= 0x7FF00000;
-			con_buffer[i] |= con_attribute;
-		}
+		for (i = t0; i < t1; i++)
+			con_buffer[i] = con_attribute;
 	} break;
 
 	/*
@@ -865,10 +863,8 @@ static void con_handle_escape(void)
 			t1 = con_columns + (con_row * con_columns);
 		}
 
-		for (i = t0; i < t1; i++) {
-			con_buffer[i] &= 0x7FF00000;
-			con_buffer[i] |= con_attribute;
-		}
+		for (i = t0; i < t1; i++)
+			con_buffer[i] = con_attribute;
 	} break;
 
 	/*
