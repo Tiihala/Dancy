@@ -121,6 +121,7 @@ enum dancy_key {
 	DANCY_KEY_PAD9,
 	DANCY_KEY_PAD0,
 	DANCY_KEY_PADDELETE,
+	DANCY_KEY_NONUS,
 
 	dancy_key_223 = 223,
 
@@ -135,6 +136,9 @@ enum dancy_key {
 
 	dancy_key_255 = 255
 };
+
+#define DANCY_KEYTYP_REPEAT     (0x00004000)
+#define DANCY_KEYTYP_RELEASE    (0x00008000)
 
 #define DANCY_KEYMOD_LCTRL      (0x00010000)
 #define DANCY_KEYMOD_LSHIFT     (0x00020000)
