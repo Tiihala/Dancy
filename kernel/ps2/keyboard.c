@@ -20,7 +20,9 @@
 #include <dancy.h>
 
 static int probe_state = 0;
+
 static int kbd_ready = 0;
+static int kbd_state = 0;
 
 static int response_reset = 0;
 static int response_type[2] = { 0, 0 };
@@ -126,6 +128,104 @@ int ps2_kbd_init(void)
 	return 0;
 }
 
+static int kbd_table[128] = {
+	DANCY_KEY_NULL,                   /* 00 */
+	DANCY_KEY_ESCAPE,                 /* 01 */
+	DANCY_KEY_1,                      /* 02 */
+	DANCY_KEY_2,                      /* 03 */
+	DANCY_KEY_3,                      /* 04 */
+	DANCY_KEY_4,                      /* 05 */
+	DANCY_KEY_5,                      /* 06 */
+	DANCY_KEY_6,                      /* 07 */
+	DANCY_KEY_7,                      /* 08 */
+	DANCY_KEY_8,                      /* 09 */
+	DANCY_KEY_9,                      /* 0A */
+	DANCY_KEY_0,                      /* 0B */
+	DANCY_KEY_UNDERSCORE,             /* 0C */
+	DANCY_KEY_EQUALS,                 /* 0D */
+	DANCY_KEY_BACKSPACE,              /* 0E */
+	DANCY_KEY_TAB,                    /* 0F */
+	DANCY_KEY_Q,                      /* 10 */
+	DANCY_KEY_W,                      /* 11 */
+	DANCY_KEY_E,                      /* 12 */
+	DANCY_KEY_R,                      /* 13 */
+	DANCY_KEY_T,                      /* 14 */
+	DANCY_KEY_Y,                      /* 15 */
+	DANCY_KEY_U,                      /* 16 */
+	DANCY_KEY_I,                      /* 17 */
+	DANCY_KEY_O,                      /* 18 */
+	DANCY_KEY_P,                      /* 19 */
+	DANCY_KEY_LEFTBRACKET,            /* 1A */
+	DANCY_KEY_RIGHTBRACKET,           /* 1B */
+	DANCY_KEY_ENTER,                  /* 1C */
+	DANCY_KEY_LCTRL,                  /* 1D */
+	DANCY_KEY_A,                      /* 1E */
+	DANCY_KEY_S,                      /* 1F */
+	DANCY_KEY_D,                      /* 20 */
+	DANCY_KEY_F,                      /* 21 */
+	DANCY_KEY_G,                      /* 22 */
+	DANCY_KEY_H,                      /* 23 */
+	DANCY_KEY_J,                      /* 24 */
+	DANCY_KEY_K,                      /* 25 */
+	DANCY_KEY_L,                      /* 26 */
+	DANCY_KEY_SEMICOLON,              /* 27 */
+	DANCY_KEY_APOSTROPHE,             /* 28 */
+	DANCY_KEY_GRAVE,                  /* 29 */
+	DANCY_KEY_LSHIFT,                 /* 2A */
+	DANCY_KEY_BACKSLASH,              /* 2B */
+	DANCY_KEY_Z,                      /* 2C */
+	DANCY_KEY_X,                      /* 2D */
+	DANCY_KEY_C,                      /* 2E */
+	DANCY_KEY_V,                      /* 2F */
+	DANCY_KEY_B,                      /* 30 */
+	DANCY_KEY_N,                      /* 31 */
+	DANCY_KEY_M,                      /* 32 */
+	DANCY_KEY_COMMA,                  /* 33 */
+	DANCY_KEY_PERIOD,                 /* 34 */
+	DANCY_KEY_SLASH,                  /* 35 */
+	DANCY_KEY_RSHIFT,                 /* 36 */
+	DANCY_KEY_PADASTERISK,            /* 37 */
+	DANCY_KEY_LALT,                   /* 38 */
+	DANCY_KEY_SPACE,                  /* 39 */
+	DANCY_KEY_CAPSLOCK,               /* 3A */
+	DANCY_KEY_F1,                     /* 3B */
+	DANCY_KEY_F2,                     /* 3C */
+	DANCY_KEY_F3,                     /* 3D */
+	DANCY_KEY_F4,                     /* 3E */
+	DANCY_KEY_F5,                     /* 3F */
+	DANCY_KEY_F6,                     /* 40 */
+	DANCY_KEY_F7,                     /* 41 */
+	DANCY_KEY_F8,                     /* 42 */
+	DANCY_KEY_F9,                     /* 43 */
+	DANCY_KEY_F10,                    /* 44 */
+	DANCY_KEY_NUMLOCK,                /* 45 */
+	DANCY_KEY_SCROLLLOCK,             /* 46 */
+	DANCY_KEY_PAD7,                   /* 47 */
+	DANCY_KEY_PAD8,                   /* 48 */
+	DANCY_KEY_PAD9,                   /* 49 */
+	DANCY_KEY_PADMINUS,               /* 4A */
+	DANCY_KEY_PAD4,                   /* 4B */
+	DANCY_KEY_PAD5,                   /* 4C */
+	DANCY_KEY_PAD6,                   /* 4D */
+	DANCY_KEY_PADPLUS,                /* 4E */
+	DANCY_KEY_PAD1,                   /* 4F */
+	DANCY_KEY_PAD2,                   /* 50 */
+	DANCY_KEY_PAD3,                   /* 51 */
+	DANCY_KEY_PAD0,                   /* 52 */
+	DANCY_KEY_PADDELETE,              /* 53 */
+	DANCY_KEY_PRINTSCREEN,            /* 54 */
+	0,                                /* 55 */
+	DANCY_KEY_NONUS,                  /* 56 */
+	DANCY_KEY_F11,                    /* 57 */
+	DANCY_KEY_F12,                    /* 58 */
+	0
+};
+
+static void process_keycode(int keycode, int release)
+{
+	(void)keycode; (void)release;
+}
+
 void ps2_kbd_handler(void)
 {
 	int b;
@@ -143,7 +243,105 @@ void ps2_kbd_handler(void)
 	}
 
 	while ((b = ps2_receive_port1()) >= 0) {
+		int keycode = 0;
+		int release = 0;
 
+		if (kbd_state == 0) {
+			if (b == 0xE0) {
+				kbd_state = 0xE0;
+				continue;
+			}
+			if (b == 0xE1) {
+				kbd_state = 0xE1;
+				continue;
+			}
+			if (b >= 0x80) {
+				b = b & 0x7F;
+				release = 1;
+			}
+			keycode = kbd_table[b];
+
+		} else if ((kbd_state & 0xFF) == 0xE0) {
+			if (b >= 0x80) {
+				b = b & 0x7F;
+				release = 1;
+			}
+			switch (b) {
+			case 0x1C:
+				keycode = DANCY_KEY_PADENTER;
+				break;
+			case 0x1D:
+				keycode = DANCY_KEY_RCTRL;
+				break;
+			case 0x35:
+				keycode = DANCY_KEY_PADSLASH;
+				break;
+			case 0x37:
+				keycode = DANCY_KEY_PRINTSCREEN;
+				break;
+			case 0x38:
+				keycode = DANCY_KEY_RALT;
+				break;
+			case 0x46:
+				keycode = DANCY_KEY_PAUSE;
+				break;
+			case 0x47:
+				keycode = DANCY_KEY_HOME;
+				break;
+			case 0x48:
+				keycode = DANCY_KEY_UPARROW;
+				break;
+			case 0x49:
+				keycode = DANCY_KEY_PAGEUP;
+				break;
+			case 0x4B:
+				keycode = DANCY_KEY_LEFTARROW;
+				break;
+			case 0x4D:
+				keycode = DANCY_KEY_RIGHTARROW;
+				break;
+			case 0x4F:
+				keycode = DANCY_KEY_END;
+				break;
+			case 0x50:
+				keycode = DANCY_KEY_DOWNARROW;
+				break;
+			case 0x51:
+				keycode = DANCY_KEY_PAGEDOWN;
+				break;
+			case 0x52:
+				keycode = DANCY_KEY_INSERT;
+				break;
+			case 0x53:
+				keycode = DANCY_KEY_DELETE;
+				break;
+			case 0x5B:
+				keycode = DANCY_KEY_LGUI;
+				break;
+			case 0x5C:
+				keycode = DANCY_KEY_RGUI;
+				break;
+			default:
+				break;
+			}
+			kbd_state = 0;
+
+		} else if ((kbd_state & 0xFF) == 0xE1) {
+			if (b >= 0x80) {
+				b = b & 0x7F;
+				release = 1;
+			}
+			if (kbd_state == 0x00E1 && (b == 0x1D || b == 0x45)) {
+				kbd_state = 0x01E1;
+				continue;
+			}
+			if (b == 0x1D || b == 0x45)
+				keycode = DANCY_KEY_PAUSE;
+			kbd_state = 0;
+		}
+
+		if (keycode != 0)
+			process_keycode(keycode, release);
 	}
 }
 
