@@ -29,6 +29,7 @@ static int acpios_failure(ACPI_STATUS status, const char *name)
 	kernel->print("\t%s: %08X\n\n", name, (unsigned int)status);
 
 	cpu_halt(4000);
+	kernel->print("\033c");
 
 	return 0;
 }
@@ -38,14 +39,13 @@ int acpios_init(void)
 	static int run_once;
 	ACPI_STATUS status;
 
+	kernel->acpica_available = 1;
+
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
 
 	if (!kernel->acpi_enabled)
 		return 0;
-
-	if (!task_create(acpios_task, NULL, task_detached | task_uniproc))
-		return DE_MEMORY;
 
 	/*
 	 * Initialize the ACPICA Subsystem.
@@ -72,6 +72,12 @@ int acpios_init(void)
 		return acpios_failure(status, "AcpiLoadTables");
 
 	/*
+	 * Create an ACPICA-specific task.
+	 */
+	if (!task_create(acpios_task, NULL, task_detached | task_uniproc))
+		return DE_MEMORY;
+
+	/*
 	 * Initialize the ACPI hardware.
 	 */
 	status = AcpiEnableSubsystem(ACPI_FULL_INITIALIZATION);
@@ -84,8 +90,13 @@ int acpios_init(void)
 	 */
 	status = AcpiInitializeObjects(ACPI_FULL_INITIALIZATION);
 
-	if (ACPI_FAILURE(status))
-		return acpios_failure(status, "AcpiInitializeObjects");
+	if (ACPI_FAILURE(status)) {
+		acpios_failure(status, "AcpiInitializeObjects");
+		return DE_UNEXPECTED;
+	}
+
+	if (!spin_trylock(&kernel->acpica_enabled))
+		return DE_UNEXPECTED;
 
 	return 0;
 }
@@ -95,6 +106,9 @@ static uint32_t acpios_shutdown_status;
 int acpios_shutdown(void)
 {
 	static int run_once;
+
+	if (!kernel->acpica_enabled)
+		return DE_UNINITIALIZED;
 
 	if (!spin_trylock(&run_once))
 		cpu_halt(0);
@@ -118,6 +132,9 @@ int acpios_shutdown(void)
 int acpios_reset(void)
 {
 	static int run_once;
+
+	if (!kernel->acpica_enabled)
+		return DE_UNINITIALIZED;
 
 	if (!spin_trylock(&run_once))
 		cpu_halt(0);

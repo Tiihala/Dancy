@@ -90,6 +90,9 @@ struct kernel_table {
 		unsigned int iapc_boot_arch;
 	} *acpi;
 
+	int acpica_available;
+	int acpica_enabled;
+
 	/*
 	 * Advanced Programmable Interrupt Controller (APIC).
 	 */

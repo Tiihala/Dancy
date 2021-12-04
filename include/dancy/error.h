@@ -29,6 +29,7 @@ DANCY_X(DE_MEMORY                    , "not enough memory"               )
 DANCY_X(DE_CHECKSUM                  , "checksum does not match"         )
 DANCY_X(DE_ARGUMENT                  , "function argument"               )
 DANCY_X(DE_RETRY                     , "resource unavailable"            )
+DANCY_X(DE_UNINITIALIZED             , "resource uninitialized"          )
 
 #endif
 
