@@ -264,7 +264,9 @@ int mm_init(void)
 	/*
 	 * Give almost all heap memory to the physical memory manager.
 	 */
-	if ((heap_reserved = aligned_alloc(0x1000, 0x400000)) != NULL) {
+	{
+		heap_reserved = NULL;
+
 		while ((ptr = aligned_alloc(0x1000, 0x400000)) != NULL) {
 			phys_addr_t addr = (phys_addr_t)ptr;
 
@@ -272,9 +274,18 @@ int mm_init(void)
 			size_t page_count = 0x400;
 
 			mm_bitmap_clear(page_frame, page_count);
+			heap_reserved = ptr;
 		}
 
-		free(heap_reserved);
+		if (heap_reserved != NULL) {
+			phys_addr_t addr = (phys_addr_t)heap_reserved;
+
+			size_t page_frame = (size_t)(addr / 0x1000);
+			size_t page_count = 0x400;
+
+			mm_bitmap_set(page_frame, page_count);
+			free(heap_reserved);
+		}
 	}
 
 	cpu_write32((uint32_t *)&mm_ready, 1);
