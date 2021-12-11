@@ -159,6 +159,7 @@ static int task_caretaker(void *arg)
 		struct task *t = task_head;
 
 		while (t != NULL) {
+			struct task *owner = t->owner;
 			struct task *t0 = t;
 			struct task *t1 = task_read_next(t);
 			struct task *t2;
@@ -166,6 +167,22 @@ static int task_caretaker(void *arg)
 			int error_assumption;
 			unsigned char *p;
 			size_t offset, size;
+
+			/*
+			 * Check that the owner task is still available. If
+			 * not, set the default owner. The first quick test
+			 * is done without acquiring the main task lock.
+			 */
+			if (owner && owner->id != t->id_owner) {
+				spin_enter(&lock_local);
+
+				if (t->owner && t->owner->id != t->id_owner) {
+					t->id_owner = 1;
+					t->owner = task_head;
+				}
+
+				spin_leave(&lock_local);
+			}
 
 			if ((t = task_read_next(t)) == task_head)
 				t = NULL;

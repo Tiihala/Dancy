@@ -148,7 +148,7 @@ void kernel_start(void)
 	}
 
 	while (panic_lock == 0)
-		task_yield();
+		task_wait_descendant(NULL, NULL);
 
 	cpu_halt(0);
 }
