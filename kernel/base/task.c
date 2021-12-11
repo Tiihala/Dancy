@@ -628,6 +628,8 @@ void task_exit(int retval)
 	if (!current->id_owner || !spin_trylock(&current->stopped))
 		panic(unexpected);
 
+	cpu_add32(&current->owner->descendant.data[0], 1);
+
 	while (current->stopped)
 		task_yield();
 
@@ -807,6 +809,105 @@ int task_wait(uint64_t id, int *retval)
 	}
 
 	return r;
+}
+
+static int task_wait_descendant_func(uint64_t *data)
+{
+	struct task *t = (struct task *)((addr_t)data[0]);
+	unsigned int ticks0 = (unsigned int)data[1];
+	unsigned int ticks1 = (unsigned int)timer_ticks;
+
+	if (t->descendant.data[0] != t->descendant.data[1])
+		return 0;
+
+	if ((ticks1 - ticks0) >= 2000)
+		return 0;
+
+	return 1;
+}
+
+#define MODE_TRYWAIT 1
+
+static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
+{
+	struct task *current = task_current();
+	uint64_t out_id = 0;
+	int out_retval = 0;
+
+	for (;;) {
+		struct task *t = task_head;
+		int descendant_found = 0;
+
+		current->descendant.data[1] = current->descendant.data[0];
+		task_switch_disable();
+
+		do {
+			int do_locked = 0;
+
+			if (t->owner == current && !t->detached) {
+				descendant_found = 1;
+				do_locked = t->stopped;
+			}
+
+			if (do_locked) {
+				void *lock_local = &task_lock;
+
+				spin_enter(&lock_local);
+
+				if (t->owner == current && t->stopped) {
+					if (spin_trylock(&t->detached)) {
+						out_id = t->id;
+						out_retval = t->retval;
+					}
+				}
+
+				spin_leave(&lock_local);
+			}
+
+			t = task_read_next(t);
+
+		} while (out_id == 0 && t != NULL && t != task_head);
+
+		task_switch_enable();
+
+		if (out_id)
+			break;
+
+		if (t != NULL) {
+			uint64_t d0, d1;
+
+			if (!descendant_found)
+				break;
+
+			if ((mode & MODE_TRYWAIT) != 0)
+				break;
+
+			d0 = (uint64_t)((addr_t)t);
+			d1 = (uint64_t)timer_ticks;
+			task_write_event(task_wait_descendant_func, d0, d1);
+
+			do {
+				task_yield();
+			} while (task_read_event());
+		}
+	}
+
+	if (id)
+		*id = out_id;
+	if (retval)
+		*retval = out_retval;
+
+	return (!out_id) ? DE_RETRY : 0;
+}
+
+int task_trywait_descendant(uint64_t *id, int *retval)
+{
+	return task_wait_descendant_shared(id, retval, MODE_TRYWAIT);
+}
+
+int task_wait_descendant(uint64_t *id, int *retval)
+{
+	return task_wait_descendant_shared(id, retval, 0);
 }
 
 void task_yield(void)

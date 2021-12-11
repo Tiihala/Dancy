@@ -55,6 +55,10 @@ struct task {
 	int iret_lock;
 	int iret_num;
 
+	struct {
+		uint32_t data[2];
+	} descendant;
+
 	uint32_t pg_cr3;
 	uint32_t pg_state;
 };
@@ -91,6 +95,8 @@ void task_switch_enable(void);
 
 int task_trywait(uint64_t id, int *retval);
 int task_wait(uint64_t id, int *retval);
+int task_trywait_descendant(uint64_t *id, int *retval);
+int task_wait_descendant(uint64_t *id, int *retval);
 void task_yield(void);
 
 #endif
