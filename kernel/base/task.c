@@ -91,6 +91,7 @@ static struct task *task_create_from_pool(void)
 
 		new_task->id = task_create_id();
 		new_task->id_owner = task_current()->id;
+		new_task->owner = task_current();
 	}
 
 	spin_leave(&lock_local);
@@ -229,6 +230,7 @@ static int task_caretaker(void *arg)
 
 			t1->id = 0;
 			t1->id_owner = 0;
+			t1->owner = NULL;
 
 			t1->detached = 0;
 			t1->stopped = 0;
@@ -377,6 +379,7 @@ int task_init_ap(void)
 	current->cr3 = (uint64_t)pg_kernel;
 	current->id = task_create_id();
 	current->id_owner = 1;
+	current->owner = task_head;
 	current->event.func = task_null_func;
 
 	task_switch_asm(current, gdt_get_tss());
@@ -500,6 +503,7 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 
 		new_task->id = task_create_id();
 		new_task->id_owner = task_current()->id;
+		new_task->owner = task_current();
 
 		task_append(new_task);
 	}

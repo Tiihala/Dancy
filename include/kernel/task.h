@@ -39,6 +39,7 @@ struct task {
 
 	uint64_t id;
 	uint64_t id_owner;
+	struct task *owner;
 
 	int detached;
 	int retval;
