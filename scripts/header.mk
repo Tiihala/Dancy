@@ -99,6 +99,7 @@ DANCY_HEADERS= \
  ./include/kernel/sched.h \
  ./include/kernel/table.h \
  ./include/kernel/task.h \
+ ./include/kernel/vfs.h \
  ./include/dancy.h
 
 DANCY_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(DANCY_TARGET_TOOLS)

@@ -22,6 +22,7 @@
 	@mkdir "o32/pci"
 	@mkdir "o32/ps2"
 	@mkdir "o32/sched"
+	@mkdir "o32/vfs"
 	@mkdir "o64"
 	@mkdir "o64/acpica"
 	@mkdir "o64/acpios"
@@ -40,6 +41,7 @@
 	@mkdir "o64/sched"
 	@mkdir "o64/uefi"
 	@mkdir "o64/uefi/a64"
+	@mkdir "o64/vfs"
 	@mkdir "release"
 	@mkdir "system"
 	$(DANCY_MK)

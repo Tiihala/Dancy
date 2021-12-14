@@ -50,6 +50,7 @@ include ./scripts/at/pci.mk
 include ./scripts/at/ps2.mk
 include ./scripts/at/sched.mk
 include ./scripts/at/uefi.mk
+include ./scripts/at/vfs.mk
 
 include ./scripts/dirs.mk
 include ./scripts/external.mk
