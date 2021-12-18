@@ -82,6 +82,7 @@ struct task *task_find(uint64_t id);
 uint64_t task_create(int (*func)(void *), void *arg, int type);
 int task_list(struct task_list_entry *buf, size_t buf_size);
 
+int task_check_event(struct task *task);
 int task_read_event(void);
 void task_write_event(int (*func)(uint64_t *data), uint64_t d0, uint64_t d1);
 

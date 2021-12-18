@@ -601,6 +601,24 @@ int task_list(struct task_list_entry *buf, size_t buf_size)
 	return count;
 }
 
+int task_check_event(struct task *task)
+{
+	int r = 0;
+
+	if (!task || task->active)
+		return 1;
+
+	if (task->event.func != task_null_func) {
+		if (!spin_trylock(&task->active))
+			return 1;
+
+		r = task->event.func(&task->event.data[0]);
+		spin_unlock(&task->active);
+	}
+
+	return r;
+}
+
 int task_read_event(void)
 {
 	struct task *current = task_current();
