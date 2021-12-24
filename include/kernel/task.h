@@ -61,6 +61,12 @@ struct task {
 
 	uint32_t pg_cr3;
 	uint32_t pg_state;
+
+	struct {
+		int lock;
+		int priority;
+		uint32_t state;
+	} sched;
 };
 
 struct task_list_entry {

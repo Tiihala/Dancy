@@ -22,6 +22,13 @@
 
 #include <dancy/types.h>
 
+enum sched_priority {
+	sched_priority_kernel = 0, /* default */
+	sched_priority_high,
+	sched_priority_normal,
+	sched_priority_low
+};
+
 /*
  * Declarations of sched.c
  */
