@@ -539,6 +539,8 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	if ((type & task_uniproc) != 0)
 		new_task->uniproc = 1;
 
+	new_task->sched.priority = task_current()->sched.priority;
+
 	task_create_asm(new_task, func, arg);
 	spin_unlock(&new_task->active);
 
