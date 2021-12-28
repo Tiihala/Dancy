@@ -13,7 +13,7 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
-;; lib/a64/string.asm
+;; common/a64/string.asm
 ;;      C standard library functions
 ;;
 
