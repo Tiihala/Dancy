@@ -13,7 +13,7 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
-;; dark/a32/dark.asm
+;; common/a32/dark.asm
 ;;      The dark corner of Dancy (32-bit)
 ;;
 
