@@ -144,7 +144,7 @@ static void task_default_yield(void)
 	while (task_switch(next)) {
 		if (next == current) {
 			if ((cpu_read_flags() & CPU_INTERRUPT_FLAG) != 0)
-				cpu_halt(1);
+				cpu_halt(2);
 			break;
 		}
 		next = !next ? task_read_next(current) : task_read_next(next);
