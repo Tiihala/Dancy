@@ -3,6 +3,8 @@
 ##############################################################################
 
 DANCY_START_OBJECTS_32= \
+ ./o32/common/a32/dark.o \
+ ./o32/common/a32/string.o \
  ./o32/common/crc32.o \
  ./o32/common/crc32c.o \
  ./o32/init/a32/ld.o \
@@ -13,9 +15,7 @@ DANCY_START_OBJECTS_32= \
  ./o32/init/memory.o \
  ./o32/init/print.o \
  ./o32/init/start.o \
- ./o32/lib/a32/dark.o \
  ./o32/lib/a32/spin.o \
- ./o32/lib/a32/string.o \
  ./o32/lib/bitarray.o \
  ./o32/lib/huffman.o \
  ./o32/lib/inflate.o \
@@ -23,6 +23,8 @@ DANCY_START_OBJECTS_32= \
  ./o32/lib/string.o
 
 DANCY_START_OBJECTS_64= \
+ ./o64/common/a64/dark.o \
+ ./o64/common/a64/string.o \
  ./o64/common/crc32.o \
  ./o64/common/crc32c.o \
  ./o64/init/a64/ld.o \
@@ -33,9 +35,7 @@ DANCY_START_OBJECTS_64= \
  ./o64/init/memory.o \
  ./o64/init/print.o \
  ./o64/init/start.o \
- ./o64/lib/a64/dark.o \
  ./o64/lib/a64/spin.o \
- ./o64/lib/a64/string.o \
  ./o64/lib/bitarray.o \
  ./o64/lib/huffman.o \
  ./o64/lib/inflate.o \

@@ -68,6 +68,12 @@
 ./o32/base/timer.o: ./kernel/base/timer.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/timer.c
 
+./o32/common/a32/dark.o: ./common/a32/dark.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./common/a32/dark.asm
+
+./o32/common/a32/string.o: ./common/a32/string.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./common/a32/string.asm
+
 ./o32/common/crc32.o: ./common/crc32.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/crc32.c
 
@@ -182,14 +188,8 @@
 ./o32/lib/a32/cpu.o: ./kernel/lib/a32/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/cpu.asm
 
-./o32/lib/a32/dark.o: ./kernel/lib/a32/dark.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/lib/a32/dark.asm
-
 ./o32/lib/a32/spin.o: ./kernel/lib/a32/spin.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/spin.asm
-
-./o32/lib/a32/string.o: ./kernel/lib/a32/string.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/lib/a32/string.asm
 
 ./o32/lib/bitarray.o: ./kernel/lib/bitarray.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/bitarray.c
@@ -301,6 +301,12 @@
 
 ./o64/base/timer.o: ./kernel/base/timer.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/timer.c
+
+./o64/common/a64/dark.o: ./common/a64/dark.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./common/a64/dark.asm
+
+./o64/common/a64/string.o: ./common/a64/string.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./common/a64/string.asm
 
 ./o64/common/crc32.o: ./common/crc32.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/crc32.c
@@ -416,14 +422,8 @@
 ./o64/lib/a64/cpu.o: ./kernel/lib/a64/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/cpu.asm
 
-./o64/lib/a64/dark.o: ./kernel/lib/a64/dark.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/lib/a64/dark.asm
-
 ./o64/lib/a64/spin.o: ./kernel/lib/a64/spin.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/spin.asm
-
-./o64/lib/a64/string.o: ./kernel/lib/a64/string.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/lib/a64/string.asm
 
 ./o64/lib/bitarray.o: ./kernel/lib/bitarray.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/bitarray.c
