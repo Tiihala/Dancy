@@ -53,6 +53,7 @@ enum dancy_error {
 #include <kernel/sched.h>
 #include <kernel/table.h>
 #include <kernel/task.h>
+#include <kernel/vfs.h>
 
 #endif
 #endif
