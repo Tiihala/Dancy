@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -54,7 +54,7 @@ struct vfs_node {
 	uint64_t id;
 	uint64_t size;
 
-	void (*n_release)(struct vfs_node *node);
+	void (*n_release)(struct vfs_node **node);
 
 	int (*n_create)(struct vfs_node *node, struct vfs_node **new_node,
 		int type, int mode, const char *name);
@@ -88,7 +88,7 @@ struct vfs_session {
 	struct vfs_node *node;
 	uint64_t offset;
 
-	void (*s_release)(struct vfs_session *session);
+	void (*s_release)(struct vfs_session **session);
 };
 
 /*
