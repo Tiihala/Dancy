@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, 2021 Antti Tiihala
+ * Copyright (c) 2020, 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -30,6 +30,9 @@ DANCY_X(DE_CHECKSUM                  , "checksum does not match"         )
 DANCY_X(DE_ARGUMENT                  , "function argument"               )
 DANCY_X(DE_RETRY                     , "resource unavailable"            )
 DANCY_X(DE_UNINITIALIZED             , "resource uninitialized"          )
+DANCY_X(DE_UNSUPPORTED               , "resource unsupported"            )
+DANCY_X(DE_NAME                      , "name not found"                  )
+DANCY_X(DE_OVERFLOW                  , "resource overflowed"             )
 
 #endif
 
