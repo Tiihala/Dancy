@@ -233,6 +233,9 @@
 ./o32/sched/sched.o: ./kernel/sched/sched.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/sched/sched.c
 
+./o32/vfs/path.o: ./kernel/vfs/path.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/vfs/path.c
+
 ./o32/vfs/vfs.o: ./kernel/vfs/vfs.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/vfs/vfs.c
 
@@ -520,6 +523,9 @@
 
 ./o64/uefi/video.o: ./boot/uefi/video.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/uefi/video.c
+
+./o64/vfs/path.o: ./kernel/vfs/path.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/vfs/path.c
 
 ./o64/vfs/vfs.o: ./kernel/vfs/vfs.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/vfs/vfs.c
