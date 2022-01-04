@@ -102,8 +102,6 @@ char **vfs_build_path(const char *name);
 int vfs_init(void);
 
 void vfs_init_node(struct vfs_node *node);
-const char *vfs_absolute_path(const char *name);
-
 int vfs_open_node(const char *name, struct vfs_node **node);
 
 #endif

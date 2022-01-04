@@ -182,60 +182,18 @@ void vfs_init_node(struct vfs_node *node)
 	node->n_unlink = n_unlink_null;
 }
 
-const char *vfs_absolute_path(const char *name)
-{
-	char *path_buffer = ((char *)task_current()) + sizeof(struct task);
-	int i = 0;
-
-	/*
-	 * This is a temporary implementation!
-	 */
-	if (name) {
-		while (i < 256) {
-			if ((path_buffer[i] = name[i]) == '\0')
-				return path_buffer;
-			i += 1;
-		}
-	}
-
-	return NULL;
-}
-
 int vfs_open_node(const char *name, struct vfs_node **node)
 {
-	const char *absolute_path = vfs_absolute_path(name);
+	char **path = vfs_build_path(name);
 	struct vfs_node *ret_node = NULL;
-	void *lock_local;
 
 	if (!node)
 		return DE_ARGUMENT;
 
 	*node = ret_node;
 
-	if (!absolute_path)
+	if (!path)
 		return DE_ARGUMENT;
-
-	/*
-	 * This is a temporary implementation!
-	 */
-	if (!strcmp(absolute_path, "/dev/null")) {
-		ret_node = &dev_null_node;
-
-		lock_local = &ret_node->lock;
-		spin_enter(&lock_local);
-
-		if (ret_node->count < INT_MAX)
-			ret_node->count += 1;
-		else
-			ret_node = NULL;
-
-		spin_leave(&lock_local);
-
-		if ((*node = ret_node) == NULL)
-			return DE_OVERFLOW;
-
-		return 0;
-	}
 
 	return DE_NAME;
 }
