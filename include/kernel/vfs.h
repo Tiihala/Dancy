@@ -95,6 +95,7 @@ struct vfs_session {
  * Declarations of path.c
  */
 char **vfs_build_path(const char *name);
+int vfs_chdir(const char *name);
 
 /*
  * Declarations of vfs.c

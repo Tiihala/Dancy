@@ -25,3 +25,11 @@ char **vfs_build_path(const char *name)
 
 	return NULL;
 }
+
+int vfs_chdir(const char *name)
+{
+	if (!name)
+		return DE_ARGUMENT;
+
+	return DE_ARGUMENT;
+}
