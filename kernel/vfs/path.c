@@ -123,6 +123,11 @@ char **vfs_build_path(const char *name)
 
 		for (i = 1; i < VFS_PATH_COUNT; i++)
 			path->absolute_path[i] = NULL;
+
+		if (name[1] == '\0') {
+			path->absolute_path[0] = &vfs_path_directory[0];
+			return &path->absolute_path[0];
+		}
 	}
 
 	if (name[0] == '\0')
