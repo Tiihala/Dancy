@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * vfs/path.c
- *      Virtual File System
+ *      Path normalization
  */
 
 #include <dancy.h>
@@ -37,6 +37,12 @@ static struct vfs_path *get_vfs_path(void)
 {
 	addr_t a = (addr_t)task_current();
 
+	/*
+	 * Every task has a vfs_path structure. There is no
+	 * need for any kind of locking. If changing the size
+	 * of the structure, this offset must be carefully
+	 * checked so that there is enough space.
+	 */
 	return (struct vfs_path *)((void *)(a + 0x0800));
 }
 
@@ -111,6 +117,10 @@ char **vfs_build_path(const char *name)
 	if (!name || name[0] != '/') {
 		count = copy_working_directory(path, &offset);
 
+		/*
+		 * vfs_build_path(NULL) will return the current
+		 * working directory.
+		 */
 		if (!name) {
 			path->absolute_path[0] = &vfs_path_directory[0];
 			path->absolute_path[count - 1] = NULL;
@@ -124,12 +134,18 @@ char **vfs_build_path(const char *name)
 		for (i = 1; i < VFS_PATH_COUNT; i++)
 			path->absolute_path[i] = NULL;
 
+		/*
+		 * vfs_build_path("/") is a special case.
+		 */
 		if (name[1] == '\0') {
 			path->absolute_path[0] = &vfs_path_directory[0];
 			return &path->absolute_path[0];
 		}
 	}
 
+	/*
+	 * vfs_build_path("") is not valid.
+	 */
 	if (name[0] == '\0')
 		return path_error(path);
 
@@ -170,6 +186,11 @@ char **vfs_build_path(const char *name)
 		}
 	}
 
+	/*
+	 * If the name ends with a "." or "..", the final
+	 * component must be a directory. The above code
+	 * added a "." if the name ended with a "/".
+	 */
 	if (path->absolute_path[count - 1][0] == '.') {
 		int dot_count = 0;
 
@@ -229,6 +250,10 @@ int vfs_chdir(const char *name)
 	int count = 0, offset = 0;
 	int i;
 
+	/*
+	 * vfs_chdir(NULL) is valid, and will remove
+	 * the current working directory.
+	 */
 	if (name) {
 		if ((vfs_build_path(name))[0][0] == 'E')
 			return DE_ARGUMENT;
