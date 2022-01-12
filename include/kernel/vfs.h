@@ -24,12 +24,11 @@
 
 enum vfs_type {
 	vfs_type_regular   = 1,
-	vfs_type_symbolic  = 2,
-	vfs_type_buffer    = 3,
-	vfs_type_directory = 4,
-	vfs_type_character = 5,
-	vfs_type_block     = 6,
-	vfs_type_socket    = 7,
+	vfs_type_buffer    = 2,
+	vfs_type_directory = 3,
+	vfs_type_character = 4,
+	vfs_type_block     = 5,
+	vfs_type_socket    = 6,
 	vfs_type_last
 };
 
