@@ -91,6 +91,31 @@ struct vfs_session {
 };
 
 /*
+ * Declarations of default.c
+ */
+void vfs_default_s_release(struct vfs_session **session);
+void vfs_default_n_release(struct vfs_node **node);
+
+int vfs_default_n_create(struct vfs_node *node, struct vfs_node **new_node,
+	int type, int mode, const char *name);
+
+int vfs_default_n_open(struct vfs_node *node, struct vfs_session **session);
+
+long long vfs_default_n_read(struct vfs_node *node,
+	uint64_t offset, size_t size, void *buffer);
+
+long long vfs_default_n_write(struct vfs_node *node,
+	uint64_t offset, size_t size, const void *buffer);
+
+int vfs_default_n_flush(struct vfs_node *node);
+
+int vfs_default_n_readdir(struct vfs_node *node,
+	uint64_t offset, size_t size, void *record);
+
+int vfs_default_n_link(struct vfs_node *node, const char *name);
+int vfs_default_n_unlink(struct vfs_node *node, const char *name);
+
+/*
  * Declarations of path.c
  */
 char **vfs_build_path(const char *name);

@@ -3,10 +3,12 @@
 ##############################################################################
 
 DANCY_VFS_OBJECTS_32= \
+ ./o32/vfs/default.o \
  ./o32/vfs/path.o \
  ./o32/vfs/vfs.o
 
 DANCY_VFS_OBJECTS_64= \
+ ./o64/vfs/default.o \
  ./o64/vfs/path.o \
  ./o64/vfs/vfs.o
 
