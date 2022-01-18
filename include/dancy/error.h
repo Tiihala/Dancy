@@ -32,7 +32,9 @@ DANCY_X(DE_RETRY                     , "resource unavailable"            )
 DANCY_X(DE_UNINITIALIZED             , "resource uninitialized"          )
 DANCY_X(DE_UNSUPPORTED               , "resource unsupported"            )
 DANCY_X(DE_NAME                      , "name not found"                  )
+DANCY_X(DE_PATH                      , "erroneous path"                  )
 DANCY_X(DE_OVERFLOW                  , "resource overflowed"             )
+DANCY_X(DE_DIRECTORY                 , "directory expected"              )
 
 #endif
 
