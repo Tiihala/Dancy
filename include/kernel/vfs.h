@@ -37,6 +37,7 @@ enum vfs_mode {
 	vfs_mode_hidden    = 0x02,
 	vfs_mode_system    = 0x04,
 	vfs_mode_directory = 0x08,
+	vfs_mode_create    = 0x10,
 	vfs_mode_last
 };
 
@@ -126,7 +127,13 @@ int vfs_chdir(const char *name);
  */
 int vfs_init(void);
 
+struct vfs_node *vfs_alloc_node(void);
 void vfs_init_node(struct vfs_node *node);
+
+int vfs_increment_count(struct vfs_node *node);
+int vfs_decrement_count(struct vfs_node *node);
+
+int vfs_mount_node(const char *name, struct vfs_node *node);
 int vfs_open_node(const char *name, struct vfs_node **node);
 
 #endif

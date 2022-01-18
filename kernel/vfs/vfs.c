@@ -19,6 +19,8 @@
 
 #include <dancy.h>
 
+static struct vfs_node *root_node;
+
 int vfs_init(void)
 {
 	static int run_once;
@@ -27,6 +29,29 @@ int vfs_init(void)
 		return DE_UNEXPECTED;
 
 	return 0;
+}
+
+static void alloc_n_release(struct vfs_node **node)
+{
+	struct vfs_node *n = *node;
+
+	if (n && !vfs_decrement_count(n))
+		free(n);
+
+	*node = NULL;
+}
+
+struct vfs_node *vfs_alloc_node(void)
+{
+	struct vfs_node *node;
+
+	if ((node = malloc(sizeof(*node))) != NULL) {
+		vfs_init_node(node);
+		node->count = 1;
+		node->n_release = alloc_n_release;
+	}
+
+	return node;
 }
 
 void vfs_init_node(struct vfs_node *node)
@@ -49,18 +74,100 @@ void vfs_init_node(struct vfs_node *node)
 	node->n_unlink  = vfs_default_n_unlink;
 }
 
+int vfs_increment_count(struct vfs_node *node)
+{
+	void *lock_local = &node->lock;
+	int r;
+
+	spin_enter(&lock_local);
+
+	if (node->count >= 0 && node->count < INT_MAX)
+		node->count += 1;
+	r = node->count;
+
+	spin_leave(&lock_local);
+
+	return r;
+}
+
+int vfs_decrement_count(struct vfs_node *node)
+{
+	void *lock_local = &node->lock;
+	int r;
+
+	spin_enter(&lock_local);
+
+	if (node->count > 0)
+		node->count -= 1;
+	r = node->count;
+
+	spin_leave(&lock_local);
+
+	return r;
+}
+
+int vfs_mount_node(const char *name, struct vfs_node *node)
+{
+	(void)name;
+	(void)node;
+
+	return DE_UNSUPPORTED;
+}
+
 int vfs_open_node(const char *name, struct vfs_node **node)
 {
 	char **path = vfs_build_path(name);
-	struct vfs_node *ret_node = NULL;
+	struct vfs_node *new_node = NULL, *ret_node = NULL;
+	int is_dir = 0;
+	int i, r = 0;
 
-	if (!node)
+	if (!name || !node)
 		return DE_ARGUMENT;
 
 	*node = ret_node;
 
 	if (path[0][0] == 'E')
-		return DE_ARGUMENT;
+		return DE_PATH;
 
-	return DE_NAME;
+	if (path[0][0] == 'D')
+		is_dir = 1;
+
+	if (!root_node)
+		return DE_UNINITIALIZED;
+
+	vfs_increment_count(root_node);
+	ret_node = root_node;
+
+	for (i = 1; /* void */; i++) {
+		char *path_i = path[i];
+		int last_component;
+
+		if (!path_i) {
+			if (is_dir && ret_node->type != vfs_type_directory) {
+				r = DE_DIRECTORY;
+				break;
+			}
+
+			return (*node = ret_node), 0;
+		}
+
+		r = ret_node->n_create(ret_node, &new_node, 0, 0, path_i);
+
+		if (r != DE_SUCCESS)
+			break;
+
+		ret_node->n_release(&ret_node);
+		ret_node = new_node;
+
+		last_component = (path[i + 1] == NULL) ? 1 : 0;
+
+		if (!last_component && new_node->type != vfs_type_directory) {
+			r = DE_DIRECTORY;
+			break;
+		}
+	}
+
+	ret_node->n_release(&ret_node);
+
+	return r;
 }
