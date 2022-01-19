@@ -60,18 +60,18 @@ void vfs_init_node(struct vfs_node *node)
 
 	memset(node, 0, size);
 
-	node->n_release = vfs_default_n_release;
-	node->n_create  = vfs_default_n_create;
-	node->n_open    = vfs_default_n_open;
+	node->n_release = vfs_default_release;
+	node->n_create  = vfs_default_create;
+	node->n_open    = vfs_default_open;
 
-	node->n_read    = vfs_default_n_read;
-	node->n_write   = vfs_default_n_write;
+	node->n_read    = vfs_default_read;
+	node->n_write   = vfs_default_write;
 
-	node->n_flush   = vfs_default_n_flush;
-	node->n_readdir = vfs_default_n_readdir;
+	node->n_flush   = vfs_default_flush;
+	node->n_readdir = vfs_default_readdir;
 
-	node->n_link    = vfs_default_n_link;
-	node->n_unlink  = vfs_default_n_unlink;
+	node->n_link    = vfs_default_link;
+	node->n_unlink  = vfs_default_unlink;
 }
 
 int vfs_increment_count(struct vfs_node *node)

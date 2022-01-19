@@ -19,12 +19,12 @@
 
 #include <dancy.h>
 
-void vfs_default_n_release(struct vfs_node **node)
+void vfs_default_release(struct vfs_node **node)
 {
 	*node = NULL;
 }
 
-int vfs_default_n_create(struct vfs_node *node, struct vfs_node **new_node,
+int vfs_default_create(struct vfs_node *node, struct vfs_node **new_node,
 	int type, int mode, const char *name)
 {
 	(void)node;
@@ -36,7 +36,7 @@ int vfs_default_n_create(struct vfs_node *node, struct vfs_node **new_node,
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_n_open(struct vfs_node *node, struct vfs_session **session)
+int vfs_default_open(struct vfs_node *node, struct vfs_session **session)
 {
 	(void)node;
 	(void)session;
@@ -44,7 +44,7 @@ int vfs_default_n_open(struct vfs_node *node, struct vfs_session **session)
 	return DE_UNSUPPORTED;
 }
 
-long long vfs_default_n_read(struct vfs_node *node,
+long long vfs_default_read(struct vfs_node *node,
 	uint64_t offset, size_t size, void *buffer)
 {
 	const long long ret = -1;
@@ -57,7 +57,7 @@ long long vfs_default_n_read(struct vfs_node *node,
 	return ret;
 }
 
-long long vfs_default_n_write(struct vfs_node *node,
+long long vfs_default_write(struct vfs_node *node,
 	uint64_t offset, size_t size, const void *buffer)
 {
 	const long long ret = -1;
@@ -70,14 +70,14 @@ long long vfs_default_n_write(struct vfs_node *node,
 	return ret;
 }
 
-int vfs_default_n_flush(struct vfs_node *node)
+int vfs_default_flush(struct vfs_node *node)
 {
 	(void)node;
 
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_n_readdir(struct vfs_node *node,
+int vfs_default_readdir(struct vfs_node *node,
 	uint64_t offset, size_t size, void *record)
 {
 	(void)node;
@@ -89,7 +89,7 @@ int vfs_default_n_readdir(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_n_link(struct vfs_node *node, const char *name)
+int vfs_default_link(struct vfs_node *node, const char *name)
 {
 	(void)node;
 	(void)name;
@@ -97,7 +97,7 @@ int vfs_default_n_link(struct vfs_node *node, const char *name)
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_n_unlink(struct vfs_node *node, const char *name)
+int vfs_default_unlink(struct vfs_node *node, const char *name)
 {
 	(void)node;
 	(void)name;
