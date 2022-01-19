@@ -19,11 +19,6 @@
 
 #include <dancy.h>
 
-void vfs_default_s_release(struct vfs_session **session)
-{
-	*session = NULL;
-}
-
 void vfs_default_n_release(struct vfs_node **node)
 {
 	*node = NULL;

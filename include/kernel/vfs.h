@@ -94,7 +94,6 @@ struct vfs_session {
 /*
  * Declarations of default.c
  */
-void vfs_default_s_release(struct vfs_session **session);
 void vfs_default_n_release(struct vfs_node **node);
 
 int vfs_default_n_create(struct vfs_node *node, struct vfs_node **new_node,
