@@ -24,9 +24,13 @@ static struct vfs_node *root_node;
 int vfs_init(void)
 {
 	static int run_once;
+	int r;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
+
+	if ((r = vfs_init_root(&root_node)) != 0)
+		return r;
 
 	return 0;
 }

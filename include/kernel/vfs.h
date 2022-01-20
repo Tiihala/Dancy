@@ -122,6 +122,11 @@ char **vfs_build_path(const char *name);
 int vfs_chdir(const char *name);
 
 /*
+ * Declarations of root.c
+ */
+int vfs_init_root(struct vfs_node **node);
+
+/*
  * Declarations of vfs.c
  */
 int vfs_init(void);
