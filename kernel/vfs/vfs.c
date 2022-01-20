@@ -31,7 +31,7 @@ int vfs_init(void)
 	return 0;
 }
 
-static void alloc_n_release(struct vfs_node **node)
+static void alloc_release(struct vfs_node **node)
 {
 	struct vfs_node *n = *node;
 
@@ -48,7 +48,7 @@ struct vfs_node *vfs_alloc_node(void)
 	if ((node = malloc(sizeof(*node))) != NULL) {
 		vfs_init_node(node);
 		node->count = 1;
-		node->n_release = alloc_n_release;
+		node->n_release = alloc_release;
 	}
 
 	return node;
