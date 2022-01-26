@@ -21,17 +21,33 @@
 
 static struct vfs_node *root_node;
 
+static int root_id;
+static struct fat_io root_io;
+
+static int root_get_size(int id, size_t *block_size, size_t *block_total);
+static int root_io_read(int id, size_t lba, size_t *size, void *buf);
+static int root_io_write(int id, size_t lba, size_t *size, const void *buf);
+
 int vfs_init_root(struct vfs_node **node)
 {
+	int r;
+
 	if ((root_node = vfs_alloc_node()) == NULL)
 		return DE_MEMORY;
+
+	root_io.get_size = root_get_size;
+	root_io.io_read  = root_io_read;
+	root_io.io_write = root_io_write;
+
+	if ((r = fat_io_add(&root_io, &root_id)) != 0)
+		return r;
 
 	*node = root_node;
 
 	return 0;
 }
 
-int fat_get_size(int id, size_t *block_size, size_t *block_total)
+static int root_get_size(int id, size_t *block_size, size_t *block_total)
 {
 	(void)id;
 	(void)block_size;
@@ -40,19 +56,7 @@ int fat_get_size(int id, size_t *block_size, size_t *block_total)
 	return 1;
 }
 
-int fat_get_time(char iso_8601_format[19])
-{
-	char buf[32];
-
-	snprintf(&buf[0], 32, "%04d-%02d-%02dT%02d:%02d:%02d",
-		1980, 1, 1, 0, 0, 0);
-
-	memcpy(&iso_8601_format[0], &buf[0], 19);
-
-	return 0;
-}
-
-int fat_io_read(int id, size_t lba, size_t *size, void *buf)
+static int root_io_read(int id, size_t lba, size_t *size, void *buf)
 {
 	(void)id;
 	(void)lba;
@@ -63,7 +67,7 @@ int fat_io_read(int id, size_t lba, size_t *size, void *buf)
 	return 1;
 }
 
-int fat_io_write(int id, size_t lba, size_t *size, const void *buf)
+static int root_io_write(int id, size_t lba, size_t *size, const void *buf)
 {
 	(void)id;
 	(void)lba;

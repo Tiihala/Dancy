@@ -116,6 +116,17 @@ int vfs_default_link(struct vfs_node *node, const char *name);
 int vfs_default_unlink(struct vfs_node *node, const char *name);
 
 /*
+ * Declarations of fat_io.c
+ */
+struct fat_io {
+	int (*get_size)(int id, size_t *block_size, size_t *block_total);
+	int (*io_read)(int id, size_t lba, size_t *size, void *buf);
+	int (*io_write)(int id, size_t lba, size_t *size, const void *buf);
+};
+
+int fat_io_add(struct fat_io *io, int *id);
+
+/*
  * Declarations of path.c
  */
 char **vfs_build_path(const char *name);
