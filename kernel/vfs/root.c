@@ -25,10 +25,6 @@ static void *root_instance;
 static int root_id;
 static struct fat_io root_io;
 
-static int root_get_size(int id, size_t *block_size, size_t *block_total);
-static int root_io_read(int id, size_t lba, size_t *size, void *buf);
-static int root_io_write(int id, size_t lba, size_t *size, const void *buf);
-
 static size_t root_ramfs_size;
 static unsigned char *root_ramfs;
 
@@ -68,35 +64,6 @@ static int create_ramfs(void)
 	return 0;
 }
 
-int vfs_init_root(struct vfs_node **node)
-{
-	static int run_once;
-	int r;
-
-	if (!spin_trylock(&run_once))
-		return DE_UNEXPECTED;
-
-	if ((r = create_ramfs()) != 0)
-		return r;
-
-	if ((root_node = vfs_alloc_node()) == NULL)
-		return DE_MEMORY;
-
-	root_io.get_size = root_get_size;
-	root_io.io_read  = root_io_read;
-	root_io.io_write = root_io_write;
-
-	if ((r = fat_io_add(&root_io, &root_id)) != 0)
-		return r;
-
-	if (fat_create(&root_instance, root_id))
-		return DE_MEMORY;
-
-	*node = root_node;
-
-	return 0;
-}
-
 static int root_get_size(int id, size_t *block_size, size_t *block_total)
 {
 	if (id != root_id)
@@ -128,6 +95,35 @@ static int root_io_write(int id, size_t lba, size_t *size, const void *buf)
 		kernel->panic("root_io_write: unexpected behavior");
 
 	memcpy(&root_ramfs[offset], buf, *size);
+
+	return 0;
+}
+
+int vfs_init_root(struct vfs_node **node)
+{
+	static int run_once;
+	int r;
+
+	if (!spin_trylock(&run_once))
+		return DE_UNEXPECTED;
+
+	if ((r = create_ramfs()) != 0)
+		return r;
+
+	if ((root_node = vfs_alloc_node()) == NULL)
+		return DE_MEMORY;
+
+	root_io.get_size = root_get_size;
+	root_io.io_read  = root_io_read;
+	root_io.io_write = root_io_write;
+
+	if ((r = fat_io_add(&root_io, &root_id)) != 0)
+		return r;
+
+	if (fat_create(&root_instance, root_id))
+		return DE_MEMORY;
+
+	*node = root_node;
 
 	return 0;
 }
