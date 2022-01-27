@@ -41,6 +41,7 @@ enum vfs_mode {
 	vfs_mode_last
 };
 
+struct vfs_name;
 struct vfs_record;
 struct vfs_session;
 
@@ -57,7 +58,7 @@ struct vfs_node {
 	void (*n_release)(struct vfs_node **node);
 
 	int (*n_create)(struct vfs_node *node, struct vfs_node **new_node,
-		int type, int mode, const char *name);
+		int type, int mode, struct vfs_name *vname);
 
 	int (*n_open)(struct vfs_node *node, struct vfs_session **session);
 
@@ -72,9 +73,16 @@ struct vfs_node {
 	int (*n_readdir)(struct vfs_node *node,
 		uint64_t offset, size_t size, void *record);
 
-	int (*n_link)(struct vfs_node *node, const char *name);
-	int (*n_unlink)(struct vfs_node *node, const char *name);
+	int (*n_link)(struct vfs_node *node, struct vfs_name *vname);
+	int (*n_unlink)(struct vfs_node *node, struct vfs_name *vname);
 };
+
+struct vfs_name {
+	char **path;
+	int depth;
+};
+
+#define VFS_READ_NAME(vname) ((vname)->path[(vname)->depth])
 
 struct vfs_record {
 	uint64_t id;
@@ -97,7 +105,7 @@ struct vfs_session {
 void vfs_default_release(struct vfs_node **node);
 
 int vfs_default_create(struct vfs_node *node, struct vfs_node **new_node,
-	int type, int mode, const char *name);
+	int type, int mode, struct vfs_name *vname);
 
 int vfs_default_open(struct vfs_node *node, struct vfs_session **session);
 
@@ -112,8 +120,8 @@ int vfs_default_flush(struct vfs_node *node);
 int vfs_default_readdir(struct vfs_node *node,
 	uint64_t offset, size_t size, void *record);
 
-int vfs_default_link(struct vfs_node *node, const char *name);
-int vfs_default_unlink(struct vfs_node *node, const char *name);
+int vfs_default_link(struct vfs_node *node, struct vfs_name *vname);
+int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname);
 
 /*
  * Declarations of fat_io.c

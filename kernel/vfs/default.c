@@ -25,13 +25,13 @@ void vfs_default_release(struct vfs_node **node)
 }
 
 int vfs_default_create(struct vfs_node *node, struct vfs_node **new_node,
-	int type, int mode, const char *name)
+	int type, int mode, struct vfs_name *vname)
 {
 	(void)node;
 	(void)new_node;
 	(void)type;
 	(void)mode;
-	(void)name;
+	(void)vname;
 
 	return DE_UNSUPPORTED;
 }
@@ -89,18 +89,18 @@ int vfs_default_readdir(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_link(struct vfs_node *node, const char *name)
+int vfs_default_link(struct vfs_node *node, struct vfs_name *vname)
 {
 	(void)node;
-	(void)name;
+	(void)vname;
 
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_unlink(struct vfs_node *node, const char *name)
+int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname)
 {
 	(void)node;
-	(void)name;
+	(void)vname;
 
 	return DE_UNSUPPORTED;
 }

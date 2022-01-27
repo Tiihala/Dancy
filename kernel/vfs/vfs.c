@@ -122,6 +122,7 @@ int vfs_open_node(const char *name, struct vfs_node **node)
 {
 	char **path = vfs_build_path(name);
 	struct vfs_node *new_node = NULL, *ret_node = NULL;
+	struct vfs_name vname;
 	int is_dir = 0;
 	int i, r = 0;
 
@@ -142,6 +143,9 @@ int vfs_open_node(const char *name, struct vfs_node **node)
 	vfs_increment_count(root_node);
 	ret_node = root_node;
 
+	memset(&vname, 0, sizeof(vname));
+	vname.path = path;
+
 	for (i = 1; /* void */; i++) {
 		char *path_i = path[i];
 		int last_component;
@@ -155,7 +159,8 @@ int vfs_open_node(const char *name, struct vfs_node **node)
 			return (*node = ret_node), 0;
 		}
 
-		r = ret_node->n_create(ret_node, &new_node, 0, 0, path_i);
+		vname.depth = i;
+		r = ret_node->n_create(ret_node, &new_node, 0, 0, &vname);
 
 		if (r != DE_SUCCESS)
 			break;
