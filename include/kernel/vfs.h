@@ -78,11 +78,10 @@ struct vfs_node {
 };
 
 struct vfs_name {
+	const char *name;
 	char **path;
 	int depth;
 };
-
-#define VFS_READ_NAME(vname) ((vname)->path[(vname)->depth])
 
 struct vfs_record {
 	uint64_t id;

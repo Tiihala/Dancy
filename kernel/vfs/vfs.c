@@ -159,7 +159,9 @@ int vfs_open_node(const char *name, struct vfs_node **node)
 			return (*node = ret_node), 0;
 		}
 
+		vname.name = path_i;
 		vname.depth = i;
+
 		r = ret_node->n_create(ret_node, &new_node, 0, 0, &vname);
 
 		if (r != DE_SUCCESS)
