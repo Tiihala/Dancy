@@ -31,6 +31,29 @@ static unsigned char *root_ramfs;
 static size_t root_block_size;
 static size_t root_block_total;
 
+static void alloc_release(struct vfs_node **node)
+{
+	struct vfs_node *n = *node;
+
+	if (n && !vfs_decrement_count(n))
+		free(n);
+
+	*node = NULL;
+}
+
+static struct vfs_node *alloc_node(void)
+{
+	struct vfs_node *node;
+
+	if ((node = malloc(sizeof(*node))) != NULL) {
+		vfs_init_node(node);
+		node->count = 1;
+		node->n_release = alloc_release;
+	}
+
+	return node;
+}
+
 static int create_ramfs(void)
 {
 	static const unsigned char parameter_block[] = {
@@ -110,7 +133,7 @@ int vfs_init_root(struct vfs_node **node)
 	if ((r = create_ramfs()) != 0)
 		return r;
 
-	if ((root_node = vfs_alloc_node()) == NULL)
+	if ((root_node = alloc_node()) == NULL)
 		return DE_MEMORY;
 
 	root_io.get_size = root_get_size;
