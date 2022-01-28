@@ -96,6 +96,10 @@ static int set_vname(struct vfs_path *path, struct vfs_name *vname, int val)
 	const size_t size = VFS_PATH_BUFFER;
 	int i;
 
+	/*
+	 * Remove the erroneous path content from the buffer. This
+	 * step is not needed, but should not be a performance issue.
+	 */
 	if (val) {
 		memset(&path->buffer[size], 0, size);
 
@@ -272,6 +276,10 @@ int vfs_chdir(const char *name)
 		while (path->absolute_path[count] != NULL)
 			count += 1;
 
+		/*
+		 * Make sure that there is some space for
+		 * path components after the working directory.
+		 */
 		if (count > VFS_PATH_COUNT - 4)
 			return set_vname(path, &vname, DE_ARGUMENT);
 	}
