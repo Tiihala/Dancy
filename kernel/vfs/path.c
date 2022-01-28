@@ -91,21 +91,17 @@ static int copy_working_directory(struct vfs_path *path, int *offset)
 	return count;
 }
 
-static void path_error(struct vfs_path *path)
+static int set_vname(struct vfs_path *path, struct vfs_name *vname, int val)
 {
 	const size_t size = VFS_PATH_BUFFER;
 	int i;
 
-	memset(&path->buffer[size], 0, size);
+	if (val) {
+		memset(&path->buffer[size], 0, size);
 
-	for (i = 1; i < VFS_PATH_COUNT; i++)
-		path->absolute_path[i] = NULL;
-}
-
-static int set_vname(struct vfs_path *path, struct vfs_name *vname, int val)
-{
-	if (val)
-		path_error(path);
+		for (i = 1; i < VFS_PATH_COUNT; i++)
+			path->absolute_path[i] = NULL;
+	}
 
 	memset(vname, 0, sizeof(*vname));
 
@@ -276,10 +272,8 @@ int vfs_chdir(const char *name)
 		while (path->absolute_path[count] != NULL)
 			count += 1;
 
-		if (count > VFS_PATH_COUNT - 4) {
-			(void)path_error(path);
-			return DE_ARGUMENT;
-		}
+		if (count > VFS_PATH_COUNT - 4)
+			return set_vname(path, &vname, DE_ARGUMENT);
 	}
 
 	memset(&path->buffer[0], 0, size);
