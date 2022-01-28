@@ -149,7 +149,7 @@ int vfs_init_root(struct vfs_node **node);
  * Declarations of vfs.c
  */
 int vfs_init(void);
-void vfs_init_node(struct vfs_node *node);
+void vfs_init_node(struct vfs_node *node, size_t size);
 
 int vfs_increment_count(struct vfs_node *node);
 int vfs_decrement_count(struct vfs_node *node);

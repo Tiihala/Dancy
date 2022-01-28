@@ -35,11 +35,14 @@ int vfs_init(void)
 	return 0;
 }
 
-void vfs_init_node(struct vfs_node *node)
+void vfs_init_node(struct vfs_node *node, size_t size)
 {
-	size_t size = sizeof(struct vfs_node);
+	size_t node_size = sizeof(struct vfs_node);
 
-	memset(node, 0, size);
+	if (node_size < size)
+		node_size = size;
+
+	memset(node, 0, node_size);
 
 	node->n_release = vfs_default_release;
 	node->n_create  = vfs_default_create;
