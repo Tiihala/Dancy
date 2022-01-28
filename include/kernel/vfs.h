@@ -23,6 +23,7 @@
 #include <dancy/types.h>
 
 enum vfs_type {
+	vfs_type_unknown   = 0,
 	vfs_type_regular   = 1,
 	vfs_type_buffer    = 2,
 	vfs_type_directory = 3,
@@ -78,9 +79,9 @@ struct vfs_node {
 };
 
 struct vfs_name {
-	const char *name;
-	char **path;
-	int depth;
+	char **components;
+	int offset;
+	int type;
 };
 
 struct vfs_record {
@@ -136,7 +137,7 @@ int fat_io_add(struct fat_io *io, int *id);
 /*
  * Declarations of path.c
  */
-char **vfs_build_path(const char *name);
+int vfs_build_path(const char *name, struct vfs_name *vname);
 int vfs_chdir(const char *name);
 
 /*
