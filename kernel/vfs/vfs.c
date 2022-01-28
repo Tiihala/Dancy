@@ -98,59 +98,35 @@ int vfs_mount_node(const char *name, struct vfs_node *node)
 	return DE_UNSUPPORTED;
 }
 
+static struct vfs_node *get_mount_node(struct vfs_name *vname)
+{
+	vname->offset = 0;
+
+	return root_node;
+}
+
 int vfs_open_node(const char *name, struct vfs_node **node)
 {
-	struct vfs_node *new_node = NULL, *ret_node = NULL;
+	struct vfs_node *new_node, *mount_node;
 	struct vfs_name vname;
-	int i, r;
+	int r;
 
-	if (!name || !node)
-		return DE_ARGUMENT;
-
-	*node = ret_node;
+	*node = NULL;
 
 	if ((r = vfs_build_path(name, &vname)) != 0)
 		return r;
 
-	if (!root_node)
+	if ((mount_node = get_mount_node(&vname)) == NULL)
 		return DE_UNINITIALIZED;
 
-	vfs_increment_count(root_node);
-	ret_node = root_node;
+	new_node = mount_node;
 
-	for (i = 0; /* void */; i++) {
-		char *component = vname.components[i];
-		int last_component;
-
-		if (!component) {
-			int is_dir = (vname.type == vfs_type_directory);
-
-			if (is_dir && ret_node->type != vfs_type_directory) {
-				r = DE_DIRECTORY;
-				break;
-			}
-
-			return (*node = ret_node), 0;
-		}
-
-		vname.offset = i;
-		r = ret_node->n_create(ret_node, &new_node, 0, 0, &vname);
+	if (vname.components[vname.offset]) {
+		r = mount_node->n_create(mount_node, &new_node, 0, 0, &vname);
 
 		if (r != DE_SUCCESS)
-			break;
-
-		ret_node->n_release(&ret_node);
-		ret_node = new_node;
-
-		last_component = (vname.components[i + 1] == NULL) ? 1 : 0;
-
-		if (!last_component && new_node->type != vfs_type_directory) {
-			r = DE_DIRECTORY;
-			break;
-		}
+			return r;
 	}
 
-	ret_node->n_release(&ret_node);
-
-	return r;
+	return (*node = new_node), 0;
 }
