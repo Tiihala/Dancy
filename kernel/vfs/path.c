@@ -131,7 +131,7 @@ int vfs_build_path(const char *name, struct vfs_name *vname)
 		count = copy_working_directory(path, &offset);
 
 		/*
-		 * vfs_build_path(NULL) will return the current
+		 * vfs_build_path(NULL, vname) will return the current
 		 * working directory.
 		 */
 		if (!name) {
@@ -148,7 +148,7 @@ int vfs_build_path(const char *name, struct vfs_name *vname)
 			path->absolute_path[i] = NULL;
 
 		/*
-		 * vfs_build_path("/") is a special case.
+		 * vfs_build_path("/", vname) is a special case.
 		 */
 		if (name[1] == '\0') {
 			path->absolute_path[0] = &vfs_path_directory[0];
@@ -157,7 +157,7 @@ int vfs_build_path(const char *name, struct vfs_name *vname)
 	}
 
 	/*
-	 * vfs_build_path("") is not valid.
+	 * vfs_build_path("", vname) is not valid.
 	 */
 	if (name[0] == '\0')
 		return set_vname(path, vname, DE_PATH);
