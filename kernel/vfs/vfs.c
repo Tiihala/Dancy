@@ -126,6 +126,13 @@ int vfs_open_node(const char *name, struct vfs_node **node)
 
 		if (r != DE_SUCCESS)
 			return r;
+
+		if (vname.type == vfs_type_directory) {
+			if (new_node->type != vfs_type_directory) {
+				new_node->n_release(&new_node);
+				return DE_DIRECTORY;
+			}
+		}
 	}
 
 	return (*node = new_node), 0;
