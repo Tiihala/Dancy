@@ -39,6 +39,7 @@ enum vfs_mode {
 	vfs_mode_system    = 0x04,
 	vfs_mode_directory = 0x08,
 	vfs_mode_create    = 0x10,
+	vfs_mode_truncate  = 0x20,
 	vfs_mode_last
 };
 
