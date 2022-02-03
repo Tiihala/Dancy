@@ -131,9 +131,15 @@ struct fat_io {
 	int (*get_size)(int id, size_t *block_size, size_t *block_total);
 	int (*io_read)(int id, size_t lba, size_t *size, void *buf);
 	int (*io_write)(int id, size_t lba, size_t *size, const void *buf);
+
+	struct vfs_node *root_node;
+
+	mtx_t fat_mtx;
+	void *instance;
+	int id;
 };
 
-int fat_io_add(struct fat_io *io, int *id);
+int fat_io_add(struct fat_io *io);
 
 /*
  * Declarations of path.c

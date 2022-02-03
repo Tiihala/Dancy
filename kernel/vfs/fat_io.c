@@ -21,7 +21,7 @@
 
 #define FAT_IO_TOTAL 8
 
-static struct fat_io fat_io_array[FAT_IO_TOTAL];
+static struct fat_io *fat_io_array[FAT_IO_TOTAL];
 
 static int fat_io_count;
 static int fat_io_lock;
@@ -34,10 +34,21 @@ static void check_id(int id)
 	kernel->panic("fat_io: using an uninitialized ID");
 }
 
-int fat_io_add(struct fat_io *io, int *id)
+static struct vfs_node *alloc_node(void)
+{
+	struct vfs_node *node;
+	size_t size = sizeof(*node);
+
+	if ((node = malloc(size)) != NULL) {
+		vfs_init_node(node, size);
+	}
+
+	return node;
+}
+
+int fat_io_add(struct fat_io *io)
 {
 	void *lock_local = &fat_io_lock;
-	int r = DE_OVERFLOW;
 	int new_id = -1;
 
 	spin_enter(&lock_local);
@@ -45,25 +56,32 @@ int fat_io_add(struct fat_io *io, int *id)
 	if (fat_io_count < FAT_IO_TOTAL) {
 		new_id = fat_io_count++;
 
-		fat_io_array[new_id].get_size = io->get_size;
-		fat_io_array[new_id].io_read  = io->io_read;
-		fat_io_array[new_id].io_write = io->io_write;
-
-		r = DE_SUCCESS;
+		io->id = new_id;
+		fat_io_array[new_id] = io;
 	}
 
 	spin_leave(&lock_local);
 
-	*id = new_id;
+	if (new_id < 0)
+		return DE_OVERFLOW;
 
-	return r;
+	if ((io->root_node = alloc_node()) == NULL)
+		return DE_MEMORY;
+
+	if (mtx_init(&io->fat_mtx, mtx_plain) != thrd_success)
+		return DE_UNEXPECTED;
+
+	if (fat_create(&io->instance, new_id))
+		return DE_MEMORY;
+
+	return 0;
 }
 
 int fat_get_size(int id, size_t *block_size, size_t *block_total)
 {
 	check_id(id);
 
-	return fat_io_array[id].get_size(id, block_size, block_total);
+	return fat_io_array[id]->get_size(id, block_size, block_total);
 }
 
 int fat_get_time(char iso_8601_format[19])
@@ -82,12 +100,12 @@ int fat_io_read(int id, size_t lba, size_t *size, void *buf)
 {
 	check_id(id);
 
-	return fat_io_array[id].io_read(id, lba, size, buf);
+	return fat_io_array[id]->io_read(id, lba, size, buf);
 }
 
 int fat_io_write(int id, size_t lba, size_t *size, const void *buf)
 {
 	check_id(id);
 
-	return fat_io_array[id].io_write(id, lba, size, buf);
+	return fat_io_array[id]->io_write(id, lba, size, buf);
 }

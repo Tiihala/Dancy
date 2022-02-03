@@ -19,10 +19,6 @@
 
 #include <dancy.h>
 
-static struct vfs_node *root_node;
-static void *root_instance;
-
-static int root_id;
 static struct fat_io root_io;
 
 static size_t root_ramfs_size;
@@ -30,30 +26,6 @@ static unsigned char *root_ramfs;
 
 static size_t root_block_size;
 static size_t root_block_total;
-
-static void alloc_release(struct vfs_node **node)
-{
-	struct vfs_node *n = *node;
-
-	if (n && !vfs_decrement_count(n))
-		free(n);
-
-	*node = NULL;
-}
-
-static struct vfs_node *alloc_node(void)
-{
-	struct vfs_node *node;
-	size_t size = sizeof(*node);
-
-	if ((node = malloc(size)) != NULL) {
-		vfs_init_node(node, size);
-		node->count = 1;
-		node->n_release = alloc_release;
-	}
-
-	return node;
-}
 
 static int create_ramfs(void)
 {
@@ -90,7 +62,7 @@ static int create_ramfs(void)
 
 static int root_get_size(int id, size_t *block_size, size_t *block_total)
 {
-	if (id != root_id)
+	if (id != root_io.id)
 		kernel->panic("root_get_size: unexpected behavior");
 
 	*block_size = root_block_size;
@@ -103,7 +75,7 @@ static int root_io_read(int id, size_t lba, size_t *size, void *buf)
 {
 	size_t offset = lba * root_block_size;
 
-	if (id != root_id)
+	if (id != root_io.id)
 		kernel->panic("root_io_read: unexpected behavior");
 
 	memcpy(buf, &root_ramfs[offset], *size);
@@ -115,7 +87,7 @@ static int root_io_write(int id, size_t lba, size_t *size, const void *buf)
 {
 	size_t offset = lba * root_block_size;
 
-	if (id != root_id)
+	if (id != root_io.id)
 		kernel->panic("root_io_write: unexpected behavior");
 
 	memcpy(&root_ramfs[offset], buf, *size);
@@ -131,23 +103,19 @@ int vfs_init_root(struct vfs_node **node)
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
 
+	*node = NULL;
+
 	if ((r = create_ramfs()) != 0)
 		return r;
-
-	if ((root_node = alloc_node()) == NULL)
-		return DE_MEMORY;
 
 	root_io.get_size = root_get_size;
 	root_io.io_read  = root_io_read;
 	root_io.io_write = root_io_write;
 
-	if ((r = fat_io_add(&root_io, &root_id)) != 0)
+	if ((r = fat_io_add(&root_io)) != 0)
 		return r;
 
-	if (fat_create(&root_instance, root_id))
-		return DE_MEMORY;
-
-	*node = root_node;
+	*node = root_io.root_node;
 
 	return 0;
 }
