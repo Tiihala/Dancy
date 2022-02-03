@@ -57,6 +57,8 @@ struct vfs_node {
 	uint64_t id;
 	uint64_t size;
 
+	void *internal_data;
+
 	void (*n_release)(struct vfs_node **node);
 
 	int (*n_create)(struct vfs_node *node, struct vfs_node **new_node,

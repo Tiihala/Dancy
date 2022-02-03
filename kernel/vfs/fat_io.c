@@ -26,6 +26,10 @@ static struct fat_io *fat_io_array[FAT_IO_TOTAL];
 static int fat_io_count;
 static int fat_io_lock;
 
+struct fat_internal_data {
+	char path[256];
+};
+
 static void check_id(int id)
 {
 	if (id >= 0 && id < fat_io_count)
@@ -37,10 +41,20 @@ static void check_id(int id)
 static struct vfs_node *alloc_node(void)
 {
 	struct vfs_node *node;
+	const size_t F = 0x0F;
 	size_t size = sizeof(*node);
+	size_t data_offset;
+
+	size = (size + F) & (~F);
+	data_offset = size;
+
+	size += sizeof(struct fat_internal_data);
 
 	if ((node = malloc(size)) != NULL) {
+		addr_t a = (addr_t)node + (addr_t)data_offset;
+
 		vfs_init_node(node, size);
+		node->internal_data = (void *)a;
 	}
 
 	return node;
