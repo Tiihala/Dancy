@@ -178,7 +178,7 @@ static int n_create(struct vfs_node *node, struct vfs_node **new_node,
 			size += 1;
 		}
 
-		buf[size++] = '\0', buf[size] = '\0';
+		buf[size++] = '/', buf[size] = '\0';
 	}
 
 	if (buf[0] == '\0') {
@@ -186,6 +186,8 @@ static int n_create(struct vfs_node *node, struct vfs_node **new_node,
 		*new_node = io->root_node;
 		return 0;
 	}
+
+	buf[size - 1] = '\0';
 
 	lock_fat(node);
 
@@ -217,6 +219,8 @@ static int n_create(struct vfs_node *node, struct vfs_node **new_node,
 		allocated_node->n_release(&allocated_node);
 		return DE_MEMORY;
 	}
+
+	allocated_node->type = vfs_type_regular;
 
 	if (type == vfs_type_directory || vname->type == vfs_type_directory) {
 		allocated_node->type = vfs_type_directory;
