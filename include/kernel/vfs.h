@@ -139,6 +139,9 @@ struct fat_io {
 	mtx_t fat_mtx;
 	void *instance;
 	int id;
+
+	int node_count;
+	struct vfs_node *node_array[1024];
 };
 
 int fat_io_add(struct fat_io *io);
