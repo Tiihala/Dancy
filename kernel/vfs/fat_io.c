@@ -344,8 +344,6 @@ int fat_io_add(struct fat_io *io)
 	unlock_fat(io->root_node);
 
 	if (r != 0) {
-		io->root_node = NULL;
-
 		io->root_node->n_release(&io->root_node);
 		mtx_destroy(&io->fat_mtx);
 		fat_delete(io->instance), io->instance = NULL;
