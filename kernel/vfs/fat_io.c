@@ -162,6 +162,8 @@ static int n_create(struct vfs_node *node, struct vfs_node **new_node,
 	struct fat_internal_data *data = node->internal_data;
 	struct fat_io *io = data->io;
 	struct vfs_node *allocated_node, *existing_node;
+	int write_record = 0;
+	unsigned char record[32];
 	char buf[256];
 	int size = 0;
 	int i, r;
@@ -227,25 +229,28 @@ static int n_create(struct vfs_node *node, struct vfs_node **new_node,
 		buf[size - 1] = '/';
 	}
 
-	if ((mode & vfs_mode_create) != 0) {
+	if ((mode & vfs_mode_create) != 0)
 		r = fat_open(io->instance, data->fd, &buf[0], "wb+");
+	else
+		r = fat_open(io->instance, data->fd, &buf[0], "rb+");
 
-	} else {
-		unsigned char record[32];
-		int fd = data->fd;
+	if (!r)
+		r = fat_control(io->instance, data->fd, 0, record);
 
-		r = fat_open(io->instance, fd, &buf[0], "rb+");
+	if (!r) {
+		unsigned long file_size = 0;
 
-		if (!r && (mode & vfs_mode_truncate) != 0) {
-			r = fat_control(io->instance, fd, 0, record);
-
-			record[28] = 0, record[29] = 0;
-			record[30] = 0, record[31] = 0;
-
-			if (!r)
-				r = fat_control(io->instance, fd, 1, record);
+		if ((mode & vfs_mode_truncate) != 0) {
+			W_LE32(&record[28], file_size);
+			write_record = 1;
 		}
+
+		file_size = LE32(&record[28]);
+		allocated_node->size = (uint64_t)file_size;
 	}
+
+	if (write_record)
+		r = fat_control(io->instance, data->fd, 1, record);
 
 	unlock_fat(node);
 
