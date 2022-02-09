@@ -46,7 +46,6 @@ void vfs_init_node(struct vfs_node *node, size_t size)
 
 	node->n_release = vfs_default_release;
 	node->n_create  = vfs_default_create;
-	node->n_open    = vfs_default_open;
 
 	node->n_read    = vfs_default_read;
 	node->n_write   = vfs_default_write;

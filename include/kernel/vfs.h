@@ -45,7 +45,6 @@ enum vfs_mode {
 
 struct vfs_name;
 struct vfs_record;
-struct vfs_session;
 
 struct vfs_node {
 	int lock;
@@ -63,8 +62,6 @@ struct vfs_node {
 
 	int (*n_create)(struct vfs_node *node, struct vfs_node **new_node,
 		int type, int mode, struct vfs_name *vname);
-
-	int (*n_open)(struct vfs_node *node, struct vfs_session **session);
 
 	long long (*n_read)(struct vfs_node *node,
 		uint64_t offset, size_t size, void *buffer);
@@ -95,13 +92,6 @@ struct vfs_record {
 	int mode;
 };
 
-struct vfs_session {
-	struct vfs_node *node;
-	uint64_t offset;
-
-	void (*s_release)(struct vfs_session **session);
-};
-
 /*
  * Declarations of default.c
  */
@@ -109,8 +99,6 @@ void vfs_default_release(struct vfs_node **node);
 
 int vfs_default_create(struct vfs_node *node, struct vfs_node **new_node,
 	int type, int mode, struct vfs_name *vname);
-
-int vfs_default_open(struct vfs_node *node, struct vfs_session **session);
 
 long long vfs_default_read(struct vfs_node *node,
 	uint64_t offset, size_t size, void *buffer);

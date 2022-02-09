@@ -36,14 +36,6 @@ int vfs_default_create(struct vfs_node *node, struct vfs_node **new_node,
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_open(struct vfs_node *node, struct vfs_session **session)
-{
-	(void)node;
-	(void)session;
-
-	return DE_UNSUPPORTED;
-}
-
 long long vfs_default_read(struct vfs_node *node,
 	uint64_t offset, size_t size, void *buffer)
 {
