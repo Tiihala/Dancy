@@ -54,8 +54,6 @@ struct vfs_node {
 	int mode;
 
 	uint64_t id;
-	uint64_t size;
-
 	void *internal_data;
 
 	void (*n_release)(struct vfs_node **node);

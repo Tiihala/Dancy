@@ -194,6 +194,25 @@ static int n_create(struct vfs_node *node, struct vfs_node **new_node,
 	lock_fat(node);
 
 	if ((existing_node = find_node(node, &buf[0])) != NULL) {
+		data = existing_node->internal_data;
+		r = fat_control(io->instance, data->fd, 0, record);
+
+		if ((mode & vfs_mode_create) != 0)
+			write_record = 1;
+
+		if ((mode & vfs_mode_truncate) != 0)
+			write_record = 1;
+
+		if (!r && write_record) {
+			unsigned long file_size = 0;
+
+			W_LE32(&record[28], file_size);
+			r = fat_control(io->instance, data->fd, 1, record);
+		}
+
+		if (r)
+			return unlock_fat(node), translate_error(r);
+
 		vfs_increment_count(existing_node);
 		*new_node = existing_node;
 
@@ -205,6 +224,7 @@ static int n_create(struct vfs_node *node, struct vfs_node **new_node,
 
 	data = allocated_node->internal_data;
 	strcpy(&data->path[0], &buf[0]);
+	i = 0;
 
 	while (i < (int)(sizeof(io->node_array) / sizeof(*io->node_array))) {
 		if (io->node_array[i] == NULL) {
@@ -214,6 +234,7 @@ static int n_create(struct vfs_node *node, struct vfs_node **new_node,
 			data->fd = i;
 			break;
 		}
+		i += 1;
 	}
 
 	if (data->fd < 0) {
@@ -246,7 +267,6 @@ static int n_create(struct vfs_node *node, struct vfs_node **new_node,
 		}
 
 		file_size = LE32(&record[28]);
-		allocated_node->size = (uint64_t)file_size;
 	}
 
 	if (write_record)
