@@ -264,6 +264,63 @@ static int n_create(struct vfs_node *node, struct vfs_node **new_node,
 	return 0;
 }
 
+static long long n_read_write_common(struct vfs_node *node,
+	uint64_t offset, size_t size, addr_t buffer_addr, int write_mode)
+{
+	struct fat_internal_data *data = node->internal_data;
+	void *instance = data->io->instance;
+	size_t retval = size;
+	int fat_offset[2];
+	int r;
+
+	if (offset >= 0xFFFFFFFF)
+		return 0;
+
+	if (offset <= INT_MAX) {
+		fat_offset[0] = (int)offset;
+		fat_offset[1] = 0;
+	} else {
+		fat_offset[0] = INT_MAX;
+		fat_offset[1] = (int)(offset - INT_MAX);
+	}
+
+	lock_fat(node);
+
+	r = fat_seek(instance, data->fd, fat_offset[0], 0);
+
+	if (fat_offset[1] && !r)
+		r = fat_seek(instance , data->fd, fat_offset[1], 1);
+
+	if (!r) {
+		if (!write_mode) {
+			void *buffer = (void *)buffer_addr;
+			r = fat_read(instance, data->fd, &retval, buffer);
+		} else {
+			const void *buffer = (const void *)buffer_addr;
+			r = fat_write(instance, data->fd, &retval, buffer);
+		}
+	}
+
+	unlock_fat(node);
+
+	if (r)
+		return -1LL;
+
+	return (long long)retval;
+}
+
+static long long n_read(struct vfs_node *node,
+	uint64_t offset, size_t size, void *buffer)
+{
+	return n_read_write_common(node, offset, size, (addr_t)buffer, 0);
+}
+
+static long long n_write(struct vfs_node *node,
+	uint64_t offset, size_t size, const void *buffer)
+{
+	return n_read_write_common(node, offset, size, (addr_t)buffer, 1);
+}
+
 static struct vfs_node *alloc_node(struct fat_io *io)
 {
 	struct vfs_node *node;
@@ -287,6 +344,8 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 
 		node->n_release = n_release;
 		node->n_create  = n_create;
+		node->n_read    = n_read;
+		node->n_write   = n_write;
 
 		data = node->internal_data;
 		data->io = io;
