@@ -889,6 +889,7 @@ static int read_block(void *fat, size_t lba)
 		void *dst = this_fat->block_buffer;
 
 		memcpy(dst, src, size);
+		this_fat->block_buffer_lba = lba;
 		return 0;
 	}
 
