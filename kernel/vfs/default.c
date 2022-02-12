@@ -66,7 +66,7 @@ int vfs_default_flush(struct vfs_node *node)
 {
 	(void)node;
 
-	return DE_UNSUPPORTED;
+	return 0;
 }
 
 int vfs_default_readdir(struct vfs_node *node,
