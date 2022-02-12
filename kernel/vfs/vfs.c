@@ -45,7 +45,7 @@ void vfs_init_node(struct vfs_node *node, size_t size)
 	memset(node, 0, node_size);
 
 	node->n_release = vfs_default_release;
-	node->n_create  = vfs_default_create;
+	node->n_open    = vfs_default_open;
 
 	node->n_read    = vfs_default_read;
 	node->n_write   = vfs_default_write;
@@ -118,7 +118,7 @@ int vfs_open_node(const char *name, struct vfs_node **node, int mode)
 	new_node = mount_node;
 
 	if (vname.components[vname.offset]) {
-		r = mount_node->n_create(mount_node, &new_node,
+		r = mount_node->n_open(mount_node, &new_node,
 			vfs_type_unknown, mode, &vname);
 
 		if (r != DE_SUCCESS)

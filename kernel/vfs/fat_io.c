@@ -156,7 +156,7 @@ static void n_release(struct vfs_node **node)
 
 static struct vfs_node *alloc_node(struct fat_io *io);
 
-static int n_create(struct vfs_node *node, struct vfs_node **new_node,
+static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 	int type, int mode, struct vfs_name *vname)
 {
 	struct fat_internal_data *data = node->internal_data;
@@ -363,7 +363,7 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->internal_data = (void *)a;
 
 		node->n_release = n_release;
-		node->n_create  = n_create;
+		node->n_open    = n_open;
 		node->n_read    = n_read;
 		node->n_write   = n_write;
 

@@ -58,7 +58,7 @@ struct vfs_node {
 
 	void (*n_release)(struct vfs_node **node);
 
-	int (*n_create)(struct vfs_node *node, struct vfs_node **new_node,
+	int (*n_open)(struct vfs_node *node, struct vfs_node **new_node,
 		int type, int mode, struct vfs_name *vname);
 
 	long long (*n_read)(struct vfs_node *node,
@@ -92,7 +92,7 @@ struct vfs_record {
  */
 void vfs_default_release(struct vfs_node **node);
 
-int vfs_default_create(struct vfs_node *node, struct vfs_node **new_node,
+int vfs_default_open(struct vfs_node *node, struct vfs_node **new_node,
 	int type, int mode, struct vfs_name *vname);
 
 long long vfs_default_read(struct vfs_node *node,

@@ -24,7 +24,7 @@ void vfs_default_release(struct vfs_node **node)
 	*node = NULL;
 }
 
-int vfs_default_create(struct vfs_node *node, struct vfs_node **new_node,
+int vfs_default_open(struct vfs_node *node, struct vfs_node **new_node,
 	int type, int mode, struct vfs_name *vname)
 {
 	(void)node;
