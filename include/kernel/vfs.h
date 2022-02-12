@@ -146,7 +146,7 @@ void vfs_init_node(struct vfs_node *node, size_t size);
 int vfs_increment_count(struct vfs_node *node);
 int vfs_decrement_count(struct vfs_node *node);
 
-int vfs_mount_node(const char *name, struct vfs_node *node);
-int vfs_open_node(const char *name, struct vfs_node **node, int mode);
+int vfs_mount(const char *name, struct vfs_node *node);
+int vfs_open(const char *name, struct vfs_node **node, int mode);
 
 #endif

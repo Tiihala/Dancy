@@ -86,7 +86,7 @@ int vfs_decrement_count(struct vfs_node *node)
 	return r;
 }
 
-int vfs_mount_node(const char *name, struct vfs_node *node)
+int vfs_mount(const char *name, struct vfs_node *node)
 {
 	(void)name;
 	(void)node;
@@ -101,7 +101,7 @@ static struct vfs_node *get_mount_node(struct vfs_name *vname)
 	return root_node;
 }
 
-int vfs_open_node(const char *name, struct vfs_node **node, int mode)
+int vfs_open(const char *name, struct vfs_node **node, int mode)
 {
 	struct vfs_node *new_node, *mount_node;
 	struct vfs_name vname;
