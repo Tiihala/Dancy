@@ -71,9 +71,6 @@ struct vfs_node {
 
 	int (*n_readdir)(struct vfs_node *node,
 		uint64_t offset, size_t size, void *record);
-
-	int (*n_link)(struct vfs_node *node, struct vfs_name *vname);
-	int (*n_unlink)(struct vfs_node *node, struct vfs_name *vname);
 };
 
 struct vfs_name {
@@ -108,9 +105,6 @@ int vfs_default_flush(struct vfs_node *node);
 
 int vfs_default_readdir(struct vfs_node *node,
 	uint64_t offset, size_t size, void *record);
-
-int vfs_default_link(struct vfs_node *node, struct vfs_name *vname);
-int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname);
 
 /*
  * Declarations of fat_io.c

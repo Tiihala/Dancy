@@ -52,9 +52,6 @@ void vfs_init_node(struct vfs_node *node, size_t size)
 
 	node->n_flush   = vfs_default_flush;
 	node->n_readdir = vfs_default_readdir;
-
-	node->n_link    = vfs_default_link;
-	node->n_unlink  = vfs_default_unlink;
 }
 
 int vfs_increment_count(struct vfs_node *node)
