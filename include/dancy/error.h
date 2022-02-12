@@ -34,7 +34,6 @@ DANCY_X(DE_UNSUPPORTED               , "resource unsupported"            )
 DANCY_X(DE_NAME                      , "name not found"                  )
 DANCY_X(DE_PATH                      , "erroneous path"                  )
 DANCY_X(DE_OVERFLOW                  , "resource overflowed"             )
-DANCY_X(DE_DIRECTORY                 , "directory expected"              )
 DANCY_X(DE_BLOCK_READ                , "block read failure"              )
 DANCY_X(DE_BLOCK_WRITE               , "block write failure"             )
 DANCY_X(DE_READ                      , "read failure"                    )
@@ -43,6 +42,7 @@ DANCY_X(DE_SEEK                      , "seek failure"                    )
 DANCY_X(DE_FULL                      , "resource is full"                )
 DANCY_X(DE_READ_ONLY                 , "read-only"                       )
 DANCY_X(DE_BUSY                      , "resource is in use"              )
+DANCY_X(DE_TYPE                      , "unexpected resource type"        )
 
 #endif
 

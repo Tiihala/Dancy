@@ -112,6 +112,13 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 	if ((r = vfs_build_path(name, &vname)) != 0)
 		return r;
 
+	if (vname.type == vfs_type_directory) {
+		if (type == vfs_type_unknown)
+			type = vfs_type_directory;
+		if (type != vfs_type_directory)
+			return DE_TYPE;
+	}
+
 	if ((mount_node = get_mount_node(&vname)) == NULL)
 		return DE_UNINITIALIZED;
 
@@ -124,11 +131,9 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 		if (r != DE_SUCCESS)
 			return r;
 
-		if (vname.type == vfs_type_directory) {
-			if (new_node->type != vfs_type_directory) {
-				new_node->n_release(&new_node);
-				return DE_DIRECTORY;
-			}
+		if (type != vfs_type_unknown && type != new_node->type) {
+			new_node->n_release(&new_node);
+			return DE_TYPE;
 		}
 	}
 

@@ -245,7 +245,7 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 
 	allocated_node->type = vfs_type_regular;
 
-	if (type == vfs_type_directory || vname->type == vfs_type_directory) {
+	if (type == vfs_type_directory) {
 		allocated_node->type = vfs_type_directory;
 		buf[size - 1] = '/';
 	}
