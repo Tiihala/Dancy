@@ -248,12 +248,8 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 		return DE_MEMORY;
 	}
 
-	allocated_node->type = vfs_type_regular;
-
-	if (type == vfs_type_directory) {
-		allocated_node->type = vfs_type_directory;
+	if (type == vfs_type_directory)
 		buf[size - 1] = '/';
-	}
 
 	if ((mode & vfs_mode_create) != 0)
 		r = fat_open(io->instance, data->fd, &buf[0], "wb+");
@@ -265,13 +261,24 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 
 	if (!r) {
 		unsigned long file_size = 0;
+		int fat_attributes = (int)record[11];
 
 		if ((mode & vfs_mode_truncate) != 0) {
 			W_LE32(&record[28], file_size);
 			write_record = 1;
 		}
 
-		file_size = LE32(&record[28]);
+		if ((fat_attributes & 0x01) != 0)
+			allocated_node->mode |= vfs_mode_read_only;
+		if ((fat_attributes & 0x02) != 0)
+			allocated_node->mode |= vfs_mode_hidden;
+		if ((fat_attributes & 0x04) != 0)
+			allocated_node->mode |= vfs_mode_system;
+
+		if ((fat_attributes & 0x10) != 0)
+			allocated_node->type = vfs_type_directory;
+		else
+			allocated_node->type = vfs_type_regular;
 	}
 
 	if (write_record)
