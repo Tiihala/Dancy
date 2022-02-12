@@ -101,7 +101,7 @@ static struct vfs_node *get_mount_node(struct vfs_name *vname)
 	return root_node;
 }
 
-int vfs_open(const char *name, struct vfs_node **node, int mode)
+int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 {
 	struct vfs_node *new_node, *mount_node;
 	struct vfs_name vname;
@@ -119,7 +119,7 @@ int vfs_open(const char *name, struct vfs_node **node, int mode)
 
 	if (vname.components[vname.offset]) {
 		r = mount_node->n_open(mount_node, &new_node,
-			vfs_type_unknown, mode, &vname);
+			type, mode, &vname);
 
 		if (r != DE_SUCCESS)
 			return r;
