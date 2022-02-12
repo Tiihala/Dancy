@@ -171,6 +171,11 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 	buf[0] = '\0';
 	*new_node = NULL;
 
+	if (type != vfs_type_unknown) {
+		if (type != vfs_type_regular && type != vfs_type_directory)
+			return DE_TYPE;
+	}
+
 	for (i = vname->offset; vname->components[i] != NULL; i++) {
 		char *p = vname->components[i];
 
