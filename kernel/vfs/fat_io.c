@@ -353,6 +353,131 @@ static long long n_write(struct vfs_node *node,
 	return n_read_write_common(node, offset, size, (addr_t)buffer, 1);
 }
 
+static int n_readdir(struct vfs_node *node,
+	uint64_t offset, size_t size, void *record)
+{
+	struct fat_internal_data *data = node->internal_data;
+	void *instance = data->io->instance;
+	struct vfs_record *vrecord = record;
+	int r, read_offset;
+	size_t vname_size;
+	char *vname;
+
+	if (!size || !record)
+		return DE_BUFFER;
+
+	memset(record, 0, size);
+
+	if (size <= sizeof(struct vfs_record))
+		return DE_BUFFER;
+
+	vname_size = size - sizeof(struct vfs_record);
+	vname = (char *)record + sizeof(struct vfs_record);
+	vrecord->name = vname;
+
+	if (node->type != vfs_type_directory)
+		return DE_TYPE;
+
+	if (offset > 0x10000)
+		return DE_OVERFLOW;
+
+	read_offset = (int)offset * 32;
+
+	lock_fat(node);
+
+	r = fat_seek(instance, data->fd, read_offset, 0);
+
+	if (!r) {
+		unsigned char fat_record[32];
+		size_t read_size = 32;
+		int fat_attributes;
+
+		r = fat_read(instance, data->fd, &read_size, &fat_record[0]);
+
+		if (!r) {
+			int base_size = 8;
+			int ext_size = 3;
+			int total_size;
+			int i;
+
+			if (read_size != 32 || fat_record[0] == 0)
+				return unlock_fat(node), DE_OVERFLOW;
+
+			fat_attributes = (int)fat_record[11];
+
+			if (fat_record[0] == 0xE5)
+				return unlock_fat(node), DE_PLACEHOLDER;
+
+			if ((fat_attributes & 0x08) != 0)
+				return unlock_fat(node), DE_PLACEHOLDER;
+
+			for (i = 0; i < 11; i++) {
+				int c = (int)fat_record[i];
+
+				if (c == '\0') {
+					unlock_fat(node);
+					return DE_UNEXPECTED;
+				}
+
+				if (c >= 'A' && c <= 'Z') {
+					int lower = c + 32;
+					fat_record[i] = (unsigned char)lower;
+				}
+			}
+
+			for (i = 7; i >= 0; i--) {
+				if (fat_record[i] != 0x20)
+					break;
+				base_size -= 1;
+			}
+
+			if (base_size == 0)
+				return unlock_fat(node), DE_PLACEHOLDER;
+
+			for (i = 10; i >= 8; i--) {
+				if (fat_record[i] != 0x20)
+					break;
+				ext_size -= 1;
+			}
+
+			total_size = base_size;
+
+			if (ext_size != 0)
+				total_size += (1 + ext_size);
+
+			if ((size_t)total_size >= vname_size)
+				return unlock_fat(node), DE_BUFFER;
+
+			vname_size = 0;
+
+			for (i = 0; i < base_size; i++)
+				vname[vname_size++] = (char)fat_record[i];
+
+			if (ext_size != 0)
+				vname[vname_size++] = '.';
+
+			for (i = 8; i < ext_size + 8; i++)
+				vname[vname_size++] = (char)fat_record[i];
+
+			if ((fat_attributes & 0x01) != 0)
+				vrecord->mode |= vfs_mode_read_only;
+			if ((fat_attributes & 0x02) != 0)
+				vrecord->mode |= vfs_mode_hidden;
+			if ((fat_attributes & 0x04) != 0)
+				vrecord->mode |= vfs_mode_system;
+
+			if ((fat_attributes & 0x10) != 0)
+				vrecord->type = vfs_type_directory;
+			else
+				vrecord->type = vfs_type_regular;
+		}
+	}
+
+	unlock_fat(node);
+
+	return (r != 0) ? translate_error(r) : 0;
+}
+
 static struct vfs_node *alloc_node(struct fat_io *io)
 {
 	struct vfs_node *node;
@@ -378,6 +503,7 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->n_open    = n_open;
 		node->n_read    = n_read;
 		node->n_write   = n_write;
+		node->n_readdir = n_readdir;
 
 		data = node->internal_data;
 		data->io = io;
