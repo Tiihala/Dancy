@@ -80,3 +80,11 @@ int vfs_default_readdir(struct vfs_node *node,
 
 	return DE_UNSUPPORTED;
 }
+
+int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname)
+{
+	(void)node;
+	(void)vname;
+
+	return DE_UNSUPPORTED;
+}

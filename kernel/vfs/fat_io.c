@@ -478,6 +478,48 @@ static int n_readdir(struct vfs_node *node,
 	return (r != 0) ? translate_error(r) : 0;
 }
 
+static int n_unlink(struct vfs_node *node, struct vfs_name *vname)
+{
+	struct fat_internal_data *data = node->internal_data;
+	void *instance = data->io->instance;
+	char buf[256];
+	int size = 0;
+	int i, r;
+
+	buf[0] = '\0';
+
+	for (i = vname->offset; vname->components[i] != NULL; i++) {
+		char *p = vname->components[i];
+
+		while ((buf[size] = (char)tolower((int)*p++)) != '\0') {
+			if (size > (int)(sizeof(buf) - 3))
+				return DE_PATH;
+			size += 1;
+		}
+
+		buf[size++] = '/', buf[size] = '\0';
+	}
+
+	if (buf[0] == '\0')
+		return 0;
+
+	buf[size - 1] = '\0';
+
+	lock_fat(node);
+
+	if (find_node(node, &buf[0]) != NULL)
+		return unlock_fat(node), DE_BUSY;
+
+	if (vname->type == vfs_type_directory)
+		buf[size - 1] = '/';
+
+	r = fat_remove(instance, &buf[0]);
+
+	unlock_fat(node);
+
+	return (r != 0) ? translate_error(r) : 0;
+}
+
 static struct vfs_node *alloc_node(struct fat_io *io)
 {
 	struct vfs_node *node;
@@ -504,6 +546,7 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->n_read    = n_read;
 		node->n_write   = n_write;
 		node->n_readdir = n_readdir;
+		node->n_unlink  = n_unlink;
 
 		data = node->internal_data;
 		data->io = io;

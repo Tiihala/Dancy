@@ -52,6 +52,7 @@ void vfs_init_node(struct vfs_node *node, size_t size)
 
 	node->n_flush   = vfs_default_flush;
 	node->n_readdir = vfs_default_readdir;
+	node->n_unlink  = vfs_default_unlink;
 }
 
 int vfs_increment_count(struct vfs_node *node)
@@ -138,4 +139,22 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 	}
 
 	return (*node = new_node), 0;
+}
+
+int vfs_unlink(const char *name)
+{
+	struct vfs_node *mount_node;
+	struct vfs_name vname;
+	int r;
+
+	if ((r = vfs_build_path(name, &vname)) != 0)
+		return r;
+
+	if ((mount_node = get_mount_node(&vname)) == NULL)
+		return DE_UNINITIALIZED;
+
+	if (vname.components[vname.offset])
+		r = mount_node->n_unlink(mount_node, &vname);
+
+	return r;
 }
