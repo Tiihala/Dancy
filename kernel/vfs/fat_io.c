@@ -336,7 +336,7 @@ static long long n_read_write_common(struct vfs_node *node,
 	unlock_fat(node);
 
 	if (r)
-		return -1LL;
+		return -((long long)translate_error(r));
 
 	return (long long)retval;
 }
