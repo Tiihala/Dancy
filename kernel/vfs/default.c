@@ -39,7 +39,7 @@ int vfs_default_open(struct vfs_node *node, struct vfs_node **new_node,
 long long vfs_default_read(struct vfs_node *node,
 	uint64_t offset, size_t size, void *buffer)
 {
-	const long long ret = -1;
+	long long ret = -((long long)DE_UNSUPPORTED);
 
 	(void)node;
 	(void)offset;
@@ -52,7 +52,7 @@ long long vfs_default_read(struct vfs_node *node,
 long long vfs_default_write(struct vfs_node *node,
 	uint64_t offset, size_t size, const void *buffer)
 {
-	const long long ret = -1;
+	long long ret = -((long long)DE_UNSUPPORTED);
 
 	(void)node;
 	(void)offset;
