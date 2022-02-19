@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, 2021 Antti Tiihala
+ * Copyright (c) 2020, 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -99,6 +99,12 @@ cpu_native_t cpu_xchg(cpu_native_t *address, cpu_native_t value);
  */
 unsigned long crc32(const void *obj, size_t len);
 unsigned long crc32c(const void *obj, size_t len);
+
+/*
+ * Declarations of epoch.c
+ */
+long long epoch_seconds(const char iso_8601_format[19]);
+void epoch_convert(unsigned long long seconds, char iso_8601_format[19]);
 
 /*
  * Declarations of fat.c

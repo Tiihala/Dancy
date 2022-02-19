@@ -80,6 +80,9 @@
 ./o32/common/crc32c.o: ./common/crc32c.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/crc32c.c
 
+./o32/common/epoch.o: ./common/epoch.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./common/epoch.c
+
 ./o32/common/fat.o: ./common/fat.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/fat.c
 
@@ -325,6 +328,9 @@
 
 ./o64/common/crc32c.o: ./common/crc32c.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/crc32c.c
+
+./o64/common/epoch.o: ./common/epoch.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./common/epoch.c
 
 ./o64/common/fat.o: ./common/fat.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/fat.c
