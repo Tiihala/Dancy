@@ -111,6 +111,29 @@ static int translate_error(int fat_error)
 	return r;
 }
 
+static dancy_time_t calculate_time(int fat_date, int fat_time)
+{
+	int year, mon, day, hour, min, sec;
+	char buf[32];
+	long long r;
+
+	year = ((fat_date & 0xFE00) >> 9) + 1980;
+	mon = (fat_date & 0x01E0) >> 5;
+	day = fat_date & 0x001F;
+
+	hour = (fat_time & 0xF800) >> 11;
+	min = (fat_time & 0x07E0) >> 5;
+	sec = (fat_time & 0x001F) << 1;
+
+	snprintf(&buf[0], 32, "%04d-%02d-%02dT%02d:%02d:%02d",
+		year, mon, day, hour, min, sec);
+
+	if ((r = epoch_seconds(&buf[0])) < 0)
+		r = 0;
+
+	return (dancy_time_t)r;
+}
+
 static void lock_fat(struct vfs_node *node)
 {
 	struct fat_internal_data *data = node->internal_data;
@@ -478,6 +501,36 @@ static int n_readdir(struct vfs_node *node,
 	return (r != 0) ? translate_error(r) : 0;
 }
 
+static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
+{
+	struct fat_internal_data *data = node->internal_data;
+	void *instance = data->io->instance;
+	unsigned char record[32];
+	int r, fat_date, fat_time;
+
+	memset(stat, 0, sizeof(*stat));
+
+	lock_fat(node);
+	r = fat_control(instance, data->fd, 0, record);
+	unlock_fat(node);
+
+	if (r)
+		return translate_error(r);
+
+	stat->size = (uint64_t)LE32(&record[28]);
+
+	fat_date = (int)LE16(&record[18]), fat_time = 0;
+	stat->access_time.tv_sec = calculate_time(fat_date, fat_time);
+
+	fat_date = (int)LE16(&record[16]), fat_time = (int)LE16(&record[14]);
+	stat->creation_time.tv_sec = calculate_time(fat_date, fat_time);
+
+	fat_date = (int)LE16(&record[24]), fat_time = (int)LE16(&record[22]);
+	stat->write_time.tv_sec = calculate_time(fat_date, fat_time);
+
+	return 0;
+}
+
 static int n_unlink(struct vfs_node *node, struct vfs_name *vname)
 {
 	struct fat_internal_data *data = node->internal_data;
@@ -546,6 +599,7 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->n_read    = n_read;
 		node->n_write   = n_write;
 		node->n_readdir = n_readdir;
+		node->n_stat    = n_stat;
 		node->n_unlink  = n_unlink;
 
 		data = node->internal_data;
