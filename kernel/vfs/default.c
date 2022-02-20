@@ -81,6 +81,16 @@ int vfs_default_readdir(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
+int vfs_default_rename(struct vfs_node *node,
+	struct vfs_name *old_vname, struct vfs_name *new_vname)
+{
+	(void)node;
+	(void)old_vname;
+	(void)new_vname;
+
+	return DE_UNSUPPORTED;
+}
+
 int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat)
 {
 	(void)node;

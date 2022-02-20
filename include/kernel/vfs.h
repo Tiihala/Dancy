@@ -73,6 +73,9 @@ struct vfs_node {
 	int (*n_readdir)(struct vfs_node *node,
 		uint64_t offset, size_t size, void *record);
 
+	int (*n_rename)(struct vfs_node *node,
+		struct vfs_name *old_vname, struct vfs_name *new_vname);
+
 	int (*n_stat)(struct vfs_node *node, struct vfs_stat *stat);
 	int (*n_unlink)(struct vfs_node *node, struct vfs_name *vname);
 };
@@ -119,6 +122,9 @@ int vfs_default_flush(struct vfs_node *node);
 int vfs_default_readdir(struct vfs_node *node,
 	uint64_t offset, size_t size, void *record);
 
+int vfs_default_rename(struct vfs_node *node,
+	struct vfs_name *old_vname, struct vfs_name *new_vname);
+
 int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat);
 int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname);
 
@@ -164,6 +170,7 @@ int vfs_decrement_count(struct vfs_node *node);
 
 int vfs_mount(const char *name, struct vfs_node *node);
 int vfs_open(const char *name, struct vfs_node **node, int type, int mode);
+int vfs_rename(const char *old_name, const char *new_name);
 int vfs_unlink(const char *name);
 
 #endif
