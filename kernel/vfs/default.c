@@ -81,6 +81,16 @@ int vfs_default_readdir(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
+int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat)
+{
+	(void)node;
+
+	if (stat)
+		memset(stat, 0, sizeof(*stat));
+
+	return DE_UNSUPPORTED;
+}
+
 int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname)
 {
 	(void)node;

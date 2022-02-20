@@ -20,6 +20,7 @@
 #ifndef KERNEL_VFS_H
 #define KERNEL_VFS_H
 
+#include <dancy/time.h>
 #include <dancy/types.h>
 
 enum vfs_type {
@@ -44,6 +45,7 @@ enum vfs_mode {
 
 struct vfs_name;
 struct vfs_record;
+struct vfs_stat;
 
 struct vfs_node {
 	int lock;
@@ -71,6 +73,7 @@ struct vfs_node {
 	int (*n_readdir)(struct vfs_node *node,
 		uint64_t offset, size_t size, void *record);
 
+	int (*n_stat)(struct vfs_node *node, struct vfs_stat *stat);
 	int (*n_unlink)(struct vfs_node *node, struct vfs_name *vname);
 };
 
@@ -86,6 +89,15 @@ struct vfs_record {
 
 	int type;
 	int mode;
+};
+
+struct vfs_stat {
+	uint64_t id;
+	uint64_t size;
+
+	struct timespec access_time;
+	struct timespec creation_time;
+	struct timespec write_time;
 };
 
 /*
@@ -107,6 +119,7 @@ int vfs_default_flush(struct vfs_node *node);
 int vfs_default_readdir(struct vfs_node *node,
 	uint64_t offset, size_t size, void *record);
 
+int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat);
 int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname);
 
 /*
