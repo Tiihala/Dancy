@@ -144,6 +144,38 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 	return (*node = new_node), 0;
 }
 
+int vfs_rename(const char *old_name, const char *new_name)
+{
+	struct vfs_node *mount_node;
+	struct vfs_name old_vname, new_vname;
+	void *buffer;
+	int r;
+
+	if ((r = vfs_build_path(old_name, &old_vname)) != 0)
+		return r;
+
+	if ((r = vfs_duplicate_path(&old_vname)) != 0)
+		return r;
+
+	buffer = old_vname.buffer;
+
+	if ((r = vfs_build_path(new_name, &new_vname)) != 0)
+		return free(buffer), r;
+
+	if ((mount_node = get_mount_node(&old_vname)) == NULL)
+		return free(buffer), DE_UNINITIALIZED;
+
+	if (mount_node != get_mount_node(&new_vname))
+		return free(buffer), DE_PATH;
+
+	if (old_vname.type != new_vname.type)
+		return free(buffer), DE_PATH;
+
+	r = mount_node->n_rename(mount_node, &old_vname, &new_vname);
+
+	return free(buffer), r;
+}
+
 int vfs_unlink(const char *name)
 {
 	struct vfs_node *mount_node;
