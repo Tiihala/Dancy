@@ -501,6 +501,71 @@ static int n_readdir(struct vfs_node *node,
 	return (r != 0) ? translate_error(r) : 0;
 }
 
+static int n_rename(struct vfs_node *node,
+	struct vfs_name *old_vname, struct vfs_name *new_vname)
+{
+	struct fat_internal_data *data = node->internal_data;
+	void *instance = data->io->instance;
+	char *tmp_buf, *buf1, *buf2;
+	int size1 = 0, size2 = 0;
+	int i, r;
+
+	if ((tmp_buf = malloc(512)) == NULL)
+		return DE_MEMORY;
+
+	buf1 = tmp_buf + 0;
+	buf2 = tmp_buf + 256;
+
+	buf1[0] = '\0', buf2[0] = '\0';
+
+	for (i = old_vname->offset; old_vname->components[i] != NULL; i++) {
+		char *p = old_vname->components[i];
+
+		while ((buf1[size1] = (char)tolower((int)*p++)) != '\0') {
+			if (size1 > 253)
+				return free(tmp_buf), DE_PATH;
+			size1 += 1;
+		}
+
+		buf1[size1++] = '/', buf1[size1] = '\0';
+	}
+
+	for (i = new_vname->offset; new_vname->components[i] != NULL; i++) {
+		char *p = new_vname->components[i];
+
+		while ((buf2[size2] = (char)tolower((int)*p++)) != '\0') {
+			if (size2 > 253)
+				return free(tmp_buf), DE_PATH;
+			size2 += 1;
+		}
+
+		buf2[size2++] = '/', buf2[size2] = '\0';
+	}
+
+	if (buf1[0] == '\0' || buf2[0] == '\0')
+		return free(tmp_buf), DE_PATH;
+
+	buf1[size1 - 1] = '\0';
+	buf2[size2 - 1] = '\0';
+
+	lock_fat(node);
+
+	if (find_node(node, &buf1[0]) || find_node(node, &buf2[0]))
+		return unlock_fat(node), free(tmp_buf), DE_BUSY;
+
+	if (new_vname->type == vfs_type_directory) {
+		buf1[size1 - 1] = '/';
+		buf2[size2 - 1] = '/';
+	}
+
+	r = fat_rename(instance, &buf1[0], &buf2[0]);
+
+	unlock_fat(node);
+	free(tmp_buf);
+
+	return (r != 0) ? translate_error(r) : 0;
+}
+
 static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 {
 	struct fat_internal_data *data = node->internal_data;
@@ -599,6 +664,7 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->n_read    = n_read;
 		node->n_write   = n_write;
 		node->n_readdir = n_readdir;
+		node->n_rename  = n_rename;
 		node->n_stat    = n_stat;
 		node->n_unlink  = n_unlink;
 
