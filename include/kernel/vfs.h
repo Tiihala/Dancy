@@ -81,6 +81,7 @@ struct vfs_node {
 };
 
 struct vfs_name {
+	void *buffer;
 	char **components;
 	int offset;
 	int type;
@@ -153,6 +154,7 @@ int fat_io_add(struct fat_io *io);
  */
 int vfs_build_path(const char *name, struct vfs_name *vname);
 int vfs_chdir(const char *name);
+int vfs_duplicate_path(struct vfs_name *vname);
 
 /*
  * Declarations of root.c
