@@ -571,12 +571,14 @@ static int n_rename(struct vfs_node *node,
 	r = fat_rename(instance, &buf1[0], &buf2[0]);
 
 	unlock_fat(node);
-	free(tmp_buf);
 
-	if (r) {
+	if (r && r != FAT_FILE_NOT_FOUND) {
+		int buf_modified = 0;
+
 		for (size1 = size1 - 2; size1 >= 0; size1--) {
 			if (buf1[size1] == '/') {
 				buf1[size1] = '\0';
+				buf_modified = 1;
 				break;
 			}
 		}
@@ -584,13 +586,16 @@ static int n_rename(struct vfs_node *node,
 		for (size2 = size2 - 2; size2 >= 0; size2--) {
 			if (buf2[size2] == '/') {
 				buf2[size2] = '\0';
+				buf_modified = 1;
 				break;
 			}
 		}
 
-		if (strcmp(&buf1[0], &buf2[0]))
-			return DE_RENAME;
+		if (buf_modified && strcmp(&buf1[0], &buf2[0]))
+			return free(tmp_buf), DE_RENAME;
 	}
+
+	free(tmp_buf);
 
 	return (r != 0) ? translate_error(r) : 0;
 }
