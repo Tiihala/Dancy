@@ -548,6 +548,16 @@ static int n_rename(struct vfs_node *node,
 	buf1[size1 - 1] = '\0';
 	buf2[size2 - 1] = '\0';
 
+	if (!strcmp(&buf1[0], &buf2[0])) {
+		struct vfs_node *test_node;
+
+		if ((r = n_open(node, &test_node, 0, 0, old_vname)) != 0)
+			return free(tmp_buf), r;
+
+		test_node->n_release(&test_node);
+		return free(tmp_buf), 0;
+	}
+
 	lock_fat(node);
 
 	if (find_node(node, &buf1[0]) || find_node(node, &buf2[0]))
@@ -562,6 +572,25 @@ static int n_rename(struct vfs_node *node,
 
 	unlock_fat(node);
 	free(tmp_buf);
+
+	if (r) {
+		for (size1 = size1 - 2; size1 >= 0; size1--) {
+			if (buf1[size1] == '/') {
+				buf1[size1] = '\0';
+				break;
+			}
+		}
+
+		for (size2 = size2 - 2; size2 >= 0; size2--) {
+			if (buf2[size2] == '/') {
+				buf2[size2] = '\0';
+				break;
+			}
+		}
+
+		if (strcmp(&buf1[0], &buf2[0]))
+			return DE_RENAME;
+	}
 
 	return (r != 0) ? translate_error(r) : 0;
 }

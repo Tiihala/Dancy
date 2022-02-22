@@ -45,6 +45,7 @@ DANCY_X(DE_FULL                      , "resource is full"                )
 DANCY_X(DE_READ_ONLY                 , "read-only"                       )
 DANCY_X(DE_BUSY                      , "resource is in use"              )
 DANCY_X(DE_TYPE                      , "unexpected resource type"        )
+DANCY_X(DE_RENAME                    , "renaming requires copying"       )
 
 #endif
 
