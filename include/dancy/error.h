@@ -29,8 +29,8 @@ DANCY_X(DE_MEMORY                    , "not enough memory"               )
 DANCY_X(DE_CHECKSUM                  , "checksum does not match"         )
 DANCY_X(DE_ARGUMENT                  , "function argument"               )
 DANCY_X(DE_RETRY                     , "resource unavailable"            )
-DANCY_X(DE_UNINITIALIZED             , "resource uninitialized"          )
-DANCY_X(DE_UNSUPPORTED               , "resource unsupported"            )
+DANCY_X(DE_UNINITIALIZED             , "uninitialized"                   )
+DANCY_X(DE_UNSUPPORTED               , "unsupported"                     )
 DANCY_X(DE_PLACEHOLDER               , "placeholder data"                )
 DANCY_X(DE_BUFFER                    , "buffer size too small"           )
 DANCY_X(DE_NAME                      , "name not found"                  )
@@ -45,7 +45,6 @@ DANCY_X(DE_FULL                      , "resource is full"                )
 DANCY_X(DE_READ_ONLY                 , "read-only"                       )
 DANCY_X(DE_BUSY                      , "resource is in use"              )
 DANCY_X(DE_TYPE                      , "unexpected resource type"        )
-DANCY_X(DE_RENAME                    , "renaming requires copying"       )
 
 #endif
 

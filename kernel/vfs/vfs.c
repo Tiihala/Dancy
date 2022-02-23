@@ -166,7 +166,7 @@ int vfs_rename(const char *old_name, const char *new_name)
 		return free(buffer), DE_UNINITIALIZED;
 
 	if (mount_node != get_mount_node(&new_vname))
-		return free(buffer), DE_RENAME;
+		return free(buffer), DE_UNSUPPORTED;
 
 	if (old_vname.type == vfs_type_directory)
 		new_vname.type = vfs_type_directory;

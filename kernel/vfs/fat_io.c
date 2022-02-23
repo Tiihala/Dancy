@@ -592,7 +592,7 @@ static int n_rename(struct vfs_node *node,
 		}
 
 		if (buf_modified && strcmp(&buf1[0], &buf2[0]))
-			return free(tmp_buf), DE_RENAME;
+			return free(tmp_buf), DE_UNSUPPORTED;
 	}
 
 	free(tmp_buf);
