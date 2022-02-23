@@ -15,6 +15,7 @@ DANCY_LIB_OBJECTS_32= \
  ./o32/lib/inflate.o \
  ./o32/lib/snprintf.o \
  ./o32/lib/stdlib.o \
+ ./o32/lib/strerror.o \
  ./o32/lib/string.o
 
 DANCY_LIB_OBJECTS_64= \
@@ -30,6 +31,7 @@ DANCY_LIB_OBJECTS_64= \
  ./o64/lib/inflate.o \
  ./o64/lib/snprintf.o \
  ./o64/lib/stdlib.o \
+ ./o64/lib/strerror.o \
  ./o64/lib/string.o
 
 ##############################################################################

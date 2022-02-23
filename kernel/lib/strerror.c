@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, 2022 Antti Tiihala
+ * Copyright (c) 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,27 +13,27 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy/string.h
- *      Header of Dancy Operating System
+ * lib/strerror.c
+ *      Maps the number in errnum to a message string
  */
 
-#ifndef DANCY_STRING_H
-#define DANCY_STRING_H
+#include <dancy.h>
 
-#include <dancy/types.h>
+static const char *error_array[] = {
 
-int memcmp(const void *s1, const void *s2, size_t n);
-void *memcpy(void *s1, const void *s2, size_t n);
-void *memmove(void *s1, const void *s2, size_t n);
-void *memset(void *s, int c, size_t n);
+#define DANCY_X(a, b) b,
+#include <dancy/error.h>
+#undef DANCY_X
 
-char *strcat(char *s1, const char *s2);
-int strcmp(const char *s1, const char *s2);
-char *strcpy(char *s1, const char *s2);
-size_t strlen(const char *s);
-int strncmp(const char *s1, const char *s2, size_t n);
-char *strncpy(char *s1, const char *s2, size_t n);
+};
 
-char *strerror(int errnum);
+char *strerror(int errnum)
+{
+	static const char *unknown_error = "**** unknown error ****";
+	int size = (int)(sizeof(error_array) / sizeof(error_array[0]));
 
-#endif
+	if (errnum < 0 || errnum >= size)
+		return (char *)((addr_t)unknown_error);
+
+	return (char *)((addr_t)error_array[errnum]);
+}

@@ -212,6 +212,9 @@
 ./o32/lib/stdlib.o: ./kernel/lib/stdlib.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/stdlib.c
 
+./o32/lib/strerror.o: ./kernel/lib/strerror.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/lib/strerror.c
+
 ./o32/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/string.c
 
@@ -460,6 +463,9 @@
 
 ./o64/lib/stdlib.o: ./kernel/lib/stdlib.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/stdlib.c
+
+./o64/lib/strerror.o: ./kernel/lib/strerror.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/lib/strerror.c
 
 ./o64/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/string.c
