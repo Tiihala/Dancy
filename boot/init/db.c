@@ -185,9 +185,7 @@ int db_read(const char *name, unsigned char **buf, size_t *size)
 		if (!pk_method && pk_size_compressed != pk_size_uncompressed)
 			continue;
 
-		err = (pk_name_length == (long)strlen(name)) ? 0 : 1;
-
-		for (i = 0; !err && i < pk_name_length; i++) {
+		for (i = 0; i < pk_name_length; i++) {
 			long c1 = bitarray_fetch(&b, 8);
 			long c2 = (long)(unsigned char)name[i];
 			if (c1 != c2)
