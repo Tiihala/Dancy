@@ -56,7 +56,7 @@ static void checked_init(int (*func)(void), const char *desc)
 	if (r) {
 		char msg[128];
 
-		snprintf(&msg[0], 128, "%s: init error code %d", desc, r);
+		snprintf(&msg[0], 128, "%s: %s (%d)", desc, strerror(r), r);
 		kernel->panic(msg);
 	}
 }
