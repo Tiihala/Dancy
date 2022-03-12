@@ -100,7 +100,7 @@ int vfs_mount(const char *name, struct vfs_node *node)
 
 static struct vfs_node *get_mount_node(struct vfs_name *vname)
 {
-	vname->offset = 0;
+	(void)vname;
 
 	return root_node;
 }
@@ -128,7 +128,7 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 
 	new_node = mount_node;
 
-	if (vname.components[vname.offset]) {
+	if (vname.components[vname.pointer]) {
 		r = mount_node->n_open(mount_node, &new_node,
 			type, mode, &vname);
 
@@ -189,7 +189,7 @@ int vfs_unlink(const char *name)
 	if ((mount_node = get_mount_node(&vname)) == NULL)
 		return DE_UNINITIALIZED;
 
-	if (vname.components[vname.offset])
+	if (vname.components[vname.pointer])
 		r = mount_node->n_unlink(mount_node, &vname);
 
 	return r;

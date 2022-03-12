@@ -199,7 +199,7 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 			return DE_TYPE;
 	}
 
-	for (i = vname->offset; vname->components[i] != NULL; i++) {
+	for (i = 0; i <= vname->pointer; i++) {
 		char *p = vname->components[i];
 
 		while ((buf[size] = (char)tolower((int)*p++)) != '\0') {
@@ -547,7 +547,7 @@ static int n_rename(struct vfs_node *node,
 
 	buf1[0] = '\0', buf2[0] = '\0';
 
-	for (i = old_vname->offset; old_vname->components[i] != NULL; i++) {
+	for (i = 0; i <= old_vname->pointer; i++) {
 		char *p = old_vname->components[i];
 
 		while ((buf1[size1] = (char)tolower((int)*p++)) != '\0') {
@@ -559,7 +559,7 @@ static int n_rename(struct vfs_node *node,
 		buf1[size1++] = '/', buf1[size1] = '\0';
 	}
 
-	for (i = new_vname->offset; new_vname->components[i] != NULL; i++) {
+	for (i = 0; i <= new_vname->pointer; i++) {
 		char *p = new_vname->components[i];
 
 		while ((buf2[size2] = (char)tolower((int)*p++)) != '\0') {
@@ -669,7 +669,7 @@ static int n_unlink(struct vfs_node *node, struct vfs_name *vname)
 
 	buf[0] = '\0';
 
-	for (i = vname->offset; vname->components[i] != NULL; i++) {
+	for (i = 0; i <= vname->pointer; i++) {
 		char *p = vname->components[i];
 
 		while ((buf[size] = (char)tolower((int)*p++)) != '\0') {
