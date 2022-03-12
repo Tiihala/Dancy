@@ -179,7 +179,7 @@ static void n_release(struct vfs_node **node)
 
 static struct vfs_node *alloc_node(struct fat_io *io);
 
-static int n_open(struct vfs_node *node, struct vfs_node **new_node,
+static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 	int type, int mode, struct vfs_name *vname)
 {
 	struct fat_internal_data *data = node->internal_data;
@@ -346,6 +346,28 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 	*new_node = allocated_node;
 
 	return 0;
+}
+
+static int n_open(struct vfs_node *node, struct vfs_node **new_node,
+	int type, int mode, struct vfs_name *vname)
+{
+	struct vfs_node *dir_node = NULL;
+	int r;
+
+	if ((mode & vfs_mode_create) == 0 || vname->pointer < 1)
+		return n_open_internal(node, new_node, type, mode, vname);
+
+	vname->pointer -= 1;
+	r = n_open_internal(node, &dir_node, vfs_type_directory, 0, vname);
+	r = (r == DE_NAME) ? DE_PATH : r;
+	vname->pointer += 1;
+
+	if (dir_node) {
+		r = n_open_internal(dir_node, new_node, type, mode, vname);
+		dir_node->n_release(&dir_node);
+	}
+
+	return r;
 }
 
 static long long n_read_write_common(struct vfs_node *node,
