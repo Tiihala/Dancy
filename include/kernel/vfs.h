@@ -37,6 +37,7 @@ enum vfs_type {
 enum vfs_mode {
 	vfs_mode_create    = 0x0001,
 	vfs_mode_truncate  = 0x0002,
+	vfs_mode_exclusive = 0x0004,
 	vfs_mode_read_only = 0x0100,
 	vfs_mode_hidden    = 0x0200,
 	vfs_mode_system    = 0x0400,

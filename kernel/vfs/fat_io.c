@@ -223,6 +223,13 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 
 	if ((existing_node = find_node(node, &buf[0])) != NULL) {
 		data = existing_node->internal_data;
+
+		if ((mode & vfs_mode_exclusive) != 0)
+			return unlock_fat(node), DE_BUSY;
+
+		if ((existing_node->mode & vfs_mode_exclusive) != 0)
+			return unlock_fat(node), DE_BUSY;
+
 		r = fat_control(io->instance, data->fd, 0, record);
 
 		if ((mode & vfs_mode_create) != 0)
@@ -274,6 +281,25 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 	if (type == vfs_type_directory)
 		buf[size - 1] = '/';
 
+	if ((mode & vfs_mode_exclusive) != 0) {
+		if ((mode & vfs_mode_create) != 0) {
+			r = fat_open(io->instance, data->fd, &buf[0], "rb");
+
+			if (!r) {
+				fat_close(io->instance, data->fd);
+				unlock_fat(node);
+				allocated_node->n_release(&allocated_node);
+				return DE_BUSY;
+			}
+
+			if (r != FAT_FILE_NOT_FOUND) {
+				unlock_fat(node);
+				allocated_node->n_release(&allocated_node);
+				return translate_error(r);
+			}
+		}
+	}
+
 	if ((mode & vfs_mode_create) != 0)
 		r = fat_open(io->instance, data->fd, &buf[0], "wb+");
 	else
@@ -290,6 +316,9 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 			W_LE32(&record[28], file_size);
 			write_record = 1;
 		}
+
+		if ((mode & vfs_mode_exclusive) != 0)
+			allocated_node->mode |= vfs_mode_exclusive;
 
 		if ((fat_attributes & 0x01) != 0)
 			allocated_node->mode |= vfs_mode_read_only;
