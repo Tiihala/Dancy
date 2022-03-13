@@ -1617,6 +1617,11 @@ static int fill_record_buffer(void *fat, int fd)
 				return r;
 		}
 
+		if (i + 1 != (int)this_fat->path_entries) {
+			if ((record[11] & 0x10) == 0)
+				return FAT_INVALID_FILE_NAME;
+		}
+
 		cluster_hi = LE16(&record[20]);
 		cluster_lo = LE16(&record[26]);
 
