@@ -34,6 +34,7 @@ size_t strlen(const char *s);
 int strncmp(const char *s1, const char *s2, size_t n);
 char *strncpy(char *s1, const char *s2, size_t n);
 
+char *strdup(const char *s);
 char *strerror(int errnum);
 
 #endif

@@ -270,3 +270,29 @@ void free(void *ptr)
 
 	mtx_unlock(&heap_mtx);
 }
+
+char *strdup(const char *s)
+{
+	size_t i, size = 1;
+	char *ptr;
+
+	if (!s)
+		return NULL;
+
+	for (i = 0; s[i] != '\0'; i++)
+		size += 1;
+
+	if (mtx_lock(&heap_mtx) != thrd_success)
+		return NULL;
+
+	ptr = heap_aligned_alloc(16, size);
+
+	mtx_unlock(&heap_mtx);
+
+	if (ptr) {
+		for (i = 0; i < size; i++)
+			ptr[i] = s[i];
+	}
+
+	return ptr;
+}
