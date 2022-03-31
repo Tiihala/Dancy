@@ -19,7 +19,29 @@
 
 #include <dancy.h>
 
+static mtx_t mount_mtx;
 static struct vfs_node *root_node;
+
+struct mount_node {
+	const char *name;
+	struct vfs_node *node;
+	struct mount_node *next;
+	struct mount_node *memb;
+};
+
+static struct mount_node *mount_tree;
+
+int create_mount_node(struct mount_node **mnode)
+{
+	size_t size = sizeof(struct mount_node);
+
+	if ((*mnode = malloc(size)) == NULL)
+		return DE_MEMORY;
+
+	memset(*mnode, 0, size);
+
+	return 0;
+}
 
 int vfs_init(void)
 {
@@ -29,7 +51,13 @@ int vfs_init(void)
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
 
+	if (mtx_init(&mount_mtx, mtx_plain) != thrd_success)
+		return DE_UNEXPECTED;
+
 	if ((r = vfs_init_root(&root_node)) != 0)
+		return r;
+
+	if ((r = create_mount_node(&mount_tree)) != 0)
 		return r;
 
 	return 0;
@@ -92,17 +120,116 @@ int vfs_decrement_count(struct vfs_node *node)
 
 int vfs_mount(const char *name, struct vfs_node *node)
 {
-	(void)name;
-	(void)node;
+	struct mount_node *mnode = mount_tree;
+	struct vfs_name vname;
+	int i, r;
 
-	return DE_UNSUPPORTED;
+	if ((r = vfs_build_path(name, &vname)) != 0)
+		return r;
+
+	if (!vname.components[0])
+		return DE_BUSY;
+
+	if (mtx_lock(&mount_mtx) != thrd_success)
+		return DE_UNEXPECTED;
+
+	for (i = 0; i <= vname.pointer; i++) {
+		char *p = vname.components[i];
+
+		if (mnode->node || p[0] == '\0') {
+			r = DE_BUSY;
+			break;
+		}
+
+		if (!mnode->memb) {
+			if ((r = create_mount_node(&mnode->memb)) != 0) {
+				mtx_unlock(&mount_mtx);
+				return r;
+			}
+
+			if ((mnode->memb->name = strdup(p)) == NULL) {
+				mtx_unlock(&mount_mtx);
+				return DE_MEMORY;
+			}
+		}
+
+		mnode = mnode->memb;
+
+		for (;;) {
+			if (!strcmp(mnode->name, p))
+				break;
+
+			if (mnode->next) {
+				mnode = mnode->next;
+				continue;
+			}
+
+			if ((r = create_mount_node(&mnode->next)) != 0) {
+				mtx_unlock(&mount_mtx);
+				return r;
+			}
+
+			mnode = mnode->next;
+
+			if ((mnode->name = strdup(p)) == NULL) {
+				mtx_unlock(&mount_mtx);
+				return DE_MEMORY;
+			}
+		}
+
+		if (i == vname.pointer) {
+			void *lock_local = &node->lock;
+
+			spin_enter(&lock_local);
+			node->count = -1;
+			spin_leave(&lock_local);
+
+			mnode->node = node;
+		}
+	}
+
+	mtx_unlock(&mount_mtx);
+
+	return r;
 }
 
 static struct vfs_node *get_mount_node(struct vfs_name *vname)
 {
-	(void)vname;
+	struct mount_node *mnode = mount_tree;
+	struct vfs_node *node = root_node;
+	int i;
 
-	return root_node;
+	if (!vname->components[0])
+		return node;
+
+	if (mtx_lock(&mount_mtx) != thrd_success)
+		return NULL;
+
+	for (i = 0; i <= vname->pointer; i++) {
+		char *p = vname->components[i];
+
+		if ((mnode = mnode->memb) == NULL)
+			break;
+
+		do {
+			if (!strcmp(mnode->name, p))
+				break;
+		} while ((mnode = mnode->next) != NULL);
+
+		if (!mnode)
+			break;
+
+		if (mnode->node) {
+			vname->components = &vname->components[i + 1];
+			vname->pointer -= (i + 1);
+			node = mnode->node;
+			break;
+		}
+	}
+
+	mtx_unlock(&mount_mtx);
+
+	return node;
 }
 
 int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
