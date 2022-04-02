@@ -272,7 +272,7 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 
 	new_node = mount_node;
 
-	if (vname.components[vname.pointer]) {
+	if (vname.pointer >= 0 && vname.components[vname.pointer] != NULL) {
 		r = mount_node->n_open(mount_node, &new_node,
 			type, mode, &vname);
 
