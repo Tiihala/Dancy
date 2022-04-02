@@ -118,23 +118,16 @@ int vfs_decrement_count(struct vfs_node *node)
 	return r;
 }
 
-int vfs_mount(const char *name, struct vfs_node *node)
+static int mount_locked(struct vfs_name *vname, struct vfs_node *node)
 {
 	struct mount_node *mnode = mount_tree;
-	struct vfs_name vname;
 	int i, r;
 
-	if ((r = vfs_build_path(name, &vname)) != 0)
-		return r;
-
-	if (!vname.components[0])
+	if (!vname->components[0])
 		return DE_BUSY;
 
-	if (mtx_lock(&mount_mtx) != thrd_success)
-		return DE_UNEXPECTED;
-
-	for (i = 0; i <= vname.pointer; i++) {
-		char *p = vname.components[i];
+	for (i = 0; i <= vname->pointer; i++) {
+		char *p = vname->components[i];
 
 		if (mnode->node || p[0] == '\0') {
 			r = DE_BUSY;
@@ -142,15 +135,11 @@ int vfs_mount(const char *name, struct vfs_node *node)
 		}
 
 		if (!mnode->memb) {
-			if ((r = create_mount_node(&mnode->memb)) != 0) {
-				mtx_unlock(&mount_mtx);
+			if ((r = create_mount_node(&mnode->memb)) != 0)
 				return r;
-			}
 
-			if ((mnode->memb->name = strdup(p)) == NULL) {
-				mtx_unlock(&mount_mtx);
+			if ((mnode->memb->name = strdup(p)) == NULL)
 				return DE_MEMORY;
-			}
 		}
 
 		mnode = mnode->memb;
@@ -164,21 +153,20 @@ int vfs_mount(const char *name, struct vfs_node *node)
 				continue;
 			}
 
-			if ((r = create_mount_node(&mnode->next)) != 0) {
-				mtx_unlock(&mount_mtx);
+			if ((r = create_mount_node(&mnode->next)) != 0)
 				return r;
-			}
 
 			mnode = mnode->next;
 
-			if ((mnode->name = strdup(p)) == NULL) {
-				mtx_unlock(&mount_mtx);
+			if ((mnode->name = strdup(p)) == NULL)
 				return DE_MEMORY;
-			}
 		}
 
-		if (i == vname.pointer) {
+		if (i == vname->pointer) {
 			void *lock_local = &node->lock;
+
+			if (mnode->node || mnode->memb)
+				return DE_BUSY;
 
 			spin_enter(&lock_local);
 			node->count = -1;
@@ -188,7 +176,37 @@ int vfs_mount(const char *name, struct vfs_node *node)
 		}
 	}
 
+	return r;
+}
+
+int vfs_mount(const char *name, struct vfs_node *node)
+{
+	struct vfs_node *target_node;
+	struct vfs_name vname;
+	int r;
+
+	if ((r = vfs_open(name, &target_node, 0, 0)) != 0)
+		return r;
+
+	if (target_node->type != node->type) {
+		target_node->n_release(&target_node);
+		return DE_TYPE;
+	}
+
+	if ((r = vfs_build_path(name, &vname)) != 0) {
+		target_node->n_release(&target_node);
+		return r;
+	}
+
+	if (mtx_lock(&mount_mtx) != thrd_success) {
+		target_node->n_release(&target_node);
+		return DE_UNEXPECTED;
+	}
+
+	r = mount_locked(&vname, node);
 	mtx_unlock(&mount_mtx);
+
+	target_node->n_release(&target_node);
 
 	return r;
 }
