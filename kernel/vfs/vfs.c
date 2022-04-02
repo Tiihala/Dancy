@@ -314,8 +314,12 @@ int vfs_unlink(const char *name)
 	if ((mount_node = get_mount_node(&vname)) == NULL)
 		return DE_UNINITIALIZED;
 
-	if (vname.components[vname.pointer])
+	if (vname.pointer >= 0 && vname.components[vname.pointer] != NULL)
 		r = mount_node->n_unlink(mount_node, &vname);
+	else
+		r = DE_BUSY;
+
+	mount_node->n_release(&mount_node);
 
 	return r;
 }
