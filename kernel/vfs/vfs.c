@@ -163,15 +163,10 @@ static int mount_locked(struct vfs_name *vname, struct vfs_node *node)
 		}
 
 		if (i == vname->pointer) {
-			void *lock_local = &node->lock;
-
 			if (mnode->node || mnode->memb)
 				return DE_BUSY;
 
-			spin_enter(&lock_local);
-			node->count = -1;
-			spin_leave(&lock_local);
-
+			vfs_increment_count(node);
 			mnode->node = node;
 		}
 	}
@@ -217,11 +212,14 @@ static struct vfs_node *get_mount_node(struct vfs_name *vname)
 	struct vfs_node *node = root_node;
 	int i;
 
-	if (!vname->components[0])
-		return node;
-
 	if (mtx_lock(&mount_mtx) != thrd_success)
 		return NULL;
+
+	if (!vname->components[0]) {
+		vfs_increment_count(node);
+		mtx_unlock(&mount_mtx);
+		return node;
+	}
 
 	for (i = 0; i <= vname->pointer; i++) {
 		char *p = vname->components[i];
@@ -245,6 +243,7 @@ static struct vfs_node *get_mount_node(struct vfs_name *vname)
 		}
 	}
 
+	vfs_increment_count(node);
 	mtx_unlock(&mount_mtx);
 
 	return node;
@@ -277,14 +276,20 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 		r = mount_node->n_open(mount_node, &new_node,
 			type, mode, &vname);
 
-		if (r != DE_SUCCESS)
+		if (r != DE_SUCCESS) {
+			mount_node->n_release(&mount_node);
 			return r;
+		}
 
 		if (type != vfs_type_unknown && type != new_node->type) {
 			new_node->n_release(&new_node);
+			mount_node->n_release(&mount_node);
 			return DE_TYPE;
 		}
 	}
+
+	if (new_node != mount_node)
+		mount_node->n_release(&mount_node);
 
 	return (*node = new_node), 0;
 }
