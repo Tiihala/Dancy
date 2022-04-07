@@ -206,18 +206,14 @@ int vfs_mount(const char *name, struct vfs_node *node)
 	return r;
 }
 
-static struct vfs_node *get_mount_node(struct vfs_name *vname)
+static struct vfs_node *get_mount_node_locked(struct vfs_name *vname)
 {
 	struct mount_node *mnode = mount_tree;
 	struct vfs_node *node = root_node;
 	int i;
 
-	if (mtx_lock(&mount_mtx) != thrd_success)
-		return NULL;
-
 	if (!vname->components[0]) {
 		vfs_increment_count(node);
-		mtx_unlock(&mount_mtx);
 		return node;
 	}
 
@@ -244,6 +240,18 @@ static struct vfs_node *get_mount_node(struct vfs_name *vname)
 	}
 
 	vfs_increment_count(node);
+
+	return node;
+}
+
+static struct vfs_node *get_mount_node(struct vfs_name *vname)
+{
+	struct vfs_node *node;
+
+	if (mtx_lock(&mount_mtx) != thrd_success)
+		return NULL;
+
+	node = get_mount_node_locked(vname);
 	mtx_unlock(&mount_mtx);
 
 	return node;
