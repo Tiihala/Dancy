@@ -82,7 +82,7 @@ static uint64_t slow_read(void)
 
 unsigned long long epoch_read(void)
 {
-	unsigned long long retval;
+	uint64_t retval;
 
 	if ((retval = fast_read(60000)) != 0)
 		return (unsigned long long)retval;
