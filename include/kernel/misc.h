@@ -23,6 +23,12 @@
 #include <dancy/types.h>
 
 /*
+ * Declarations of epoch.c
+ */
+unsigned long long epoch_read(void);
+void epoch_sync(void);
+
+/*
  * Declarations of rtc.c
  */
 struct rtc_time {
