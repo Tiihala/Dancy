@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,7 +25,18 @@
 /*
  * Declarations of rtc.c
  */
+struct rtc_time {
+	uint16_t year;
+	uint8_t month;
+	uint8_t day;
+	uint8_t hour;
+	uint8_t minute;
+	uint8_t second;
+	uint8_t reserved[9];
+};
+
 int rtc_init(void);
+int rtc_read(struct rtc_time *rt);
 
 /*
  * Declarations of serial.c
