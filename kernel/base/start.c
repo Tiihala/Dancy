@@ -37,9 +37,10 @@ static struct {
 	/*
 	 * Dynamically linked initialization functions.
 	 */
+	{ 0, 0, SYMBOL_PREFIX "rtc_init", "Real-Time Clock" },
+	{ 0, 0, SYMBOL_PREFIX "epoch_init", "Epoch Functions" },
 	{ 0, 0, SYMBOL_PREFIX "sched_init", "Scheduler" },
 	{ 0, 0, SYMBOL_PREFIX "vfs_init", "Virtual File System" },
-	{ 0, 0, SYMBOL_PREFIX "rtc_init", "Real-Time Clock" },
 	{ 0, 0, SYMBOL_PREFIX "serial_init", "Serial Ports" },
 	{ 0, 0, SYMBOL_PREFIX "pci_init", "PCI" },
 	{ 0, 0, SYMBOL_PREFIX "ps2_init", "PS/2 Controller" },

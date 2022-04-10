@@ -200,6 +200,12 @@ struct kernel_table {
 		int *task_lock;
 		void *task_head;
 	} scheduler;
+
+	/*
+	 * System date and time functions.
+	 */
+	unsigned long long (*epoch_read)(void);
+	void (*epoch_sync)(void);
 };
 
 #endif

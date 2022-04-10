@@ -80,6 +80,41 @@ static uint64_t slow_read(void)
 	return retval;
 }
 
+int epoch_init(void)
+{
+	int state = 0;
+	int i;
+
+#ifdef DANCY_32
+	const char *name[2] = { "_epoch_read", "_epoch_sync" };
+#else
+	const char *name[2] = { "epoch_read", "epoch_sync" };
+#endif
+
+	for (i = 0; i < kernel->symbol_count; i++) {
+		if (!strcmp(kernel->symbol[i].name, name[0])) {
+			addr_t a = (addr_t)kernel->symbol[i].value;
+			kernel->epoch_read = (unsigned long long (*)(void))a;
+			state += 1;
+			break;
+		}
+	}
+
+	for (i = 0; i < kernel->symbol_count; i++) {
+		if (!strcmp(kernel->symbol[i].name, name[1])) {
+			addr_t a = (addr_t)kernel->symbol[i].value;
+			kernel->epoch_sync = (void (*)(void))a;
+			state += 1;
+			break;
+		}
+	}
+
+	if (state != 2)
+		return DE_UNEXPECTED;
+
+	return 0;
+}
+
 unsigned long long epoch_read(void)
 {
 	uint64_t retval;
