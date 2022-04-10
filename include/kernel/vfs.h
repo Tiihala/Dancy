@@ -55,7 +55,6 @@ struct vfs_node {
 	int type;
 	int mode;
 
-	uint64_t id;
 	void *internal_data;
 
 	void (*n_release)(struct vfs_node **node);
@@ -89,17 +88,13 @@ struct vfs_name {
 };
 
 struct vfs_record {
-	uint64_t id;
 	const char *name;
-
 	int type;
 	int mode;
 };
 
 struct vfs_stat {
-	uint64_t id;
 	uint64_t size;
-
 	struct timespec access_time;
 	struct timespec creation_time;
 	struct timespec write_time;
