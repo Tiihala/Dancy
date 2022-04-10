@@ -838,12 +838,7 @@ int fat_get_size(int id, size_t *block_size, size_t *block_total)
 
 int fat_get_time(char iso_8601_format[19])
 {
-	char buf[32];
-
-	snprintf(&buf[0], 32, "%04d-%02d-%02dT%02d:%02d:%02d",
-		1980, 1, 1, 0, 0, 0);
-
-	memcpy(&iso_8601_format[0], &buf[0], 19);
+	epoch_convert(kernel->epoch_read(), &iso_8601_format[0]);
 
 	return 0;
 }
