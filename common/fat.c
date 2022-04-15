@@ -2073,6 +2073,7 @@ int fat_control(void *fat, int fd, int write, unsigned char record[32])
 		unsigned int new_size = LE32(&record[28]);
 
 		if (new_size < old_size) {
+			write_timestamps(&record_ptr[0], 0, 1);
 			W_LE32(&record_ptr[28], new_size);
 
 			if (write_record_buffer(fat, fd)) {
