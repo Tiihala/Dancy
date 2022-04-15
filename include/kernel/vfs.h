@@ -77,6 +77,7 @@ struct vfs_node {
 		struct vfs_name *old_vname, struct vfs_name *new_vname);
 
 	int (*n_stat)(struct vfs_node *node, struct vfs_stat *stat);
+	int (*n_truncate)(struct vfs_node *node, uint64_t size);
 	int (*n_unlink)(struct vfs_node *node, struct vfs_name *vname);
 };
 
@@ -123,6 +124,7 @@ int vfs_default_rename(struct vfs_node *node,
 	struct vfs_name *old_vname, struct vfs_name *new_vname);
 
 int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat);
+int vfs_default_truncate(struct vfs_node *node, uint64_t size);
 int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname);
 
 /*

@@ -681,6 +681,48 @@ static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 	return 0;
 }
 
+static int n_truncate(struct vfs_node *node, uint64_t size)
+{
+	struct fat_internal_data *data = node->internal_data;
+	void *instance = data->io->instance;
+	unsigned char record[32];
+	int extend_file = 0;
+	int r;
+
+	if (size > 0xFFFFFFFF)
+		return DE_OVERFLOW;
+
+	lock_fat(node);
+
+	if ((r = fat_control(instance, data->fd, 0, record)) == 0) {
+		unsigned long fat_size = LE32(&record[28]);
+
+		if (fat_size < (unsigned long)size)
+			extend_file = 1;
+
+		if (fat_size > (unsigned long)size) {
+			fat_size = (unsigned long)size;
+			W_LE32(&record[28], fat_size);
+			r = fat_control(instance, data->fd, 1, record);
+		}
+	}
+
+	unlock_fat(node);
+
+	if (extend_file) {
+		uint64_t offset = size - 1;
+		unsigned char buf[1] = { 0 };
+		long long lr;
+
+		lr = n_read_write_common(node, offset, 1, (addr_t)&buf[0], 1);
+
+		if (lr < 0)
+			r = (int)(-lr);
+	}
+
+	return (r != 0) ? translate_error(r) : 0;
+}
+
 static int n_unlink(struct vfs_node *node, struct vfs_name *vname)
 {
 	struct fat_internal_data *data = node->internal_data;
@@ -744,14 +786,15 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->count = 1;
 		node->internal_data = (void *)a;
 
-		node->n_release = n_release;
-		node->n_open    = n_open;
-		node->n_read    = n_read;
-		node->n_write   = n_write;
-		node->n_readdir = n_readdir;
-		node->n_rename  = n_rename;
-		node->n_stat    = n_stat;
-		node->n_unlink  = n_unlink;
+		node->n_release  = n_release;
+		node->n_open     = n_open;
+		node->n_read     = n_read;
+		node->n_write    = n_write;
+		node->n_readdir  = n_readdir;
+		node->n_rename   = n_rename;
+		node->n_stat     = n_stat;
+		node->n_truncate = n_truncate;
+		node->n_unlink   = n_unlink;
 
 		data = node->internal_data;
 		data->io = io;
