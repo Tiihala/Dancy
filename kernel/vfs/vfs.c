@@ -182,8 +182,18 @@ int vfs_mount(const char *name, struct vfs_node *node)
 		return r;
 
 	if (target_node->type != node->type) {
-		target_node->n_release(&target_node);
-		return DE_TYPE;
+		int type_incompatible = 0;
+
+		if (target_node->type == vfs_type_directory)
+			type_incompatible = 1;
+
+		if (node->type == vfs_type_directory)
+			type_incompatible = 1;
+
+		if (type_incompatible) {
+			target_node->n_release(&target_node);
+			return DE_TYPE;
+		}
 	}
 
 	if ((r = vfs_build_path(name, &vname)) != 0) {
