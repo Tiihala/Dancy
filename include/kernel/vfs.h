@@ -101,6 +101,16 @@ struct vfs_stat {
 	struct timespec write_time;
 };
 
+#ifdef DANCY_32
+#define VFS_SIZE_TO_LLONG(a) \
+	((long long)(a))
+#endif
+
+#ifdef DANCY_64
+#define VFS_SIZE_TO_LLONG(a) \
+	((long long)((a) > (unsigned long long)(LLONG_MAX) ? LLONG_MAX : (a)))
+#endif
+
 /*
  * Declarations of default.c
  */
