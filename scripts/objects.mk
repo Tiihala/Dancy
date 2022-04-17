@@ -227,6 +227,9 @@
 ./o32/misc/serial.o: ./kernel/misc/serial.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/serial.c
 
+./o32/misc/zero.o: ./kernel/misc/zero.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/misc/zero.c
+
 ./o32/pci/pci.o: ./kernel/pci/pci.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/pci/pci.c
 
@@ -481,6 +484,9 @@
 
 ./o64/misc/serial.o: ./kernel/misc/serial.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/serial.c
+
+./o64/misc/zero.o: ./kernel/misc/zero.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/misc/zero.c
 
 ./o64/pci/pci.o: ./kernel/pci/pci.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/pci/pci.c

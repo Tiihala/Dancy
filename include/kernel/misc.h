@@ -57,4 +57,9 @@ int serial_set_baud(int port, int baud);
 size_t serial_receive(int port, void *buf, size_t size);
 size_t serial_send(int port, void *buf, size_t size);
 
+/*
+ * Declarations of zero.c
+ */
+int zero_init(void);
+
 #endif
