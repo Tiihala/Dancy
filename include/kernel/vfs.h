@@ -45,7 +45,6 @@ enum vfs_mode {
 };
 
 struct vfs_name;
-struct vfs_record;
 struct vfs_stat;
 
 struct vfs_node {
@@ -86,12 +85,6 @@ struct vfs_name {
 	char **components;
 	int pointer;
 	int type;
-};
-
-struct vfs_record {
-	const char *name;
-	int type;
-	int mode;
 };
 
 struct vfs_stat {

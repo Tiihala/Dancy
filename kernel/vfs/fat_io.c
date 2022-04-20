@@ -432,7 +432,6 @@ static int n_readdir(struct vfs_node *node,
 {
 	struct fat_internal_data *data = node->internal_data;
 	void *instance = data->io->instance;
-	struct vfs_record *vrecord = record;
 	int r, read_offset;
 	size_t vname_size;
 	char *vname;
@@ -442,12 +441,8 @@ static int n_readdir(struct vfs_node *node,
 
 	memset(record, 0, size);
 
-	if (size <= sizeof(struct vfs_record))
-		return DE_BUFFER;
-
-	vname_size = size - sizeof(struct vfs_record);
-	vname = (char *)record + sizeof(struct vfs_record);
-	vrecord->name = vname;
+	vname_size = size;
+	vname = (char *)record;
 
 	if (node->type != vfs_type_directory)
 		return DE_TYPE;
@@ -532,18 +527,6 @@ static int n_readdir(struct vfs_node *node,
 
 			for (i = 8; i < ext_size + 8; i++)
 				vname[vname_size++] = (char)fat_record[i];
-
-			if ((fat_attributes & 0x01) != 0)
-				vrecord->mode |= vfs_mode_read_only;
-			if ((fat_attributes & 0x02) != 0)
-				vrecord->mode |= vfs_mode_hidden;
-			if ((fat_attributes & 0x04) != 0)
-				vrecord->mode |= vfs_mode_system;
-
-			if ((fat_attributes & 0x10) != 0)
-				vrecord->type = vfs_type_directory;
-			else
-				vrecord->type = vfs_type_regular;
 		}
 	}
 
