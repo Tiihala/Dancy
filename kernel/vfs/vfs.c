@@ -31,7 +31,7 @@ struct mount_node {
 
 static struct mount_node *mount_tree;
 
-int create_mount_node(struct mount_node **mnode)
+static int create_mount_node(struct mount_node **mnode)
 {
 	size_t size = sizeof(struct mount_node);
 
