@@ -199,7 +199,7 @@ static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 			return DE_TYPE;
 	}
 
-	for (i = 0; i <= vname->pointer; i++) {
+	for (i = 0; vname->components[i] != NULL; i++) {
 		char *p = vname->components[i];
 
 		while ((buf[size] = (char)tolower((int)*p++)) != '\0') {
@@ -352,15 +352,23 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 	int type, int mode, struct vfs_name *vname)
 {
 	struct vfs_node *dir_node = NULL;
+	int count = 0;
+	void *last;
 	int r;
 
-	if ((mode & vfs_mode_create) == 0 || vname->pointer < 1)
+	while (vname->components[count] != NULL)
+		count += 1;
+
+	if ((mode & vfs_mode_create) == 0 || count < 2)
 		return n_open_internal(node, new_node, type, mode, vname);
 
-	vname->pointer -= 1;
+	last = vname->components[count - 1];
+	vname->components[count - 1] = NULL;
+
 	r = n_open_internal(node, &dir_node, vfs_type_directory, 0, vname);
 	r = (r == DE_NAME) ? DE_PATH : r;
-	vname->pointer += 1;
+
+	vname->components[count - 1] = last;
 
 	if (dir_node) {
 		r = n_open_internal(dir_node, new_node, type, mode, vname);
@@ -552,7 +560,7 @@ static int n_rename(struct vfs_node *node,
 
 	buf1[0] = '\0', buf2[0] = '\0';
 
-	for (i = 0; i <= old_vname->pointer; i++) {
+	for (i = 0; old_vname->components[i] != NULL; i++) {
 		char *p = old_vname->components[i];
 
 		while ((buf1[size1] = (char)tolower((int)*p++)) != '\0') {
@@ -564,7 +572,7 @@ static int n_rename(struct vfs_node *node,
 		buf1[size1++] = '/', buf1[size1] = '\0';
 	}
 
-	for (i = 0; i <= new_vname->pointer; i++) {
+	for (i = 0; new_vname->components[i] != NULL; i++) {
 		char *p = new_vname->components[i];
 
 		while ((buf2[size2] = (char)tolower((int)*p++)) != '\0') {
@@ -716,7 +724,7 @@ static int n_unlink(struct vfs_node *node, struct vfs_name *vname)
 
 	buf[0] = '\0';
 
-	for (i = 0; i <= vname->pointer; i++) {
+	for (i = 0; vname->components[i] != NULL; i++) {
 		char *p = vname->components[i];
 
 		while ((buf[size] = (char)tolower((int)*p++)) != '\0') {
