@@ -83,7 +83,6 @@ struct vfs_node {
 struct vfs_name {
 	void *buffer;
 	char **components;
-	int pointer;
 	int type;
 };
 

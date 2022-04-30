@@ -111,10 +111,6 @@ static int set_vname(struct vfs_path *path, struct vfs_name *vname, int val)
 
 	vname->buffer = NULL;
 	vname->components = &path->absolute_path[1];
-	vname->pointer = 0;
-
-	for (i = 0; vname->components[i] != NULL; i++)
-		vname->pointer = i;
 
 	if (path->absolute_path[0][0] == 'D')
 		vname->type = vfs_type_directory;
@@ -341,10 +337,6 @@ int vfs_duplicate_path(struct vfs_name *vname)
 	}
 
 	vname->components = &path->absolute_path[1];
-	vname->pointer = 0;
-
-	for (i = 0; vname->components[i] != NULL; i++)
-		vname->pointer = i;
 
 	if (path->absolute_path[0][0] == 'D')
 		vname->type = vfs_type_directory;

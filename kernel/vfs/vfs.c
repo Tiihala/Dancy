@@ -124,7 +124,7 @@ static int mount_locked(struct vfs_name *vname, struct vfs_node *node)
 	if (!vname->components[0])
 		return DE_BUSY;
 
-	for (i = 0; i <= vname->pointer; i++) {
+	for (i = 0; vname->components[i] != NULL; i++) {
 		char *p = vname->components[i];
 
 		if (mnode->node || p[0] == '\0') {
@@ -160,7 +160,7 @@ static int mount_locked(struct vfs_name *vname, struct vfs_node *node)
 				return DE_MEMORY;
 		}
 
-		if (i == vname->pointer) {
+		if (vname->components[i + 1] == NULL) {
 			if (mnode->node || mnode->memb)
 				return DE_BUSY;
 
@@ -225,7 +225,7 @@ static struct vfs_node *get_mount_node_locked(struct vfs_name *vname)
 		return node;
 	}
 
-	for (i = 0; i <= vname->pointer; i++) {
+	for (i = 0; vname->components[i] != NULL; i++) {
 		char *p = vname->components[i];
 
 		if ((mnode = mnode->memb) == NULL)
@@ -241,7 +241,6 @@ static struct vfs_node *get_mount_node_locked(struct vfs_name *vname)
 
 		if (mnode->node) {
 			vname->components = &vname->components[i + 1];
-			vname->pointer -= (i + 1);
 			node = mnode->node;
 			break;
 		}
@@ -288,7 +287,7 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 
 	new_node = mount_node;
 
-	if (vname.pointer >= 0 && vname.components[vname.pointer] != NULL) {
+	if (vname.components[0] != NULL) {
 		r = mount_node->n_open(mount_node, &new_node,
 			type, mode, &vname);
 
@@ -343,13 +342,10 @@ int vfs_rename(const char *old_name, const char *new_name)
 	if (node1 == NULL || node1 != node2)
 		rename_allowed = 0;
 
-	if (old_vname.pointer < 0 || new_vname.pointer < 0)
+	if (rename_allowed && old_vname.components[0] == NULL)
 		rename_allowed = 0;
 
-	if (rename_allowed && old_vname.components[old_vname.pointer] == NULL)
-		rename_allowed = 0;
-
-	if (rename_allowed && new_vname.components[new_vname.pointer] == NULL)
+	if (rename_allowed && new_vname.components[0] == NULL)
 		rename_allowed = 0;
 
 	if (rename_allowed)
@@ -379,7 +375,7 @@ int vfs_unlink(const char *name)
 	if ((mount_node = get_mount_node(&vname)) == NULL)
 		return DE_UNINITIALIZED;
 
-	if (vname.pointer >= 0 && vname.components[vname.pointer] != NULL)
+	if (vname.components[0] != NULL)
 		r = mount_node->n_unlink(mount_node, &vname);
 	else
 		r = DE_BUSY;
