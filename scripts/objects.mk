@@ -218,6 +218,9 @@
 ./o32/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/lib/string.c
 
+./o32/misc/dma.o: ./kernel/misc/dma.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/misc/dma.c
+
 ./o32/misc/epoch.o: ./kernel/misc/epoch.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/epoch.c
 
@@ -475,6 +478,9 @@
 
 ./o64/lib/string.o: ./kernel/lib/string.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/lib/string.c
+
+./o64/misc/dma.o: ./kernel/misc/dma.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/misc/dma.c
 
 ./o64/misc/epoch.o: ./kernel/misc/epoch.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/epoch.c

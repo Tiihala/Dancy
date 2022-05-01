@@ -23,6 +23,11 @@
 #include <dancy/types.h>
 
 /*
+ * Declarations of dma.c
+ */
+int dma_init(void);
+
+/*
  * Declarations of epoch.c
  */
 unsigned long long epoch_read(void);
