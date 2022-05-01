@@ -43,6 +43,7 @@ static struct {
 	{ 0, 0, SYMBOL_PREFIX "vfs_init", "Virtual File System" },
 	{ 0, 0, SYMBOL_PREFIX "zero_init", "Devfs Zero" },
 	{ 0, 0, SYMBOL_PREFIX "dma_init", "DMA" },
+	{ 0, 0, SYMBOL_PREFIX "floppy_init", "Floppy" },
 	{ 0, 0, SYMBOL_PREFIX "serial_init", "Serial Ports" },
 	{ 0, 0, SYMBOL_PREFIX "pci_init", "PCI" },
 	{ 0, 0, SYMBOL_PREFIX "ps2_init", "PS/2 Controller" },

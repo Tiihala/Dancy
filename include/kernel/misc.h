@@ -34,6 +34,11 @@ unsigned long long epoch_read(void);
 void epoch_sync(void);
 
 /*
+ * Declarations of floppy.c
+ */
+int floppy_init(void);
+
+/*
  * Declarations of rtc.c
  */
 struct rtc_time {
