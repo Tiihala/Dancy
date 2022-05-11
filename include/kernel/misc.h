@@ -26,6 +26,8 @@
  * Declarations of dma.c
  */
 int dma_init(void);
+phys_addr_t dma_set_floppy_read(size_t size);
+phys_addr_t dma_set_floppy_write(size_t size);
 
 /*
  * Declarations of epoch.c
