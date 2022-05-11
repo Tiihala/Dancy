@@ -45,6 +45,9 @@ DANCY_X(DE_FULL                      , "resource is full"                )
 DANCY_X(DE_READ_ONLY                 , "read-only"                       )
 DANCY_X(DE_BUSY                      , "resource is in use"              )
 DANCY_X(DE_TYPE                      , "unexpected resource type"        )
+DANCY_X(DE_ALIGNMENT                 , "unsupported alignment"           )
+DANCY_X(DE_MEDIA_CHANGED             , "media changed"                   )
+DANCY_X(DE_ADDRESS_MARK              , "missing address mark"            )
 
 #endif
 
