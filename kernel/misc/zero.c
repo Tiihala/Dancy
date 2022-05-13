@@ -24,40 +24,36 @@ static struct vfs_node zero_node;
 
 static dancy_time_t default_tv_sec;
 
-static long long n_read_null(struct vfs_node *node,
-	uint64_t offset, size_t size, void *buffer)
+static int n_read_null(struct vfs_node *node,
+	uint64_t offset, size_t *size, void *buffer)
+{
+	(void)node;
+	(void)offset;
+	(void)buffer;
+
+	return *size = 0, 0;
+}
+
+static int n_read_zero(struct vfs_node *node,
+	uint64_t offset, size_t *size, void *buffer)
+{
+	(void)node;
+	(void)offset;
+
+	memset(buffer, 0, *size);
+
+	return 0;
+}
+
+static int n_write(struct vfs_node *node,
+	uint64_t offset, size_t *size, const void *buffer)
 {
 	(void)node;
 	(void)offset;
 	(void)size;
 	(void)buffer;
 
-	return 0LL;
-}
-
-static long long n_read_zero(struct vfs_node *node,
-	uint64_t offset, size_t size, void *buffer)
-{
-	long long lsize = VFS_SIZE_TO_LLONG(size);
-
-	(void)node;
-	(void)offset;
-
-	memset(buffer, 0, (size_t)lsize);
-
-	return lsize;
-}
-
-static long long n_write(struct vfs_node *node,
-	uint64_t offset, size_t size, const void *buffer)
-{
-	long long lsize = VFS_SIZE_TO_LLONG(size);
-
-	(void)node;
-	(void)offset;
-	(void)buffer;
-
-	return lsize;
+	return 0;
 }
 
 static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
