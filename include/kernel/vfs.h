@@ -61,11 +61,11 @@ struct vfs_node {
 	int (*n_open)(struct vfs_node *node, struct vfs_node **new_node,
 		int type, int mode, struct vfs_name *vname);
 
-	long long (*n_read)(struct vfs_node *node,
-		uint64_t offset, size_t size, void *buffer);
+	int (*n_read)(struct vfs_node *node,
+		uint64_t offset, size_t *size, void *buffer);
 
-	long long (*n_write)(struct vfs_node *node,
-		uint64_t offset, size_t size, const void *buffer);
+	int (*n_write)(struct vfs_node *node,
+		uint64_t offset, size_t *size, const void *buffer);
 
 	int (*n_flush)(struct vfs_node *node);
 
@@ -93,16 +93,6 @@ struct vfs_stat {
 	struct timespec write_time;
 };
 
-#ifdef DANCY_32
-#define VFS_SIZE_TO_LLONG(a) \
-	((long long)(a))
-#endif
-
-#ifdef DANCY_64
-#define VFS_SIZE_TO_LLONG(a) \
-	((long long)((a) > (unsigned long long)(LLONG_MAX) ? LLONG_MAX : (a)))
-#endif
-
 /*
  * Declarations of default.c
  */
@@ -111,11 +101,11 @@ void vfs_default_release(struct vfs_node **node);
 int vfs_default_open(struct vfs_node *node, struct vfs_node **new_node,
 	int type, int mode, struct vfs_name *vname);
 
-long long vfs_default_read(struct vfs_node *node,
-	uint64_t offset, size_t size, void *buffer);
+int vfs_default_read(struct vfs_node *node,
+	uint64_t offset, size_t *size, void *buffer);
 
-long long vfs_default_write(struct vfs_node *node,
-	uint64_t offset, size_t size, const void *buffer);
+int vfs_default_write(struct vfs_node *node,
+	uint64_t offset, size_t *size, const void *buffer);
 
 int vfs_default_flush(struct vfs_node *node);
 
