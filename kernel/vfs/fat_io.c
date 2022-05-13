@@ -378,14 +378,16 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 	return r;
 }
 
-static long long n_read_write_common(struct vfs_node *node,
-	uint64_t offset, size_t size, addr_t buffer_addr, int write_mode)
+static int n_read_write_common(struct vfs_node *node,
+	uint64_t offset, size_t *size, addr_t buffer_addr, int write_mode)
 {
 	struct fat_internal_data *data = node->internal_data;
 	void *instance = data->io->instance;
-	size_t retval = size;
+	size_t retval = *size;
 	int fat_offset[2];
 	int r;
+
+	*size = 0;
 
 	if (offset >= 0xFFFFFFFF)
 		return 0;
@@ -418,19 +420,19 @@ static long long n_read_write_common(struct vfs_node *node,
 	unlock_fat(node);
 
 	if (r)
-		return -((long long)translate_error(r));
+		return translate_error(r);
 
-	return (long long)retval;
+	return *size = retval, 0;
 }
 
-static long long n_read(struct vfs_node *node,
-	uint64_t offset, size_t size, void *buffer)
+static int n_read(struct vfs_node *node,
+	uint64_t offset, size_t *size, void *buffer)
 {
 	return n_read_write_common(node, offset, size, (addr_t)buffer, 0);
 }
 
-static long long n_write(struct vfs_node *node,
-	uint64_t offset, size_t size, const void *buffer)
+static int n_write(struct vfs_node *node,
+	uint64_t offset, size_t *size, const void *buffer)
 {
 	return n_read_write_common(node, offset, size, (addr_t)buffer, 1);
 }
@@ -703,12 +705,10 @@ static int n_truncate(struct vfs_node *node, uint64_t size)
 	if (extend_file) {
 		uint64_t offset = size - 1;
 		unsigned char buf[1] = { 0 };
-		long long lr;
+		addr_t addr = (addr_t)&buf[0];
+		size_t one_byte = 1;
 
-		lr = n_read_write_common(node, offset, 1, (addr_t)&buf[0], 1);
-
-		if (lr < 0)
-			r = (int)(-lr);
+		r = n_read_write_common(node, offset, &one_byte, addr, 1);
 	}
 
 	return (r != 0) ? translate_error(r) : 0;
