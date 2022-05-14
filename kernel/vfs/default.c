@@ -21,6 +21,7 @@
 
 void vfs_default_release(struct vfs_node **node)
 {
+	vfs_decrement_count(*node);
 	*node = NULL;
 }
 
