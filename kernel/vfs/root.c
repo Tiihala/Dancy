@@ -19,7 +19,7 @@
 
 #include <dancy.h>
 
-static struct fat_io root_io;
+static struct vfs_node root_ramfs_node;
 
 static size_t root_ramfs_size;
 static unsigned char *root_ramfs;
@@ -60,37 +60,52 @@ static int create_ramfs(void)
 	return 0;
 }
 
-static int root_get_size(int id, size_t *block_size, size_t *block_total)
+static int n_read(struct vfs_node *node,
+	uint64_t offset, size_t *size, void *buffer)
 {
-	if (id != root_io.id)
-		kernel->panic("root_get_size: unexpected behavior");
+	size_t read_size;
 
-	*block_size = root_block_size;
-	*block_total = root_block_total;
+	(void)node;
 
-	return 0;
+	if (offset >= (uint64_t)root_ramfs_size)
+		return *size = 0, 0;
+
+	read_size = root_ramfs_size - (size_t)offset;
+
+	if (read_size > *size)
+		read_size = *size;
+
+	memcpy(buffer, &root_ramfs[(size_t)offset], read_size);
+
+	return *size = read_size, 0;
 }
 
-static int root_io_read(int id, size_t lba, size_t *size, void *buf)
+static int n_write(struct vfs_node *node,
+	uint64_t offset, size_t *size, const void *buffer)
 {
-	size_t offset = lba * root_block_size;
+	size_t write_size;
 
-	if (id != root_io.id)
-		kernel->panic("root_io_read: unexpected behavior");
+	(void)node;
 
-	memcpy(buf, &root_ramfs[offset], *size);
+	if (offset >= (uint64_t)root_ramfs_size)
+		return *size = 0, 0;
 
-	return 0;
+	write_size = root_ramfs_size - (size_t)offset;
+
+	if (write_size > *size)
+		write_size = *size;
+
+	memcpy(&root_ramfs[(size_t)offset], buffer, write_size);
+
+	return *size = write_size, 0;
 }
 
-static int root_io_write(int id, size_t lba, size_t *size, const void *buf)
+static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 {
-	size_t offset = lba * root_block_size;
+	(void)node;
 
-	if (id != root_io.id)
-		kernel->panic("root_io_write: unexpected behavior");
-
-	memcpy(&root_ramfs[offset], buf, *size);
+	memset(stat, 0, sizeof(*stat));
+	stat->size = (uint64_t)root_ramfs_size;
 
 	return 0;
 }
@@ -108,14 +123,14 @@ int vfs_init_root(struct vfs_node **node)
 	if ((r = create_ramfs()) != 0)
 		return r;
 
-	root_io.get_size = root_get_size;
-	root_io.io_read  = root_io_read;
-	root_io.io_write = root_io_write;
+	vfs_init_node(&root_ramfs_node, 0);
+	root_ramfs_node.type = vfs_type_block;
+	root_ramfs_node.n_read = n_read;
+	root_ramfs_node.n_write = n_write;
+	root_ramfs_node.n_stat = n_stat;
 
-	if ((r = fat_io_add(&root_io)) != 0)
+	if ((r = fat_io_create(node, &root_ramfs_node)) != 0)
 		return r;
-
-	*node = root_io.root_node;
 
 	return 0;
 }
