@@ -960,22 +960,13 @@ static int fat_io_add(struct fat_io *io)
 	if (new_id < 0)
 		return DE_OVERFLOW;
 
-	if (fat_create(&io->instance, new_id)) {
-		set_fat_io_array_null(new_id);
-		return DE_UNEXPECTED;
-	}
-
 	if (mtx_init(&io->fat_mtx, mtx_plain) != thrd_success) {
-		fat_delete(io->instance), io->instance = NULL;
-
 		set_fat_io_array_null(new_id);
 		return DE_UNEXPECTED;
 	}
 
 	if ((root_node = alloc_node(io)) == NULL) {
 		mtx_destroy(&io->fat_mtx);
-		fat_delete(io->instance), io->instance = NULL;
-
 		set_fat_io_array_null(new_id);
 		return DE_MEMORY;
 	}
@@ -986,21 +977,16 @@ static int fat_io_add(struct fat_io *io)
 	data = root_node->internal_data;
 	data->path[0] = '/', data->path[1] = '.', data->path[2] = '\0';
 	data->fd = 0;
+	data->media_changed = 1;
 
-	if ((r = enter_fat(root_node)) == 0) {
-		io->node_count = 1;
-		io->node_array[0] = root_node;
+	io->instance = NULL;
+	io->media_changed = 1;
+	io->node_count = 1;
+	io->node_array[0] = root_node;
 
-		r = fat_open(io->instance, data->fd, "/.", "rb+");
-
-		leave_fat(root_node);
-	}
-
-	if (r != 0) {
+	if ((r = enter_fat(root_node)) != 0) {
 		free(root_node), io->node_array[0] = root_node = NULL;
 		mtx_destroy(&io->fat_mtx);
-		fat_delete(io->instance), io->instance = NULL;
-
 		set_fat_io_array_null(new_id);
 		return translate_error(r);
 	}
