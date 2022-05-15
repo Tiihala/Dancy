@@ -62,7 +62,7 @@ static struct vfs_node *find_node(struct vfs_node *node, const char *name)
 		if ((n = data->io->node_array[i]) != NULL) {
 			struct fat_internal_data *d = n->internal_data;
 
-			if (!strcmp(&d->path[0], name)) {
+			if (!strcmp(&d->path[0], name) && !d->media_changed) {
 				existing_node = n;
 				break;
 			}
@@ -150,9 +150,54 @@ static dancy_time_t calculate_time(int fat_date, int fat_time)
 static int enter_fat(struct vfs_node *node)
 {
 	struct fat_internal_data *data = node->internal_data;
+	struct fat_io *io = data->io;
+	int i, r;
 
-	if (mtx_lock(&data->io->fat_mtx) != thrd_success)
+	if (mtx_lock(&io->fat_mtx) != thrd_success)
 		kernel->panic("fat_io: unexpected mutex error");
+
+	if (io->media_changed) {
+		int fd = INT_MIN;
+
+		if (io->instance)
+			fat_delete(io->instance), io->instance = NULL;
+
+		io->media_changed = 0;
+
+		if (fat_create(&io->instance, io->id)) {
+			io->instance = NULL;
+			io->media_changed = 1;
+			return DE_MEDIA_CHANGED;
+		}
+
+		for (i = 0; i < data->io->node_count; i++) {
+			struct vfs_node *n;
+			struct fat_internal_data *d;
+
+			if ((n = data->io->node_array[i]) != NULL) {
+				d = n->internal_data;
+
+				if (d->path[0] != '/')
+					continue;
+				if (d->path[1] != '.')
+					continue;
+
+				if (d->path[2] == '\0') {
+					fd = d->fd;
+					d->media_changed = 0;
+					break;
+				}
+			}
+		}
+
+		if (fd < 0)
+			return 0;
+
+		if ((r = fat_open(io->instance, fd, "/.", "rb+")) != 0) {
+			io->media_changed = 1;
+			return translate_error(r);
+		}
+	}
 
 	return 0;
 }
@@ -168,8 +213,25 @@ static void enter_fat_success(struct vfs_node *node)
 static void leave_fat(struct vfs_node *node)
 {
 	struct fat_internal_data *data = node->internal_data;
+	struct fat_io *io = data->io;
+	int i;
 
-	mtx_unlock(&data->io->fat_mtx);
+	if (io->media_changed) {
+		for (i = 0; i < data->io->node_count; i++) {
+			struct vfs_node *n;
+			struct fat_internal_data *d;
+
+			if ((n = data->io->node_array[i]) != NULL) {
+				d = n->internal_data;
+				d->media_changed = 1;
+			}
+		}
+
+		if (io->instance)
+			fat_delete(io->instance), io->instance = NULL;
+	}
+
+	mtx_unlock(&io->fat_mtx);
 }
 
 static void n_release(struct vfs_node **node)
@@ -232,7 +294,7 @@ static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 	struct fat_internal_data *data = node->internal_data;
 	struct fat_io *io = data->io;
 	struct vfs_node *allocated_node, *existing_node;
-	int write_record = 0;
+	int write_record = 0, root_dir = 0;
 	unsigned char record[32];
 	char buf[256];
 	int size = 0;
@@ -267,6 +329,7 @@ static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 		buf[0] = '/', buf[1] = '.', buf[2] = '\0';
 
 		size = 3, buf[size] = '\0';
+		root_dir = 1;
 	}
 
 	buf[size - 1] = '\0';
@@ -283,13 +346,16 @@ static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 		if ((existing_node->mode & vfs_mode_exclusive) != 0)
 			return leave_fat(node), DE_BUSY;
 
-		r = fat_control(io->instance, data->fd, 0, record);
-
 		if ((mode & vfs_mode_create) != 0)
 			write_record = 1;
 
 		if ((mode & vfs_mode_truncate) != 0)
 			write_record = 1;
+
+		if (!root_dir)
+			r = fat_control(io->instance, data->fd, 0, record);
+		else if (write_record)
+			r = DE_ARGUMENT;
 
 		if (!r && write_record) {
 			unsigned long file_size = 0;
@@ -358,8 +424,14 @@ static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 	else
 		r = fat_open(io->instance, data->fd, &buf[0], "rb+");
 
-	if (!r)
-		r = fat_control(io->instance, data->fd, 0, record);
+	if (!r) {
+		if (!root_dir) {
+			r = fat_control(io->instance, data->fd, 0, record);
+		} else {
+			memset(&record[0], 0, sizeof(record));
+			record[11] = 0x10;
+		}
+	}
 
 	if (!r) {
 		unsigned long file_size = 0;
@@ -386,7 +458,7 @@ static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 			allocated_node->type = vfs_type_regular;
 	}
 
-	if (write_record)
+	if (write_record && !root_dir)
 		r = fat_control(io->instance, data->fd, 1, record);
 
 	leave_fat(node);
