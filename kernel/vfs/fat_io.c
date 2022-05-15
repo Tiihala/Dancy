@@ -23,7 +23,6 @@
 
 struct fat_io {
 	struct vfs_node *dev_node;
-	struct vfs_node *root_node;
 
 	mtx_t fat_mtx;
 	void *instance;
@@ -41,6 +40,7 @@ struct fat_internal_data {
 	char path[256];
 	struct fat_io *io;
 	int fd;
+	int media_changed;
 };
 
 static void check_id(int id)
@@ -176,6 +176,10 @@ static void n_release(struct vfs_node **node)
 {
 	struct vfs_node *n = *node;
 	struct fat_internal_data *data = n->internal_data;
+	struct fat_io *io = data->io;
+	int free_fat_io = 0;
+
+	*node = NULL;
 
 	if (n && !vfs_decrement_count(n)) {
 		int fd;
@@ -183,14 +187,19 @@ static void n_release(struct vfs_node **node)
 		enter_fat_success(n);
 
 		if ((fd = data->fd) >= 0) {
-			if (!data->io->media_changed)
-				fat_close(data->io->instance, fd);
+			if (!io->media_changed && !data->media_changed) {
+				if (io->instance)
+					fat_close(io->instance, fd);
+			}
 
-			if (data->io->node_count == fd + 1)
-				data->io->node_count -= 1;
+			if (io->node_count == fd + 1)
+				io->node_count -= 1;
 
-			data->io->node_array[fd] = NULL;
+			io->node_array[fd] = NULL;
 		}
+
+		if (!io->node_count)
+			free_fat_io = 1;
 
 		leave_fat(n);
 
@@ -198,7 +207,21 @@ static void n_release(struct vfs_node **node)
 		free(n);
 	}
 
-	*node = NULL;
+	if (free_fat_io) {
+		void *lock_local = &fat_io_lock;
+
+		if (io->instance)
+			fat_delete(io->instance), io->instance = NULL;
+
+		io->dev_node->n_release(&io->dev_node);
+		mtx_destroy(&io->fat_mtx);
+
+		spin_enter(&lock_local);
+		fat_io_array[io->id] = NULL;
+		spin_leave(&lock_local);
+
+		free(io);
+	}
 }
 
 static struct vfs_node *alloc_node(struct fat_io *io);
@@ -236,9 +259,14 @@ static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 	}
 
 	if (buf[0] == '\0') {
-		vfs_increment_count(io->root_node);
-		*new_node = io->root_node;
-		return 0;
+		if (type == vfs_type_regular)
+			return DE_TYPE;
+		/*
+		 * The root directory of the file system.
+		 */
+		buf[0] = '/', buf[1] = '.', buf[2] = '\0';
+
+		size = 3, buf[size] = '\0';
 	}
 
 	buf[size - 1] = '\0';
@@ -841,6 +869,7 @@ static int fat_io_add(struct fat_io *io)
 {
 	void *lock_local = &fat_io_lock;
 	struct fat_internal_data *data;
+	struct vfs_node *root_node;
 	int new_id = -1;
 	int i, r;
 
@@ -850,6 +879,7 @@ static int fat_io_add(struct fat_io *io)
 		if (!fat_io_array[i]) {
 			io->id = new_id = i;
 			fat_io_array[i] = io;
+			break;
 		}
 	}
 
@@ -870,7 +900,7 @@ static int fat_io_add(struct fat_io *io)
 		return DE_UNEXPECTED;
 	}
 
-	if ((io->root_node = alloc_node(io)) == NULL) {
+	if ((root_node = alloc_node(io)) == NULL) {
 		mtx_destroy(&io->fat_mtx);
 		fat_delete(io->instance), io->instance = NULL;
 
@@ -878,23 +908,24 @@ static int fat_io_add(struct fat_io *io)
 		return DE_MEMORY;
 	}
 
-	io->root_node->count = -1;
-	io->root_node->type = vfs_type_directory;
+	root_node->count = 1;
+	root_node->type = vfs_type_directory;
 
-	if ((r = enter_fat(io->root_node)) == 0) {
-		data = io->root_node->internal_data;
-		data->fd = 0;
+	data = root_node->internal_data;
+	data->path[0] = '/', data->path[1] = '.', data->path[2] = '\0';
+	data->fd = 0;
 
+	if ((r = enter_fat(root_node)) == 0) {
 		io->node_count = 1;
-		io->node_array[0] = io->root_node;
+		io->node_array[0] = root_node;
 
 		r = fat_open(io->instance, data->fd, "/.", "rb+");
 
-		leave_fat(io->root_node);
+		leave_fat(root_node);
 	}
 
 	if (r != 0) {
-		io->root_node->n_release(&io->root_node);
+		free(root_node), io->node_array[0] = root_node = NULL;
 		mtx_destroy(&io->fat_mtx);
 		fat_delete(io->instance), io->instance = NULL;
 
@@ -921,11 +952,11 @@ int fat_io_create(struct vfs_node **new_node, struct vfs_node *dev_node)
 	io->dev_node = dev_node;
 
 	if ((r = fat_io_add(io)) != 0) {
-		vfs_decrement_count(dev_node);
+		io->dev_node->n_release(&io->dev_node);
 		return free(io), r;
 	}
 
-	return *new_node = io->root_node, 0;
+	return *new_node = io->node_array[0], 0;
 }
 
 int fat_get_size(int id, size_t *block_size, size_t *block_total)
