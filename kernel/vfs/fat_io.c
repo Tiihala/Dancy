@@ -991,6 +991,8 @@ static int fat_io_add(struct fat_io *io)
 		return translate_error(r);
 	}
 
+	leave_fat(root_node);
+
 	return 0;
 }
 
