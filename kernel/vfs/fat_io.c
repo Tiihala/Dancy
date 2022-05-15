@@ -157,6 +157,14 @@ static int enter_fat(struct vfs_node *node)
 	return 0;
 }
 
+static void enter_fat_success(struct vfs_node *node)
+{
+	struct fat_internal_data *data = node->internal_data;
+
+	if (mtx_lock(&data->io->fat_mtx) != thrd_success)
+		kernel->panic("fat_io: unexpected mutex error");
+}
+
 static void leave_fat(struct vfs_node *node)
 {
 	struct fat_internal_data *data = node->internal_data;
@@ -170,11 +178,12 @@ static void n_release(struct vfs_node **node)
 	struct fat_internal_data *data = n->internal_data;
 
 	if (n && !vfs_decrement_count(n)) {
-		int r = enter_fat(n);
-		int fd = data->fd;
+		int fd;
 
-		if (fd >= 0) {
-			if (!r)
+		enter_fat_success(n);
+
+		if ((fd = data->fd) >= 0) {
+			if (!data->io->media_changed)
 				fat_close(data->io->instance, fd);
 
 			if (data->io->node_count == fd + 1)
@@ -183,8 +192,7 @@ static void n_release(struct vfs_node **node)
 			data->io->node_array[fd] = NULL;
 		}
 
-		if (!r)
-			leave_fat(n);
+		leave_fat(n);
 
 		n->internal_data = NULL;
 		free(n);
