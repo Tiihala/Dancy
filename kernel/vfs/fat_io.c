@@ -988,7 +988,7 @@ static int fat_io_add(struct fat_io *io)
 		free(root_node), io->node_array[0] = root_node = NULL;
 		mtx_destroy(&io->fat_mtx);
 		set_fat_io_array_null(new_id);
-		return translate_error(r);
+		return r;
 	}
 
 	leave_fat(root_node);
