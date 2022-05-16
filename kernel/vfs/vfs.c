@@ -107,8 +107,10 @@ int vfs_decrement_count(struct vfs_node *node)
 
 	spin_enter(&lock_local);
 
-	if (node->count > 0)
+	if (node->count >= 0)
 		node->count -= 1;
+	if (node->count < -1)
+		node->count = -1;
 	r = node->count;
 
 	spin_leave(&lock_local);
