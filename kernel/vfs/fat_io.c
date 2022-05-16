@@ -256,15 +256,18 @@ static void n_release(struct vfs_node **node)
 	if (!count) {
 		int i, fd;
 
-		if ((fd = data->fd) >= 0 && io->instance) {
-			if (!io->media_changed && !data->media_changed)
-				fat_close(io->instance, fd);
+		if ((fd = data->fd) >= 0) {
+			if (!io->media_changed && !data->media_changed) {
+				if (io->instance)
+					fat_close(io->instance, fd);
+			}
+
+			if (io->node_count == fd + 1)
+				io->node_count -= 1;
+
+			io->node_array[fd] = NULL;
 		}
 
-		if (io->node_count == fd + 1)
-			io->node_count -= 1;
-
-		io->node_array[fd] = NULL;
 		free_fat_io = 1;
 
 		for (i = 0; i < io->node_count; i++) {
