@@ -205,14 +205,6 @@ static int enter_fat(struct vfs_node *node)
 	return 0;
 }
 
-static void enter_fat_success(struct vfs_node *node)
-{
-	struct fat_internal_data *data = node->internal_data;
-
-	if (mtx_lock(&data->io->fat_mtx) != thrd_success)
-		kernel->panic("fat_io: unexpected mutex error");
-}
-
 static void leave_fat(struct vfs_node *node)
 {
 	struct fat_internal_data *data = node->internal_data;
