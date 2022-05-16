@@ -231,7 +231,73 @@ static void leave_fat(struct vfs_node *node)
 
 static void n_release(struct vfs_node **node)
 {
+	struct vfs_node *n = *node;
+	struct fat_internal_data *data;
+	struct fat_io *io;
+	void *lock_local;
 
+	int free_fat_io = 0;
+	int count;
+
+	*node = NULL;
+
+	if (!n)
+		kernel->panic("fat_io: releasing null node");
+
+	data = n->internal_data;
+	io = data->io;
+
+	if (mtx_lock(&io->fat_mtx) != thrd_success)
+		kernel->panic("fat_io: unexpected mutex error");
+
+	if ((count = vfs_decrement_count(n)) < 0)
+		kernel->panic("fat_io: decrementing null node");
+
+	if (!count) {
+		int i, fd;
+
+		if ((fd = data->fd) >= 0 && io->instance) {
+			if (!io->media_changed && !data->media_changed)
+				fat_close(io->instance, fd);
+		}
+
+		if (io->node_count == fd + 1)
+			io->node_count -= 1;
+
+		io->node_array[fd] = NULL;
+		free_fat_io = 1;
+
+		for (i = 0; i < io->node_count; i++) {
+			if (io->node_array[i]) {
+				free_fat_io = 0;
+				break;
+			}
+		}
+
+		memset(n, 0, sizeof(*n));
+		free(n);
+	}
+
+	if (!free_fat_io) {
+		mtx_unlock(&io->fat_mtx);
+		return;
+	}
+
+	if (io->instance)
+		fat_delete(io->instance), io->instance = NULL;
+
+	io->dev_node->n_release(&io->dev_node);
+
+	lock_local = &fat_io_lock;
+	spin_enter(&lock_local);
+	fat_io_array[io->id] = NULL;
+	spin_leave(&lock_local);
+
+	mtx_unlock(&io->fat_mtx);
+	mtx_destroy(&io->fat_mtx);
+
+	memset(io, 0, sizeof(*io));
+	free(io);
 }
 
 static struct vfs_node *alloc_node(struct fat_io *io);
