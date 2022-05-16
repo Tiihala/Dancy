@@ -167,6 +167,7 @@ static int enter_fat(struct vfs_node *node)
 		if (fat_create(&io->instance, io->id)) {
 			io->instance = NULL;
 			io->media_changed = 1;
+			mtx_unlock(&io->fat_mtx);
 			return DE_MEDIA_CHANGED;
 		}
 
@@ -194,7 +195,9 @@ static int enter_fat(struct vfs_node *node)
 			return 0;
 
 		if ((r = fat_open(io->instance, fd, "/.", "rb+")) != 0) {
+			fat_delete(io->instance), io->instance = NULL;
 			io->media_changed = 1;
+			mtx_unlock(&io->fat_mtx);
 			return translate_error(r);
 		}
 	}
