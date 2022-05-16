@@ -239,54 +239,7 @@ static void leave_fat(struct vfs_node *node)
 
 static void n_release(struct vfs_node **node)
 {
-	struct vfs_node *n = *node;
-	struct fat_internal_data *data = n->internal_data;
-	struct fat_io *io = data->io;
-	int free_fat_io = 0;
 
-	*node = NULL;
-
-	if (n && !vfs_decrement_count(n)) {
-		int fd;
-
-		enter_fat_success(n);
-
-		if ((fd = data->fd) >= 0) {
-			if (!io->media_changed && !data->media_changed) {
-				if (io->instance)
-					fat_close(io->instance, fd);
-			}
-
-			if (io->node_count == fd + 1)
-				io->node_count -= 1;
-
-			io->node_array[fd] = NULL;
-		}
-
-		if (!io->node_count)
-			free_fat_io = 1;
-
-		leave_fat(n);
-
-		n->internal_data = NULL;
-		free(n);
-	}
-
-	if (free_fat_io) {
-		void *lock_local = &fat_io_lock;
-
-		if (io->instance)
-			fat_delete(io->instance), io->instance = NULL;
-
-		io->dev_node->n_release(&io->dev_node);
-		mtx_destroy(&io->fat_mtx);
-
-		spin_enter(&lock_local);
-		fat_io_array[io->id] = NULL;
-		spin_leave(&lock_local);
-
-		free(io);
-	}
 }
 
 static struct vfs_node *alloc_node(struct fat_io *io);
