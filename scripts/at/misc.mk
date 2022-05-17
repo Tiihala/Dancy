@@ -21,7 +21,7 @@ DANCY_MISC_OBJECTS_64= \
 ##############################################################################
 
 ./o32/misc.at: $(DANCY_MISC_OBJECTS_32)
-	$(DY_LINK) -o$@ -fat --export-all $(DANCY_MISC_OBJECTS_32)
+	$(DY_LINK) -o$@ -fat $(DANCY_MISC_OBJECTS_32)
 
 ./o64/misc.at: $(DANCY_MISC_OBJECTS_64)
-	$(DY_LINK) -o$@ -fat --export-all $(DANCY_MISC_OBJECTS_64)
+	$(DY_LINK) -o$@ -fat $(DANCY_MISC_OBJECTS_64)

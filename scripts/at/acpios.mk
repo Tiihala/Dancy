@@ -13,10 +13,10 @@ ACPIOS_OBJECTS_64= \
 ##############################################################################
 
 ./o32/acpios.at: $(ACPIOS_OBJECTS_32) ./bin/dy-link$(DANCY_EXE)
-	$(DY_LINK) -o$@ -fat --export-all $(ACPIOS_OBJECTS_32)
+	$(DY_LINK) -o$@ -fat $(ACPIOS_OBJECTS_32)
 
 ./o64/acpios.at: $(ACPIOS_OBJECTS_64) ./bin/dy-link$(DANCY_EXE)
-	$(DY_LINK) -o$@ -fat --export-all $(ACPIOS_OBJECTS_64)
+	$(DY_LINK) -o$@ -fat $(ACPIOS_OBJECTS_64)
 
 ##############################################################################
 

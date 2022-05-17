@@ -53,7 +53,7 @@ DANCY_BASE_OBJECTS_64= \
 ##############################################################################
 
 ./o32/base.at: $(DANCY_BASE_OBJECTS_32)
-	$(DY_LINK) -o$@ -fat --export-all $(DANCY_BASE_OBJECTS_32)
+	$(DY_LINK) -o$@ -fat $(DANCY_BASE_OBJECTS_32)
 
 ./o64/base.at: $(DANCY_BASE_OBJECTS_64)
-	$(DY_LINK) -o$@ -fat --export-all $(DANCY_BASE_OBJECTS_64)
+	$(DY_LINK) -o$@ -fat $(DANCY_BASE_OBJECTS_64)
