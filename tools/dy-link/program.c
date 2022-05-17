@@ -31,7 +31,7 @@ static void native_to_obj(unsigned char *data, int size)
 	if (LE32(&data[0]) != 0x00000000 && LE32(&data[0]) != 0x0D54418D)
 		return;
 	/*
-	 * Normal executables.
+	 * Kernel executables.
 	 */
 	if (LE32(&data[8]) == 0x450C430C && size >= at_size) {
 		if (LE16(&data[AT_HEADER_SIZE + 2]) != 4)
@@ -94,10 +94,14 @@ int program(struct options *opt)
 {
 	int i;
 
-	if (opt->arg_f && strcmp(opt->arg_f, "obj")) {
+	if (opt->arg_f) {
 		if (!strcmp(opt->arg_f, "at")) {
 			; /* Accept */
+		} else if (!strcmp(opt->arg_f, "default")) {
+			; /* Accept */
 		} else if (!strcmp(opt->arg_f, "init")) {
+			; /* Accept */
+		} else if (!strcmp(opt->arg_f, "obj")) {
 			; /* Accept */
 		} else if (!strcmp(opt->arg_f, "uefi")) {
 			; /* Accept */
@@ -106,7 +110,7 @@ int program(struct options *opt)
 			return 1;
 		}
 	} else {
-		opt->arg_f = "obj";
+		opt->arg_f = "default";
 	}
 
 	if (!opt->nr_ofiles)

@@ -366,7 +366,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	/*
 	 * Detect exported symbols.
 	 */
-	if (!opt->export_all && strcmp(opt->arg_f, "obj")) {
+	if (!strcmp(opt->arg_f, "default") || !strcmp(opt->arg_f, "uefi")) {
 		unsigned char *sym;
 		const char *name;
 		int j;
