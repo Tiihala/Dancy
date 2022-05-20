@@ -91,6 +91,7 @@ struct vfs_stat {
 	struct timespec access_time;
 	struct timespec creation_time;
 	struct timespec write_time;
+	size_t block_size;
 };
 
 /*
