@@ -523,8 +523,8 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 static int n_read_write_common(struct vfs_node *node,
 	uint64_t offset, size_t *size, addr_t buffer_addr, int write_mode)
 {
+	void *instance;
 	struct fat_internal_data *data = node->internal_data;
-	void *instance = data->io->instance;
 	size_t retval = *size;
 	int fat_offset[2];
 	int r;
@@ -545,6 +545,7 @@ static int n_read_write_common(struct vfs_node *node,
 	if ((r = enter_fat(node)) != 0)
 		return r;
 
+	instance = data->io->instance;
 	r = fat_seek(instance, data->fd, fat_offset[0], 0);
 
 	if (fat_offset[1] && !r)
@@ -583,8 +584,8 @@ static int n_write(struct vfs_node *node,
 static int n_readdir(struct vfs_node *node,
 	uint64_t offset, size_t size, void *record)
 {
+	void *instance;
 	struct fat_internal_data *data = node->internal_data;
-	void *instance = data->io->instance;
 	int r, read_offset;
 	size_t vname_size;
 	char *vname;
@@ -608,6 +609,7 @@ static int n_readdir(struct vfs_node *node,
 	if ((r = enter_fat(node)) != 0)
 		return r;
 
+	instance = data->io->instance;
 	r = fat_seek(instance, data->fd, read_offset, 0);
 
 	if (!r) {
@@ -692,8 +694,8 @@ static int n_readdir(struct vfs_node *node,
 static int n_rename(struct vfs_node *node,
 	struct vfs_name *old_vname, struct vfs_name *new_vname)
 {
+	void *instance;
 	struct fat_internal_data *data = node->internal_data;
-	void *instance = data->io->instance;
 	char *tmp_buf, *buf1, *buf2;
 	int size1 = 0, size2 = 0;
 	int i, r;
@@ -749,6 +751,8 @@ static int n_rename(struct vfs_node *node,
 	if ((r = enter_fat(node)) != 0)
 		return r;
 
+	instance = data->io->instance;
+
 	if (find_node(node, &buf1[0]) || find_node(node, &buf2[0]))
 		return leave_fat(node), free(tmp_buf), DE_BUSY;
 
@@ -791,8 +795,8 @@ static int n_rename(struct vfs_node *node,
 
 static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 {
+	void *instance;
 	struct fat_internal_data *data = node->internal_data;
-	void *instance = data->io->instance;
 	unsigned char record[32];
 	int r, fat_date, fat_time;
 
@@ -801,6 +805,7 @@ static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 	if ((r = enter_fat(node)) != 0)
 		return r;
 
+	instance = data->io->instance;
 	r = fat_control(instance, data->fd, 0, record);
 
 	leave_fat(node);
@@ -824,8 +829,8 @@ static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 
 static int n_truncate(struct vfs_node *node, uint64_t size)
 {
+	void *instance;
 	struct fat_internal_data *data = node->internal_data;
-	void *instance = data->io->instance;
 	unsigned char record[32];
 	int extend_file = 0;
 	int r;
@@ -835,6 +840,8 @@ static int n_truncate(struct vfs_node *node, uint64_t size)
 
 	if ((r = enter_fat(node)) != 0)
 		return r;
+
+	instance = data->io->instance;
 
 	if ((r = fat_control(instance, data->fd, 0, record)) == 0) {
 		unsigned long fat_size = LE32(&record[28]);
@@ -865,8 +872,8 @@ static int n_truncate(struct vfs_node *node, uint64_t size)
 
 static int n_unlink(struct vfs_node *node, struct vfs_name *vname)
 {
+	void *instance;
 	struct fat_internal_data *data = node->internal_data;
-	void *instance = data->io->instance;
 	char buf[256];
 	int size = 0;
 	int i, r;
@@ -892,6 +899,8 @@ static int n_unlink(struct vfs_node *node, struct vfs_name *vname)
 
 	if ((r = enter_fat(node)) != 0)
 		return r;
+
+	instance = data->io->instance;
 
 	if (find_node(node, &buf[0]) != NULL)
 		return leave_fat(node), DE_BUSY;
@@ -960,7 +969,7 @@ static int fat_io_add(struct fat_io *io)
 	struct fat_internal_data *data;
 	struct vfs_node *root_node;
 	int new_id = -1;
-	int i, r;
+	int i;
 
 	spin_enter(&lock_local);
 
@@ -1000,15 +1009,6 @@ static int fat_io_add(struct fat_io *io)
 	io->media_changed = 1;
 	io->node_count = 1;
 	io->node_array[0] = root_node;
-
-	if ((r = enter_fat(root_node)) != 0) {
-		free(root_node), io->node_array[0] = root_node = NULL;
-		mtx_destroy(&io->fat_mtx);
-		set_fat_io_array_null(new_id);
-		return r;
-	}
-
-	leave_fat(root_node);
 
 	return 0;
 }
