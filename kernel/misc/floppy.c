@@ -671,3 +671,39 @@ int floppy_write(int dsel, uint64_t offset, size_t *size, const void *buffer)
 
 	return r;
 }
+
+int floppy_stat(int dsel, struct vfs_stat *stat)
+{
+	int r;
+
+	memset(stat, 0, sizeof(*stat));
+
+	if (dsel < 0 || dsel > 1)
+		return DE_UNSUPPORTED;
+
+	if (mtx_lock(&floppy_mtx) != thrd_success)
+		return DE_UNEXPECTED;
+
+	if (drive_data[dsel].media_changed) {
+		if ((r = prepare_transfer(dsel)) != 0) {
+			mtx_unlock(&floppy_mtx);
+			return r;
+		}
+	}
+
+	if (drive_data[dsel].type) {
+		int sector_size = drive_data[dsel].table.sector_size;
+		uint32_t size = (uint32_t)sector_size;
+
+		size *= (uint32_t)drive_data[dsel].table.sectors_per_track;
+		size *= (uint32_t)drive_data[dsel].table.heads;
+		size *= (uint32_t)drive_data[dsel].table.cylinders;
+
+		stat->size = (uint64_t)size;
+		stat->block_size = (size_t)sector_size;
+	}
+
+	mtx_unlock(&floppy_mtx);
+
+	return 0;
+}
