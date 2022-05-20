@@ -576,11 +576,46 @@ static void start_motor_and_select(int dsel)
 		task_sleep(400);
 }
 
+static int mount_floppy(int dsel, const char *name)
+{
+	struct vfs_node *dev_node, *node;
+	int r;
+
+	if ((r = fdn_open_node(dsel, &dev_node) != 0))
+		return r;
+
+	if ((r = vfs_open("/mnt/", &node, 0, vfs_mode_create)) != 0) {
+		dev_node->n_release(&dev_node);
+		return r;
+	}
+	node->n_release(&node);
+
+	if ((r = vfs_open(name, &node, 0, vfs_mode_create)) != 0) {
+		dev_node->n_release(&dev_node);
+		return r;
+	}
+	node->n_release(&node);
+
+	if ((r = fat_io_create(&node, dev_node)) != 0) {
+		dev_node->n_release(&dev_node);
+		return r;
+	}
+
+	dev_node->n_release(&dev_node);
+
+	if ((r = vfs_mount(name, node)) != 0)
+		return r;
+
+	node->n_release(&node);
+
+	return 0;
+}
+
 int floppy_init(void)
 {
 	static int run_once;
 	const int irq6 = 6;
-	int reg;
+	int r, reg;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
@@ -626,6 +661,16 @@ int floppy_init(void)
 		return DE_MEMORY;
 
 	cpu_add32(&floppy_state, 1);
+
+	if (drive_data[0].type) {
+		if ((r = mount_floppy(0, "/mnt/floppy_a/")) != 0)
+			return r;
+	}
+
+	if (drive_data[1].type) {
+		if ((r = mount_floppy(1, "/mnt/floppy_b/")) != 0)
+			return r;
+	}
 
 	return 0;
 }
