@@ -224,6 +224,9 @@
 ./o32/misc/epoch.o: ./kernel/misc/epoch.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/epoch.c
 
+./o32/misc/fdn.o: ./kernel/misc/fdn.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/misc/fdn.c
+
 ./o32/misc/floppy.o: ./kernel/misc/floppy.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/floppy.c
 
@@ -487,6 +490,9 @@
 
 ./o64/misc/epoch.o: ./kernel/misc/epoch.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/epoch.c
+
+./o64/misc/fdn.o: ./kernel/misc/fdn.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/misc/fdn.c
 
 ./o64/misc/floppy.o: ./kernel/misc/floppy.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/floppy.c

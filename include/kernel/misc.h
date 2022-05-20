@@ -37,6 +37,12 @@ unsigned long long epoch_read(void);
 void epoch_sync(void);
 
 /*
+ * Declarations of fdn.c
+ */
+int fdn_open_node(int dsel, struct vfs_node **new_node);
+int fdn_free_cache(void *arg);
+
+/*
  * Declarations of floppy.c
  */
 int floppy_init(void);
