@@ -1050,13 +1050,12 @@ int fat_get_size(int id, size_t *block_size, size_t *block_total)
 		return 1;
 	}
 
-	/*
-	 * Sector sizes 512, 1024, 2048, and 4096 are supported. The block
-	 * size can not be bigger than the file system sector size, so the
-	 * smallest size is used here.
-	 */
-	*block_size = 512;
-	*block_total = (size_t)(stat.size / 512);
+	if (stat.block_size)
+		*block_size = stat.block_size;
+	else
+		*block_size = 512;
+
+	*block_total = (size_t)(stat.size / (*block_size));
 
 	return 0;
 }
