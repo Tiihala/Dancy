@@ -436,10 +436,14 @@ static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 		}
 	}
 
-	if ((mode & vfs_mode_create) != 0)
+	if ((mode & vfs_mode_create) != 0) {
 		r = fat_open(io->instance, data->fd, &buf[0], "wb+");
-	else
+	} else {
 		r = fat_open(io->instance, data->fd, &buf[0], "rb+");
+
+		if (r == FAT_READ_ONLY_FILE)
+			r = fat_open(io->instance, data->fd, &buf[0], "rb");
+	}
 
 	if (!r) {
 		if (!root_dir) {
