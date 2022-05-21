@@ -43,6 +43,7 @@ distclean: clean
 include ./scripts/at/acpica.mk
 include ./scripts/at/acpios.mk
 include ./scripts/at/base.mk
+include ./scripts/at/debug.mk
 include ./scripts/at/init.mk
 include ./scripts/at/lib.mk
 include ./scripts/at/misc.mk

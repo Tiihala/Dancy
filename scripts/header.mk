@@ -93,6 +93,7 @@ DANCY_HEADERS= \
  ./include/dancy/time.h \
  ./include/dancy/types.h \
  ./include/kernel/base.h \
+ ./include/kernel/debug.h \
  ./include/kernel/misc.h \
  ./include/kernel/pci.h \
  ./include/kernel/ps2.h \

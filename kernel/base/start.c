@@ -47,7 +47,8 @@ static struct {
 	{ 0, 0, SYMBOL_PREFIX "serial_init", "Serial Ports" },
 	{ 0, 0, SYMBOL_PREFIX "pci_init", "PCI" },
 	{ 0, 0, SYMBOL_PREFIX "ps2_init", "PS/2 Controller" },
-	{ 1, 0, SYMBOL_PREFIX "acpios_init", "ACPICA" }
+	{ 1, 0, SYMBOL_PREFIX "acpios_init", "ACPICA" },
+	{ 1, 0, SYMBOL_PREFIX "debug_init", "Debug" }
 };
 
 static int ap_count;
