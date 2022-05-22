@@ -28,7 +28,8 @@ DANCY_X(DE_UNEXPECTED                , "unexpected behavior"             )
 DANCY_X(DE_MEMORY                    , "not enough memory"               )
 DANCY_X(DE_CHECKSUM                  , "checksum does not match"         )
 DANCY_X(DE_ARGUMENT                  , "function argument"               )
-DANCY_X(DE_RETRY                     , "resource unavailable"            )
+DANCY_X(DE_RETRY                     , "temporarily unavailable"         )
+DANCY_X(DE_EMPTY                     , "no data available"               )
 DANCY_X(DE_UNINITIALIZED             , "uninitialized"                   )
 DANCY_X(DE_UNSUPPORTED               , "unsupported"                     )
 DANCY_X(DE_PLACEHOLDER               , "placeholder data"                )
@@ -48,6 +49,7 @@ DANCY_X(DE_TYPE                      , "unexpected resource type"        )
 DANCY_X(DE_ALIGNMENT                 , "unsupported alignment"           )
 DANCY_X(DE_MEDIA_CHANGED             , "media changed"                   )
 DANCY_X(DE_ADDRESS_MARK              , "missing address mark"            )
+DANCY_X(DE_OVERRUN                   , "data overrun or underrun"        )
 
 #endif
 
