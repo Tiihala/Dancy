@@ -38,7 +38,8 @@ int dma_init(void)
 
 static void alloc_dma_buffer(int dma)
 {
-	dma_buffer[dma] = mm_alloc_pages(mm_legacy, 4);
+	if ((dma_buffer[dma] = mm_alloc_pages(mm_addr20, 4)) == 0)
+		dma_buffer[dma] = mm_alloc_pages(mm_addr24, 4);
 
 	if (dma_buffer[dma] > 0xFFFFFF || (dma_buffer[dma] & 0xFFFF) != 0)
 		kernel->panic("DMA: unexpected address");
