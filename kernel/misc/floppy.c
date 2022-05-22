@@ -420,6 +420,7 @@ static int prepare_transfer(int dsel)
 	if (floppy_state == 1 || fdc0_media_changed()) {
 		size_t count = sizeof(table_default) / sizeof(*table_default);
 		size_t s = sizeof(struct floppy_table);
+		int r_directive = 0;
 
 		int debut = !(drive_data[dsel].type & 0x1000);
 		drive_data[dsel].type |= 0x1000;
@@ -427,6 +428,9 @@ static int prepare_transfer(int dsel)
 		/*
 		 * Try different floppy parameters. If the first 1024
 		 * bytes can be read, assume that everything is OK.
+		 *
+		 * The first error code is the best approximation if
+		 * all reads seem to fail.
 		 */
 		for (i = 0; i < (int)count; i++) {
 			memcpy(&drive_data[dsel].table, &table_default[i], s);
@@ -441,6 +445,9 @@ static int prepare_transfer(int dsel)
 			if ((r = fdc0_read(0, 0, 1, 1024, &buffer[0])) == 0)
 				break;
 
+			if (!r_directive)
+				r_directive = r;
+
 			if ((r = fdc0_read(0, 0, 1, 1024, &buffer[0])) == 0)
 				break;
 		}
@@ -448,7 +455,7 @@ static int prepare_transfer(int dsel)
 		if (r) {
 			memset(&drive_data[dsel].table, 0, s);
 			drive_data[dsel].media_changed = 1;
-			return r;
+			return r_directive;
 		}
 
 		read_bios_parameter_block(dsel, &buffer[0]);
