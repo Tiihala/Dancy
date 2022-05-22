@@ -332,13 +332,17 @@ size_t mm_available_pages(int type)
 			if (page_frame > 0x100000)
 				page_frame = 0x100000;
 
+		} else if (type == mm_addr24) {
+			if (page_frame > 0x1000)
+				page_frame = 0x1000;
+
+		} else if (type == mm_addr20) {
+			if (page_frame > 0x100)
+				page_frame = 0x100;
+
 		} else if (type == mm_kernel) {
 			if (page_frame > 0x10000)
 				page_frame = 0x10000;
-
-		} else if (type == mm_legacy) {
-			if (page_frame > 0x1000)
-				page_frame = 0x1000;
 
 		} else /* unknown memory type */ {
 			return 0;
@@ -434,13 +438,17 @@ phys_addr_t mm_alloc_pages(int type, int order)
 			if (page_frame > 0x100000)
 				page_frame = 0x100000;
 
+		} else if (type == mm_addr24) {
+			if (page_frame > 0x1000)
+				page_frame = 0x1000;
+
+		} else if (type == mm_addr20) {
+			if (page_frame > 0x100)
+				page_frame = 0x100;
+
 		} else if (type == mm_kernel) {
 			if (page_frame > 0x10000)
 				page_frame = 0x10000;
-
-		} else if (type == mm_legacy) {
-			if (page_frame > 0x1000)
-				page_frame = 0x1000;
 
 		} else /* unknown memory type */ {
 			page_frame = 0;
