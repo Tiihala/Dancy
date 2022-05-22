@@ -320,6 +320,12 @@ static int fdc0_read_write(int c, int h, int s, int write_mode)
 			return DE_ADDRESS_MARK;
 		if ((st1 & 0x02) != 0)
 			return DE_READ_ONLY;
+		if ((st1 & 0x04) != 0)
+			return DE_EMPTY;
+		if ((st1 & 0x10) != 0)
+			return DE_OVERRUN;
+		if ((st1 & 0x20) != 0)
+			return DE_CHECKSUM;
 
 		return write_mode ? DE_BLOCK_WRITE : DE_BLOCK_READ;
 	}
