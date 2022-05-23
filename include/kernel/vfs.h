@@ -97,6 +97,8 @@ struct vfs_stat {
 /*
  * Declarations of default.c
  */
+void vfs_default(struct vfs_node *node);
+
 void vfs_default_release(struct vfs_node **node);
 
 int vfs_default_open(struct vfs_node *node, struct vfs_node **new_node,

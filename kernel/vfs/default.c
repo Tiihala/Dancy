@@ -113,3 +113,17 @@ int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname)
 
 	return DE_UNSUPPORTED;
 }
+
+void vfs_default(struct vfs_node *node)
+{
+	node->n_release  = vfs_default_release;
+	node->n_open     = vfs_default_open;
+	node->n_read     = vfs_default_read;
+	node->n_write    = vfs_default_write;
+	node->n_sync     = vfs_default_sync;
+	node->n_readdir  = vfs_default_readdir;
+	node->n_rename   = vfs_default_rename;
+	node->n_stat     = vfs_default_stat;
+	node->n_truncate = vfs_default_truncate;
+	node->n_unlink   = vfs_default_unlink;
+}
