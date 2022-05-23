@@ -138,6 +138,11 @@ static phys_addr_t set_dma(int dma, size_t size, int mode)
 		 */
 		cpu_out8(0xDA, 0x00);
 
+		/*
+		 * Unmask the fourth channel.
+		 */
+		cpu_out8(0xD4, 0x00);
+
 		dma_reset_state = 1;
 	}
 
