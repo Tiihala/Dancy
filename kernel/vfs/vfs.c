@@ -76,7 +76,7 @@ void vfs_init_node(struct vfs_node *node, size_t size)
 	node->n_open     = vfs_default_open;
 	node->n_read     = vfs_default_read;
 	node->n_write    = vfs_default_write;
-	node->n_flush    = vfs_default_flush;
+	node->n_sync     = vfs_default_sync;
 	node->n_readdir  = vfs_default_readdir;
 	node->n_rename   = vfs_default_rename;
 	node->n_stat     = vfs_default_stat;

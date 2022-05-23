@@ -59,7 +59,7 @@ int vfs_default_write(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_flush(struct vfs_node *node)
+int vfs_default_sync(struct vfs_node *node)
 {
 	(void)node;
 

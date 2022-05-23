@@ -67,7 +67,7 @@ struct vfs_node {
 	int (*n_write)(struct vfs_node *node,
 		uint64_t offset, size_t *size, const void *buffer);
 
-	int (*n_flush)(struct vfs_node *node);
+	int (*n_sync)(struct vfs_node *node);
 
 	int (*n_readdir)(struct vfs_node *node,
 		uint64_t offset, size_t size, void *record);
@@ -108,7 +108,7 @@ int vfs_default_read(struct vfs_node *node,
 int vfs_default_write(struct vfs_node *node,
 	uint64_t offset, size_t *size, const void *buffer);
 
-int vfs_default_flush(struct vfs_node *node);
+int vfs_default_sync(struct vfs_node *node);
 
 int vfs_default_readdir(struct vfs_node *node,
 	uint64_t offset, size_t size, void *record);
