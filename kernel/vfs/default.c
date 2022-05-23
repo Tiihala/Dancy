@@ -19,13 +19,13 @@
 
 #include <dancy.h>
 
-void vfs_default_release(struct vfs_node **node)
+static void vfs_default_release(struct vfs_node **node)
 {
 	vfs_decrement_count(*node);
 	*node = NULL;
 }
 
-int vfs_default_open(struct vfs_node *node, struct vfs_node **new_node,
+static int vfs_default_open(struct vfs_node *node, struct vfs_node **new_node,
 	int type, int mode, struct vfs_name *vname)
 {
 	(void)node;
@@ -37,7 +37,7 @@ int vfs_default_open(struct vfs_node *node, struct vfs_node **new_node,
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_read(struct vfs_node *node,
+static int vfs_default_read(struct vfs_node *node,
 	uint64_t offset, size_t *size, void *buffer)
 {
 	(void)node;
@@ -48,7 +48,7 @@ int vfs_default_read(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_write(struct vfs_node *node,
+static int vfs_default_write(struct vfs_node *node,
 	uint64_t offset, size_t *size, const void *buffer)
 {
 	(void)node;
@@ -59,14 +59,14 @@ int vfs_default_write(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_sync(struct vfs_node *node)
+static int vfs_default_sync(struct vfs_node *node)
 {
 	(void)node;
 
 	return 0;
 }
 
-int vfs_default_readdir(struct vfs_node *node,
+static int vfs_default_readdir(struct vfs_node *node,
 	uint64_t offset, size_t size, void *record)
 {
 	(void)node;
@@ -78,7 +78,7 @@ int vfs_default_readdir(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_rename(struct vfs_node *node,
+static int vfs_default_rename(struct vfs_node *node,
 	struct vfs_name *old_vname, struct vfs_name *new_vname)
 {
 	(void)node;
@@ -88,7 +88,7 @@ int vfs_default_rename(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat)
+static int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat)
 {
 	(void)node;
 
@@ -98,7 +98,7 @@ int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat)
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_truncate(struct vfs_node *node, uint64_t size)
+static int vfs_default_truncate(struct vfs_node *node, uint64_t size)
 {
 	(void)node;
 	(void)size;
@@ -106,7 +106,7 @@ int vfs_default_truncate(struct vfs_node *node, uint64_t size)
 	return DE_UNSUPPORTED;
 }
 
-int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname)
+static int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname)
 {
 	(void)node;
 	(void)vname;

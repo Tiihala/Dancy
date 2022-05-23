@@ -99,29 +99,6 @@ struct vfs_stat {
  */
 void vfs_default(struct vfs_node *node);
 
-void vfs_default_release(struct vfs_node **node);
-
-int vfs_default_open(struct vfs_node *node, struct vfs_node **new_node,
-	int type, int mode, struct vfs_name *vname);
-
-int vfs_default_read(struct vfs_node *node,
-	uint64_t offset, size_t *size, void *buffer);
-
-int vfs_default_write(struct vfs_node *node,
-	uint64_t offset, size_t *size, const void *buffer);
-
-int vfs_default_sync(struct vfs_node *node);
-
-int vfs_default_readdir(struct vfs_node *node,
-	uint64_t offset, size_t size, void *record);
-
-int vfs_default_rename(struct vfs_node *node,
-	struct vfs_name *old_vname, struct vfs_name *new_vname);
-
-int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat);
-int vfs_default_truncate(struct vfs_node *node, uint64_t size);
-int vfs_default_unlink(struct vfs_node *node, struct vfs_name *vname);
-
 /*
  * Declarations of fat_io.c
  */
