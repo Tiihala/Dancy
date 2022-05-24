@@ -585,6 +585,24 @@ static int n_write(struct vfs_node *node,
 	return n_read_write_common(node, offset, size, (addr_t)buffer, 1);
 }
 
+static int n_sync(struct vfs_node *node)
+{
+	struct fat_internal_data *data = node->internal_data;
+	int r;
+
+	if ((r = enter_fat(node)) != 0)
+		return r;
+
+	r = data->io->dev_node->n_sync(data->io->dev_node);
+
+	if (r == DE_MEDIA_CHANGED)
+		data->io->media_changed = 1;
+
+	leave_fat(node);
+
+	return r;
+}
+
 static int n_readdir(struct vfs_node *node,
 	uint64_t offset, size_t size, void *record)
 {
@@ -944,6 +962,7 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->n_open     = n_open;
 		node->n_read     = n_read;
 		node->n_write    = n_write;
+		node->n_sync     = n_sync;
 		node->n_readdir  = n_readdir;
 		node->n_rename   = n_rename;
 		node->n_stat     = n_stat;

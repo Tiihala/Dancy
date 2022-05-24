@@ -78,6 +78,20 @@ static int n_write(struct vfs_node *node,
 	return r;
 }
 
+static int n_sync(struct vfs_node *node)
+{
+	struct fdn_internal *data = node->internal_data;
+	int r;
+
+	if (mtx_lock(&data->fdn_mtx) != thrd_success)
+		return DE_UNEXPECTED;
+
+	r = floppy_test(data->dsel);
+	mtx_unlock(&data->fdn_mtx);
+
+	return r;
+}
+
 static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 {
 	struct fdn_internal *data = node->internal_data;
@@ -112,6 +126,7 @@ int fdn_open_node(int dsel, struct vfs_node **new_node)
 
 	node->n_read  = n_read;
 	node->n_write = n_write;
+	node->n_sync =  n_sync;
 	node->n_stat  = n_stat;
 
 	data = &fdn_internal_data[dsel];
