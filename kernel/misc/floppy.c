@@ -765,3 +765,19 @@ int floppy_stat(int dsel, struct vfs_stat *stat)
 
 	return 0;
 }
+
+int floppy_test(int dsel)
+{
+	int r;
+
+	if (dsel < 0 || dsel > 1)
+		return DE_UNSUPPORTED;
+
+	if (mtx_lock(&floppy_mtx) != thrd_success)
+		return DE_UNEXPECTED;
+
+	r = prepare_transfer(dsel);
+	mtx_unlock(&floppy_mtx);
+
+	return r;
+}
