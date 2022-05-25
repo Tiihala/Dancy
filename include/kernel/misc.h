@@ -42,7 +42,6 @@ void epoch_sync(void);
 int floppy_init(void);
 int floppy_read(int dsel, uint64_t offset, size_t *size, void *buffer);
 int floppy_write(int dsel, uint64_t offset, size_t *size, const void *buffer);
-int floppy_stat(int dsel, struct vfs_stat *stat);
 int floppy_test(int dsel);
 
 /*

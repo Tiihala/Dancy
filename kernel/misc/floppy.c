@@ -589,24 +589,108 @@ static void start_motor_and_select(int dsel)
 		task_sleep(400);
 }
 
+static void n_release(struct vfs_node **node)
+{
+	struct vfs_node *n = *node;
+
+	*node = NULL;
+
+	if (vfs_decrement_count(n) == 0) {
+		memset(n, 0, sizeof(*n));
+		free(n);
+	}
+}
+
+static int n_read(struct vfs_node *node,
+	uint64_t offset, size_t *size, void *buffer)
+{
+	int dsel = (node->internal_data == &drive_data[0]) ? 0 : 1;
+
+	return floppy_read(dsel, offset, size, buffer);
+}
+
+static int n_write(struct vfs_node *node,
+	uint64_t offset, size_t *size, const void *buffer)
+{
+	int dsel = (node->internal_data == &drive_data[0]) ? 0 : 1;
+
+	return floppy_write(dsel, offset, size, buffer);
+}
+
+static int n_sync(struct vfs_node *node)
+{
+	int dsel = (node->internal_data == &drive_data[0]) ? 0 : 1;
+
+	return floppy_test(dsel);
+}
+
+static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
+{
+	int dsel = (node->internal_data == &drive_data[0]) ? 0 : 1;
+	int r;
+
+	memset(stat, 0, sizeof(*stat));
+
+	if (mtx_lock(&floppy_mtx) != thrd_success)
+		return DE_UNEXPECTED;
+
+	if (drive_data[dsel].media_changed) {
+		if ((r = prepare_transfer(dsel)) != 0) {
+			mtx_unlock(&floppy_mtx);
+			return r;
+		}
+	}
+
+	if (drive_data[dsel].type) {
+		int sector_size = drive_data[dsel].table.sector_size;
+		uint32_t size = (uint32_t)sector_size;
+
+		size *= (uint32_t)drive_data[dsel].table.sectors_per_track;
+		size *= (uint32_t)drive_data[dsel].table.heads;
+		size *= (uint32_t)drive_data[dsel].table.cylinders;
+
+		stat->size = (uint64_t)size;
+		stat->block_size = (size_t)sector_size;
+	}
+
+	mtx_unlock(&floppy_mtx);
+
+	return 0;
+}
+
 static int mount_floppy(int dsel, const char *name)
 {
 	struct vfs_node *dev_node, *node;
 	int r;
 
-	if ((r = fdn_open_node(dsel, &dev_node) != 0))
-		return r;
+	if ((dev_node = malloc(sizeof(*dev_node))) == NULL)
+		return DE_MEMORY;
+
+	vfs_init_node(dev_node, 0);
+
+	dev_node->count = 1;
+	dev_node->type = vfs_type_block;
+
+	dev_node->internal_data = &drive_data[dsel];
+	dev_node->n_release = n_release;
+
+	dev_node->n_read  = n_read;
+	dev_node->n_write = n_write;
+	dev_node->n_sync  = n_sync;
+	dev_node->n_stat  = n_stat;
 
 	if ((r = vfs_open("/mnt/", &node, 0, vfs_mode_create)) != 0) {
 		dev_node->n_release(&dev_node);
 		return r;
 	}
+
 	node->n_release(&node);
 
 	if ((r = vfs_open(name, &node, 0, vfs_mode_create)) != 0) {
 		dev_node->n_release(&dev_node);
 		return r;
 	}
+
 	node->n_release(&node);
 
 	if ((r = fat_io_create(&node, dev_node)) != 0) {
@@ -614,6 +698,9 @@ static int mount_floppy(int dsel, const char *name)
 		return r;
 	}
 
+	/*
+	 * The fat_io_create function has increased the reference count.
+	 */
 	dev_node->n_release(&dev_node);
 
 	if ((r = vfs_mount(name, node)) != 0)
@@ -728,42 +815,6 @@ int floppy_write(int dsel, uint64_t offset, size_t *size, const void *buffer)
 	mtx_unlock(&floppy_mtx);
 
 	return r;
-}
-
-int floppy_stat(int dsel, struct vfs_stat *stat)
-{
-	int r;
-
-	memset(stat, 0, sizeof(*stat));
-
-	if (dsel < 0 || dsel > 1)
-		return DE_UNSUPPORTED;
-
-	if (mtx_lock(&floppy_mtx) != thrd_success)
-		return DE_UNEXPECTED;
-
-	if (drive_data[dsel].media_changed) {
-		if ((r = prepare_transfer(dsel)) != 0) {
-			mtx_unlock(&floppy_mtx);
-			return r;
-		}
-	}
-
-	if (drive_data[dsel].type) {
-		int sector_size = drive_data[dsel].table.sector_size;
-		uint32_t size = (uint32_t)sector_size;
-
-		size *= (uint32_t)drive_data[dsel].table.sectors_per_track;
-		size *= (uint32_t)drive_data[dsel].table.heads;
-		size *= (uint32_t)drive_data[dsel].table.cylinders;
-
-		stat->size = (uint64_t)size;
-		stat->block_size = (size_t)sector_size;
-	}
-
-	mtx_unlock(&floppy_mtx);
-
-	return 0;
 }
 
 int floppy_test(int dsel)
