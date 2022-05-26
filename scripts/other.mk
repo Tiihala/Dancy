@@ -44,19 +44,23 @@ distclean: clean
 !include .\scripts\at\acpios.mk
 !include .\scripts\at\base.mk
 !include .\scripts\at\debug.mk
-!include .\scripts\at\init.mk
 !include .\scripts\at\lib.mk
 !include .\scripts\at\misc.mk
 !include .\scripts\at\pci.mk
 !include .\scripts\at\ps2.mk
 !include .\scripts\at\sched.mk
-!include .\scripts\at\uefi.mk
 !include .\scripts\at\vfs.mk
+
+!include .\scripts\boot\init.mk
+!include .\scripts\boot\uefi.mk
+
+!include .\scripts\objects\_boot.mk
+!include .\scripts\objects\_common.mk
+!include .\scripts\objects\objects.mk
 
 !include .\scripts\dirs.mk
 !include .\scripts\external.mk
 !include .\scripts\legacy.mk
-!include .\scripts\objects.mk
 !include .\scripts\release.mk
 !include .\scripts\system.mk
 !include .\scripts\tools.mk
