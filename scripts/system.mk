@@ -3,7 +3,7 @@
 ##############################################################################
 
 DANCY_DB_FILES= \
- ./o32/init.at \
+ ./o32/_boot/init.at \
  ./o32/lib.at \
  ./o32/base.at \
  ./o32/debug.at \
@@ -13,7 +13,7 @@ DANCY_DB_FILES= \
  ./o32/sched.at \
  ./o32/vfs.at \
  $(ACPICA_O32_AT) \
- ./o64/init.at \
+ ./o64/_boot/init.at \
  ./o64/lib.at \
  ./o64/base.at \
  ./o64/debug.at \
@@ -35,14 +35,6 @@ DANCY_DB_FILES= \
 
 ./system/DB_000.AT: ./bin/dy-zip$(DANCY_EXE) $(DANCY_DB_FILES)
 	$(DY_ZIP) -o$@ $(DANCY_DB_FILES)
-
-./system/IN_IA32.AT: $(DANCY_START_OBJECTS_32)
-	$(DY_LINK) -o$@ -finit $(DANCY_START_OBJECTS_32)
-	$(DY_INIT) -tia32 --set-header $@
-
-./system/IN_X64.AT: $(DANCY_START_OBJECTS_64)
-	$(DY_LINK) -o$@ -finit $(DANCY_START_OBJECTS_64)
-	$(DY_INIT) -tx64 --set-header $@
 
 ./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
 	$(DY_BLOB) -tldr512 $@
