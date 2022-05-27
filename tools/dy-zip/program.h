@@ -54,6 +54,7 @@ struct state {
 	unsigned m_date;
 	unsigned m_time;
 	int split;
+	int split_base;
 };
 
 #define B8(a,b,c) (((unsigned long)((a)[(b)]) & 0xFFul) << (c))

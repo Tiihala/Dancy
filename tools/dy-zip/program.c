@@ -384,7 +384,7 @@ static int write_output_db(struct options *opt, struct state *zip)
 	size_t len = strlen(opt->arg_o);
 	char name[256];
 	FILE *fp;
-	int i;
+	int i, db_i;
 
 	if (!db)
 		return fputs("Error: not enough memory\n", stderr), 1;
@@ -395,12 +395,15 @@ static int write_output_db(struct options *opt, struct state *zip)
 	strcpy(&name[0], &opt->arg_o[0]);
 
 	for (i = 0; i < 1000; i++) {
+		if ((db_i = i + zip->split_base) > 999)
+			break;
+
 		if ((unsigned long)i >= (zip->size / 65504u))
 			break;
 		/*
-		 * "db_000.at", change the number only.
+		 * "db_???.at", change the number only.
 		 */
-		sprintf(&name[len - 6], "%03i%s", i, &opt->arg_o[len - 3]);
+		sprintf(&name[len - 6], "%03i%s", db_i, &opt->arg_o[len - 3]);
 		if (opt->verbose)
 			printf("Writing %s\n", name);
 
@@ -408,7 +411,7 @@ static int write_output_db(struct options *opt, struct state *zip)
 		W_LE32(&db[16], 0x10000);
 		W_LE32(&db[20], 0);
 		W_LE32(&db[24], 0);
-		W_LE32(&db[28], i);
+		W_LE32(&db[28], db_i);
 		memcpy(&db[32], &zip->output[i * 65504], 65504);
 
 		fp = (errno = 0, fopen(name, "wb"));
@@ -435,7 +438,9 @@ static int write_output_db(struct options *opt, struct state *zip)
 	 * files before this program is used.
 	 */
 	for (/* void */; i < 1000; i++) {
-		sprintf(&name[len - 6], "%03i%s", i, &opt->arg_o[len - 3]);
+		if ((db_i = i + zip->split_base) > 999)
+			break;
+		sprintf(&name[len - 6], "%03i%s", db_i, &opt->arg_o[len - 3]);
 		fp = fopen(name, "rb");
 		if (!fp)
 			break;
@@ -496,18 +501,39 @@ int program(struct options *opt)
 		size_t len = strlen(o);
 		char buf[16];
 		/*
-		 * Handle "db_000.at" as a special case.
+		 * Handle "db_???.at" as a special case.
+		 *            ^^^
+		 *            000 - 999
 		 */
 		if (len >= 9) {
+			int split_base = 0;
+
 			o = &o[len - 9];
 			memcpy(&buf[0], &o[0], 10);
 			buf[0] = (char)tolower((int)o[0]);
 			buf[1] = (char)tolower((int)o[1]);
 			buf[7] = (char)tolower((int)o[7]);
 			buf[8] = (char)tolower((int)o[8]);
-			if (!strcmp(&buf[0], "db_000.at")) {
+
+			if (buf[0] != 'd' || buf[1] != 'b' || buf[2] != '_')
+				split_base = -1;
+
+			for (i = 3; i <= 5; i++) {
+				if (buf[i] < '0' || buf[i] > '9')
+					split_base = -1;
+				if (split_base < 0)
+					break;
+				split_base *= 10;
+				split_base += ((int)buf[i] - '0');
+			}
+
+			if (buf[6] != '.' || buf[7] != 'a' || buf[8] != 't')
+				split_base = -1;
+
+			if (split_base >= 0) {
 				opt->single_dir = 0;
 				zip.split = 1;
+				zip.split_base = split_base;
 			}
 		}
 		if (opt->verbose && zip.split)
