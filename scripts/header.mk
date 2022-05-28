@@ -57,6 +57,8 @@ DANCY_TARGET_SYSTEM= \
  ./efi/boot/BOOTX64.EFI \
  ./system/CONFIG.AT \
  ./system/DB_000.AT \
+ ./system/DB_100.AT \
+ ./system/DB_200.AT \
  ./system/IN_IA16.AT \
  ./system/IN_IA32.AT \
  ./system/IN_X64.AT \
