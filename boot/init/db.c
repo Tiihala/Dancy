@@ -21,6 +21,8 @@
 
 static int db_count;
 static void **db_array;
+static int db_callback_state;
+
 static struct b_mem *db_map;
 static size_t db_offset;
 
@@ -85,6 +87,17 @@ static int db_callback(struct bitarray *b)
 	if (q >= db_count)
 		return -1;
 
+	if (db_callback_state == 1 && q > 0) {
+		unsigned char *m1 = db_array[q - 1];
+		unsigned char *m2 = db_array[q - 0];
+
+		if ((LE32(&m1[28]) + 1) != LE32(&m2[28]))
+			db_callback_state = -1;
+	}
+
+	if (db_callback_state < 0)
+		return -1;
+
 	b->data = (unsigned char *)db_array[q] + 32 + r;
 	b->size = (size_t)(65504 - r);
 
@@ -104,7 +117,8 @@ static void db_fast_forward(struct bitarray *b, size_t bytes)
 			b->data = NULL;
 			b->size = 0;
 		} else {
-			(void)bitarray_fetch(b, 8);
+			if (bitarray_fetch(b, 8) < 0)
+				return;
 			bytes -= 1;
 		}
 	}
@@ -136,10 +150,15 @@ int db_read(const char *name, unsigned char **buf, size_t *size)
 		long pk_name_length;
 		long pk_extra_length;
 
+		db_callback_state = 0;
+
 		if ((pk_header = bitarray_fetch(&b, 8)) < 0)
 			break;
 		if (pk_header != 0x50)
 			continue;
+
+		db_callback_state = 1;
+
 		if ((pk_header = bitarray_fetch(&b, 24)) != 0x0004034B)
 			continue;
 
@@ -206,6 +225,9 @@ int db_read(const char *name, unsigned char **buf, size_t *size)
 					return free(out), 3;
 			}
 
+			if (db_callback_state < 0)
+				return free(out), 3;
+
 			if (pk_crc32 != crc32(out, out_size))
 				return free(out), 4;
 
@@ -221,7 +243,7 @@ int db_read(const char *name, unsigned char **buf, size_t *size)
 const char *db_read_error(int retval)
 {
 	static const char *e[] = {
-		"",                           /* 0 */
+		"success",                    /* 0 */
 		"could not found",            /* 1 */
 		"could not allocate memory",  /* 2 */
 		"could not read",             /* 3 */
