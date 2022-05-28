@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Antti Tiihala
+ * Copyright (c) 2019, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,58 +24,47 @@ static void **db_array;
 static struct b_mem *db_map;
 static size_t db_offset;
 
-static void *get_db(const struct b_mem *map, int *num, int *off)
-{
-	int i;
-
-	for (i = *off; (i == 0 || map[i].base); i++) {
-		uint32_t t = map[i].type - (uint32_t)*num;
-		if (t == B_MEM_DATABASE_MIN) {
-			*num += 1;
-			*off = i + 1;
-			return (void *)map[i].base;
-		}
-	}
-	for (i = 1; i < *off; i++) {
-		uint32_t t = map[i].type - (uint32_t)*num;
-		if (t == B_MEM_DATABASE_MIN) {
-			*num += 1;
-			*off = i + 1;
-			return (void *)map[i].base;
-		}
-	}
-	return NULL;
-}
-
 int db_init(struct b_mem *map)
 {
 	const char *err = "Error: boot loader gave a corrupted memory map";
-	int off;
+	int i, c;
 
-	for (db_count = 0, off = 0; /* void */; /* void */)
-		if (get_db(map, &db_count, &off) == NULL)
-			break;
-	if (!db_count)
-		return 0;
-
-	db_array = calloc((size_t)db_count, sizeof(void *));
+	db_count = 0;
+	db_array = calloc(1000, sizeof(void *));
 	if (!db_array)
 		return 1;
 
-	for (db_count = 0, off = 0; /* void */; /* void */) {
-		unsigned db = (unsigned)db_count;
-		unsigned char *m = get_db(map, &db_count, &off);
+	for (i = 0; (i == 0 || map[i].base); i++) {
+		uint32_t t = map[i].type;
+		unsigned char *m;
 
-		if (!m)
-			break;
-		if (LE32(&m[0]) != 0x0D54418D || LE32(&m[28]) != db) {
+		if (t < B_MEM_DATABASE_MIN || t > (B_MEM_DATABASE_MIN + 999))
+			continue;
+
+		t -= B_MEM_DATABASE_MIN;
+
+		if (db_count < (int)(t + 1))
+			db_count = (int)(t + 1);
+
+		db_array[t] = m = (unsigned char *)map[i].base;
+
+		if (LE32(&m[0]) != 0x0D54418D || LE32(&m[28]) != t) {
 			b_print("%s\n", err);
 			return free(db_array), 1;
 		}
-		db_array[db] = m;
 	}
 
+	for (i = 0, c = 0; i < db_count; i++) {
+		if (db_array[i]) {
+			db_array[c] = db_array[i];
+			if ((c++) != i)
+				db_array[i] = NULL;
+		}
+	}
+
+	db_count = c;
 	db_map = map;
+
 	return 0;
 }
 
