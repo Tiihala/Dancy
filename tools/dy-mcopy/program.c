@@ -274,12 +274,14 @@ static int db_files(struct options *opt)
 	static char dst[32];
 	size_t len = strlen(opt->operands[0]);
 	unsigned i = 0;
-	unsigned long limit;
+	unsigned long limit = 1000;
 	FILE *fp;
 
-	limit = strtoul(opt->operands[1], NULL, 0);
-	if (limit < 1 || limit > 1000)
-		return opt->error = "db mode operands", 1;
+	if (opt->operands[1]) {
+		limit = strtoul(opt->operands[1], NULL, 0);
+		if (limit < 1 || limit > 1000 || opt->operands[2])
+			return opt->error = "db mode operands", 1;
+	}
 
 	/*
 	 * Handle "db_???.at" (or e.g. "system/db_???.at") as a special case.
@@ -317,6 +319,11 @@ static int db_files(struct options *opt)
 		}
 		if (read_file(&src[0], &source_file, &source_file_size))
 			return 1;
+		/*
+		 * opt->operands[1] can always be accessed safely, and the
+		 * array would still be null-terminated, because at least
+		 * the long option --db has been available in main's argv.
+		 */
 		opt->operands[1] = &dst[0];
 		if (mcopy(opt))
 			return 1;
@@ -341,7 +348,7 @@ int program(struct options *opt)
 		return opt->error = "missing image file", 1;
 	if (!opt->operands[0])
 		return opt->error = "missing source-file", 1;
-	if (!opt->operands[1])
+	if (!opt->operands[1] && !opt->db_mode)
 		return opt->error = "missing path/destination-file", 1;
 
 	if (!opt->arg_t) {
