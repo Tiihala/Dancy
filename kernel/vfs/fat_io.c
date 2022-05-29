@@ -41,6 +41,7 @@ struct fat_internal_data {
 	struct fat_io *io;
 	int fd;
 	int media_changed;
+	int readdir_state;
 };
 
 static void check_id(int id)
@@ -186,6 +187,7 @@ static int enter_fat(struct vfs_node *node)
 				if (d->path[2] == '\0') {
 					fd = d->fd;
 					d->media_changed = 0;
+					d->readdir_state = 0;
 					break;
 				}
 			}
@@ -604,7 +606,7 @@ static int n_sync(struct vfs_node *node)
 }
 
 static int n_readdir(struct vfs_node *node,
-	uint64_t offset, size_t size, void *record)
+	uint32_t pointer, size_t size, void *record)
 {
 	void *instance;
 	struct fat_internal_data *data = node->internal_data;
@@ -623,13 +625,16 @@ static int n_readdir(struct vfs_node *node,
 	if (node->type != vfs_type_directory)
 		return DE_TYPE;
 
-	if (offset > 0x10000)
+	if (pointer > 0x10000)
 		return DE_OVERFLOW;
 
-	read_offset = (int)offset * 32;
+	read_offset = (int)pointer * 32;
 
 	if ((r = enter_fat(node)) != 0)
 		return r;
+
+	if (data->readdir_state < (int)pointer)
+		return leave_fat(node), DE_SEQUENCE;
 
 	instance = data->io->instance;
 	r = fat_seek(instance, data->fd, read_offset, 0);
@@ -649,6 +654,9 @@ static int n_readdir(struct vfs_node *node,
 
 			if (read_size != 32 || fat_record[0] == 0)
 				return leave_fat(node), DE_OVERFLOW;
+
+			if (data->readdir_state < (int)pointer + 1)
+				data->readdir_state = (int)pointer + 1;
 
 			fat_attributes = (int)fat_record[11];
 
