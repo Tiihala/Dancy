@@ -70,7 +70,7 @@ struct vfs_node {
 	int (*n_sync)(struct vfs_node *node);
 
 	int (*n_readdir)(struct vfs_node *node,
-		uint64_t offset, size_t size, void *record);
+		uint32_t pointer, size_t size, void *record);
 
 	int (*n_rename)(struct vfs_node *node,
 		struct vfs_name *old_vname, struct vfs_name *new_vname);

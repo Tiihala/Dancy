@@ -67,10 +67,10 @@ static int vfs_default_sync(struct vfs_node *node)
 }
 
 static int vfs_default_readdir(struct vfs_node *node,
-	uint64_t offset, size_t size, void *record)
+	uint32_t pointer, size_t size, void *record)
 {
 	(void)node;
-	(void)offset;
+	(void)pointer;
 
 	if (record)
 		memset(record, 0, size);
