@@ -127,6 +127,7 @@ static void db_fast_forward(struct bitarray *b, size_t bytes)
 int db_read(const char *name, unsigned char **buf, size_t *size)
 {
 	struct bitarray b;
+	int padding_bytes = 0;
 	int i;
 
 	*buf = NULL;
@@ -154,6 +155,17 @@ int db_read(const char *name, unsigned char **buf, size_t *size)
 
 		if ((pk_header = bitarray_fetch(&b, 8)) < 0)
 			break;
+
+		if (pk_header == 0x00) {
+			if ((padding_bytes++) > 64) {
+				bitarray_clear(&b);
+				padding_bytes = 0;
+			}
+			continue;
+		}
+
+		padding_bytes = 0;
+
 		if (pk_header != 0x50)
 			continue;
 
