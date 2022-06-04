@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,6 +22,22 @@
 
 #include <dancy/types.h>
 #include <kernel/table.h>
+
+struct _pci_driver {
+	int (*init)(struct pci_id *pci);
+
+	int vendor_id;
+	int device_id;
+
+	short class_code_0;
+	short class_code_1;
+	short class_code_2;
+	short reserved;
+};
+
+#define PCI_DRIVER(unique_init_name, vendor_id, device_id, c0, c1, c2) \
+	struct _pci_driver _pci_driver_ ## unique_init_name = {        \
+		unique_init_name, vendor_id, device_id, c0, c1, c2, 0 }
 
 /*
  * Declarations of pci.c
