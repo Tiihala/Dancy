@@ -126,6 +126,8 @@ int pci_init(void)
 				kernel->print("PCI: %s (%s)\n",
 					&kernel->symbol[s].name[name_length],
 					strerror(r));
+				task_sleep(10000);
+				return free(driver_array), r;
 			}
 		}
 	}
