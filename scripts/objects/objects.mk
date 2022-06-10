@@ -110,6 +110,9 @@
 ./o32/misc/floppy.o: ./kernel/misc/floppy.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/floppy.c
 
+./o32/misc/hdd_part.o: ./kernel/misc/hdd_part.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/misc/hdd_part.c
+
 ./o32/misc/rtc.o: ./kernel/misc/rtc.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/rtc.c
 
@@ -259,6 +262,9 @@
 
 ./o64/misc/floppy.o: ./kernel/misc/floppy.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/floppy.c
+
+./o64/misc/hdd_part.o: ./kernel/misc/hdd_part.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/misc/hdd_part.c
 
 ./o64/misc/rtc.o: ./kernel/misc/rtc.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/rtc.c

@@ -45,6 +45,11 @@ int floppy_write(int dsel, uint64_t offset, size_t *size, const void *buffer);
 int floppy_test(int dsel);
 
 /*
+ * Declarations of hdd_part.c
+ */
+int hdd_part_init(void);
+
+/*
  * Declarations of rtc.c
  */
 struct rtc_time {
