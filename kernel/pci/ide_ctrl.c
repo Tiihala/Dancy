@@ -52,11 +52,11 @@ static uint64_t get_sector_count(struct ide_device *dev)
 
 	if ((*p16 & 0x400) != 0) {
 		uint64_t *p64 = (uint64_t *)((addr_t)(p8 + (100 * 2)));
-		uint64_t max_lba = *p64;
+		uint64_t s48 = *p64;
 
-		if (max_lba != 0 && max_lba <= 0xFFFFFFFFFFFFull) {
-			if (sectors < max_lba + 1)
-				sectors = max_lba + 1;
+		if (s48 != 0 && s48 <= 0xFFFFFFFFFFFFull) {
+			if (sectors < s48)
+				sectors = s48;
 		}
 	}
 
@@ -148,7 +148,7 @@ static int ata_read_write(struct ide_device *dev,
 	/*
 	 * Prefer the 28-bit LBA mode.
 	 */
-	if (lba <= 0x0FFFFFFF) {
+	if (lba <= 0x0FFFFF00 || get_sector_count(dev) <= 0x0FFFFFFF) {
 		int dsel = (dev->nr & 1);
 		int device_head = 0xE0 | (dsel << 4);
 		uint32_t lba28 = (uint32_t)lba;
@@ -176,7 +176,34 @@ static int ata_read_write(struct ide_device *dev,
 		cpu_out8(ata_r7, (uint8_t)(write_mode ? 0xCA : 0xC8));
 
 	} else {
-		return DE_UNSUPPORTED;
+		int dsel = (dev->nr & 1);
+		int device_byte = 0x40 | (dsel << 4);
+
+		cpu_out8(ata_r6, (uint8_t)device_byte);
+
+		if (channel->dsel != dsel) {
+			channel->dsel = dsel;
+			delay(1000);
+		}
+
+		if (wait_status(channel, 1000))
+			return DE_BUSY;
+
+		cpu_out8(ata_r2, (uint8_t)(0x00));
+		cpu_out8(ata_r3, (uint8_t)((lba >> 24) & 0xFF));
+		cpu_out8(ata_r4, (uint8_t)((lba >> 32) & 0xFF));
+		cpu_out8(ata_r5, (uint8_t)((lba >> 40) & 0xFF));
+
+		cpu_out8(ata_r2, (uint8_t)count);
+		cpu_out8(ata_r3, (uint8_t)((lba >>  0) & 0xFF));
+		cpu_out8(ata_r4, (uint8_t)((lba >>  8) & 0xFF));
+		cpu_out8(ata_r5, (uint8_t)((lba >> 16) & 0xFF));
+
+		if (wait_status(channel, 1000))
+			return DE_BUSY;
+
+		event_reset(channel->event);
+		cpu_out8(ata_r7, (uint8_t)(write_mode ? 0x35 : 0x25));
 	}
 
 	/*
