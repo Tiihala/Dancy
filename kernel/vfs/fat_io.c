@@ -19,7 +19,7 @@
 
 #include <dancy.h>
 
-#define FAT_IO_TOTAL 8
+#define FAT_IO_TOTAL 64
 
 struct fat_io {
 	struct vfs_node *dev_node;
