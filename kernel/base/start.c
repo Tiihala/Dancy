@@ -48,6 +48,7 @@ static struct {
 	{ 0, 0, SYMBOL_PREFIX "pci_init", "PCI" },
 	{ 0, 0, SYMBOL_PREFIX "ps2_init", "PS/2 Controller" },
 	{ 0, 0, SYMBOL_PREFIX "hdd_part_init", "Disk Partitions" },
+	{ 0, 0, SYMBOL_PREFIX "hdd_fat_init", "FAT Mount" },
 	{ 1, 0, SYMBOL_PREFIX "acpios_init", "ACPICA" },
 	{ 1, 0, SYMBOL_PREFIX "debug_init", "Debug" }
 };
