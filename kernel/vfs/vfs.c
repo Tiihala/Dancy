@@ -75,6 +75,38 @@ void vfs_init_node(struct vfs_node *node, size_t size)
 	vfs_default(node);
 }
 
+int vfs_register_descriptor(struct vfs_node *node, int *fd)
+{
+	struct task *current = task_current();
+	int i;
+
+	for (i = 0; i < TASK_FD_STATIC_COUNT; i++) {
+		if (!current->fd_static_table[i]) {
+			vfs_increment_count(node);
+			current->fd_static_table[i] = node;
+			return *fd = i, 0;
+		}
+	}
+
+	if (!current->fd_dynamic_table) {
+		const size_t nmemb = 4096 - TASK_FD_STATIC_COUNT;
+		size_t size = sizeof(*current->fd_dynamic_table);
+
+		if ((current->fd_dynamic_table = calloc(nmemb, size)) != NULL)
+			current->fd_dynamic_count = (int)nmemb;
+	}
+
+	for (i = 0; i < current->fd_dynamic_count; i++) {
+		if (!current->fd_dynamic_table[i]) {
+			vfs_increment_count(node);
+			current->fd_dynamic_table[i] = node;
+			return *fd = (i + TASK_FD_STATIC_COUNT), 0;
+		}
+	}
+
+	return *fd = -1, DE_MEMORY;
+}
+
 int vfs_increment_count(struct vfs_node *node)
 {
 	void *lock_local = &node->lock;

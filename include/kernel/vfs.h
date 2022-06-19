@@ -121,6 +121,7 @@ int vfs_init_root(struct vfs_node **node);
  */
 int vfs_init(void);
 void vfs_init_node(struct vfs_node *node, size_t size);
+int vfs_register_descriptor(struct vfs_node *node, int *fd);
 
 int vfs_increment_count(struct vfs_node *node);
 int vfs_decrement_count(struct vfs_node *node);
