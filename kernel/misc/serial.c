@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -34,6 +34,7 @@ static int port_com4 = 0x02E8;
 #define COM_BUFFER_SIZE (1024)
 
 static struct {
+	int port;
 	int baud;
 	int start;
 	int end;
@@ -242,12 +243,96 @@ static void port_init(int port_com, int baud)
 	cpu_out8((uint16_t)(port_com + 1), 0x01);
 }
 
+static void n_release(struct vfs_node **node)
+{
+	struct vfs_node *n = *node;
+
+	*node = NULL;
+
+	if (vfs_decrement_count(n) == 0) {
+		memset(n, 0, sizeof(*n));
+		free(n);
+	}
+}
+
+static int n_read(struct vfs_node *node,
+	uint64_t offset, size_t *size, void *buffer)
+{
+	const int *port = node->internal_data;
+	size_t requested_size = *size;
+
+	(void)offset;
+	*size = serial_receive(*port, buffer, requested_size);
+
+	return 0;
+}
+
+static int n_write(struct vfs_node *node,
+	uint64_t offset, size_t *size, const void *buffer)
+{
+	const int *port = node->internal_data;
+	size_t requested_size = *size;
+
+	(void)offset;
+	*size = serial_send(*port, buffer, requested_size);
+
+	return 0;
+}
+
+static int mount_serial_port(int port)
+{
+	struct vfs_node *dev_node, *node;
+	char name[16];
+	int r;
+
+	if ((dev_node = malloc(sizeof(*dev_node))) == NULL)
+		return DE_MEMORY;
+
+	vfs_init_node(dev_node, 0);
+
+	dev_node->count = 1;
+	dev_node->type  = vfs_type_character;
+
+	dev_node->internal_data = &com_buffer[port - 1].port;
+	dev_node->n_release = n_release;
+
+	dev_node->n_read  = n_read;
+	dev_node->n_write = n_write;
+
+	if ((r = vfs_open("/dev/", &node, 0, vfs_mode_create)) != 0) {
+		dev_node->n_release(&dev_node);
+		return r;
+	}
+
+	node->n_release(&node);
+
+	snprintf(&name[0], sizeof(name), "/dev/port%d", port);
+
+	if ((r = vfs_open(name, &node, 0, vfs_mode_create)) != 0) {
+		dev_node->n_release(&dev_node);
+		return r;
+	}
+
+	node->n_release(&node);
+
+	r = vfs_mount(name, dev_node);
+	dev_node->n_release(&dev_node);
+
+	return r;
+}
+
 int serial_init(void)
 {
 	static int run_once;
+	int r;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
+
+	com_buffer[0].port = 1;
+	com_buffer[1].port = 2;
+	com_buffer[2].port = 3;
+	com_buffer[3].port = 4;
 
 	if (port_check(port_com1))
 		port_com1 = 0;
@@ -310,6 +395,15 @@ int serial_init(void)
 	}
 
 	cpu_write32((uint32_t *)&serial_ready, 1);
+
+	if (port_com1 != 0 && (r = mount_serial_port(1)) != 0)
+		return r;
+	if (port_com2 != 0 && (r = mount_serial_port(2)) != 0)
+		return r;
+	if (port_com3 != 0 && (r = mount_serial_port(3)) != 0)
+		return r;
+	if (port_com4 != 0 && (r = mount_serial_port(4)) != 0)
+		return r;
 
 	return 0;
 }
@@ -395,7 +489,7 @@ size_t serial_receive(int port, void *buf, size_t size)
 	return r;
 }
 
-size_t serial_send(int port, void *buf, size_t size)
+size_t serial_send(int port, const void *buf, size_t size)
 {
 	int port_com, delay_counter = 0;
 	size_t r = 0;
