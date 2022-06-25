@@ -100,6 +100,7 @@ DANCY_HEADERS= \
  ./include/kernel/pci.h \
  ./include/kernel/ps2.h \
  ./include/kernel/sched.h \
+ ./include/kernel/syscall.h \
  ./include/kernel/table.h \
  ./include/kernel/task.h \
  ./include/kernel/vfs.h \
