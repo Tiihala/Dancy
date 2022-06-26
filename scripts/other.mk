@@ -57,7 +57,7 @@ distclean: clean
 
 !include .\scripts\objects\_boot.mk
 !include .\scripts\objects\_common.mk
-!include .\scripts\objects\objects.mk
+!include .\scripts\objects\kernel.mk
 
 !include .\scripts\dirs.mk
 !include .\scripts\external.mk
