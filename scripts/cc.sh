@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if [ ! -f "scripts/gcc.sh" ]
+if [ ! -f "scripts/cc.sh" ]
 then
     echo "Error: does not look like a root of Dancy source tree" 1>&2
     exit 1
