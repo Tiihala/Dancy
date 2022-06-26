@@ -5,6 +5,9 @@ if [ ! -f "scripts/clean.sh" ]; then
     exit 1
 fi
 
+rm -rf ./arctic/bin
+rm -rf ./arctic/o32
+rm -rf ./arctic/o64
 rm -rf ./bin
 rm -rf ./efi
 rm -rf ./include/acpica

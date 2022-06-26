@@ -5,6 +5,9 @@ IF NOT EXIST "scripts\clean.cmd" (
     EXIT /B 1
 )
 
+RMDIR /S /Q arctic\bin > NUL 2>&1
+RMDIR /S /Q arctic\o32 > NUL 2>&1
+RMDIR /S /Q arctic\o64 > NUL 2>&1
 RMDIR /S /Q bin > NUL 2>&1
 RMDIR /S /Q efi > NUL 2>&1
 RMDIR /S /Q include\acpica > NUL 2>&1

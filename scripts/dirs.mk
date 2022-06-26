@@ -3,6 +3,9 @@
 ##############################################################################
 
 ./scripts/dancy.mk:
+	@mkdir "arctic/bin"
+	@mkdir "arctic/o32"
+	@mkdir "arctic/o64"
 	@mkdir "bin"
 	@mkdir "efi"
 	@mkdir "efi/boot"
