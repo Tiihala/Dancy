@@ -364,6 +364,37 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	}
 
 	/*
+	 * Detect multiply defined external symbols.
+	 */
+	for (i = 0; i < (int)LE32(&obj[12]); i++) {
+		unsigned char *s1 = obj + symtab + (i * 18);
+		int j;
+
+		if (!LE16(&s1[12]) || (unsigned)s1[16] != 2u)
+			continue;
+
+		for (j = 0; j < (int)LE32(&obj[12]); j++) {
+			unsigned char *s2 = obj + symtab + (j * 18);
+
+			if (!LE16(&s2[12]) || (unsigned)s2[16] != 2u)
+				continue;
+
+			if (s1 != s2 && match(opt, s1, s2)) {
+				const char *name = (const char *)s1;
+				fputs("Error: symbol \"", stderr);
+				if (name[0] != '\0') {
+					fprintf(stderr, "%.8s", name);
+				} else {
+					name = get_long_name(opt, s1);
+					fprintf(stderr, "%s", name);
+				}
+				fputs("\" multiply defined\n", stderr);
+				return 1;
+			}
+		}
+	}
+
+	/*
 	 * Detect exported symbols.
 	 */
 	if (!strcmp(opt->arg_f, "default") || !strcmp(opt->arg_f, "uefi")) {
@@ -379,8 +410,6 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		}
 
 		for (i = 0; i < (int)LE32(&obj[12]); i++) {
-			unsigned long sym_found = 0;
-
 			sym = obj + symtab + (i * 18);
 
 			if ((unsigned)sym[16] != 2u)
@@ -408,21 +437,13 @@ int symbol_process(struct options *opt, unsigned char *obj)
 					size_t size = strlen(name);
 
 					if (size <= 8 && !strncmp(s, name, 8))
-						sym[14] = 0x00u, sym_found++;
+						sym[14] = 0x00u;
 				} else {
 					char *s = get_long_name(opt, sym);
 
 					if (!strcmp(s, name))
-						sym[14] = 0x00u, sym_found++;
+						sym[14] = 0x00u;
 				}
-			}
-
-			if (sym_found > 1) {
-				fprintf(stderr, "Error: symbol \"");
-				fprintf(stderr, "%s\" ", name);
-				fprintf(stderr, "multiply defined ");
-				fprintf(stderr, "(%s)\n", (name - 15));
-				return 1;
 			}
 		}
 	}
@@ -676,7 +697,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 	}
 
 	/*
-	 * Handle non-external symbols and detect multiply defined externals.
+	 * Handle non-external symbols.
 	 */
 	{
 		int allow_ext = 0;
@@ -741,6 +762,11 @@ int symbol_process(struct options *opt, unsigned char *obj)
 				i += 1;
 				continue;
 			}
+
+			/*
+			 * There should be no multiply defined symbols,
+			 * but do the consistency check anyway.
+			 */
 			if (match(opt, s1, s2)) {
 				const char *name = (const char *)s1;
 				fputs("Error: symbol \"", stderr);
