@@ -3,7 +3,8 @@
 ##############################################################################
 
 ./scripts/dancy.mk:
-	@mkdir "arctic/bin"
+	@mkdir "arctic/bin32"
+	@mkdir "arctic/bin64"
 	@mkdir "arctic/o32"
 	@mkdir "arctic/o64"
 	@mkdir "bin"
