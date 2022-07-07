@@ -24,6 +24,11 @@
 #include <kernel/vfs.h>
 
 /*
+ * Declarations of bin.c
+ */
+int bin_init(void);
+
+/*
  * Declarations of dma.c
  */
 int dma_init(void);

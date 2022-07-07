@@ -41,6 +41,7 @@ static struct {
 	{ 0, 0, SYMBOL_PREFIX "epoch_init", "Epoch Functions" },
 	{ 0, 0, SYMBOL_PREFIX "sched_init", "Scheduler" },
 	{ 0, 0, SYMBOL_PREFIX "vfs_init", "Virtual File System" },
+	{ 0, 0, SYMBOL_PREFIX "bin_init", "Bin Mount" },
 	{ 0, 0, SYMBOL_PREFIX "zero_init", "Devfs Zero" },
 	{ 0, 0, SYMBOL_PREFIX "dma_init", "DMA" },
 	{ 0, 0, SYMBOL_PREFIX "floppy_init", "Floppy" },
