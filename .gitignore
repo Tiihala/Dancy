@@ -2,6 +2,8 @@
 /arctic/bin64/
 /arctic/o32/
 /arctic/o64/
+/arctic/bin32.img
+/arctic/bin64.img
 /bin/
 /efi/
 /external/
