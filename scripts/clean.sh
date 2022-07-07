@@ -18,6 +18,9 @@ rm -rf ./o64
 rm -rf ./release
 rm -rf ./system
 
+rm -f ./arctic/bin32.img
+rm -f ./arctic/bin64.img
+
 rm -f ./scripts/dancy.mk
 rm -f ./LOADER.512
 rm -f ./LOADER.AT

@@ -34,6 +34,12 @@ DANCY_DB_200_FILES= \
  ./o64/vfs.at \
  $(ACPICA_O64_AT)
 
+DANCY_DB_300_FILES= \
+ ./arctic/bin32.img
+
+DANCY_DB_400_FILES= \
+ ./arctic/bin64.img
+
 ##############################################################################
 
 ./system/CONFIG.AT: ./bin/dy-conf$(DANCY_EXE)
@@ -47,6 +53,12 @@ DANCY_DB_200_FILES= \
 
 ./system/DB_200.AT: ./bin/dy-zip$(DANCY_EXE) $(DANCY_DB_200_FILES)
 	$(DY_ZIP) -o$@ $(DANCY_DB_200_FILES)
+
+./system/DB_300.AT: ./bin/dy-zip$(DANCY_EXE) $(DANCY_DB_300_FILES)
+	$(DY_ZIP) -o$@ $(DANCY_DB_300_FILES)
+
+./system/DB_400.AT: ./bin/dy-zip$(DANCY_EXE) $(DANCY_DB_400_FILES)
+	$(DY_ZIP) -o$@ $(DANCY_DB_400_FILES)
 
 ./LOADER.512: ./bin/dy-blob$(DANCY_EXE)
 	$(DY_BLOB) -tldr512 $@

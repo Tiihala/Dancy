@@ -56,11 +56,16 @@ distclean: clean
 !include .\scripts\at\syscall.mk
 !include .\scripts\at\vfs.mk
 
+!include .\scripts\bin\_bin32.mk
+!include .\scripts\bin\_bin64.mk
+!include .\scripts\bin\hello.mk
+
 !include .\scripts\boot\init.mk
 !include .\scripts\boot\uefi.mk
 
 !include .\scripts\objects\_boot.mk
 !include .\scripts\objects\_common.mk
+!include .\scripts\objects\arctic.mk
 !include .\scripts\objects\kernel.mk
 
 !include .\scripts\dirs.mk
