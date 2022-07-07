@@ -383,6 +383,20 @@ void table_init(void)
 	}
 
 	/*
+	 * Write the file system image for native binaries.
+	 */
+	{
+		size = (arctic_bin_size + 0x0FFFu) & 0xFFFFF000u;
+		addr = (addr_t)table_alloc_pages(size / 0x1000);
+
+		memcpy((void *)addr, arctic_bin_data, arctic_bin_size);
+		memset(arctic_bin_data, 0, arctic_bin_size);
+
+		kernel->arctic_bin_addr = addr;
+		kernel->arctic_bin_size = size;
+	}
+
+	/*
 	 * Write the PCI device structures.
 	 */
 	{

@@ -22,6 +22,9 @@
 void *ttf;
 void *ttf_array[3];
 
+unsigned char *arctic_bin_data;
+size_t arctic_bin_size;
+
 static const char *ttf_names[3] = {
 	"share/fonts/dcysan.ttf",
 	"share/fonts/dcysanb.ttf",
@@ -104,6 +107,23 @@ void init(void)
 	 */
 	if (usb_init_early())
 		return;
+
+	/*
+	 * Load the file system image for native binaries.
+	 */
+	{
+#if DANCY_32
+		const char *bin_name = "arctic/bin32.img";
+#else
+		const char *bin_name = "arctic/bin64.img";
+#endif
+		int r = db_read(bin_name, &arctic_bin_data, &arctic_bin_size);
+
+		if (r != 0) {
+			b_print("%s error: %s\n", bin_name, db_read_error(r));
+			return;
+		}
+	}
 
 	/*
 	 * Load fonts and create ttf objects.

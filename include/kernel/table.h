@@ -35,6 +35,9 @@ struct kernel_table {
 	void (*panic)(const char *message);
 	void (*print)(const char *format, ...);
 
+	addr_t arctic_bin_addr;
+	size_t arctic_bin_size;
+
 	/*
 	 * Dynamically linked modules (including the kernel itself).
 	 */

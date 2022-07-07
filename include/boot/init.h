@@ -209,6 +209,9 @@ void idt_restore(void);
 /*
  * Declarations of init.c
  */
+extern unsigned char *arctic_bin_data;
+extern size_t arctic_bin_size;
+
 void init(void);
 void init_ap(uint32_t id);
 
