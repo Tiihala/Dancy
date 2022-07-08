@@ -38,6 +38,9 @@ struct kernel_table {
 	addr_t arctic_bin_addr;
 	size_t arctic_bin_size;
 
+	addr_t arctic_root_addr;
+	size_t arctic_root_size;
+
 	/*
 	 * Dynamically linked modules (including the kernel itself).
 	 */

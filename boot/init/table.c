@@ -397,6 +397,20 @@ void table_init(void)
 	}
 
 	/*
+	 * Write the root file system image.
+	 */
+	{
+		size = (arctic_root_size + 0x0FFFu) & 0xFFFFF000u;
+		addr = (addr_t)table_alloc_pages(size / 0x1000);
+
+		memcpy((void *)addr, arctic_root_data, arctic_root_size);
+		memset(arctic_root_data, 0, arctic_root_size);
+
+		kernel->arctic_root_addr = addr;
+		kernel->arctic_root_size = size;
+	}
+
+	/*
 	 * Write the PCI device structures.
 	 */
 	{

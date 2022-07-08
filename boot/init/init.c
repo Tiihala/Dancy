@@ -25,6 +25,9 @@ void *ttf_array[3];
 unsigned char *arctic_bin_data;
 size_t arctic_bin_size;
 
+unsigned char *arctic_root_data;
+size_t arctic_root_size;
+
 static const char *ttf_names[3] = {
 	"share/fonts/dcysan.ttf",
 	"share/fonts/dcysanb.ttf",
@@ -121,6 +124,20 @@ void init(void)
 
 		if (r != 0) {
 			b_print("%s error: %s\n", bin_name, db_read_error(r));
+			return;
+		}
+	}
+
+	/*
+	 * Load the root file system image.
+	 */
+	{
+		const char *name = "arctic/root.img";
+
+		int r = db_read(name, &arctic_root_data, &arctic_root_size);
+
+		if (r != 0) {
+			b_print("%s error: %s\n", name, db_read_error(r));
 			return;
 		}
 	}

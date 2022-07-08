@@ -212,6 +212,9 @@ void idt_restore(void);
 extern unsigned char *arctic_bin_data;
 extern size_t arctic_bin_size;
 
+extern unsigned char *arctic_root_data;
+extern size_t arctic_root_size;
+
 void init(void);
 void init_ap(uint32_t id);
 
