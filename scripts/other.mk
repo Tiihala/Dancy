@@ -58,6 +58,7 @@ distclean: clean
 
 !include .\scripts\bin\_bin32.mk
 !include .\scripts\bin\_bin64.mk
+!include .\scripts\bin\_root.mk
 !include .\scripts\bin\hello.mk
 
 !include .\scripts\boot\init.mk
