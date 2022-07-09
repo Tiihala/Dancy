@@ -256,6 +256,8 @@ static int program(struct options *opt)
 			; /* Default */
 		else if (!strcmp(opt->arg_t, "lba"))
 			vbr = &vbrlba_bin[0];
+		else if (!strcmp(opt->arg_t, "ramfs"))
+			; /* Default */
 		else
 			return opt->error = "unknown record type argument", 1;
 	}
@@ -306,6 +308,12 @@ static int program(struct options *opt)
 		memcpy(&buf[0x0000], &vbr[0x0000], 3);
 		memcpy(&buf[0x003E], &vbr[0x003E], 450);
 
+		if (!strcmp(opt->arg_t, "ramfs")) {
+			buf[0x003E] = 0xF4, buf[0x003F] = 0xF4;
+			buf[0x0040] = 0xEB, buf[0x0041] = 0xFC;
+			memset(&buf[0x0042], 0, 444);
+		}
+
 		/*
 		 * Modify the boot sector code if using the fixed dl.
 		 *
@@ -347,7 +355,7 @@ static const char *help_str =
 	"\nOptions:\n"
 	"  -o file       write loader.512 file\n"
 	"  -t type       volume boot record type\n"
-	"                floppy, chs (default), or lba\n"
+	"                floppy, chs (default), lba, or ramfs\n"
 	"  --fixed-dl    fixed register dl value\n"
 	"  --512         512-byte sectors (default)\n"
 	"  --1024        1024-byte sectors\n"
