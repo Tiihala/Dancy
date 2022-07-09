@@ -13,7 +13,7 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
-;; init/a32/ld.asm
+;; lib/a32/coff.asm
 ;;      Object relocation (32-bit)
 ;;
 
@@ -21,11 +21,11 @@
 
 section .text
 
-        global _ld_relocate
+        global _coff_relocate
 
 align 16
-        ; void ld_relocate(void *base, void *reloc, void *symbol)
-_ld_relocate:
+        ; void coff_relocate(void *base, void *reloc, void *symbol)
+_coff_relocate:
         push ebx                        ; save register ebx
         push esi                        ; save register esi
         push edi                        ; save register edi

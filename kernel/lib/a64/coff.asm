@@ -13,7 +13,7 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
-;; init/a64/ld.asm
+;; lib/a64/coff.asm
 ;;      Object relocation (64-bit)
 ;;
 
@@ -21,11 +21,11 @@
 
 section .text
 
-        global ld_relocate
+        global coff_relocate
 
 align 16
-        ; void ld_relocate(void *base, void *reloc, void *symbol)
-ld_relocate:
+        ; void coff_relocate(void *base, void *reloc, void *symbol)
+coff_relocate:
         push rbx                        ; save register rbx
         push rsi                        ; save register rsi
         push rdi                        ; save register rdi
