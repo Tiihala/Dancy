@@ -29,6 +29,11 @@
 int bin_init(void);
 
 /*
+ * Declarations of coff.c
+ */
+extern const unsigned int coff_native_signature;
+
+/*
  * Declarations of dma.c
  */
 int dma_init(void);
