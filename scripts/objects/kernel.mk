@@ -71,6 +71,9 @@
 ./o32/debug/debug.o: ./kernel/debug/debug.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/debug/debug.c
 
+./o32/lib/a32/coff.o: ./kernel/lib/a32/coff.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./kernel/lib/a32/coff.asm
+
 ./o32/lib/a32/cpu.o: ./kernel/lib/a32/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/lib/a32/cpu.asm
 
@@ -232,6 +235,9 @@
 
 ./o64/debug/debug.o: ./kernel/debug/debug.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/debug/debug.c
+
+./o64/lib/a64/coff.o: ./kernel/lib/a64/coff.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./kernel/lib/a64/coff.asm
 
 ./o64/lib/a64/cpu.o: ./kernel/lib/a64/cpu.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/lib/a64/cpu.asm

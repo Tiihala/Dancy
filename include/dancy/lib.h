@@ -42,6 +42,11 @@ int bitarray_shove(struct bitarray *b, unsigned bits, unsigned val);
 int bitarray_written(struct bitarray *b, size_t *written);
 
 /*
+ * Declarations of coff.asm
+ */
+void coff_relocate(void *base, void *reloc, void *symbol);
+
+/*
  * Declarations of cpu.asm
  */
 void cpu_id(uint32_t *a, uint32_t *c, uint32_t *d, uint32_t *b);

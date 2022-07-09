@@ -3,7 +3,6 @@
 ##############################################################################
 
 DANCY_START_OBJECTS_32= \
- ./o32/_boot/init/a32/ld.o \
  ./o32/_boot/init/a32/start.o \
  ./o32/_boot/init/a32/syscall.o \
  ./o32/_boot/init/db.o \
@@ -15,6 +14,7 @@ DANCY_START_OBJECTS_32= \
  ./o32/_common/a32/string.o \
  ./o32/_common/crc32.o \
  ./o32/_common/crc32c.o \
+ ./o32/lib/a32/coff.o \
  ./o32/lib/a32/spin.o \
  ./o32/lib/bitarray.o \
  ./o32/lib/huffman.o \
@@ -23,7 +23,6 @@ DANCY_START_OBJECTS_32= \
  ./o32/lib/string.o \
 
 DANCY_START_OBJECTS_64= \
- ./o64/_boot/init/a64/ld.o \
  ./o64/_boot/init/a64/start.o \
  ./o64/_boot/init/a64/syscall.o \
  ./o64/_boot/init/db.o \
@@ -35,6 +34,7 @@ DANCY_START_OBJECTS_64= \
  ./o64/_common/a64/string.o \
  ./o64/_common/crc32.o \
  ./o64/_common/crc32c.o \
+ ./o64/lib/a64/coff.o \
  ./o64/lib/a64/spin.o \
  ./o64/lib/bitarray.o \
  ./o64/lib/huffman.o \

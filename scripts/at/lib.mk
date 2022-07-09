@@ -7,6 +7,7 @@ DANCY_LIB_OBJECTS_32= \
  ./o32/_common/a32/string.o \
  ./o32/_common/epoch.o \
  ./o32/_common/utf8.o \
+ ./o32/lib/a32/coff.o \
  ./o32/lib/a32/cpu.o \
  ./o32/lib/a32/spin.o \
  ./o32/lib/bitarray.o \
@@ -23,6 +24,7 @@ DANCY_LIB_OBJECTS_64= \
  ./o64/_common/a64/string.o \
  ./o64/_common/epoch.o \
  ./o64/_common/utf8.o \
+ ./o64/lib/a64/coff.o \
  ./o64/lib/a64/cpu.o \
  ./o64/lib/a64/spin.o \
  ./o64/lib/bitarray.o \

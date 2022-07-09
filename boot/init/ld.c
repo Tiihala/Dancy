@@ -294,7 +294,7 @@ int ld_link(const char *name, unsigned char *obj, struct ld_object *ld_obj)
 		for (i = 0; i < text_nrel; i++) {
 			symbol = symbol_table + (LE32(&reloc[4]) * 18);
 
-			ld_relocate(text_sec, reloc, symbol);
+			coff_relocate(text_sec, reloc, symbol);
 			reloc += 10;
 		}
 	}
@@ -310,7 +310,7 @@ int ld_link(const char *name, unsigned char *obj, struct ld_object *ld_obj)
 		for (i = 0; i < rdata_nrel; i++) {
 			symbol = symbol_table + (LE32(&reloc[4]) * 18);
 
-			ld_relocate(rdata_sec, reloc, symbol);
+			coff_relocate(rdata_sec, reloc, symbol);
 			reloc += 10;
 		}
 	}
@@ -326,7 +326,7 @@ int ld_link(const char *name, unsigned char *obj, struct ld_object *ld_obj)
 		for (i = 0; i < data_nrel; i++) {
 			symbol = symbol_table + (LE32(&reloc[4]) * 18);
 
-			ld_relocate(data_sec, reloc, symbol);
+			coff_relocate(data_sec, reloc, symbol);
 			reloc += 10;
 		}
 	}
