@@ -3,10 +3,10 @@
 ##############################################################################
 
 DANCY_SYSCALL_OBJECTS_32= \
- ./o32/syscall/syscall.o
+ ./o32/syscall/syscall.o \
 
 DANCY_SYSCALL_OBJECTS_64= \
- ./o64/syscall/syscall.o
+ ./o64/syscall/syscall.o \
 
 ##############################################################################
 

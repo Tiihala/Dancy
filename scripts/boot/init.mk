@@ -20,7 +20,7 @@ DANCY_START_OBJECTS_32= \
  ./o32/lib/huffman.o \
  ./o32/lib/inflate.o \
  ./o32/lib/snprintf.o \
- ./o32/lib/string.o
+ ./o32/lib/string.o \
 
 DANCY_START_OBJECTS_64= \
  ./o64/_boot/init/a64/ld.o \
@@ -40,7 +40,7 @@ DANCY_START_OBJECTS_64= \
  ./o64/lib/huffman.o \
  ./o64/lib/inflate.o \
  ./o64/lib/snprintf.o \
- ./o64/lib/string.o
+ ./o64/lib/string.o \
 
 ##############################################################################
 
@@ -82,7 +82,7 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/_common/fat.o \
  ./o32/_common/ttf.o \
  ./o32/lib/a32/cpu.o \
- ./o32/lib/stdlib.o
+ ./o32/lib/stdlib.o \
 
 DANCY_INIT_OBJECTS_64= \
  ./o64/_boot/init/a64/gdt.o \
@@ -112,7 +112,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/_common/fat.o \
  ./o64/_common/ttf.o \
  ./o64/lib/a64/cpu.o \
- ./o64/lib/stdlib.o
+ ./o64/lib/stdlib.o \
 
 ##############################################################################
 

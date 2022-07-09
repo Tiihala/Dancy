@@ -24,7 +24,7 @@ DANCY_BASE_OBJECTS_32= \
  ./o32/base/runlevel.o \
  ./o32/base/start.o \
  ./o32/base/task.o \
- ./o32/base/timer.o
+ ./o32/base/timer.o \
 
 DANCY_BASE_OBJECTS_64= \
  ./o64/base/a64/fb.o \
@@ -48,7 +48,7 @@ DANCY_BASE_OBJECTS_64= \
  ./o64/base/runlevel.o \
  ./o64/base/start.o \
  ./o64/base/task.o \
- ./o64/base/timer.o
+ ./o64/base/timer.o \
 
 ##############################################################################
 

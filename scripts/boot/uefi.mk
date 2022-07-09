@@ -27,7 +27,7 @@ BOOTX64_EFI_OBJECTS= \
  ./o64/lib/ctype.o \
  ./o64/lib/snprintf.o \
  ./o64/lib/stdlib.o \
- ./o64/lib/string.o
+ ./o64/lib/string.o \
 
 ##############################################################################
 

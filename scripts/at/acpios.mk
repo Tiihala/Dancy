@@ -4,11 +4,11 @@
 
 ACPIOS_OBJECTS_32= \
  ./o32/acpios/a32/glblock.o \
- ./o32/acpios/osdancy.o
+ ./o32/acpios/osdancy.o \
 
 ACPIOS_OBJECTS_64= \
  ./o64/acpios/a64/glblock.o \
- ./o64/acpios/osdancy.o
+ ./o64/acpios/osdancy.o \
 
 ##############################################################################
 

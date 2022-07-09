@@ -6,7 +6,7 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/stdio.h \
  ./share/fonts/dcysan.ttf \
  ./share/fonts/dcysanb.ttf \
- ./share/fonts/dcysanm.ttf
+ ./share/fonts/dcysanm.ttf \
 
 ##############################################################################
 

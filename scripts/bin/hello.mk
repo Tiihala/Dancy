@@ -3,10 +3,10 @@
 ##############################################################################
 
 ARCTIC_HELLO_OBJECTS_32= \
- ./arctic/o32/hello/main.o
+ ./arctic/o32/hello/main.o \
 
 ARCTIC_HELLO_OBJECTS_64= \
- ./arctic/o64/hello/main.o
+ ./arctic/o64/hello/main.o \
 
 ##############################################################################
 

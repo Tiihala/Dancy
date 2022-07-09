@@ -6,7 +6,7 @@ DY_BLOB_OBJECTS= \
  ./tools/dy-blob/dy-blob.obj \
  ./boot/early/eltorito.obj \
  ./boot/early/ldr512.obj \
- ./boot/loader.obj
+ ./boot/loader.obj \
 
 ./bin/dy-blob$(DANCY_EXE): $(DY_BLOB_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_BLOB_OBJECTS)
@@ -15,7 +15,7 @@ DY_BLOB_OBJECTS= \
 
 DY_CONF_OBJECTS= \
  ./tools/dy-conf/dy-conf.obj \
- ./common/crc32c.obj
+ ./common/crc32c.obj \
 
 ./bin/dy-conf$(DANCY_EXE): $(DY_CONF_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_CONF_OBJECTS)
@@ -25,7 +25,7 @@ DY_CONF_OBJECTS= \
 DY_GPT_OBJECTS= \
  ./tools/dy-gpt/dy-gpt.obj \
  ./boot/early/gpt.obj \
- ./common/crc32c.obj
+ ./common/crc32c.obj \
 
 ./bin/dy-gpt$(DANCY_EXE): $(DY_GPT_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_GPT_OBJECTS)
@@ -35,7 +35,7 @@ DY_GPT_OBJECTS= \
 DY_INIT_OBJECTS= \
  ./tools/dy-init/dy-init.obj \
  ./tools/dy-init/ia32.obj \
- ./tools/dy-init/x64.obj
+ ./tools/dy-init/x64.obj \
 
 ./bin/dy-init$(DANCY_EXE): $(DY_INIT_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_INIT_OBJECTS)
@@ -44,7 +44,7 @@ DY_INIT_OBJECTS= \
 
 DY_ISO_OBJECTS= \
  ./tools/dy-iso/dy-iso.obj \
- ./boot/early/eltorito.obj
+ ./boot/early/eltorito.obj \
 
 ./bin/dy-iso$(DANCY_EXE): $(DY_ISO_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_ISO_OBJECTS)
@@ -58,9 +58,10 @@ DY_LINK_OBJECTS= \
  ./tools/dy-link/program.obj \
  ./tools/dy-link/section.obj \
  ./tools/dy-link/symbol.obj \
- ./tools/dy-link/validate.obj
+ ./tools/dy-link/validate.obj \
+
 DY_LINK_HEADERS= \
- ./tools/dy-link/program.h
+ ./tools/dy-link/program.h \
 
 ./bin/dy-link$(DANCY_EXE): $(DY_LINK_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_LINK_OBJECTS)
@@ -70,7 +71,7 @@ DY_LINK_HEADERS= \
 DY_MBR_OBJECTS= \
  ./tools/dy-mbr/dy-mbr.obj \
  ./boot/early/mbr.obj \
- ./common/crc32c.obj
+ ./common/crc32c.obj \
 
 ./bin/dy-mbr$(DANCY_EXE): $(DY_MBR_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_MBR_OBJECTS)
@@ -81,9 +82,10 @@ DY_MCOPY_OBJECTS= \
  ./tools/dy-mcopy/main.obj \
  ./tools/dy-mcopy/mcopy.obj \
  ./tools/dy-mcopy/program.obj \
- ./common/fat.obj
+ ./common/fat.obj \
+
 DY_MCOPY_HEADERS= \
- ./tools/dy-mcopy/program.h
+ ./tools/dy-mcopy/program.h \
 
 ./bin/dy-mcopy$(DANCY_EXE): $(DY_MCOPY_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_MCOPY_OBJECTS)
@@ -93,9 +95,10 @@ DY_MCOPY_HEADERS= \
 DY_PATCH_OBJECTS= \
  ./tools/dy-patch/main.obj \
  ./tools/dy-patch/patch.obj \
- ./tools/dy-patch/program.obj
+ ./tools/dy-patch/program.obj \
+
 DY_PATCH_HEADERS= \
- ./tools/dy-patch/program.h
+ ./tools/dy-patch/program.h \
 
 ./bin/dy-patch$(DANCY_EXE): $(DY_PATCH_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_PATCH_OBJECTS)
@@ -103,7 +106,7 @@ DY_PATCH_HEADERS= \
 ##############################################################################
 
 DY_PATH_OBJECTS= \
- ./tools/dy-path/dy-path.obj
+ ./tools/dy-path/dy-path.obj \
 
 ./bin/dy-path$(DANCY_EXE): $(DY_PATH_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_PATH_OBJECTS)
@@ -118,9 +121,10 @@ DY_PNG_OBJECTS= \
  ./tools/dy-png/huffman.obj \
  ./tools/dy-png/palette.obj \
  ./tools/dy-png/program.obj \
- ./common/crc32.obj
+ ./common/crc32.obj \
+
 DY_PNG_HEADERS= \
- ./tools/dy-png/program.h
+ ./tools/dy-png/program.h \
 
 ./bin/dy-png$(DANCY_EXE): $(DY_PNG_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_PNG_OBJECTS)
@@ -132,9 +136,10 @@ DY_TTF_OBJECTS= \
  ./tools/dy-ttf/program.obj \
  ./tools/dy-ttf/render.obj \
  ./tools/dy-ttf/table.obj \
- ./tools/dy-ttf/ttf.obj
+ ./tools/dy-ttf/ttf.obj \
+
 DY_TTF_HEADERS= \
- ./tools/dy-ttf/program.h
+ ./tools/dy-ttf/program.h \
 
 ./bin/dy-ttf$(DANCY_EXE): $(DY_TTF_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_TTF_OBJECTS)
@@ -143,7 +148,7 @@ DY_TTF_HEADERS= \
 
 DY_UEFI_OBJECTS= \
  ./tools/dy-uefi/dy-uefi.obj \
- ./tools/dy-uefi/x64.obj
+ ./tools/dy-uefi/x64.obj \
 
 ./bin/dy-uefi$(DANCY_EXE): $(DY_UEFI_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_UEFI_OBJECTS)
@@ -156,7 +161,7 @@ DY_VBR_OBJECTS= \
  ./boot/early/ldr512.obj \
  ./boot/early/vbrchs.obj \
  ./boot/early/vbrlba.obj \
- ./common/crc32c.obj
+ ./common/crc32c.obj \
 
 ./bin/dy-vbr$(DANCY_EXE): $(DY_VBR_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_VBR_OBJECTS)
@@ -169,7 +174,7 @@ DY_ZIP_OBJECTS= \
  ./tools/dy-zip/deflate.obj \
  ./tools/dy-zip/huffman.obj \
  ./tools/dy-zip/program.obj \
- ./common/crc32.obj
+ ./common/crc32.obj \
 
 ./bin/dy-zip$(DANCY_EXE): $(DY_ZIP_OBJECTS) ./scripts/dancy.mk
 	$(DANCY_HOST_BINARY)$@ $(DY_ZIP_OBJECTS)

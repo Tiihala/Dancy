@@ -4,11 +4,11 @@
 
 DANCY_PCI_OBJECTS_32= \
  ./o32/pci/ide_ctrl.o \
- ./o32/pci/pci.o
+ ./o32/pci/pci.o \
 
 DANCY_PCI_OBJECTS_64= \
  ./o64/pci/ide_ctrl.o \
- ./o64/pci/pci.o
+ ./o64/pci/pci.o \
 
 ##############################################################################
 

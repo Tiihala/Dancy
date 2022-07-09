@@ -9,7 +9,7 @@ DANCY_DB_000_FILES= \
  ./share/fonts/dcysan.ttf \
  ./share/fonts/dcysanb.ttf \
  ./share/fonts/dcysanm.ttf \
- ./share/pictures/init.png
+ ./share/pictures/init.png \
 
 DANCY_DB_100_FILES= \
  ./o32/lib.at \
@@ -36,10 +36,10 @@ DANCY_DB_200_FILES= \
  $(ACPICA_O64_AT)
 
 DANCY_DB_300_FILES= \
- ./arctic/bin32.img
+ ./arctic/bin32.img \
 
 DANCY_DB_400_FILES= \
- ./arctic/bin64.img
+ ./arctic/bin64.img \
 
 ##############################################################################
 

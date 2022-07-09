@@ -16,7 +16,7 @@ DANCY_LIB_OBJECTS_32= \
  ./o32/lib/snprintf.o \
  ./o32/lib/stdlib.o \
  ./o32/lib/strerror.o \
- ./o32/lib/string.o
+ ./o32/lib/string.o \
 
 DANCY_LIB_OBJECTS_64= \
  ./o64/_common/a64/dark.o \
@@ -32,7 +32,7 @@ DANCY_LIB_OBJECTS_64= \
  ./o64/lib/snprintf.o \
  ./o64/lib/stdlib.o \
  ./o64/lib/strerror.o \
- ./o64/lib/string.o
+ ./o64/lib/string.o \
 
 ##############################################################################
 

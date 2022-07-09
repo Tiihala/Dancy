@@ -165,7 +165,7 @@ ACPICA_OBJECTS_32= \
  ./o32/acpica/utxface.o \
  ./o32/acpica/utxferror.o \
  ./o32/acpica/utxfinit.o \
- ./o32/acpica/utxfmutex.o
+ ./o32/acpica/utxfmutex.o \
 
 ACPICA_OBJECTS_64= \
  ./o64/acpica/dsargs.o \
@@ -330,7 +330,7 @@ ACPICA_OBJECTS_64= \
  ./o64/acpica/utxface.o \
  ./o64/acpica/utxferror.o \
  ./o64/acpica/utxfinit.o \
- ./o64/acpica/utxfmutex.o
+ ./o64/acpica/utxfmutex.o \
 
 ACPICA_HEADERS= \
  ./include/acpica/platform/acenv.h \
@@ -374,7 +374,7 @@ ACPICA_HEADERS= \
  ./include/acpica/acuuid.h \
  ./include/acpica/amlcode.h \
  ./include/acpica/amlresrc.h \
- ./include/acpios/acdancy.h
+ ./include/acpios/acdancy.h \
 
 ACPICA_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(ACPICA_HEADERS)
 ACPICA_TEMP=./include/acpica/acpi.h

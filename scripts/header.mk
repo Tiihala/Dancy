@@ -56,7 +56,7 @@ DANCY_TARGET_TOOLS= \
  ./bin/dy-ttf$(DANCY_EXE) \
  ./bin/dy-uefi$(DANCY_EXE) \
  ./bin/dy-vbr$(DANCY_EXE) \
- ./bin/dy-zip$(DANCY_EXE)
+ ./bin/dy-zip$(DANCY_EXE) \
 
 DANCY_TARGET_SYSTEM= \
  ./efi/boot/BOOTX64.EFI \
@@ -70,7 +70,7 @@ DANCY_TARGET_SYSTEM= \
  ./system/IN_IA32.AT \
  ./system/IN_X64.AT \
  ./LOADER.512 \
- ./LOADER.AT
+ ./LOADER.AT \
 
 DANCY_TARGET_IMAGES= \
  ./release/dancy.iso \
@@ -78,10 +78,10 @@ DANCY_TARGET_IMAGES= \
  ./release/fdd720a.img \
  ./release/fdd720b.img \
  ./release/fdd1440.img \
- ./release/usbtiny.img
+ ./release/usbtiny.img \
 
 DANCY_TARGET_RELEASE= \
- ./release/dancy.zip
+ ./release/dancy.zip \
 
 DANCY_HEADERS= \
  ./arctic/include/stdio.h \
@@ -112,6 +112,6 @@ DANCY_HEADERS= \
  ./include/kernel/table.h \
  ./include/kernel/task.h \
  ./include/kernel/vfs.h \
- ./include/dancy.h
+ ./include/dancy.h \
 
 DANCY_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(DANCY_TARGET_TOOLS)
