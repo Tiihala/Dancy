@@ -304,14 +304,7 @@ static int mount_serial_port(int port)
 	dev_node->n_read  = n_read;
 	dev_node->n_write = n_write;
 
-	if ((r = vfs_open("/dev/", &node, 0, vfs_mode_create)) != 0) {
-		dev_node->n_release(&dev_node);
-		return r;
-	}
-
-	node->n_release(&node);
-
-	snprintf(&name[0], sizeof(name), "/dev/port%d", port);
+	snprintf(&name[0], sizeof(name), "/dev/ttyS%d", port - 1);
 
 	if ((r = vfs_open(name, &node, 0, vfs_mode_create)) != 0) {
 		dev_node->n_release(&dev_node);
