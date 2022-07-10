@@ -91,9 +91,6 @@ static int n_readdir(struct vfs_node *node,
 
 	memset(record, 0, size);
 
-	if (pointer > DEVFS_COUNT - 2)
-		return DE_OVERFLOW;
-
 	if (pointer == 0) {
 		if (size < 2)
 			return DE_BUFFER;
@@ -107,6 +104,9 @@ static int n_readdir(struct vfs_node *node,
 		strcpy(record, "..");
 		return 0;
 	}
+
+	if (pointer - 1 >= DEVFS_COUNT)
+		return DE_OVERFLOW;
 
 	if (mtx_lock(&devfs_mtx) != thrd_success)
 		return DE_UNEXPECTED;
