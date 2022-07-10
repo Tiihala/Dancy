@@ -44,9 +44,6 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 	if (type == vfs_type_directory || vname->type == vfs_type_directory)
 		return DE_TYPE;
 
-	if ((mode & vfs_mode_exclusive) != 0)
-		return DE_ARGUMENT;
-
 	if (vname->components[0] == NULL || vname->components[1] != NULL)
 		return DE_PATH;
 
@@ -60,6 +57,8 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 
 	for (i = 1; i < DEVFS_COUNT && devfs_table[i].node; i++) {
 		if (!strcmp(devfs_table[i].name, name)) {
+			if ((mode & vfs_mode_exclusive) != 0)
+				return mtx_unlock(&devfs_mtx), DE_BUSY;
 			vfs_increment_count(devfs_table[i].node);
 			*new_node = devfs_table[i].node;
 			return mtx_unlock(&devfs_mtx), 0;
