@@ -152,11 +152,6 @@ static int mount_locked(struct vfs_name *vname, struct vfs_node *node)
 	for (i = 0; vname->components[i] != NULL; i++) {
 		char *p = vname->components[i];
 
-		if (mnode->node || p[0] == '\0') {
-			r = DE_BUSY;
-			break;
-		}
-
 		if (!mnode->memb) {
 			if ((r = create_mount_node(&mnode->memb)) != 0)
 				return r;
@@ -241,17 +236,18 @@ int vfs_mount(const char *name, struct vfs_node *node)
 
 static struct vfs_node *get_mount_node_locked(struct vfs_name *vname)
 {
+	char **components = vname->components;
 	struct mount_node *mnode = mount_tree;
 	struct vfs_node *node = root_node;
 	int i;
 
-	if (!vname->components[0]) {
+	if (!components[0]) {
 		vfs_increment_count(node);
 		return node;
 	}
 
-	for (i = 0; vname->components[i] != NULL; i++) {
-		char *p = vname->components[i];
+	for (i = 0; components[i] != NULL; i++) {
+		char *p = components[i];
 
 		if ((mnode = mnode->memb) == NULL)
 			break;
@@ -265,9 +261,8 @@ static struct vfs_node *get_mount_node_locked(struct vfs_name *vname)
 			break;
 
 		if (mnode->node) {
-			vname->components = &vname->components[i + 1];
+			vname->components = &components[i + 1];
 			node = mnode->node;
-			break;
 		}
 	}
 
