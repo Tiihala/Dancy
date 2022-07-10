@@ -5,6 +5,7 @@
 DANCY_VFS_OBJECTS_32= \
  ./o32/_common/fat.o \
  ./o32/vfs/default.o \
+ ./o32/vfs/devfs.o \
  ./o32/vfs/fat_io.o \
  ./o32/vfs/path.o \
  ./o32/vfs/root.o \
@@ -13,6 +14,7 @@ DANCY_VFS_OBJECTS_32= \
 DANCY_VFS_OBJECTS_64= \
  ./o64/_common/fat.o \
  ./o64/vfs/default.o \
+ ./o64/vfs/devfs.o \
  ./o64/vfs/fat_io.o \
  ./o64/vfs/path.o \
  ./o64/vfs/root.o \

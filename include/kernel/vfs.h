@@ -100,6 +100,11 @@ struct vfs_stat {
 void vfs_default(struct vfs_node *node);
 
 /*
+ * Declarations of devfs.c
+ */
+int devfs_init(void);
+
+/*
  * Declarations of fat_io.c
  */
 int fat_io_create(struct vfs_node **new_node, struct vfs_node *dev_node);

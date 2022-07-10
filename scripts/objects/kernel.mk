@@ -158,6 +158,9 @@
 ./o32/vfs/default.o: ./kernel/vfs/default.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/vfs/default.c
 
+./o32/vfs/devfs.o: ./kernel/vfs/devfs.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/vfs/devfs.c
+
 ./o32/vfs/fat_io.o: ./kernel/vfs/fat_io.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/vfs/fat_io.c
 
@@ -325,6 +328,9 @@
 
 ./o64/vfs/default.o: ./kernel/vfs/default.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/vfs/default.c
+
+./o64/vfs/devfs.o: ./kernel/vfs/devfs.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/vfs/devfs.c
 
 ./o64/vfs/fat_io.o: ./kernel/vfs/fat_io.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/vfs/fat_io.c
