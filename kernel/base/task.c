@@ -657,30 +657,6 @@ void task_exit(int retval)
 {
 	static const char *unexpected = "task_exit: unexpected behavior";
 	struct task *current = task_current();
-	int i;
-
-	for (i = 0; i < TASK_FD_STATIC_COUNT; i++) {
-		struct vfs_node *node = current->fd_static_table[i];
-		struct vfs_node **node_pointer;
-
-		if (node) {
-			node_pointer = &current->fd_static_table[i];
-			node->n_release(node_pointer);
-		}
-	}
-
-	if (current->fd_dynamic_table) {
-		for (i = 0; i < current->fd_dynamic_count; i++) {
-			struct vfs_node *node = current->fd_dynamic_table[i];
-			struct vfs_node **node_pointer;
-
-			if (node) {
-				node_pointer = &current->fd_dynamic_table[i];
-				node->n_release(node_pointer);
-			}
-		}
-		free(current->fd_dynamic_table);
-	}
 
 	pg_delete();
 
