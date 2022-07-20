@@ -28,6 +28,8 @@ enum task_type {
 	task_uniproc  = 0x02
 };
 
+#define TASK_FD_STATIC_COUNT 64
+
 struct task {
 	uint64_t sp;        /* Offset: 0 */
 	uint64_t cr3;       /* Offset: 8 */
@@ -67,6 +69,13 @@ struct task {
 		int priority;
 		uint32_t state;
 	} sched;
+
+	struct {
+		uint32_t state;
+		void (*release)(struct task *task);
+		uint64_t *table;
+		uint64_t _table[TASK_FD_STATIC_COUNT];
+	} fd;
 };
 
 struct task_list_entry {

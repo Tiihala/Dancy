@@ -658,6 +658,9 @@ void task_exit(int retval)
 	static const char *unexpected = "task_exit: unexpected behavior";
 	struct task *current = task_current();
 
+	if (current->fd.state)
+		current->fd.release(current);
+
 	pg_delete();
 
 	current->retval = retval;
