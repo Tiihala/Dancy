@@ -13,23 +13,18 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * kernel/syscall.h
- *      Header of Dancy Operating System
+ * syscall/file.c
+ *      File descriptors and tables
  */
 
-#ifndef KERNEL_SYSCALL_H
-#define KERNEL_SYSCALL_H
+#include <dancy.h>
 
-#include <dancy/types.h>
+int file_init(void)
+{
+	static int run_once;
 
-/*
- * Declarations of file.c
- */
-int file_init(void);
+	if (!spin_trylock(&run_once))
+		return DE_UNEXPECTED;
 
-/*
- * Declarations of syscall.c
- */
-int syscall_init(void);
-
-#endif
+	return 0;
+}
