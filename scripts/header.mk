@@ -86,7 +86,10 @@ DANCY_TARGET_RELEASE= \
  ./release/dancy.zip \
 
 DANCY_HEADERS= \
+ ./arctic/include/ctype.h \
  ./arctic/include/stdio.h \
+ ./arctic/include/stdlib.h \
+ ./arctic/include/string.h \
  ./include/boot/init.h \
  ./include/boot/loader.h \
  ./include/boot/uefi.h \
