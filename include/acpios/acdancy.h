@@ -20,12 +20,13 @@
 #ifndef ACPIOS_ACDANCY_H
 #define ACPIOS_ACDANCY_H
 
+#include <arctic/include/ctype.h>
+#include <arctic/include/string.h>
+
 #ifndef va_arg
 #include <dancy/stdarg.h>
 #endif
-#include <dancy/ctype.h>
 #include <dancy/limits.h>
-#include <dancy/string.h>
 #include <dancy/types.h>
 
 #if defined (DANCY_32)
