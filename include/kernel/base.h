@@ -166,6 +166,31 @@ void mm_free_page(phys_addr_t addr);
 void mm_free_pages(phys_addr_t addr, int order);
 
 /*
+ * Declarations of mtx.c
+ */
+typedef void *mtx_t;
+
+enum dancy_mtx_constants {
+	mtx_plain,
+	mtx_timed,
+	mtx_recursive
+};
+
+enum dancy_thrd_constants {
+	thrd_success,
+	thrd_busy,
+	thrd_error,
+	thrd_nomem,
+	thrd_timedout
+};
+
+void mtx_destroy(mtx_t *mtx);
+int mtx_init(mtx_t *mtx, int type);
+int mtx_lock(mtx_t *mtx);
+int mtx_trylock(mtx_t *mtx);
+int mtx_unlock(mtx_t *mtx);
+
+/*
  * Declarations of panic.c
  */
 extern int panic_lock;

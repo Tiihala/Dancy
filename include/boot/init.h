@@ -24,7 +24,6 @@
 #include <arctic/include/stdio.h>
 #include <arctic/include/stdlib.h>
 #include <arctic/include/string.h>
-#include <arctic/include/threads.h>
 
 #include <dancy/blob.h>
 #include <dancy/keys.h>
