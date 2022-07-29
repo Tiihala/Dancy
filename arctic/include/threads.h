@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Antti Tiihala
+ * Copyright (c) 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,14 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy/threads.h
- *      Header of Dancy Operating System
+ * threads.h
+ *      The C Standard Library
  */
 
-#ifndef DANCY_THREADS_H
-#define DANCY_THREADS_H
-
-#include <dancy/time.h>
+#ifndef ARCTIC_DANCY_THREADS_H
+#define ARCTIC_DANCY_THREADS_H
 
 typedef void *mtx_t;
 typedef void *thrd_t;
@@ -44,7 +42,6 @@ enum dancy_thrd_constants {
 void mtx_destroy(mtx_t *mtx);
 int mtx_init(mtx_t *mtx, int type);
 int mtx_lock(mtx_t *mtx);
-int mtx_timedlock(mtx_t *mtx, const struct timespec *ts);
 int mtx_trylock(mtx_t *mtx);
 int mtx_unlock(mtx_t *mtx);
 
@@ -54,7 +51,6 @@ int thrd_detach(thrd_t thr);
 int thrd_equal(thrd_t thr0, thrd_t thr1);
 void thrd_exit(int res);
 int thrd_join(thrd_t thr, int *res);
-int thrd_sleep(const struct timespec *duration, struct timespec *remaining);
 void thrd_yield(void);
 
 #endif

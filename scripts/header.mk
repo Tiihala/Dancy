@@ -90,6 +90,7 @@ DANCY_HEADERS= \
  ./arctic/include/stdio.h \
  ./arctic/include/stdlib.h \
  ./arctic/include/string.h \
+ ./arctic/include/threads.h \
  ./include/boot/init.h \
  ./include/boot/loader.h \
  ./include/boot/uefi.h \
@@ -100,7 +101,6 @@ DANCY_HEADERS= \
  ./include/dancy/limits.h \
  ./include/dancy/stdarg.h \
  ./include/dancy/symbol.h \
- ./include/dancy/threads.h \
  ./include/dancy/time.h \
  ./include/dancy/types.h \
  ./include/kernel/base.h \
