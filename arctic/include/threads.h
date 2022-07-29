@@ -21,9 +21,6 @@
 #define ARCTIC_DANCY_THREADS_H
 
 typedef void *mtx_t;
-typedef void *thrd_t;
-
-typedef int (*thrd_start_t)(void *);
 
 enum dancy_mtx_constants {
 	mtx_plain,
@@ -44,13 +41,5 @@ int mtx_init(mtx_t *mtx, int type);
 int mtx_lock(mtx_t *mtx);
 int mtx_trylock(mtx_t *mtx);
 int mtx_unlock(mtx_t *mtx);
-
-int thrd_create(thrd_t *thr, thrd_start_t func, void *arg);
-thrd_t thrd_current(void);
-int thrd_detach(thrd_t thr);
-int thrd_equal(thrd_t thr0, thrd_t thr1);
-void thrd_exit(int res);
-int thrd_join(thrd_t thr, int *res);
-void thrd_yield(void);
 
 #endif
