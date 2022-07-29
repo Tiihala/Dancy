@@ -20,25 +20,24 @@
 #ifndef BOOT_UEFI_H
 #define BOOT_UEFI_H
 
-#if !defined(DANCY_64)
-#error Definition of DANCY_64 is not available
+#ifndef DANCY_64
+#error "Definition of DANCY_64 is not available"
 #endif
 
+#include <arctic/include/ctype.h>
+#include <arctic/include/stdio.h>
+#include <arctic/include/stdlib.h>
+#include <arctic/include/string.h>
+
 #include <dancy/blob.h>
-#include <dancy/ctype.h>
 #include <dancy/keys.h>
 #include <dancy/limits.h>
 #include <dancy/stdarg.h>
-#include <dancy/stdlib.h>
-#include <dancy/string.h>
 #include <dancy/types.h>
 
 #include <boot/loader.h>
 
 unsigned long crc32c(const void *obj, size_t len);
-
-int snprintf(char *s, size_t n, const char *format, ...);
-int vsnprintf(char *s, size_t n, const char *format, va_list arg);
 
 typedef void *                                  EFI_PVOID;
 typedef void *                                  EFI_HANDLE;

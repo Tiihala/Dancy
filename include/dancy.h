@@ -22,16 +22,17 @@
 
 #include <dancy/blob.h>
 
-#if defined(DANCY_32) || defined(DANCY_64)
+#ifdef DANCY_SYSTEM
 
-#include <dancy/ctype.h>
+#include <arctic/include/ctype.h>
+#include <arctic/include/stdio.h>
+#include <arctic/include/stdlib.h>
+#include <arctic/include/string.h>
+
 #include <dancy/keys.h>
 #include <dancy/lib.h>
 #include <dancy/limits.h>
 #include <dancy/stdarg.h>
-#include <dancy/stdio.h>
-#include <dancy/stdlib.h>
-#include <dancy/string.h>
 #include <dancy/symbol.h>
 #include <dancy/threads.h>
 #include <dancy/time.h>

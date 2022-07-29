@@ -94,15 +94,11 @@ DANCY_HEADERS= \
  ./include/boot/loader.h \
  ./include/boot/uefi.h \
  ./include/dancy/blob.h \
- ./include/dancy/ctype.h \
  ./include/dancy/error.h \
  ./include/dancy/keys.h \
  ./include/dancy/lib.h \
  ./include/dancy/limits.h \
  ./include/dancy/stdarg.h \
- ./include/dancy/stdio.h \
- ./include/dancy/stdlib.h \
- ./include/dancy/string.h \
  ./include/dancy/symbol.h \
  ./include/dancy/threads.h \
  ./include/dancy/time.h \
