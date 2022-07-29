@@ -740,44 +740,20 @@ int symbol_process(struct options *opt, unsigned char *obj)
 			}
 			s[14] = 0, s[15] = 0, s[16] = 3;
 		}
-		while (i < syms - 1) {
-			unsigned char *s1 = obj + symtab + ((i + 0) * 18);
-			unsigned char *s2 = obj + symtab + ((i + 1) * 18);
-			unsigned long t1 = LE32(&s1[0]);
-			unsigned long t2 = LE32(&s2[0]);
+		while (i < syms) {
+			unsigned char *s = obj + symtab + (i * 18);
 
-			if (!allow_ext && !LE16(&s1[12])) {
-				const char *name = (const char *)s1;
+			if (!allow_ext && !LE16(&s[12])) {
+				const char *name = (const char *)s;
 				fputs("Error: unresolved symbol \"", stderr);
-				if (t1) {
+				if (LE32(&s[0])) {
 					fprintf(stderr, "%.8s", name);
 				} else {
-					name = get_long_name(opt, s1);
+					name = get_long_name(opt, s);
 					fprintf(stderr, "%s", name);
 				}
 				fputs("\"\n", stderr);
 				unresolved = 1;
-			}
-			if (t1 && t2 && (t1 != t2)) {
-				i += 1;
-				continue;
-			}
-
-			/*
-			 * There should be no multiply defined symbols,
-			 * but do the consistency check anyway.
-			 */
-			if (match(opt, s1, s2)) {
-				const char *name = (const char *)s1;
-				fputs("Error: symbol \"", stderr);
-				if (t1) {
-					fprintf(stderr, "%.8s", name);
-				} else {
-					name = get_long_name(opt, s1);
-					fprintf(stderr, "%s", name);
-				}
-				fputs("\" multiply defined\n", stderr);
-				return 1;
 			}
 			i += 1;
 		}
