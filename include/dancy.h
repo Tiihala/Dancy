@@ -35,7 +35,6 @@
 #include <dancy/limits.h>
 #include <dancy/stdarg.h>
 #include <dancy/symbol.h>
-#include <dancy/time.h>
 #include <dancy/types.h>
 
 enum dancy_error {

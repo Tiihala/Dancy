@@ -101,7 +101,6 @@ DANCY_HEADERS= \
  ./include/dancy/limits.h \
  ./include/dancy/stdarg.h \
  ./include/dancy/symbol.h \
- ./include/dancy/time.h \
  ./include/dancy/types.h \
  ./include/kernel/base.h \
  ./include/kernel/debug.h \

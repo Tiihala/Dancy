@@ -20,7 +20,6 @@
 #ifndef KERNEL_VFS_H
 #define KERNEL_VFS_H
 
-#include <dancy/time.h>
 #include <dancy/types.h>
 
 enum vfs_type {
@@ -86,11 +85,16 @@ struct vfs_name {
 	int type;
 };
 
+struct vfs_timespec {
+	dancy_time_t tv_sec;
+	long tv_nsec;
+};
+
 struct vfs_stat {
 	uint64_t size;
-	struct timespec access_time;
-	struct timespec creation_time;
-	struct timespec write_time;
+	struct vfs_timespec access_time;
+	struct vfs_timespec creation_time;
+	struct vfs_timespec write_time;
 	size_t block_size;
 };
 
