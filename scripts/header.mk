@@ -86,6 +86,7 @@ DANCY_TARGET_RELEASE= \
  ./release/dancy.zip \
 
 DANCY_HEADERS= \
+ ./arctic/include/sys/types.h \
  ./arctic/include/ctype.h \
  ./arctic/include/fcntl.h \
  ./arctic/include/stdio.h \

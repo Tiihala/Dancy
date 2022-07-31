@@ -24,6 +24,7 @@
 
 #ifdef DANCY_SYSTEM
 
+#include <arctic/include/sys/types.h>
 #include <arctic/include/ctype.h>
 #include <arctic/include/fcntl.h>
 #include <arctic/include/stdio.h>
