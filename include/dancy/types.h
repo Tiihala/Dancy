@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, 2021 Antti Tiihala
+ * Copyright (c) 2018, 2019, 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,38 +20,18 @@
 #ifndef DANCY_TYPES_H
 #define DANCY_TYPES_H
 
-#include <dancy/limits.h>
-#include <stddef.h>
-
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
+#include <arctic/include/sys/types.h>
 
 #ifdef DANCY_32
-
 typedef unsigned int addr_t;
 typedef unsigned int phys_addr_t;
 typedef unsigned int cpu_native_t;
-#define DANCY_SIZE_MAX (4294967295ul)
-
 #endif
 
 #ifdef DANCY_64
-
 typedef unsigned long long addr_t;
 typedef unsigned long long phys_addr_t;
 typedef unsigned long long cpu_native_t;
-#define DANCY_SIZE_MAX (18446744073709551615ull)
-
-#endif
-
-#ifndef SIZE_MAX
-#define SIZE_MAX DANCY_SIZE_MAX
-#endif
-
-#if SIZE_MAX != DANCY_SIZE_MAX
-#error "Definition of SIZE_MAX is not compatible"
 #endif
 
 typedef long long dancy_time_t;
