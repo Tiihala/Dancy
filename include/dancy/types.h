@@ -20,6 +20,7 @@
 #ifndef DANCY_TYPES_H
 #define DANCY_TYPES_H
 
+#include <stdint.h>
 #include <arctic/include/sys/types.h>
 
 #ifdef DANCY_32

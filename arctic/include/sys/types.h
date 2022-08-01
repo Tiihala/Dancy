@@ -22,7 +22,6 @@
 
 #include <limits.h>
 #include <stddef.h>
-#include <stdint.h>
 
 #if UINT_MAX != 4294967295ul
 #error "Definition of UINT_MAX is not compatible"
@@ -48,15 +47,17 @@
 #error "Define __DANCY_SIZE_MAX"
 #endif
 
+#ifdef SIZE_MAX
 #if __DANCY_SIZE_MAX != SIZE_MAX
 #error "Definition of SIZE_MAX is not compatible"
 #endif
+#endif
 
-#if SIZE_MAX == UINT_MAX
+#if __DANCY_SIZE_MAX == UINT_MAX
 typedef int ssize_t;
-#elif SIZE_MAX == ULONG_MAX
+#elif __DANCY_SIZE_MAX == ULONG_MAX
 typedef long ssize_t;
-#elif SIZE_MAX == ULLONG_MAX
+#elif __DANCY_SIZE_MAX == ULLONG_MAX
 typedef long long ssize_t;
 #else
 #error "Type ssize_t could not be defined"
