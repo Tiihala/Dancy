@@ -24,7 +24,11 @@
 
 #ifdef DANCY_SYSTEM
 
-#include <arctic/include/sys/types.h>
+#include <limits.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <arctic/include/ctype.h>
 #include <arctic/include/fcntl.h>
 #include <arctic/include/stdio.h>
@@ -34,7 +38,6 @@
 #include <dancy/keys.h>
 #include <dancy/lib.h>
 #include <dancy/limits.h>
-#include <dancy/stdarg.h>
 #include <dancy/symbol.h>
 #include <dancy/types.h>
 

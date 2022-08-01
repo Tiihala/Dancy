@@ -24,6 +24,11 @@
 #error "Definition of DANCY_64 is not available"
 #endif
 
+#include <limits.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <arctic/include/ctype.h>
 #include <arctic/include/stdio.h>
 #include <arctic/include/stdlib.h>
@@ -32,7 +37,6 @@
 #include <dancy/blob.h>
 #include <dancy/keys.h>
 #include <dancy/limits.h>
-#include <dancy/stdarg.h>
 #include <dancy/types.h>
 
 #include <boot/loader.h>

@@ -24,7 +24,7 @@
 #include <arctic/include/string.h>
 
 #ifndef va_arg
-#include <dancy/stdarg.h>
+#include <stdarg.h>
 #endif
 #include <dancy/limits.h>
 #include <dancy/types.h>
