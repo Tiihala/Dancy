@@ -20,7 +20,7 @@
 #ifndef ARCTIC_DANCY_STDLIB_H
 #define ARCTIC_DANCY_STDLIB_H
 
-#include <stddef.h>
+#include <__dancy/core.h>
 
 void *aligned_alloc(size_t alignment, size_t size);
 void *calloc(size_t nmemb, size_t size);

@@ -20,6 +20,8 @@
 #ifndef ARCTIC_DANCY_CTYPE_H
 #define ARCTIC_DANCY_CTYPE_H
 
+#include <__dancy/core.h>
+
 int isalnum(int c);
 int isalpha(int c);
 int isblank(int c);

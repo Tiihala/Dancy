@@ -20,38 +20,9 @@
 #ifndef ARCTIC_DANCY_SYS_TYPES_H
 #define ARCTIC_DANCY_SYS_TYPES_H
 
+#include <__dancy/core.h>
+
 #include <limits.h>
-#include <stddef.h>
-
-#if UINT_MAX != 4294967295ul
-#error "Definition of UINT_MAX is not compatible"
-#endif
-
-#ifndef ULLONG_MAX
-#error "Definition of ULLONG_MAX is not available"
-#endif
-
-#if ULLONG_MAX != 18446744073709551615ull
-#error "Definition of ULLONG_MAX is not compatible"
-#endif
-
-#ifdef DANCY_32
-#define __DANCY_SIZE_MAX UINT_MAX
-#endif
-
-#ifdef DANCY_64
-#define __DANCY_SIZE_MAX ULLONG_MAX
-#endif
-
-#ifndef __DANCY_SIZE_MAX
-#error "Define __DANCY_SIZE_MAX"
-#endif
-
-#ifdef SIZE_MAX
-#if __DANCY_SIZE_MAX != SIZE_MAX
-#error "Definition of SIZE_MAX is not compatible"
-#endif
-#endif
 
 #if __DANCY_SIZE_MAX == UINT_MAX
 typedef int ssize_t;

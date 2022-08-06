@@ -20,8 +20,9 @@
 #ifndef ARCTIC_DANCY_STDIO_H
 #define ARCTIC_DANCY_STDIO_H
 
+#include <__dancy/core.h>
+
 #include <stdarg.h>
-#include <stddef.h>
 
 int printf(const char *format, ...);
 

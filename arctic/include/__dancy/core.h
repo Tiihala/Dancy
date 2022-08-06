@@ -1,0 +1,53 @@
+/*
+ * Copyright (c) 2022 Antti Tiihala
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * include/__dancy/core.h
+ *      The Arctic Dancy Header
+ */
+
+#ifndef ARCTIC_DANCY_INTERNAL_CORE_H
+#define ARCTIC_DANCY_INTERNAL_CORE_H
+
+#include <stddef.h>
+
+#if defined(__CHAR_BIT__) && __CHAR_BIT__ != 8
+#error "Unsupported __CHAR_BIT__"
+#endif
+
+#if defined(__INT_MAX__) && __INT_MAX__ != 0x7FFFFFFF
+#error "Unsupported __INT_MAX__"
+#endif
+
+#if !defined(__DANCY_SIZE_MAX) && defined(__DANCY_32)
+#define __DANCY_SIZE_MAX 4294967295u
+#endif
+
+#if !defined(__DANCY_SIZE_MAX) && defined(__DANCY_64)
+#define __DANCY_SIZE_MAX 18446744073709551615ull
+#endif
+
+#if !defined(__DANCY_SIZE_MAX) && defined(__SIZE_MAX__)
+#define __DANCY_SIZE_MAX __SIZE_MAX__
+#endif
+
+#if !defined(__DANCY_SIZE_MAX)
+#error "Define __DANCY_SIZE_MAX"
+#endif
+
+#if defined(__SIZE_MAX__) && __SIZE_MAX__ != __DANCY_SIZE_MAX
+#error "Unsupported __SIZE_MAX__ or __DANCY_SIZE_MAX"
+#endif
+
+#endif

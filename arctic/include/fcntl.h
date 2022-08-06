@@ -20,6 +20,8 @@
 #ifndef ARCTIC_DANCY_FCNTL_H
 #define ARCTIC_DANCY_FCNTL_H
 
+#include <__dancy/core.h>
+
 #define O_RDONLY            0
 #define O_WRONLY            1
 #define O_RDWR              2
