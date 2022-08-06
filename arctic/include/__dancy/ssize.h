@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, 2021, 2022 Antti Tiihala
+ * Copyright (c) 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,31 +13,38 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy/types.h
- *      Header of Dancy Operating System
+ * include/__dancy/ssize.h
+ *      The Arctic Dancy Header
  */
 
-#ifndef DANCY_TYPES_H
-#define DANCY_TYPES_H
+#ifndef ARCTIC_DANCY_INTERNAL_SSIZE_H
+#define ARCTIC_DANCY_INTERNAL_SSIZE_H
 
-#include <limits.h>
-#include <stdint.h>
+#include <__dancy/core.h>
 
-#include <arctic/include/sys/types.h>
+#undef __DANCY_SSIZE_TYPE
 
-#ifdef DANCY_32
-typedef unsigned int addr_t;
-typedef unsigned int phys_addr_t;
-typedef unsigned int cpu_native_t;
+#if __DANCY_SIZE_MAX == 4294967295u
+#define __DANCY_SSIZE_TYPE int
+
+#elif defined(__SIZE_MAX__) && __SIZE_MAX__ == 4294967295u
+#define __DANCY_SSIZE_TYPE int
+
+#elif defined(__SIZEOF_LONG__) && __SIZEOF_LONG__ == 8
+#define __DANCY_SSIZE_TYPE long
+
+#elif defined(__LONG_WIDTH__) && __LONG_WIDTH__ == 64
+#define __DANCY_SSIZE_TYPE long
+
+#elif __DANCY_SIZE_MAX == 18446744073709551615ull
+#define __DANCY_SSIZE_TYPE long long
+
 #endif
 
-#ifdef DANCY_64
-typedef unsigned long long addr_t;
-typedef unsigned long long phys_addr_t;
-typedef unsigned long long cpu_native_t;
+#if !defined(__DANCY_SSIZE_TYPE)
+#error "Type ssize_t could not be defined"
 #endif
 
-typedef long long dancy_time_t;
-typedef void *event_t;
+typedef __DANCY_SSIZE_TYPE ssize_t;
 
 #endif

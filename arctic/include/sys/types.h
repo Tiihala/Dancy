@@ -21,18 +21,7 @@
 #define ARCTIC_DANCY_SYS_TYPES_H
 
 #include <__dancy/core.h>
-
-#include <limits.h>
-
-#if __DANCY_SIZE_MAX == UINT_MAX
-typedef int ssize_t;
-#elif __DANCY_SIZE_MAX == ULONG_MAX
-typedef long ssize_t;
-#elif __DANCY_SIZE_MAX == ULLONG_MAX
-typedef long long ssize_t;
-#else
-#error "Type ssize_t could not be defined"
-#endif
+#include <__dancy/ssize.h>
 
 typedef int mode_t;
 typedef int suseconds_t;

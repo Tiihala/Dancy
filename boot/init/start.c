@@ -37,6 +37,9 @@ void start_init(void *map)
 	if ((size_t)(!map + 494 - 'D' - 'a' - 'n' - 'c' - 'y') != SIZE_MAX)
 		return;
 
+	if ((int)(!map + (sizeof(size_t) != sizeof(ssize_t))) != 0)
+		return;
+
 	if (memory_init(map))
 		return;
 
