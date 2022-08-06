@@ -50,4 +50,14 @@
 #error "Unsupported __SIZE_MAX__ or __DANCY_SIZE_MAX"
 #endif
 
+typedef int __dancy_mode_t;
+typedef int __dancy_suseconds_t;
+
+typedef long long __dancy_off_t;
+typedef long long __dancy_id_t;
+typedef long long __dancy_pid_t;
+
+typedef long long __dancy_clock_t;
+typedef long long __dancy_time_t;
+
 #endif

@@ -23,14 +23,39 @@
 #include <__dancy/core.h>
 #include <__dancy/ssize.h>
 
-typedef int mode_t;
-typedef int suseconds_t;
+#ifndef __DANCY_TYPEDEF_MODE_T
+#define __DANCY_TYPEDEF_MODE_T
+typedef __dancy_mode_t mode_t;
+#endif
 
-typedef long long off_t;
-typedef long long id_t;
-typedef long long pid_t;
+#ifndef __DANCY_TYPEDEF_SUSECONDS_T
+#define __DANCY_TYPEDEF_SUSECONDS_T
+typedef __dancy_suseconds_t suseconds_t;
+#endif
 
-typedef long long clock_t;
-typedef long long time_t;
+#ifndef __DANCY_TYPEDEF_OFF_T
+#define __DANCY_TYPEDEF_OFF_T
+typedef __dancy_off_t off_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_ID_T
+#define __DANCY_TYPEDEF_ID_T
+typedef __dancy_id_t id_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_PID_T
+#define __DANCY_TYPEDEF_PID_T
+typedef __dancy_pid_t pid_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_CLOCK_T
+#define __DANCY_TYPEDEF_CLOCK_T
+typedef __dancy_clock_t clock_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_TIME_T
+#define __DANCY_TYPEDEF_TIME_T
+typedef __dancy_time_t time_t;
+#endif
 
 #endif
