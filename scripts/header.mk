@@ -94,6 +94,7 @@ DANCY_HEADERS= \
  ./arctic/include/__dancy/seek.h \
  ./arctic/include/__dancy/ssize.h \
  ./arctic/include/sys/types.h \
+ ./arctic/include/assert.h \
  ./arctic/include/ctype.h \
  ./arctic/include/fcntl.h \
  ./arctic/include/stdio.h \

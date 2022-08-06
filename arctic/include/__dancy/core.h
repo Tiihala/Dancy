@@ -60,4 +60,6 @@ typedef long long __dancy_pid_t;
 typedef long long __dancy_clock_t;
 typedef long long __dancy_time_t;
 
+void __dancy_assert(const char *expression, const char *name, int line);
+
 #endif
