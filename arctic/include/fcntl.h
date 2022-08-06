@@ -49,6 +49,21 @@
 
 #define FD_CLOEXEC          0x0001
 
+#ifndef __DANCY_TYPEDEF_MODE_T
+#define __DANCY_TYPEDEF_MODE_T
+typedef __dancy_mode_t mode_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_OFF_T
+#define __DANCY_TYPEDEF_OFF_T
+typedef __dancy_off_t off_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_PID_T
+#define __DANCY_TYPEDEF_PID_T
+typedef __dancy_pid_t pid_t;
+#endif
+
 int open(const char *name, int flags, ...);
 int fcntl(int fd, int cmd, ...);
 
