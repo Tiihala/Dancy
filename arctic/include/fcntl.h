@@ -21,6 +21,7 @@
 #define ARCTIC_DANCY_FCNTL_H
 
 #include <__dancy/core.h>
+#include <__dancy/seek.h>
 
 #define O_RDONLY            0
 #define O_WRONLY            1
