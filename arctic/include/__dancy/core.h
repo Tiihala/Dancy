@@ -61,5 +61,6 @@ typedef long long __dancy_clock_t;
 typedef long long __dancy_time_t;
 
 void __dancy_assert(const char *expression, const char *name, int line);
+int *__dancy_errno(void);
 
 #endif

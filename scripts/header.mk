@@ -96,6 +96,7 @@ DANCY_HEADERS= \
  ./arctic/include/sys/types.h \
  ./arctic/include/assert.h \
  ./arctic/include/ctype.h \
+ ./arctic/include/errno.h \
  ./arctic/include/fcntl.h \
  ./arctic/include/stdio.h \
  ./arctic/include/stdlib.h \
