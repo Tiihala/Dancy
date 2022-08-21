@@ -32,6 +32,7 @@ int bin_init(void);
  * Declarations of coff.c
  */
 extern const unsigned int coff_native_signature;
+int coff_load_executable(struct vfs_node *node, addr_t *start_addr);
 
 /*
  * Declarations of dma.c

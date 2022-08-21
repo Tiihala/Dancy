@@ -51,6 +51,16 @@ DANCY_X(DE_ALIGNMENT                 , "unsupported alignment"           )
 DANCY_X(DE_MEDIA_CHANGED             , "media changed"                   )
 DANCY_X(DE_ADDRESS_MARK              , "missing address mark"            )
 DANCY_X(DE_OVERRUN                   , "data overrun or underrun"        )
+DANCY_X(DE_COFF_SIGNATURE            , "unsupported signature"           )
+DANCY_X(DE_COFF_SIZE                 , "erroneous or unsupported size"   )
+DANCY_X(DE_COFF_HEADER               , "incompatible object header"      )
+DANCY_X(DE_COFF_SECTION              , "incompatible object sections"    )
+DANCY_X(DE_COFF_FLAG                 , "incompatible object flags"       )
+DANCY_X(DE_COFF_SYMBOL               , "incompatible object symbols"     )
+DANCY_X(DE_COFF_EXTERNAL             , "unresolved external symbols"     )
+DANCY_X(DE_COFF_RELOCATION           , "incompatible object relocations" )
+DANCY_X(DE_COFF_START                , "missing valid start symbol"      )
+DANCY_X(DE_COFF_FORMAT               , "unsupported or corrupted format" )
 
 #endif
 
