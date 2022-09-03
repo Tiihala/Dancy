@@ -74,9 +74,12 @@ struct kernel_table {
 
 	/*
 	 * Symmetric Multiprocessing (SMP).
+	 *
+	 * The smp_ap_state table uses AP ID as an index.
 	 */
 	int smp_ap_count;
 	uint32_t *smp_ap_id;
+	volatile uint8_t *smp_ap_state;
 
 	/*
 	 * Advanced Configuration and Power Interface (ACPI).

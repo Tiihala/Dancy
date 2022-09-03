@@ -43,14 +43,29 @@ static void runlevel_prepare_shutdown(void)
 	for (i = 0; i < kernel->smp_ap_count; i++) {
 		uint32_t ap_id = kernel->smp_ap_id[i];
 		uint32_t icr_low, icr_high;
+		int wait_ms = 10000;
 
 		if (ap_id > 0xFE)
 			continue;
+
+		kernel->smp_ap_state[ap_id] = 1;
 
 		icr_low = 0x00004400;
 		icr_high = ap_id << 24;
 
 		apic_send(icr_low, icr_high);
+
+		while (kernel->smp_ap_state[ap_id] != 2) {
+			if (--wait_ms == 0) {
+				spin_unlock(&panic_lock);
+				panic("runlevel_prepare_shutdown: watchdog");
+			}
+
+			if ((wait_ms % 1000) == 0)
+				apic_send(icr_low, icr_high);
+
+			delay(1000000);
+		}
 	}
 
 	apic_wait_delivery();

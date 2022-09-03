@@ -249,6 +249,8 @@ void table_init(void)
 	 * even if there were no application processors.
 	 */
 	{
+		uint32_t state_count = 0;
+
 		kernel->smp_ap_count = (int)smp_ap_count;
 
 		size = (size_t)(smp_ap_count * sizeof(uint32_t));
@@ -256,6 +258,14 @@ void table_init(void)
 
 		for (i = 0; i < smp_ap_count; i++)
 			kernel->smp_ap_id[i] = smp_ap_id[i];
+
+		for (i = 0; i < smp_ap_count; i++) {
+			if (state_count < kernel->smp_ap_id[i] + 1)
+				state_count = kernel->smp_ap_id[i] + 1;
+		}
+
+		size = (size_t)(state_count * sizeof(*kernel->smp_ap_state));
+		kernel->smp_ap_state = table_alloc(size);
 	}
 
 	/*

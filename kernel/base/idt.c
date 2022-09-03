@@ -441,6 +441,25 @@ void idt_panic(int num, void *stack, struct idt_context *context)
 void idt_handler(int num, void *stack)
 {
 	/*
+	 * NMI - Non-Maskable-Interrupt Exception.
+	 */
+	if (num == 0x02) {
+		uint32_t current_id = apic_id();
+
+		/*
+		 * Set the application processor state if needed (runlevel.c).
+		 */
+		if (current_id != kernel->apic_bsp_id) {
+			int state = (int)kernel->smp_ap_state[current_id];
+
+			if (state == 1 || state == 2) {
+				kernel->smp_ap_state[current_id] = 2;
+				cpu_halt(0);
+			}
+		}
+	}
+
+	/*
 	 * IRQ 0 - 15 (PIC).
 	 */
 	if (num >= 0x20 && num <= 0x2F) {
