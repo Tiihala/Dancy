@@ -22,9 +22,12 @@
 int syscall_init(void)
 {
 	static int run_once;
+	extern void syscall_init_asm(void);
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
+
+	syscall_init_asm();
 
 	return 0;
 }
