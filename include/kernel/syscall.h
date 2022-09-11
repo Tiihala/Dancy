@@ -31,5 +31,6 @@ int file_init(void);
  * Declarations of syscall.c
  */
 int syscall_init(void);
+long long syscall_handler(int arg0, ...);
 
 #endif

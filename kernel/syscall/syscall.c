@@ -18,6 +18,7 @@
  */
 
 #include <dancy.h>
+#include <errno.h>
 
 int syscall_init(void)
 {
@@ -30,4 +31,11 @@ int syscall_init(void)
 	syscall_init_asm();
 
 	return 0;
+}
+
+long long syscall_handler(int arg0, ...)
+{
+	(void)arg0;
+
+	return -EINVAL;
 }
