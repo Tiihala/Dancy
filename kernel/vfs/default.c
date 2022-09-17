@@ -42,8 +42,9 @@ static int vfs_default_read(struct vfs_node *node,
 {
 	(void)node;
 	(void)offset;
-	(void)size;
 	(void)buffer;
+
+	*size = 0;
 
 	return DE_UNSUPPORTED;
 }
@@ -53,8 +54,9 @@ static int vfs_default_write(struct vfs_node *node,
 {
 	(void)node;
 	(void)offset;
-	(void)size;
 	(void)buffer;
+
+	*size = 0;
 
 	return DE_UNSUPPORTED;
 }
