@@ -587,6 +587,56 @@ static int n_write(struct vfs_node *node,
 	return n_read_write_common(node, offset, size, (addr_t)buffer, 1);
 }
 
+static int n_append(struct vfs_node *node, size_t *size, const void *buffer)
+{
+	void *instance;
+	struct fat_internal_data *data = node->internal_data;
+	size_t retval = *size;
+	unsigned char record[32];
+	int fat_offset[2];
+	int r;
+
+	*size = 0;
+
+	if ((r = enter_fat(node)) != 0)
+		return r;
+
+	instance = data->io->instance;
+
+	if ((r = fat_control(instance, data->fd, 0, record)) != 0)
+		return leave_fat(node), translate_error(r);
+
+	{
+		unsigned long file_size = LE32(&record[28]);
+
+		if (file_size == 0xFFFFFFFF)
+			return leave_fat(node), 0;
+
+		if (file_size <= INT_MAX) {
+			fat_offset[0] = (int)file_size;
+			fat_offset[1] = 0;
+		} else {
+			fat_offset[0] = INT_MAX;
+			fat_offset[1] = (int)(file_size - INT_MAX);
+		}
+	}
+
+	r = fat_seek(instance, data->fd, fat_offset[0], 0);
+
+	if (fat_offset[1] && !r)
+		r = fat_seek(instance , data->fd, fat_offset[1], 1);
+
+	if (!r)
+		r = fat_write(instance, data->fd, &retval, buffer);
+
+	leave_fat(node);
+
+	if (r)
+		return translate_error(r);
+
+	return *size = retval, 0;
+}
+
 static int n_sync(struct vfs_node *node)
 {
 	struct fat_internal_data *data = node->internal_data;
@@ -970,6 +1020,7 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->n_open     = n_open;
 		node->n_read     = n_read;
 		node->n_write    = n_write;
+		node->n_append   = n_append;
 		node->n_sync     = n_sync;
 		node->n_readdir  = n_readdir;
 		node->n_rename   = n_rename;

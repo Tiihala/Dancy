@@ -59,6 +59,14 @@ static int vfs_default_write(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
+static int vfs_default_append(struct vfs_node *node,
+	size_t *size, const void *buffer)
+{
+	const unsigned long long offset = 0xFFFFFFFFFFFFFFFFull;
+
+	return node->n_write(node, (uint64_t)offset, size, buffer);
+}
+
 static int vfs_default_sync(struct vfs_node *node)
 {
 	(void)node;
@@ -120,6 +128,7 @@ void vfs_default(struct vfs_node *node)
 	node->n_open     = vfs_default_open;
 	node->n_read     = vfs_default_read;
 	node->n_write    = vfs_default_write;
+	node->n_append   = vfs_default_append;
 	node->n_sync     = vfs_default_sync;
 	node->n_readdir  = vfs_default_readdir;
 	node->n_rename   = vfs_default_rename;
