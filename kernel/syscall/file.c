@@ -334,3 +334,58 @@ int file_lseek(int fd, off_t offset, int whence)
 
 	return DE_ARGUMENT;
 }
+
+int file_fcntl(int fd, int cmd, int arg, int *retval)
+{
+	struct task *task = task_current();
+	int r = DE_ARGUMENT;
+
+	*retval = -1;
+
+	if (fd >= 0 && fd < (int)task->fd.state) {
+		struct file_table_entry *fte;
+		uint64_t t;
+
+		if ((t = task->fd.table[fd]) != 0) {
+			fte = (void *)((addr_t)(t & table_mask));
+
+			while (!spin_trylock(&fte->lock[1]))
+				task_yield();
+
+			if (cmd == F_DUPFD) {
+
+			} else if (cmd == F_GETFD) {
+				if ((t & fd_cloexec) != 0)
+					*retval = FD_CLOEXEC;
+				r = 0;
+
+			} else if (cmd == F_SETFD) {
+				if ((arg & FD_CLOEXEC) != 0)
+					task->fd.table[fd] |= fd_cloexec;
+				r = 0;
+
+			} else if (cmd == F_GETFL) {
+				*retval = fte->flags;
+				r = 0;
+
+			} else if (cmd == F_SETFL) {
+				unsigned int flags = (unsigned int)fte->flags;
+
+				flags &= (~((unsigned int)O_APPEND));
+				flags |= (unsigned int)(arg & O_APPEND);
+
+				flags &= (~((unsigned int)O_NONBLOCK));
+				flags |= (unsigned int)(arg & O_NONBLOCK);
+
+				fte->flags = (int)flags;
+				r = 0;
+			}
+
+			spin_unlock(&fte->lock[1]);
+
+			return r;
+		}
+	}
+
+	return DE_ARGUMENT;
+}
