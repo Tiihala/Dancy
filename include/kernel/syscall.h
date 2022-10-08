@@ -25,7 +25,24 @@
 /*
  * Declarations of file.c
  */
+struct file_table_entry {
+	int lock[2];
+	int count;
+	int flags;
+
+	uint64_t offset;
+	struct vfs_node *node;
+};
+
+extern int file_table_count;
+extern struct file_table_entry *file_table;
+
 int file_init(void);
+int file_open(int *fd, const char *name, int flags, mode_t mode);
+int file_close(int fd);
+int file_read(int fd, size_t *size, void *buffer);
+int file_write(int fd, size_t *size, const void *buffer);
+int file_lseek(int fd, off_t offset, int whence);
 
 /*
  * Declarations of syscall.c
