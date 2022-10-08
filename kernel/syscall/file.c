@@ -24,6 +24,7 @@ struct file_table_entry *file_table;
 
 static struct file_table_entry _file_table[4096];
 static const uint64_t table_mask = (uint64_t)(0x0000FFFFFFFFFFFFull);
+static const uint64_t fd_cloexec = (uint64_t)(0x0001000000000000ull);
 
 static void fd_release_func(struct task *task)
 {
@@ -128,12 +129,16 @@ int file_open(int *fd, const char *name, int flags, mode_t mode)
 
 	struct task *task = task_current();
 	struct file_table_entry *fte;
+	int accmode = flags & O_ACCMODE;
 	int vtype = vfs_type_unknown;
 	int vmode = 0;
 	int r;
 
 	(void)mode;
 	*fd = -1;
+
+	if (accmode != O_RDONLY && accmode != O_WRONLY && accmode != O_RDWR)
+		return DE_ARGUMENT;
 
 	if ((fte = alloc_file_entry()) == NULL)
 		return DE_MEMORY;
@@ -165,6 +170,9 @@ int file_open(int *fd, const char *name, int flags, mode_t mode)
 		return file_decrement_count(fte), DE_OVERFLOW;
 
 	task->fd.table[*fd] = (uint64_t)((addr_t)fte);
+
+	if ((flags & O_CLOEXEC) != 0)
+		task->fd.table[*fd] |= fd_cloexec;
 
 	return 0;
 }
@@ -204,6 +212,11 @@ int file_read(int fd, size_t *size, void *buffer)
 			while (!spin_trylock(&fte->lock[1]))
 				task_yield();
 
+			if ((fte->flags & O_ACCMODE) == O_WRONLY) {
+				spin_unlock(&fte->lock[1]);
+				return *size = 0, DE_ARGUMENT;
+			}
+
 			n = fte->node;
 			o = fte->offset;
 			r = n->n_read(n, o, size, buffer);
@@ -215,7 +228,7 @@ int file_read(int fd, size_t *size, void *buffer)
 		}
 	}
 
-	return DE_ARGUMENT;
+	return *size = 0, DE_ARGUMENT;
 }
 
 int file_write(int fd, size_t *size, const void *buffer)
@@ -234,6 +247,11 @@ int file_write(int fd, size_t *size, const void *buffer)
 			while (!spin_trylock(&fte->lock[1]))
 				task_yield();
 
+			if ((fte->flags & O_ACCMODE) == O_RDONLY) {
+				spin_unlock(&fte->lock[1]);
+				return *size = 0, DE_ARGUMENT;
+			}
+
 			n = fte->node;
 			o = fte->offset;
 
@@ -249,7 +267,7 @@ int file_write(int fd, size_t *size, const void *buffer)
 		}
 	}
 
-	return DE_ARGUMENT;
+	return *size = 0, DE_ARGUMENT;
 }
 
 int file_lseek(int fd, off_t offset, int whence)
