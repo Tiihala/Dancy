@@ -389,3 +389,73 @@ int file_fcntl(int fd, int cmd, int arg, int *retval)
 
 	return DE_ARGUMENT;
 }
+
+int file_dup(int fd, int *new_fd, int min_fd, int max_fd, int flags)
+{
+	struct task *task = task_current();
+	int r = DE_OVERFLOW;
+	int i;
+
+	*new_fd = -1;
+
+	if (min_fd < 0 || min_fd > max_fd)
+		return DE_ARGUMENT;
+
+	if (fd == min_fd && min_fd == max_fd)
+		return DE_ARGUMENT;
+
+	if (fd >= 0 && fd < (int)task->fd.state) {
+		struct file_table_entry *fte;
+		uint64_t t;
+
+		if ((t = task->fd.table[fd]) != 0) {
+			int empty_fd = -1;
+
+			fte = (void *)((addr_t)(t & table_mask));
+
+			while (!spin_trylock(&fte->lock[1]))
+				task_yield();
+
+			for (i = min_fd; i < max_fd; i++) {
+				if (i >= TASK_FD_STATIC_COUNT)
+					break;
+				if (task->fd.table[i] == 0) {
+					empty_fd = i;
+					break;
+				}
+			}
+
+			if (empty_fd < 0 && min_fd == max_fd) {
+				if (min_fd < TASK_FD_STATIC_COUNT)
+					file_close(empty_fd = min_fd);
+			}
+
+			if (empty_fd >= 0 && fte->count < INT_MAX) {
+				uint32_t state = (uint32_t)(empty_fd + 1);
+
+				if (task->fd.state < state)
+					task->fd.state = state;
+
+				if (task->fd.table[empty_fd] != 0) {
+					spin_unlock(&fte->lock[1]);
+					return DE_UNEXPECTED;
+				}
+
+				*new_fd = empty_fd;
+				task->fd.table[*new_fd] = t & table_mask;
+
+				if ((flags & O_CLOEXEC) != 0)
+					task->fd.table[*new_fd] |= fd_cloexec;
+
+				fte->count += 1;
+				r = 0;
+			}
+
+			spin_unlock(&fte->lock[1]);
+
+			return r;
+		}
+	}
+
+	return DE_ARGUMENT;
+}
