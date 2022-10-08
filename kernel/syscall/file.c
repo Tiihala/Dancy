@@ -352,7 +352,15 @@ int file_fcntl(int fd, int cmd, int arg, int *retval)
 			while (!spin_trylock(&fte->lock[1]))
 				task_yield();
 
-			if (cmd == F_DUPFD) {
+			if (cmd == F_DUPFD || cmd == F_DUPFD_CLOEXEC) {
+				int flags = 0;
+
+				if (cmd == F_DUPFD_CLOEXEC)
+					flags = O_CLOEXEC;
+
+				spin_unlock(&fte->lock[1]);
+				r = file_dup(fd, retval, arg, INT_MAX, flags);
+				return r;
 
 			} else if (cmd == F_GETFD) {
 				if ((t & fd_cloexec) != 0)
