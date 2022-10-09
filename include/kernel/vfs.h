@@ -124,6 +124,11 @@ int vfs_chdir(const char *name);
 int vfs_duplicate_path(struct vfs_name *vname);
 
 /*
+ * Declarations of pipe.c
+ */
+int vfs_pipe(struct vfs_node *nodes[2]);
+
+/*
  * Declarations of root.c
  */
 int vfs_init_root(struct vfs_node **node);

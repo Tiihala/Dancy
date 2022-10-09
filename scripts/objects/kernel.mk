@@ -173,6 +173,9 @@
 ./o32/vfs/path.o: ./kernel/vfs/path.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/vfs/path.c
 
+./o32/vfs/pipe.o: ./kernel/vfs/pipe.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/vfs/pipe.c
+
 ./o32/vfs/root.o: ./kernel/vfs/root.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/vfs/root.c
 
@@ -349,6 +352,9 @@
 
 ./o64/vfs/path.o: ./kernel/vfs/path.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/vfs/path.c
+
+./o64/vfs/pipe.o: ./kernel/vfs/pipe.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/vfs/pipe.c
 
 ./o64/vfs/root.o: ./kernel/vfs/root.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/vfs/root.c
