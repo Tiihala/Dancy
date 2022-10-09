@@ -365,9 +365,6 @@ static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 		if ((existing_node->mode & vfs_mode_exclusive) != 0)
 			return leave_fat(node), DE_BUSY;
 
-		if ((mode & vfs_mode_create) != 0)
-			write_record = 1;
-
 		if ((mode & vfs_mode_truncate) != 0)
 			write_record = 1;
 
@@ -438,14 +435,13 @@ static int n_open_internal(struct vfs_node *node, struct vfs_node **new_node,
 		}
 	}
 
-	if ((mode & vfs_mode_create) != 0) {
-		r = fat_open(io->instance, data->fd, &buf[0], "wb+");
-	} else {
-		r = fat_open(io->instance, data->fd, &buf[0], "rb+");
+	r = fat_open(io->instance, data->fd, &buf[0], "rb+");
 
-		if (r == FAT_READ_ONLY_FILE)
-			r = fat_open(io->instance, data->fd, &buf[0], "rb");
-	}
+	if (r == FAT_READ_ONLY_FILE)
+		r = fat_open(io->instance, data->fd, &buf[0], "rb");
+
+	if (r == FAT_FILE_NOT_FOUND && (mode & vfs_mode_create) != 0)
+		r = fat_open(io->instance, data->fd, &buf[0], "wb+");
 
 	if (!r) {
 		if (!root_dir) {
