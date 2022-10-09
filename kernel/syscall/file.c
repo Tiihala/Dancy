@@ -255,12 +255,14 @@ int file_write(int fd, size_t *size, const void *buffer)
 			n = fte->node;
 			o = fte->offset;
 
-			if ((fte->flags & O_APPEND) != 0)
+			if ((fte->flags & O_APPEND) != 0) {
 				r = n->n_append(n, size, buffer);
-			else
+				fte->offset = get_file_size(n);
+			} else {
 				r = n->n_write(n, o, size, buffer);
+				fte->offset += (uint64_t)(*size);
+			}
 
-			fte->offset += (uint64_t)(*size);
 			spin_unlock(&fte->lock[1]);
 
 			return r;
