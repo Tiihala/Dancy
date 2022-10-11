@@ -80,7 +80,7 @@ static int n_read(struct vfs_node *node,
 	if (internal_data->type != pipe_type_read)
 		return 0;
 
-	while (b >= 0 && *size < requested_size) {
+	do {
 		void *lock_local = &shared_data->lock;
 		int atomicity = 0;
 
@@ -108,8 +108,14 @@ static int n_read(struct vfs_node *node,
 				break;
 		}
 
+		if (*size == 0 && shared_data->count != 2) {
+			spin_leave(&lock_local);
+			return DE_UNINITIALIZED;
+		}
+
 		spin_leave(&lock_local);
-	}
+
+	} while (b >= 0 && *size < requested_size);
 
 	return 0;
 }
@@ -121,7 +127,6 @@ static int n_write(struct vfs_node *node,
 	struct pipe_internal_data *internal_data = node->internal_data;
 	struct pipe_shared_data *shared_data = internal_data->shared_data;
 	const unsigned char *ptr = buffer;
-	int b = 0;
 
 	(void)offset;
 	*size = 0;
@@ -129,12 +134,17 @@ static int n_write(struct vfs_node *node,
 	if (internal_data->type != pipe_type_write)
 		return 0;
 
-	while (b >= 0 && *size < requested_size) {
+	do {
 		void *lock_local = &shared_data->lock;
 		int atomicity = 0;
 		int original_end;
 
 		spin_enter(&lock_local);
+
+		if (shared_data->count != 2) {
+			spin_leave(&lock_local);
+			return DE_UNINITIALIZED;
+		}
 
 		original_end = shared_data->end;
 
@@ -166,7 +176,8 @@ static int n_write(struct vfs_node *node,
 			event_signal(shared_data->event);
 
 		spin_leave(&lock_local);
-	}
+
+	} while (*size < requested_size);
 
 	return 0;
 }
