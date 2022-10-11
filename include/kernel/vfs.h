@@ -54,6 +54,7 @@ struct vfs_node {
 	int mode;
 
 	void *internal_data;
+	event_t *internal_event;
 
 	void (*n_release)(struct vfs_node **node);
 
