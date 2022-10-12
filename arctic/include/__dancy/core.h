@@ -22,6 +22,12 @@
 
 #include <stddef.h>
 
+#ifndef __Dancy_Header_Begin
+#define __Dancy_Header_Begin
+#endif
+
+__Dancy_Header_Begin
+
 #if defined(__CHAR_BIT__) && __CHAR_BIT__ != 8
 #error "Unsupported __CHAR_BIT__"
 #endif
@@ -62,5 +68,11 @@ typedef long long __dancy_time_t;
 
 void __dancy_assert(const char *expression, const char *name, int line);
 int *__dancy_errno(void);
+
+#ifndef __Dancy_Header_End
+#define __Dancy_Header_End
+#endif
+
+__Dancy_Header_End
 
 #endif
