@@ -23,6 +23,8 @@
 #include <__dancy/core.h>
 #include <__dancy/seek.h>
 
+__Dancy_Header_Begin
+
 #define O_RDONLY            0
 #define O_WRONLY            1
 #define O_RDWR              2
@@ -67,5 +69,7 @@ typedef __dancy_pid_t pid_t;
 
 int open(const char *name, int flags, ...);
 int fcntl(int fd, int cmd, ...);
+
+__Dancy_Header_End
 
 #endif

@@ -22,6 +22,8 @@
 
 #include <__dancy/core.h>
 
+__Dancy_Header_Begin
+
 #ifdef SEEK_SET
 #error "Unexpected SEEK_SET definition"
 #endif
@@ -37,5 +39,7 @@
 #define SEEK_SET 0
 #define SEEK_CUR 1
 #define SEEK_END 2
+
+__Dancy_Header_End
 
 #endif

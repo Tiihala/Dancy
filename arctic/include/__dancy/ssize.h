@@ -22,6 +22,8 @@
 
 #include <__dancy/core.h>
 
+__Dancy_Header_Begin
+
 #undef __DANCY_SSIZE_TYPE
 
 #if __DANCY_SIZE_MAX == 4294967295u
@@ -46,5 +48,7 @@
 #endif
 
 typedef __DANCY_SSIZE_TYPE ssize_t;
+
+__Dancy_Header_End
 
 #endif

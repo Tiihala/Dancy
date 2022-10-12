@@ -22,6 +22,8 @@
 
 #include <__dancy/core.h>
 
+__Dancy_Header_Begin
+
 int memcmp(const void *s1, const void *s2, size_t n);
 void *memcpy(void *s1, const void *s2, size_t n);
 void *memmove(void *s1, const void *s2, size_t n);
@@ -36,5 +38,7 @@ char *strncpy(char *s1, const char *s2, size_t n);
 
 char *strdup(const char *s);
 char *strerror(int errnum);
+
+__Dancy_Header_End
 
 #endif

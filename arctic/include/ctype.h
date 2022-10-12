@@ -22,6 +22,8 @@
 
 #include <__dancy/core.h>
 
+__Dancy_Header_Begin
+
 int isalnum(int c);
 int isalpha(int c);
 int isblank(int c);
@@ -36,5 +38,7 @@ int isupper(int c);
 int isxdigit(int c);
 int tolower(int c);
 int toupper(int c);
+
+__Dancy_Header_End
 
 #endif

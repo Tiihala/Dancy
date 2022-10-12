@@ -19,6 +19,8 @@
 
 #include <__dancy/core.h>
 
+__Dancy_Header_Begin
+
 #undef assert
 
 #ifdef NDEBUG
@@ -27,3 +29,5 @@
 #define assert(expression) \
 ((expression) ? (void)0 : __dancy_assert(#expression, __FILE__, __LINE__))
 #endif
+
+__Dancy_Header_End

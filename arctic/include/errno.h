@@ -22,6 +22,8 @@
 
 #include <__dancy/core.h>
 
+__Dancy_Header_Begin
+
 #undef errno
 #define errno (*__dancy_errno())
 
@@ -111,5 +113,7 @@
 #define ETXTBSY                 (__DANCY_ERRNO_OPEN_GROUP + 76)
 #define EWOULDBLOCK             (__DANCY_ERRNO_OPEN_GROUP + 77)
 #define EXDEV                   (__DANCY_ERRNO_OPEN_GROUP + 78)
+
+__Dancy_Header_End
 
 #endif

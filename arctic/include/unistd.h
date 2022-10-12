@@ -24,6 +24,8 @@
 #include <__dancy/seek.h>
 #include <__dancy/ssize.h>
 
+__Dancy_Header_Begin
+
 #ifndef __DANCY_TYPEDEF_OFF_T
 #define __DANCY_TYPEDEF_OFF_T
 typedef __dancy_off_t off_t;
@@ -63,5 +65,7 @@ int truncate(const char *path, off_t length);
 
 pid_t getpid(void);
 void _exit(int status);
+
+__Dancy_Header_End
 
 #endif
