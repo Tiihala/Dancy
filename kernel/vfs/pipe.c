@@ -177,6 +177,9 @@ static int n_write(struct vfs_node *node,
 
 		spin_leave(&lock_local);
 
+		if (!atomicity)
+			break;
+
 	} while (*size < requested_size);
 
 	return 0;
