@@ -79,6 +79,7 @@ static void file_decrement_count(struct file_table_entry *fte)
 {
 	void *lock_local = &fte->lock[1];
 	struct vfs_node *node = NULL;
+	int count;
 
 	spin_enter(&lock_local);
 
@@ -93,12 +94,14 @@ static void file_decrement_count(struct file_table_entry *fte)
 		fte->node = NULL;
 	}
 
+	count = fte->count;
+
 	spin_leave(&lock_local);
 
-	if (node) {
+	if (node)
 		node->n_release(&node);
+	if (!count)
 		spin_unlock(&fte->lock[0]);
-	}
 }
 
 static uint64_t get_file_size(struct vfs_node *node)
