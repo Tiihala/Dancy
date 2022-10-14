@@ -532,3 +532,67 @@ int file_dup(int fd, int *new_fd, int min_fd, int max_fd, int flags)
 
 	return DE_ARGUMENT;
 }
+
+int file_pipe(int fd[2], int flags)
+{
+	struct task *task = task_current();
+	struct file_table_entry *fte0, *fte1;
+	struct vfs_node *nodes[2];
+	int r;
+
+	fd[0] = -1;
+	fd[1] = -1;
+
+	{
+		if ((fte0 = alloc_file_entry()) == NULL)
+			return DE_MEMORY;
+
+		fte0->count = 1;
+		fte0->flags = O_RDONLY | (flags & O_NONBLOCK);
+		fte0->offset = 0;
+
+		if ((fte1 = alloc_file_entry()) == NULL)
+			return file_decrement_count(fte0), DE_MEMORY;
+
+		fte1->count = 1;
+		fte1->flags = O_WRONLY | (flags & O_NONBLOCK);
+		fte1->offset = 0;
+	}
+
+	if ((r = vfs_pipe(nodes)) != 0) {
+		file_decrement_count(fte0);
+		file_decrement_count(fte1);
+		return r;
+	}
+
+	fte0->node = nodes[0];
+	fte1->node = nodes[1];
+
+	{
+		if ((fd[0] = alloc_file_descriptor(task)) < 0) {
+			file_decrement_count(fte0);
+			file_decrement_count(fte1);
+			return DE_OVERFLOW;
+		}
+
+		task->fd.table[fd[0]] = (uint64_t)((addr_t)fte0);
+
+		if ((flags & O_CLOEXEC) != 0)
+			task->fd.table[fd[0]] |= fd_cloexec;
+	}
+
+	{
+		if ((fd[1] = alloc_file_descriptor(task)) < 0) {
+			file_close(fd[0]), fd[0] = -1;
+			file_decrement_count(fte1);
+			return DE_OVERFLOW;
+		}
+
+		task->fd.table[fd[1]] = (uint64_t)((addr_t)fte1);
+
+		if ((flags & O_CLOEXEC) != 0)
+			task->fd.table[fd[1]] |= fd_cloexec;
+	}
+
+	return 0;
+}
