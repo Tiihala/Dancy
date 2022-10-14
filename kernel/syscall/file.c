@@ -202,6 +202,7 @@ int file_close(int fd)
 int file_read(int fd, size_t *size, void *buffer)
 {
 	struct task *task = task_current();
+	size_t requested_size = *size;
 	int r;
 
 	if (fd >= 0 && fd < (int)task->fd.state) {
@@ -210,6 +211,8 @@ int file_read(int fd, size_t *size, void *buffer)
 		uint64_t t, o;
 
 		if ((t = task->fd.table[fd]) != 0) {
+			int block_capability = 0;
+
 			fte = (void *)((addr_t)(t & table_mask));
 
 			while (!spin_trylock(&fte->lock[1]))
@@ -224,6 +227,25 @@ int file_read(int fd, size_t *size, void *buffer)
 			o = fte->offset;
 			r = n->n_read(n, o, size, buffer);
 
+			if (n->type == vfs_type_buffer)
+				block_capability = 1;
+			else if (n->type == vfs_type_character)
+				block_capability = 1;
+
+			while (block_capability) {
+				if (*size != 0 || r != DE_RETRY)
+					break;
+
+				if ((fte->flags & O_NONBLOCK) != 0)
+					break;
+
+				if (n->internal_event)
+					event_wait(*n->internal_event, 2000);
+
+				*size = requested_size;
+				r = n->n_read(n, o, size, buffer);
+			}
+
 			fte->offset += (uint64_t)(*size);
 			spin_unlock(&fte->lock[1]);
 
@@ -237,6 +259,8 @@ int file_read(int fd, size_t *size, void *buffer)
 int file_write(int fd, size_t *size, const void *buffer)
 {
 	struct task *task = task_current();
+	const unsigned char *ptr = buffer;
+	size_t requested_size = *size;
 	int r;
 
 	if (fd >= 0 && fd < (int)task->fd.state) {
@@ -245,6 +269,8 @@ int file_write(int fd, size_t *size, const void *buffer)
 		uint64_t t, o;
 
 		if ((t = task->fd.table[fd]) != 0) {
+			int block_capability = 0;
+
 			fte = (void *)((addr_t)(t & table_mask));
 
 			while (!spin_trylock(&fte->lock[1]))
@@ -264,6 +290,40 @@ int file_write(int fd, size_t *size, const void *buffer)
 			} else {
 				r = n->n_write(n, o, size, buffer);
 				fte->offset += (uint64_t)(*size);
+			}
+
+			if (n->type == vfs_type_buffer)
+				block_capability = 1;
+			else if (n->type == vfs_type_character)
+				block_capability = 1;
+
+			while (block_capability) {
+				if (*size == requested_size || r != DE_RETRY)
+					break;
+
+				if ((fte->flags & O_NONBLOCK) != 0)
+					break;
+
+				if (*size > requested_size) {
+					r = DE_UNEXPECTED;
+					break;
+				}
+
+				if (*size == 0)
+					task_yield();
+
+				requested_size -= (*size);
+				ptr += (*size);
+
+				*size = requested_size;
+
+				if ((fte->flags & O_APPEND) != 0) {
+					r = n->n_append(n, size, ptr);
+					fte->offset = get_file_size(n);
+				} else {
+					r = n->n_write(n, o, size, ptr);
+					fte->offset += (uint64_t)(*size);
+				}
 			}
 
 			spin_unlock(&fte->lock[1]);
