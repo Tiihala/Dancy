@@ -466,6 +466,7 @@ struct task *task_find(uint64_t id)
 uint64_t task_create(int (*func)(void *), void *arg, int type)
 {
 	uint64_t id = 0;
+	struct task *current = task_current();
 	struct task *new_task = NULL;
 	uint8_t *fstate;
 
@@ -519,8 +520,8 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 		spin_trylock(&new_task->active);
 
 		new_task->id = task_create_id();
-		new_task->id_owner = task_current()->id;
-		new_task->owner = task_current();
+		new_task->id_owner = current->id;
+		new_task->owner = current;
 
 		task_append(new_task);
 	}
@@ -539,7 +540,10 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	if ((type & task_uniproc) != 0)
 		new_task->uniproc = 1;
 
-	new_task->sched.priority = task_current()->sched.priority;
+	new_task->sched.priority = current->sched.priority;
+
+	if (current->fd.state)
+		current->fd.clone(current, new_task);
 
 	task_create_asm(new_task, func, arg);
 	spin_unlock(&new_task->active);
