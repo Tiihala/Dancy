@@ -38,6 +38,8 @@ enum pg_size_type {
 
 #ifdef DANCY_32
 
+static const cpu_native_t pg_cr3_mask = (cpu_native_t)(0xFFFFF000);
+
 static uint32_t pg_alloc_static_page(void)
 {
 	return (uint32_t)((phys_addr_t)heap_alloc_static_page());
@@ -75,7 +77,7 @@ static void pg_delete_cr3(cpu_native_t cr3)
 	/*
 	 * Page-directory table.
 	 */
-	pde = (uint32_t *)cr3;
+	pde = (uint32_t *)(cr3 & pg_cr3_mask);
 
 	for (i = 64; i < 1024; i++) {
 		if ((pde[i] & 0x01) == 0)
@@ -172,7 +174,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	/*
 	 * Page-directory table.
 	 */
-	ptr = (uint32_t *)cr3;
+	ptr = (uint32_t *)(cr3 & pg_cr3_mask);
 
 	if ((ptr[offset] & 1) == 0) {
 		if ((page = (uint32_t)mm_alloc_page()) == 0)
@@ -209,7 +211,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 	/*
 	 * Page-directory table.
 	 */
-	ptr = (uint32_t *)(cr3 & 0xFFFFF000);
+	ptr = (uint32_t *)(cr3 & pg_cr3_mask);
 
 	if ((ptr[offset] & 1) == 0 || (ptr[offset] & 0x80) != 0)
 		return NULL;
@@ -228,6 +230,8 @@ static const phys_addr_t pg_mega_size = 0x400000;
 #endif
 
 #ifdef DANCY_64
+
+static const cpu_native_t pg_cr3_mask = (cpu_native_t)(0xFFFFFFFFFFFFF000ull);
 
 static uint64_t pg_alloc_static_page(void)
 {
@@ -298,7 +302,7 @@ static void pg_delete_cr3(cpu_native_t cr3)
 	/*
 	 * Page-map-level-4 table.
 	 */
-	pml4e = (uint64_t *)cr3;
+	pml4e = (uint64_t *)(cr3 & pg_cr3_mask);
 
 	for (i = 0; i < 256; i++) {
 		if ((pml4e[i] & 1) == 0)
@@ -507,7 +511,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	/*
 	 * Page-map-level-4 table.
 	 */
-	ptr = (uint64_t *)cr3;
+	ptr = (uint64_t *)(cr3 & pg_cr3_mask);
 
 	if ((ptr[pml4e_offset] & 1) == 0) {
 		if ((page = (uint64_t)mm_alloc_page()) == 0)
@@ -576,7 +580,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 	/*
 	 * Page-map-level-4 table.
 	 */
-	ptr = (uint64_t *)(cr3 & 0xFFFFFFFFFFFFF000ull);
+	ptr = (uint64_t *)(cr3 & pg_cr3_mask);
 
 	if ((ptr[pml4e_offset] & 1) == 0)
 		return NULL;
@@ -889,7 +893,7 @@ void pg_enter_kernel(void)
 	current->cr3 = (uint32_t)pg_kernel;
 	cpu_add32(&current->pg_state, 1);
 
-	if (cpu_read_cr3() == pg_kernel)
+	if ((cpu_read_cr3() & pg_cr3_mask) == pg_kernel)
 		return;
 
 	cpu_write_cr3(pg_kernel);
@@ -925,7 +929,7 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 		return NULL;
 
 	if (pg_ready) {
-		if (cpu_read_cr3() != pg_kernel)
+		if ((cpu_read_cr3() & pg_cr3_mask) != pg_kernel)
 			return NULL;
 		if (mtx_lock(&pg_mtx) != thrd_success)
 			return NULL;
