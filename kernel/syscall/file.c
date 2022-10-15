@@ -36,6 +36,43 @@ static void fd_release_func(struct task *task)
 	}
 }
 
+static void fd_clone_func(struct task *task, struct task *new_task)
+{
+	int i;
+
+	new_task->fd.state = task->fd.state;
+	new_task->fd.table = &new_task->fd._table[0];
+	new_task->fd.release = fd_release_func;
+	new_task->fd.clone = fd_clone_func;
+
+	for (i = 0; i < (int)task->fd.state; i++) {
+		struct file_table_entry *fte;
+		uint64_t t;
+
+		t = task->fd.table[i];
+
+		if ((t & fd_cloexec) != 0) {
+			new_task->fd.table[i] = 0;
+			continue;
+		}
+
+		new_task->fd.table[i] = t;
+		fte = (void *)((addr_t)(t & table_mask));
+
+		if (fte) {
+			while (!spin_trylock(&fte->lock[1]))
+				task_yield();
+
+			if (fte->count > 0 && fte->count < INT_MAX)
+				fte->count += 1;
+			else
+				new_task->fd.table[i] = 0;
+
+			spin_unlock(&fte->lock[1]);
+		}
+	}
+}
+
 static int alloc_file_descriptor(struct task *task)
 {
 	int i;
@@ -43,6 +80,7 @@ static int alloc_file_descriptor(struct task *task)
 	if (task->fd.state == 0) {
 		task->fd.table = &task->fd._table[0];
 		task->fd.release = fd_release_func;
+		task->fd.clone = fd_clone_func;
 	}
 
 	for (i = 0; i < (int)task->fd.state; i++) {
