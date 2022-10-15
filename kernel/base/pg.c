@@ -576,7 +576,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 	/*
 	 * Page-map-level-4 table.
 	 */
-	ptr = (uint64_t *)(cr3 & 0xFFFFF000);
+	ptr = (uint64_t *)(cr3 & 0xFFFFFFFFFFFFF000ull);
 
 	if ((ptr[pml4e_offset] & 1) == 0)
 		return NULL;
@@ -584,7 +584,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 	/*
 	 * Page-directory-pointer table.
 	 */
-	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFF000);
+	ptr = (uint64_t *)(ptr[pml4e_offset] & 0xFFFFFFFFFFFFF000ull);
 
 	if ((ptr[pdpe_offset] & 1) == 0 || (ptr[pdpe_offset] & 0x80) != 0)
 		return NULL;
@@ -592,7 +592,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 	/*
 	 * Page-directory table.
 	 */
-	ptr = (uint64_t *)(ptr[pdpe_offset] & 0xFFFFF000);
+	ptr = (uint64_t *)(ptr[pdpe_offset] & 0xFFFFFFFFFFFFF000ull);
 
 	if ((ptr[offset] & 1) == 0 || (ptr[offset] & 0x80) != 0)
 		return NULL;
@@ -600,7 +600,7 @@ void *pg_get_entry(cpu_native_t cr3, const void *pte)
 	/*
 	 * Page table.
 	 */
-	ptr = (uint64_t *)(ptr[offset] & 0xFFFFF000);
+	ptr = (uint64_t *)(ptr[offset] & 0xFFFFFFFFFFFFF000ull);
 	offset = (int)((addr >> 12) & 0x1FF);
 
 	return &ptr[offset];
