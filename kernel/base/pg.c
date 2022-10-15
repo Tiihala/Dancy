@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -1096,4 +1096,86 @@ void pg_write_memory(phys_addr_t addr, uint64_t val, size_t size)
 		cpu_write64((void *)access_vaddr, (uint64_t)val);
 
 	spin_leave(&lock_local);
+}
+
+static int pg_check_user(cpu_native_t cr3, addr_t vaddr, size_t size, int rw)
+{
+	const addr_t mask = (addr_t)0x0FFF;
+	const addr_t add  = (addr_t)0x1000;
+
+	addr_t a = vaddr;
+	addr_t e = vaddr + (addr_t)((size > 0) ? size - 1 : 0);
+
+	if (a == 0 || a < 0x10000000 || a > e)
+		return DE_ACCESS;
+
+	a &= (~mask);
+	e &= (~mask);
+	e += add;
+
+	do {
+		unsigned int *p = pg_get_entry(cr3, (const void *)a);
+
+		if (p == NULL || (*p & 1u) == 0)
+			return DE_ADDRESS;
+
+		if ((*p & 4u) == 0)
+			return DE_ACCESS;
+
+		if (rw != 0 && (*p & 2u) == 0)
+			return DE_READ_ONLY;
+
+		a += add;
+
+	} while (a != e);
+
+	return 0;
+}
+
+int pg_check_user_read(const void *vaddr, size_t size)
+{
+	cpu_native_t cr3 = cpu_read_cr3();
+	int r;
+
+	pg_enter_kernel();
+	r = pg_check_user(cr3, (addr_t)vaddr, size, 0);
+	pg_leave_kernel();
+
+	return r;
+}
+
+int pg_check_user_write(void *vaddr, size_t size)
+{
+	cpu_native_t cr3 = cpu_read_cr3();
+	int r;
+
+	pg_enter_kernel();
+	r = pg_check_user(cr3, (addr_t)vaddr, size, 1);
+	pg_leave_kernel();
+
+	return r;
+}
+
+int pg_check_user_string(const void *vaddr)
+{
+	const addr_t mask = (addr_t)0x0FFF;
+	addr_t s = (addr_t)vaddr;
+	unsigned char c = 0xFF;
+	int check_page = 1;
+	int r;
+
+	while (c != 0) {
+		if (check_page) {
+			if ((r = pg_check_user_read((const void *)s, 1)) != 0)
+				return r;
+			check_page = 0;
+		}
+
+		if ((s & mask) == 0x0FFF)
+			check_page = 1;
+
+		c = *((volatile unsigned char *)(s++));
+	}
+
+	return 0;
 }

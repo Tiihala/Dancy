@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -221,6 +221,10 @@ void *pg_map_user(addr_t vaddr, size_t size);
 
 uint64_t pg_read_memory(phys_addr_t addr, size_t size);
 void pg_write_memory(phys_addr_t addr, uint64_t val, size_t size);
+
+int pg_check_user_read(const void *vaddr, size_t size);
+int pg_check_user_write(void *vaddr, size_t size);
+int pg_check_user_string(const void *vaddr);
 
 /*
  * Declarations of runlevel.c
