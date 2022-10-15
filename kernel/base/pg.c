@@ -987,7 +987,10 @@ void *pg_map_user(addr_t vaddr, size_t size)
 	struct task *current = task_current();
 	cpu_native_t cr3 = cpu_read_cr3();
 
-	if (cr3 == pg_kernel || cr3 != (cpu_native_t)current->cr3)
+	if ((cr3 & pg_cr3_mask) == pg_kernel)
+		return NULL;
+
+	if (cr3 != (cpu_native_t)current->cr3)
 		return NULL;
 
 	if (size == 0 || vaddr < 0x10000000)
