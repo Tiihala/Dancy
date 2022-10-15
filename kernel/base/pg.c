@@ -997,7 +997,7 @@ void *pg_map_user(addr_t vaddr, size_t size)
 
 	pg_enter_kernel();
 
-	while (vaddr_beg < vaddr_end) {
+	while ((vaddr_end - vaddr_beg) != 0) {
 		if ((addr = mm_alloc_page()) == 0) {
 			vaddr = 0;
 			break;
