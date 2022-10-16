@@ -74,6 +74,7 @@ struct task {
 		uint32_t state;
 		void (*release)(struct task *task);
 		void (*clone)(struct task *task, struct task *new_task);
+		void *wd_node;
 		uint32_t *table;
 		uint32_t _table[TASK_FD_STATIC_COUNT];
 	} fd;
