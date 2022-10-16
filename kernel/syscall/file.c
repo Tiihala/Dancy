@@ -23,8 +23,8 @@ int file_table_count;
 struct file_table_entry *file_table;
 
 static struct file_table_entry _file_table[4096];
-static const uint64_t table_mask = (uint64_t)(0x0000FFFFFFFFFFFFull);
-static const uint64_t fd_cloexec = (uint64_t)(0x0001000000000000ull);
+static const uint32_t table_mask = 0x0FFFFFFF;
+static const uint32_t fd_cloexec = 0x80000000;
 
 static void fd_release_func(struct task *task)
 {
@@ -47,7 +47,7 @@ static void fd_clone_func(struct task *task, struct task *new_task)
 
 	for (i = 0; i < (int)task->fd.state; i++) {
 		struct file_table_entry *fte;
-		uint64_t t;
+		uint32_t t;
 
 		t = task->fd.table[i];
 
@@ -210,7 +210,7 @@ int file_open(int *fd, const char *name, int flags, mode_t mode)
 	if ((*fd = alloc_file_descriptor(task)) < 0)
 		return file_decrement_count(fte), DE_OVERFLOW;
 
-	task->fd.table[*fd] = (uint64_t)((addr_t)fte);
+	task->fd.table[*fd] = (uint32_t)((addr_t)fte);
 
 	if ((flags & O_CLOEXEC) != 0)
 		task->fd.table[*fd] |= fd_cloexec;
@@ -224,7 +224,7 @@ int file_close(int fd)
 
 	if (fd >= 0 && fd < (int)task->fd.state) {
 		struct file_table_entry *fte;
-		uint64_t t;
+		uint32_t t;
 
 		if ((t = task->fd.table[fd]) != 0) {
 			fte = (void *)((addr_t)(t & table_mask));
@@ -246,10 +246,11 @@ int file_read(int fd, size_t *size, void *buffer)
 	if (fd >= 0 && fd < (int)task->fd.state) {
 		struct file_table_entry *fte;
 		struct vfs_node *n;
-		uint64_t t, o;
+		uint32_t t;
 
 		if ((t = task->fd.table[fd]) != 0) {
 			int block_capability = 0;
+			uint64_t o;
 
 			fte = (void *)((addr_t)(t & table_mask));
 
@@ -304,10 +305,11 @@ int file_write(int fd, size_t *size, const void *buffer)
 	if (fd >= 0 && fd < (int)task->fd.state) {
 		struct file_table_entry *fte;
 		struct vfs_node *n;
-		uint64_t t, o;
+		uint32_t t;
 
 		if ((t = task->fd.table[fd]) != 0) {
 			int block_capability = 0;
+			uint64_t o;
 
 			fte = (void *)((addr_t)(t & table_mask));
 
@@ -380,7 +382,7 @@ int file_lseek(int fd, off_t offset, int whence)
 
 	if (fd >= 0 && fd < (int)task->fd.state) {
 		struct file_table_entry *fte;
-		uint64_t t;
+		uint32_t t;
 
 		if ((t = task->fd.table[fd]) != 0) {
 			fte = (void *)((addr_t)(t & table_mask));
@@ -447,7 +449,7 @@ int file_fcntl(int fd, int cmd, int arg, int *retval)
 
 	if (fd >= 0 && fd < (int)task->fd.state) {
 		struct file_table_entry *fte;
-		uint64_t t;
+		uint32_t t;
 
 		if ((t = task->fd.table[fd]) != 0) {
 			fte = (void *)((addr_t)(t & table_mask));
@@ -517,7 +519,7 @@ int file_dup(int fd, int *new_fd, int min_fd, int max_fd, int flags)
 
 	if (fd >= 0 && fd < (int)task->fd.state) {
 		struct file_table_entry *fte;
-		uint64_t t;
+		uint32_t t;
 
 		if ((t = task->fd.table[fd]) != 0) {
 			int empty_fd = -1;
@@ -613,7 +615,7 @@ int file_pipe(int fd[2], int flags)
 			return DE_OVERFLOW;
 		}
 
-		task->fd.table[fd[0]] = (uint64_t)((addr_t)fte0);
+		task->fd.table[fd[0]] = (uint32_t)((addr_t)fte0);
 
 		if ((flags & O_CLOEXEC) != 0)
 			task->fd.table[fd[0]] |= fd_cloexec;
@@ -626,7 +628,7 @@ int file_pipe(int fd[2], int flags)
 			return DE_OVERFLOW;
 		}
 
-		task->fd.table[fd[1]] = (uint64_t)((addr_t)fte1);
+		task->fd.table[fd[1]] = (uint32_t)((addr_t)fte1);
 
 		if ((flags & O_CLOEXEC) != 0)
 			task->fd.table[fd[1]] |= fd_cloexec;
