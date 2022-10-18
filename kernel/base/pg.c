@@ -879,7 +879,7 @@ void pg_delete(void)
 	if ((cr3 = (cpu_native_t)current->pg_cr3) == 0)
 		return;
 
-	current->pg_cr3 = (uint32_t)pg_kernel;
+	current->pg_cr3 = 0;
 	current->cr3 = (uint32_t)pg_kernel;
 	cpu_write_cr3(pg_kernel);
 
