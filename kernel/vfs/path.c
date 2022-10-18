@@ -45,6 +45,48 @@ static struct vfs_path *get_vfs_path(void)
 	return (struct vfs_path *)((void *)(a + 0x0800));
 }
 
+void vfs_clone_path(void *task, void *new_task)
+{
+	const int carefully_checked_offset = 0x0800;
+	int i;
+
+	addr_t src_addr = (addr_t)task + (addr_t)carefully_checked_offset;
+	addr_t dst_addr = (addr_t)new_task + (addr_t)carefully_checked_offset;
+
+	struct vfs_path *src = (struct vfs_path *)src_addr;
+	struct vfs_path *dst = (struct vfs_path *)dst_addr;
+
+	memcpy((void *)dst, (const void *)src, sizeof(struct vfs_path));
+
+	for (i = 0; i < VFS_PATH_COUNT; i++) {
+		char *p = src->working_directory[i];
+		addr_t offset;
+
+		if ((addr_t)p <= src_addr)
+			continue;
+
+		if ((addr_t)p >= src_addr + (addr_t)(sizeof(struct vfs_path)))
+			continue;
+
+		offset = (addr_t)p - src_addr;
+		dst->working_directory[i] = (char *)(dst_addr + offset);
+	}
+
+	for (i = 0; i < VFS_PATH_COUNT; i++) {
+		char *p = src->absolute_path[i];
+		addr_t offset;
+
+		if ((addr_t)p <= src_addr)
+			continue;
+
+		if ((addr_t)p >= src_addr + (addr_t)(sizeof(struct vfs_path)))
+			continue;
+
+		offset = (addr_t)p - src_addr;
+		dst->absolute_path[i] = (char *)(dst_addr + offset);
+	}
+}
+
 static int copy_working_directory(struct vfs_path *path, int *offset)
 {
 	const size_t size = VFS_PATH_BUFFER;
