@@ -46,6 +46,8 @@ int file_lseek(int fd, off_t offset, int whence);
 int file_fcntl(int fd, int cmd, int arg, int *retval);
 int file_dup(int fd, int *new_fd, int min_fd, int max_fd, int flags);
 int file_pipe(int fd[2], int flags);
+int file_chdir(const char *name);
+int file_getcwd(void *buffer, size_t size);
 
 /*
  * Declarations of syscall.c

@@ -34,6 +34,12 @@ static void fd_release_func(struct task *task)
 		if (task->fd.table[i] != 0)
 			file_close(i);
 	}
+
+	if (task->fd.wd_node) {
+		struct vfs_node *n = task->fd.wd_node;
+		task->fd.wd_node = NULL;
+		n->n_release(&n);
+	}
 }
 
 static void fd_clone_func(struct task *task, struct task *new_task)
@@ -44,6 +50,13 @@ static void fd_clone_func(struct task *task, struct task *new_task)
 	new_task->fd.table = &new_task->fd._table[0];
 	new_task->fd.release = fd_release_func;
 	new_task->fd.clone = fd_clone_func;
+
+	if (task->fd.wd_node) {
+		vfs_increment_count(task->fd.wd_node);
+		new_task->fd.wd_node = task->fd.wd_node;
+
+		vfs_clone_path(task, new_task);
+	}
 
 	for (i = 0; i < (int)task->fd.state; i++) {
 		struct file_table_entry *fte;
@@ -632,6 +645,79 @@ int file_pipe(int fd[2], int flags)
 
 		if ((flags & O_CLOEXEC) != 0)
 			task->fd.table[fd[1]] |= fd_cloexec;
+	}
+
+	return 0;
+}
+
+int file_chdir(const char *name)
+{
+	struct task *task = task_current();
+	struct vfs_node *node;
+	int r;
+
+	if (task->fd.state == 0) {
+		task->fd.table = &task->fd._table[0];
+		task->fd.release = fd_release_func;
+		task->fd.clone = fd_clone_func;
+		task->fd.state = 1;
+	}
+
+	if ((r = vfs_open(name, &node, vfs_type_directory, 0)) != 0)
+		return r;
+
+	if ((r = vfs_chdir(name)) != 0) {
+		node->n_release(&node);
+		return r;
+	}
+
+	if (task->fd.wd_node) {
+		struct vfs_node *wd_node = task->fd.wd_node;
+		wd_node->n_release(&wd_node);
+	}
+
+	task->fd.wd_node = node;
+
+	return 0;
+}
+
+int file_getcwd(void *buffer, size_t size)
+{
+	struct vfs_name vname;
+	char *p = buffer;
+	size_t s = 0;
+	int i, r;
+
+	memset(buffer, 0, size);
+
+	if (size < 2)
+		return DE_OVERFLOW;
+
+	if ((r = vfs_build_path(NULL, &vname)) != 0)
+		return r;
+
+	p[0] = '/';
+
+	for (i = 0; /* void */; i++) {
+		char *component = vname.components[i];
+
+		if (!component || (*component == '\0'))
+			break;
+
+		if ((s + 1) >= size) {
+			memset(buffer, 0, size);
+			return DE_OVERFLOW;
+		}
+
+		p[s++] = '/';
+
+		while (*component != '\0') {
+			if ((s + 1) >= size) {
+				memset(buffer, 0, size);
+				return DE_OVERFLOW;
+			}
+			p[s++] = *component++;
+		}
 	}
 
 	return 0;
