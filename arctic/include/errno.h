@@ -17,8 +17,8 @@
  *      System error numbers
  */
 
-#ifndef ARCTIC_DANCY_ERRNO_H
-#define ARCTIC_DANCY_ERRNO_H
+#ifndef __DANCY_ERRNO_H
+#define __DANCY_ERRNO_H
 
 #include <__dancy/core.h>
 

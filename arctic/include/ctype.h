@@ -17,8 +17,8 @@
  *      The C Standard Library
  */
 
-#ifndef ARCTIC_DANCY_CTYPE_H
-#define ARCTIC_DANCY_CTYPE_H
+#ifndef __DANCY_CTYPE_H
+#define __DANCY_CTYPE_H
 
 #include <__dancy/core.h>
 

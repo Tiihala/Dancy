@@ -17,8 +17,8 @@
  *      The Arctic Dancy Header
  */
 
-#ifndef ARCTIC_DANCY_INTERNAL_SSIZE_H
-#define ARCTIC_DANCY_INTERNAL_SSIZE_H
+#ifndef __DANCY_INTERNAL_SSIZE_H
+#define __DANCY_INTERNAL_SSIZE_H
 
 #include <__dancy/core.h>
 

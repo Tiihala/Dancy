@@ -17,8 +17,8 @@
  *      File control options
  */
 
-#ifndef ARCTIC_DANCY_FCNTL_H
-#define ARCTIC_DANCY_FCNTL_H
+#ifndef __DANCY_FCNTL_H
+#define __DANCY_FCNTL_H
 
 #include <__dancy/core.h>
 #include <__dancy/seek.h>

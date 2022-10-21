@@ -17,8 +17,8 @@
  *      Data types
  */
 
-#ifndef ARCTIC_DANCY_SYS_TYPES_H
-#define ARCTIC_DANCY_SYS_TYPES_H
+#ifndef __DANCY_SYS_TYPES_H
+#define __DANCY_SYS_TYPES_H
 
 #include <__dancy/core.h>
 #include <__dancy/ssize.h>

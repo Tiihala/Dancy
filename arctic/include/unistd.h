@@ -17,8 +17,8 @@
  *      Standard symbolic constants and types
  */
 
-#ifndef ARCTIC_DANCY_UNISTD_H
-#define ARCTIC_DANCY_UNISTD_H
+#ifndef __DANCY_UNISTD_H
+#define __DANCY_UNISTD_H
 
 #include <__dancy/core.h>
 #include <__dancy/seek.h>

@@ -17,8 +17,8 @@
  *      The C Standard Library
  */
 
-#ifndef ARCTIC_DANCY_STDIO_H
-#define ARCTIC_DANCY_STDIO_H
+#ifndef __DANCY_STDIO_H
+#define __DANCY_STDIO_H
 
 #include <__dancy/core.h>
 
