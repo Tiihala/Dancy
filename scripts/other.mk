@@ -64,6 +64,8 @@ distclean: clean
 !include .\scripts\boot\init.mk
 !include .\scripts\boot\uefi.mk
 
+!include .\scripts\lib\libc.mk
+
 !include .\scripts\objects\_boot.mk
 !include .\scripts\objects\_common.mk
 !include .\scripts\objects\arctic.mk
