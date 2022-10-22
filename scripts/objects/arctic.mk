@@ -14,8 +14,8 @@
 ./arctic/o64/hello/main.o: ./arctic/hello/main.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/hello/main.c
 
-./arctic/o64/libc/start.o: ./arctic/libc/start.c $(DANCY_DEPS)
-	$(ARCTIC_O64)$@ ./arctic/libc/start.c
-
 ./arctic/o64/libc/a64/start.o: ./arctic/libc/a64/start.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./arctic/libc/a64/start.asm
+
+./arctic/o64/libc/start.o: ./arctic/libc/start.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/start.c
