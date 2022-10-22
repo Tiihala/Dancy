@@ -20,6 +20,7 @@ rm -rf ./system
 
 rm -f ./arctic/bin32.img
 rm -f ./arctic/bin64.img
+rm -f ./arctic/root.img
 
 rm -f ./scripts/dancy.mk
 rm -f ./LOADER.512

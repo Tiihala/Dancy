@@ -20,6 +20,7 @@ RMDIR /S /Q system > NUL 2>&1
 
 DEL arctic\bin32.img > NUL 2>&1
 DEL arctic\bin64.img > NUL 2>&1
+DEL arctic\root.img > NUL 2>&1
 
 DEL scripts\dancy.mk > NUL 2>&1
 DEL LOADER.512 > NUL 2>&1
