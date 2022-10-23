@@ -201,6 +201,11 @@ int validate_obj(const char *name, const unsigned char *buf, int size)
 
 			while (!err && i < symbols) {
 				sym = &buf[offset + i * 18];
+				/*
+				 * Storage class 0xD0 is used internally.
+				 */
+				if (sym[16] == 0xD0)
+					err = 1;
 				if (!LE32(&sym[0])) {
 					if (LE32(&sym[4]) < 4)
 						err = 1;

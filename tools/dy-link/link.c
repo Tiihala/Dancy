@@ -123,14 +123,18 @@ static int duplicate(unsigned char *obj, unsigned char *sym, int type)
 	}
 	if (obj)
 		return 0;
-	return free(type2), 0;
+
+	free(type2), type2 = NULL;
+	type2_num = 0;
+
+	return 0;
 }
 
 static int mangled(const char *name)
 {
 	char c;
 
-	if (*name == '\0' && isdigit(*name))
+	if (*name == '\0' || isdigit(*name))
 		return 1;
 
 	while ((c = *name++) != '\0') {
@@ -330,12 +334,8 @@ int link_main(struct options *opt)
 
 				/*
 				 * The current implementation changes weak
-				 * externals to "normal" externals. Symbol
-				 * type 0xFF is replaced with type 6. The
-				 * value of 0xFF is used internally.
+				 * externals to "normal" externals.
 				 */
-				if (type == 0xFF)
-					sym[16] = (unsigned char)(type = 6);
 				if (type == 105)
 					sym[16] = (unsigned char)(type = 2);
 
@@ -375,7 +375,7 @@ int link_main(struct options *opt)
 				}
 
 				/*
-				 * The special type 0xFF means that the symbol
+				 * The special type 0xD0 means that the symbol
 				 * is external but the name will be discarded.
 				 */
 				if (sec && type == 2) {
@@ -386,7 +386,7 @@ int link_main(struct options *opt)
 						name = str + LE32(&sym[4]);
 					b = sym[8], sym[8] = 0;
 					if (mangled((const char *)name))
-						sym[16] = 0xFF;
+						sym[16] = 0xD0;
 					sym[8] = b;
 				}
 

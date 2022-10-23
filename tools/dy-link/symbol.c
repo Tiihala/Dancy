@@ -462,7 +462,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		unsigned sec = (unsigned)LE16(&sym[12]);
 
 		if (sec == 0 && (unsigned)sym[16] != 2u) {
-			if ((unsigned)sym[16] != 0xFF) {
+			if ((unsigned)sym[16] != 0xD0) {
 				if (delete_record(obj, i))
 					return reloc_error(0), 1;
 				continue;
@@ -575,7 +575,7 @@ int symbol_process(struct options *opt, unsigned char *obj)
 
 			if (LE32(&s1[8]) || LE16(&s1[12]))
 				continue;
-			if (type != 2u && type != 0xFF)
+			if (type != 2u && type != 0xD0)
 				continue;
 
 			for (j = 0; j < syms; j++) {
