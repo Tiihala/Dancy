@@ -22,13 +22,11 @@
 section .text
 
         extern ___dancy_libc_start
-        global __dancy_export__start
-        global _start
+        global ___start
 
 align 16
 
-__dancy_export__start:
-_start:
+___start:
         and esp, -16                    ; align the stack
         call ___dancy_libc_start        ; call the libc start function
         db 0xCC, 0xEB, 0xFE

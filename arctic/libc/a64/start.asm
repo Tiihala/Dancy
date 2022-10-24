@@ -22,13 +22,11 @@
 section .text
 
         extern __dancy_libc_start
-        global __dancy_export_start
-        global start
+        global __start
 
 align 16
 
-__dancy_export_start:
-start:
+__start:
         and rsp, -16                    ; align the stack
         sub rsp, 32                     ; shadow space
         call __dancy_libc_start         ; call the libc start function
