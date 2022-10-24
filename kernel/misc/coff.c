@@ -21,12 +21,12 @@
 
 #if DANCY_32
 const unsigned int coff_native_signature = 0x014C;
-static const char *coff_start = "_start";
+static const char *coff_start = "___start";
 #endif
 
 #if DANCY_64
 const unsigned int coff_native_signature = 0x8664;
-static const char *coff_start = "start";
+static const char *coff_start = "__start";
 #endif
 
 struct coff {
