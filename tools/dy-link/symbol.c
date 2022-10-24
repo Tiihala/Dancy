@@ -405,8 +405,24 @@ int symbol_process(struct options *opt, unsigned char *obj)
 		for (i = 0; i < (int)LE32(&obj[12]); i++) {
 			sym = obj + symtab + (i * 18);
 
-			if ((unsigned)sym[16] == 2u)
+			if ((unsigned)sym[16] == 2u) {
 				sym[14] = 0x01u;
+
+				/*
+				 * Keep the special symbols.
+				 */
+				if (LE32(&sym[0])) {
+					char *s = (char *)sym;
+
+					if (LE16(&obj[0]) == 0x014C)
+						name = "___start";
+					else
+						name = "__start";
+
+					if (!strncmp(s, name, 8))
+						sym[14] = 0x00u;
+				}
+			}
 		}
 
 		for (i = 0; i < (int)LE32(&obj[12]); i++) {
