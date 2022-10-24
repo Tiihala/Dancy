@@ -90,6 +90,30 @@ static void native_to_obj(unsigned char *data, int size)
 	}
 }
 
+static int do_link_main(struct options *opt)
+{
+	/*
+	 * Set default alignment bits for sections.
+	 */
+	opt->alignbits_t = 0x00500000;
+	opt->alignbits_r = 0x00300000;
+	opt->alignbits_d = 0x00300000;
+	opt->alignbits_b = 0x00500000;
+
+	/*
+	 * Handle grouped sections first and then check
+	 * the total size of all relevant sections.
+	 */
+	if (section_group(opt))
+		return 1;
+	if (section_check_sizes(opt) == INT_MAX)
+		return 1;
+	if (symbol_check_sizes(opt) == INT_MAX)
+		return 1;
+
+	return link_main(opt);
+}
+
 int program(struct options *opt)
 {
 	int i;
@@ -118,37 +142,24 @@ int program(struct options *opt)
 
 	for (i = 0; i < opt->nr_ofiles; i++) {
 		struct ofile *obj = &opt->ofiles[i];
+
 		/*
 		 * Translate native executables to normal objects.
 		 */
 		native_to_obj(obj->data, obj->size);
+
 		/*
 		 * Validating the input files is very important. Other code
 		 * procedures assume that the data buffers are safe to use.
 		 */
 		if (validate_obj(opt->operands[i], obj->data, obj->size))
 			return 1;
+
 		if (opt->dump)
 			dump_obj(opt->operands[i], obj->data);
 		if (opt->dump_ext)
 			dump_ext(opt->operands[i], obj->data);
 	}
-	/*
-	 * Set default alignment bits for sections.
-	 */
-	opt->alignbits_t = 0x00500000;
-	opt->alignbits_r = 0x00300000;
-	opt->alignbits_d = 0x00300000;
-	opt->alignbits_b = 0x00500000;
-	/*
-	 * Handle grouped sections first and then check
-	 * the total size of all relevant sections.
-	 */
-	if (section_group(opt))
-		return 1;
-	if (section_check_sizes(opt) == INT_MAX)
-		return 1;
-	if (symbol_check_sizes(opt) == INT_MAX)
-		return 1;
-	return link_main(opt);
+
+	return do_link_main(opt);
 }
