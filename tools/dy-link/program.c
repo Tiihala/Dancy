@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, 2020 Antti Tiihala
+ * Copyright (c) 2018, 2019, 2020, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -114,6 +114,46 @@ static int do_link_main(struct options *opt)
 	return link_main(opt);
 }
 
+static int do_lib_mode(struct options *opt)
+{
+	int nr_ofiles = opt->nr_ofiles;
+	size_t size;
+	int i, r = 0;
+
+	size = (size_t)nr_ofiles * sizeof(*opt->lib_ofiles);
+
+	if ((opt->lib_ofiles = malloc(size)) == NULL) {
+		fputs("Error: not enough memory\n", stderr);
+		return 1;
+	}
+
+	memset(opt->lib_ofiles, 0, size);
+
+	opt->arg_f = "obj";
+	opt->nr_ofiles = 1;
+	opt->lib_mode = 1;
+	opt->nr_lib_ofiles = 0;
+
+	for (i = 0; !r && i < nr_ofiles; i++) {
+		r = do_link_main(opt);
+		opt->ofiles += 1;
+	}
+
+	if (!r)
+		r = lib_main(opt);
+
+	for (i = 0; i < opt->nr_lib_ofiles; i++) {
+		free(opt->lib_ofiles[i].data);
+		opt->lib_ofiles[i].data = NULL;
+		opt->lib_ofiles[i].size = 0;
+	}
+
+	free(opt->lib_ofiles), opt->lib_ofiles = NULL;
+	opt->nr_lib_ofiles = 0;
+
+	return r;
+}
+
 int program(struct options *opt)
 {
 	int i;
@@ -124,6 +164,8 @@ int program(struct options *opt)
 		} else if (!strcmp(opt->arg_f, "default")) {
 			; /* Accept */
 		} else if (!strcmp(opt->arg_f, "init")) {
+			; /* Accept */
+		} else if (!strcmp(opt->arg_f, "lib")) {
 			; /* Accept */
 		} else if (!strcmp(opt->arg_f, "obj")) {
 			; /* Accept */
@@ -160,6 +202,9 @@ int program(struct options *opt)
 		if (opt->dump_ext)
 			dump_ext(opt->operands[i], obj->data);
 	}
+
+	if (!strcmp(opt->arg_f, "lib"))
+		return do_lib_mode(opt);
 
 	return do_link_main(opt);
 }

@@ -666,6 +666,16 @@ int link_main(struct options *opt)
 	}
 
 	/*
+	 * Handle the library mode.
+	 */
+	if (opt->lib_mode) {
+		opt->lib_ofiles[opt->nr_lib_ofiles].data = out;
+		opt->lib_ofiles[opt->nr_lib_ofiles].size = size;
+		opt->nr_lib_ofiles += 1;
+		return 0;
+	}
+
+	/*
 	 * Write the output.
 	 */
 	return end(opt, out, (size_t)size);

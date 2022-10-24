@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, 2020 Antti Tiihala
+ * Copyright (c) 2018, 2019, 2020, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -49,6 +49,9 @@ struct options {
 	unsigned long alignbits_r;
 	unsigned long alignbits_d;
 	unsigned long alignbits_b;
+	int lib_mode;
+	int nr_lib_ofiles;
+	struct ofile *lib_ofiles;
 };
 
 struct ofile {
@@ -79,6 +82,11 @@ struct ofile {
  */
 void dump_ext(const char *name, const unsigned char *buf);
 void dump_obj(const char *name, const unsigned char *buf);
+
+/*
+ * lib.c
+ */
+int lib_main(struct options *opt);
 
 /*
  * link.c

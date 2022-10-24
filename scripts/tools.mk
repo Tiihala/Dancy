@@ -54,6 +54,7 @@ DY_ISO_OBJECTS= \
 DY_LINK_OBJECTS= \
  ./tools/dy-link/main.obj \
  ./tools/dy-link/dump.obj \
+ ./tools/dy-link/lib.obj \
  ./tools/dy-link/link.obj \
  ./tools/dy-link/program.obj \
  ./tools/dy-link/section.obj \
@@ -237,6 +238,9 @@ DY_ZIP_OBJECTS= \
 
 ./tools/dy-link/dump.obj: ./tools/dy-link/dump.c $(DY_LINK_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/dump.c
+
+./tools/dy-link/lib.obj: ./tools/dy-link/lib.c $(DY_LINK_HEADERS)
+	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/lib.c
 
 ./tools/dy-link/link.obj: ./tools/dy-link/link.c $(DY_LINK_HEADERS)
 	$(DANCY_HOST_OBJECT)$@ ./tools/dy-link/link.c
