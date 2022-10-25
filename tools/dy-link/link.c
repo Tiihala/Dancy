@@ -669,8 +669,10 @@ int link_main(struct options *opt)
 	 * Handle the library mode.
 	 */
 	if (opt->lib_mode) {
+		opt->lib_ofiles[opt->nr_lib_ofiles].name = "object";
 		opt->lib_ofiles[opt->nr_lib_ofiles].data = out;
 		opt->lib_ofiles[opt->nr_lib_ofiles].size = size;
+		opt->lib_ofiles[opt->nr_lib_ofiles].type = 1;
 		opt->nr_lib_ofiles += 1;
 		return 0;
 	}

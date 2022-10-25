@@ -144,8 +144,10 @@ static int do_lib_mode(struct options *opt)
 
 	for (i = 0; i < opt->nr_lib_ofiles; i++) {
 		free(opt->lib_ofiles[i].data);
+		opt->lib_ofiles[i].name = NULL;
 		opt->lib_ofiles[i].data = NULL;
 		opt->lib_ofiles[i].size = 0;
+		opt->lib_ofiles[i].type = 0;
 	}
 
 	free(opt->lib_ofiles), opt->lib_ofiles = NULL;
