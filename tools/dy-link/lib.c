@@ -24,7 +24,7 @@ int lib_main(struct options *opt)
 	int i;
 
 	for (i = 0; i < opt->nr_lib_ofiles; i++) {
-		const char *obj_name = opt->operands[i];
+		const char *obj_name = opt->lib_ofiles[i].name;
 		unsigned char *obj_data = opt->lib_ofiles[i].data;
 		int obj_size = opt->lib_ofiles[i].size;
 

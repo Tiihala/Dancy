@@ -30,6 +30,9 @@ static int read_ofile(const char *name, int i)
 	FILE *fp = stdin;
 	int is_stdin = 1;
 
+	ofiles[i].name = name;
+	ofiles[i].type = 0;
+
 	if (ofiles[i].data || i >= OFILES_LIMIT)
 		return fputs("Error: too many input files\n", stderr), 1;
 	if (strcmp(name, "-")) {

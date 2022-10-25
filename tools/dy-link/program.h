@@ -38,8 +38,10 @@
 #define OFILES_LIMIT (4096)
 
 struct file {
+	const char *name;
 	unsigned char *data;
 	int size;
+	int type;
 };
 
 struct options {

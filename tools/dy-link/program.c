@@ -194,13 +194,13 @@ int program(struct options *opt)
 		 * Validating the input files is very important. Other code
 		 * procedures assume that the data buffers are safe to use.
 		 */
-		if (validate_obj(opt->operands[i], obj->data, obj->size))
+		if (validate_obj(obj->name, obj->data, obj->size))
 			return 1;
 
 		if (opt->dump)
-			dump_obj(opt->operands[i], obj->data);
+			dump_obj(obj->name, obj->data);
 		if (opt->dump_ext)
-			dump_ext(opt->operands[i], obj->data);
+			dump_ext(obj->name, obj->data);
 	}
 
 	if (!strcmp(opt->arg_f, "lib"))
