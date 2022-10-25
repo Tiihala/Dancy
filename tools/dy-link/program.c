@@ -184,8 +184,14 @@ int program(struct options *opt)
 	if (!opt->nr_ofiles)
 		return fputs("Warning: no input\n", stderr), 1;
 
+	if (lib_read_ofiles(opt))
+		return 1;
+
 	for (i = 0; i < opt->nr_ofiles; i++) {
 		struct file *obj = &opt->ofiles[i];
+
+		if (obj->type < 0)
+			continue;
 
 		/*
 		 * Translate native executables to normal objects.

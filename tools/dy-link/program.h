@@ -93,6 +93,7 @@ void dump_obj(const char *name, const unsigned char *buf);
 /*
  * lib.c
  */
+int lib_read_ofiles(struct options *opt);
 int lib_main(struct options *opt);
 
 /*

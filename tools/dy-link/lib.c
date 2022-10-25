@@ -19,6 +19,62 @@
 
 #include "program.h"
 
+static int process_lib_file(struct options *opt, int i)
+{
+	const char *lib_name = opt->ofiles[i].name;
+	unsigned char *lib_data = opt->ofiles[i].data;
+	int lib_size = opt->ofiles[i].size;
+
+	if (opt->verbose) {
+		const char *fmt = "Library: %s (%.7s, %i bytes)\n";
+		printf(fmt, lib_name, (const char *)lib_data, lib_size);
+	}
+
+	return 0;
+}
+
+static int process_lib_slot(struct options *opt, int i)
+{
+	const size_t empty_size = 64;
+	unsigned char *empty;
+	int r;
+
+	if ((empty = malloc(empty_size)) == NULL) {
+		fputs("Error: not enough memory\n", stderr);
+		return 1;
+	}
+
+	memset(&empty[0], 0, empty_size);
+
+	r = process_lib_file(opt, i);
+	free(opt->ofiles[i].data);
+
+	opt->ofiles[i].name = "empty";
+	opt->ofiles[i].data = empty;
+	opt->ofiles[i].size = (int)empty_size;
+	opt->ofiles[i].type = -1;
+
+	return r;
+}
+
+int lib_read_ofiles(struct options *opt)
+{
+	const unsigned char header[8] =
+		{ 0x21, 0x3C, 0x61, 0x72, 0x63, 0x68, 0x3E, 0x0A };
+	int i;
+
+	for (i = 0; i < opt->nr_ofiles; i++) {
+		if (opt->ofiles[i].size < (int)sizeof(header))
+			continue;
+		if (memcmp(opt->ofiles[i].data, header, sizeof(header)))
+			continue;
+		if (process_lib_slot(opt, i))
+			return 1;
+	}
+
+	return 0;
+}
+
 int lib_main(struct options *opt)
 {
 	int i;
