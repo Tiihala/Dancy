@@ -183,7 +183,7 @@ int program(struct options *opt)
 		return fputs("Warning: no input\n", stderr), 1;
 
 	for (i = 0; i < opt->nr_ofiles; i++) {
-		struct ofile *obj = &opt->ofiles[i];
+		struct file *obj = &opt->ofiles[i];
 
 		/*
 		 * Translate native executables to normal objects.

@@ -19,11 +19,10 @@
 
 #include "program.h"
 
-#define OFILES_LIMIT 256
 #define OFILES_CHUNK 16384
 
 static int nr_ofiles;
-static struct ofile ofiles[OFILES_LIMIT];
+static struct file ofiles[OFILES_LIMIT];
 
 static int read_ofile(const char *name, int i)
 {

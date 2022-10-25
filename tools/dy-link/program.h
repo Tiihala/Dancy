@@ -35,6 +35,13 @@
 #error "Unsupported implementation-defined characteristics"
 #endif
 
+#define OFILES_LIMIT (4096)
+
+struct file {
+	unsigned char *data;
+	int size;
+};
+
 struct options {
 	char **operands;
 	const char *error;
@@ -43,20 +50,18 @@ struct options {
 	int verbose;
 	int dump;
 	int dump_ext;
+
 	int nr_ofiles;
-	struct ofile *ofiles;
+	struct file *ofiles;
+
+	int lib_mode;
+	int nr_lib_ofiles;
+	struct file *lib_ofiles;
+
 	unsigned long alignbits_t;
 	unsigned long alignbits_r;
 	unsigned long alignbits_d;
 	unsigned long alignbits_b;
-	int lib_mode;
-	int nr_lib_ofiles;
-	struct ofile *lib_ofiles;
-};
-
-struct ofile {
-	unsigned char *data;
-	int size;
 };
 
 #define B8(a,b,c) (((unsigned long)((a)[(b)]) & 0xFFul) << (c))
