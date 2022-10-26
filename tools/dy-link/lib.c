@@ -30,6 +30,9 @@ static int process_lib_file(struct options *opt, int i)
 		printf(fmt, lib_name, (const char *)lib_data, lib_size);
 	}
 
+	if (lib_size == 8)
+		return 0;
+
 	return 0;
 }
 
@@ -62,6 +65,23 @@ int lib_read_ofiles(struct options *opt)
 	const unsigned char header[8] =
 		{ 0x21, 0x3C, 0x61, 0x72, 0x63, 0x68, 0x3E, 0x0A };
 	int i;
+
+	if (opt->nr_ofiles == 0) {
+		unsigned char *arch_empty;
+
+		if ((arch_empty = malloc(sizeof(header))) == NULL) {
+			fputs("Error: not enough memory\n", stderr);
+			return 1;
+		}
+
+		memcpy(&arch_empty[0], &header[0], sizeof(header));
+		opt->nr_ofiles = 1;
+
+		opt->ofiles[0].name = "arch";
+		opt->ofiles[0].data = arch_empty;
+		opt->ofiles[0].size = (int)sizeof(header);
+		opt->ofiles[0].type = 0;
+	}
 
 	for (i = 0; i < opt->nr_ofiles; i++) {
 		if (opt->ofiles[i].size < (int)sizeof(header))

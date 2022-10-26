@@ -181,9 +181,6 @@ int program(struct options *opt)
 		opt->arg_f = "default";
 	}
 
-	if (!opt->nr_ofiles)
-		return fputs("Warning: no input\n", stderr), 1;
-
 	if (lib_read_ofiles(opt))
 		return 1;
 
