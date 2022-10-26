@@ -419,8 +419,6 @@ int link_main(struct options *opt)
 
 		for (i = 1; !magic && i < opt->nr_ofiles; i++)
 			magic = LE16(opt->ofiles[i].data);
-		if (!magic)
-			magic = 0x8664;
 
 		W_LE16(&out[0], magic);
 		W_LE16(&out[2], 4);
