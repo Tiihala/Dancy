@@ -208,6 +208,9 @@ int program(struct options *opt)
 			dump_ext(obj->name, obj->data);
 	}
 
+	if (opt->dump || opt->dump_ext)
+		return 0;
+
 	if (!strcmp(opt->arg_f, "lib"))
 		return do_lib_mode(opt);
 
