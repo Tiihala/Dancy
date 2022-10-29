@@ -80,6 +80,12 @@ struct options {
 	*((a) + 2) = (unsigned char)(((unsigned long)(d) >> 16) & 0xFFul), \
 	*((a) + 3) = (unsigned char)(((unsigned long)(d) >> 24) & 0xFFul))
 
+#define W_BE32(a,d) ( \
+	*((a) + 3) = (unsigned char)(((unsigned long)(d) >>  0) & 0xFFul), \
+	*((a) + 2) = (unsigned char)(((unsigned long)(d) >>  8) & 0xFFul), \
+	*((a) + 1) = (unsigned char)(((unsigned long)(d) >> 16) & 0xFFul), \
+	*((a) + 0) = (unsigned char)(((unsigned long)(d) >> 24) & 0xFFul))
+
 #define AT_HEADER_SIZE (0x0020)
 #define EF_HEADER_SIZE (0x0040)
 #define IN_HEADER_SIZE (0x01A0)
