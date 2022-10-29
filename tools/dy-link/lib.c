@@ -236,7 +236,7 @@ struct lib_symbol {
 	char _buffer[12];
 };
 
-static struct lib_symbol *read_external_symbols(struct options *opt)
+static struct lib_symbol *read_external_symbols(struct options *opt, int mode)
 {
 	unsigned long symbols_total = 0;
 	struct lib_symbol *r, *ls;
@@ -294,7 +294,9 @@ static struct lib_symbol *read_external_symbols(struct options *opt)
 			ls->ofile = i;
 			ls->section = (int)LE16(&sym[12]);
 
-			if ((int)sym[16] != 2 || ls->name[0] == '\0')
+			if (mode == 0 && ls->section == 0)
+				memset(ls, 0, sizeof(*ls));
+			else if ((int)sym[16] != 2 || ls->name[0] == '\0')
 				memset(ls, 0, sizeof(*ls));
 			else
 				ls += 1;
@@ -392,7 +394,7 @@ int lib_main(struct options *opt)
 		opt->nr_ofiles = opt->nr_lib_ofiles;
 		opt->ofiles = opt->lib_ofiles;
 
-		ls = read_external_symbols(opt);
+		ls = read_external_symbols(opt, 0);
 
 		opt->nr_ofiles = nr_ofiles;
 		opt->ofiles = ofiles;
@@ -588,7 +590,7 @@ int lib_main(struct options *opt)
 
 int lib_set_ofiles(struct options *opt)
 {
-	struct lib_symbol *ls = read_external_symbols(opt);
+	struct lib_symbol *ls = read_external_symbols(opt, 1);
 	unsigned long arch_type = 0;
 	int start_symbol_found = 0;
 	int i, j;
