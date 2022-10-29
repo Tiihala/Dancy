@@ -589,10 +589,44 @@ int lib_main(struct options *opt)
 int lib_set_ofiles(struct options *opt)
 {
 	struct lib_symbol *ls = read_external_symbols(opt);
+	unsigned long arch_type = 0;
+	int start_symbol_found = 0;
 	int i, j;
 
 	if (!ls)
 		return 1;
+
+	for (i = 0; !arch_type && i < opt->nr_ofiles; i++)
+		arch_type = LE16(opt->ofiles[i].data);
+
+	/*
+	 * All object files that contain start symbols are included.
+	 */
+	for (i = 0; ls[i].name != NULL; i++) {
+		if (ls[i].section == 0)
+			continue;
+		if (arch_type == 0x014C && !strcmp(ls[i].name, "___start")) {
+			opt->ofiles[ls[i].ofile].type = 0;
+			start_symbol_found = 1;
+			continue;
+		}
+		if (arch_type == 0x8664 && !strcmp(ls[i].name, "__start")) {
+			opt->ofiles[ls[i].ofile].type = 0;
+			start_symbol_found = 1;
+			continue;
+		}
+	}
+
+	/*
+	 * The default format requires a start symbol.
+	 */
+	if (start_symbol_found == 0 && !strcmp(opt->arg_f, "default")) {
+		if (arch_type == 0x014C)
+			fputs("Error: symbol ___start missing\n", stderr);
+		else
+			fputs("Error: symbol __start missing\n", stderr);
+		return free(ls), 1;
+	}
 
 	/*
 	 * Check what object files from libraries are relevant. It means
