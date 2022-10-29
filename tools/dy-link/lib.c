@@ -104,7 +104,7 @@ static int process_lib_file(struct options *opt, int i)
 		/*
 		 * Ignore special library members.
 		 */
-		if (id[0] == '/' && id[1] < '0' && id[1] > '9') {
+		if (id[0] == '/' && (id[1] < '0' || id[1] > '9')) {
 			lib_data += obj_file_size;
 			lib_size -= obj_file_size;
 			continue;
