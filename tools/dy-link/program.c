@@ -214,5 +214,8 @@ int program(struct options *opt)
 	if (!strcmp(opt->arg_f, "lib"))
 		return do_lib_mode(opt);
 
+	if (lib_set_ofiles(opt))
+		return 1;
+
 	return do_link_main(opt);
 }
