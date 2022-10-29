@@ -19,15 +19,13 @@
 
 #include "program.h"
 
-static int end(struct options *opt, unsigned char *out, size_t size)
+static int write_obj(struct options *opt, unsigned char *out, size_t size)
 {
 	FILE *fp = stdout;
 	int is_stdout = 1;
 
 	if (!opt->arg_o)
-		return 0;
-	if (!out || !size)
-		return 1;
+		return free(out), 0;
 
 	if (strcmp(opt->arg_o, "-")) {
 		fp = (errno = 0, fopen(opt->arg_o, "wb"));
@@ -38,17 +36,20 @@ static int end(struct options *opt, unsigned char *out, size_t size)
 		}
 		is_stdout = 0;
 	}
+
 	if ((errno = 0, fwrite(out, 1, size, fp)) != size) {
 		perror("Error");
 		if (!is_stdout)
 			(void)fclose(fp);
 		return free(out), 1;
 	}
+
 	free(out);
 	errno = 0;
 
 	if (is_stdout)
 		return fflush(fp) ? perror("Error"), 1 : 0;
+
 	return fclose(fp) ? perror("Error"), 1 : 0;
 }
 
@@ -685,5 +686,5 @@ int link_main(struct options *opt)
 	/*
 	 * Write the output.
 	 */
-	return end(opt, out, (size_t)size);
+	return write_obj(opt, out, (size_t)size);
 }
