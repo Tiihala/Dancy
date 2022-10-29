@@ -306,8 +306,62 @@ static struct lib_symbol *read_external_symbols(struct options *opt)
 	return r;
 }
 
+static int add_size(unsigned long *output_buffer_size, unsigned long add)
+{
+	if (*output_buffer_size > ULONG_MAX - add)
+		*output_buffer_size = 0xFFFFFFFF;
+
+	if (*output_buffer_size > 0x7FFFFFFF) {
+		fputs("Error: library size overflow\n", stderr);
+		return 1;
+	}
+
+	*output_buffer_size += add;
+
+	return 0;
+}
+
+static int write_lib(struct options *opt, unsigned char *out, size_t size)
+{
+	FILE *fp = stdout;
+	int is_stdout = 1;
+
+	if (!opt->arg_o)
+		return free(out), 0;
+
+	if (strcmp(opt->arg_o, "-")) {
+		fp = (errno = 0, fopen(opt->arg_o, "wb"));
+		if (!fp) {
+			const char *fmt = "Error: output \"%s\" (%s)\n";
+			fprintf(stderr, fmt, opt->arg_o, strerror(errno));
+			return free(out), 1;
+		}
+		is_stdout = 0;
+	}
+
+	if ((errno = 0, fwrite(out, 1, size, fp)) != size) {
+		perror("Error");
+		if (!is_stdout)
+			(void)fclose(fp);
+		return free(out), 1;
+	}
+
+	free(out);
+	errno = 0;
+
+	if (is_stdout)
+		return fflush(fp) ? perror("Error"), 1 : 0;
+
+	return fclose(fp) ? perror("Error"), 1 : 0;
+}
+
 int lib_main(struct options *opt)
 {
+	unsigned long symbols = 0;
+	unsigned long output_buffer_size = 128;
+	unsigned char *output_buffer;
+	size_t output_real_size = 0;
+	struct lib_symbol *ls;
 	int i;
 
 	for (i = 0; i < opt->nr_lib_ofiles; i++) {
@@ -315,11 +369,221 @@ int lib_main(struct options *opt)
 		unsigned char *obj_data = opt->lib_ofiles[i].data;
 		int obj_size = opt->lib_ofiles[i].size;
 
+		if (LE16(&obj_data[0]) == 0)
+			continue;
+
 		if (validate_obj(obj_name, obj_data, obj_size))
+			return 1;
+
+		if (add_size(&output_buffer_size, (unsigned long)obj_size))
+			return 1;
+
+		if (add_size(&output_buffer_size, 64))
 			return 1;
 	}
 
-	return 0;
+	/*
+	 * Read all external symbols from the new object files.
+	 */
+	{
+		int nr_ofiles = opt->nr_ofiles;
+		void *ofiles = opt->ofiles;
+
+		opt->nr_ofiles = opt->nr_lib_ofiles;
+		opt->ofiles = opt->lib_ofiles;
+
+		ls = read_external_symbols(opt);
+
+		opt->nr_ofiles = nr_ofiles;
+		opt->ofiles = ofiles;
+	}
+
+	if (!ls)
+		return 1;
+
+	for (i = 0; ls[i].name != NULL; i++) {
+		size_t len = strlen(ls[i].name);
+
+		if (add_size(&output_buffer_size, (unsigned long)len))
+			return free(ls), 1;
+
+		if (add_size(&output_buffer_size, 5))
+			return free(ls), 1;
+
+		symbols += 1;
+	}
+
+	/*
+	 * Allocate a buffer that has more than enough space
+	 * for the output file.
+	 */
+	if ((output_buffer = malloc((size_t)output_buffer_size)) == NULL) {
+		fputs("Error: not enough memory\n", stderr);
+		return free(ls), 1;
+	}
+
+	memset(output_buffer, 0, (size_t)output_buffer_size);
+
+	/*
+	 * Write the first special member.
+	 */
+	{
+		const unsigned char header[8] =
+			{ 0x21, 0x3C, 0x61, 0x72, 0x63, 0x68, 0x3E, 0x0A };
+		unsigned long member_size = 0;
+
+		memcpy(&output_buffer[output_real_size], &header[0], 8);
+		output_real_size += 8;
+
+		memset(&output_buffer[output_real_size], 0x20, 60);
+
+		output_buffer[output_real_size + 0] = '/';
+		output_buffer[output_real_size + 16] = '-';
+		output_buffer[output_real_size + 17] = '1';
+		output_buffer[output_real_size + 40] = '0';
+
+		W_BE32(&output_buffer[output_real_size + 60 + 0], symbols);
+		member_size += 4;
+
+		for (i = 0; i < (int)symbols; i++) {
+			unsigned long val = (unsigned long)ls[i].ofile;
+			unsigned char *p = output_buffer;
+
+			p += 60;
+			p += output_real_size;
+			p += member_size;
+
+			/*
+			 * Use temporary values in the offset array.
+			 */
+			val = (val << 1) | 1;
+			W_LE32(&p[0], val);
+			member_size += 4;
+		}
+
+		for (i = 0; i < (int)symbols; i++) {
+			const char *name = ls[i].name;
+			char *p = (char *)output_buffer;
+
+			p += 60;
+			p += output_real_size;
+			p += member_size;
+
+			strcpy(p, name);
+			member_size += (unsigned long)(strlen(name) + 1);
+		}
+
+		if (symbols == 0)
+			member_size += 1;
+
+		sprintf((char *)&output_buffer[output_real_size + 48],
+			"%-10lu", member_size);
+
+		output_buffer[output_real_size + 58] = 0x60;
+		output_buffer[output_real_size + 59] = 0x0A;
+
+		output_real_size += 60;
+		output_real_size += member_size;
+
+		/*
+		 * Add padding bytes to align headers.
+		 */
+		while ((output_real_size & 1) != 0)
+			output_buffer[output_real_size++] = 0x0A;
+	}
+
+	free(ls), ls = NULL;
+
+	for (i = 0; i < opt->nr_lib_ofiles; i++) {
+		unsigned char *obj_data = opt->lib_ofiles[i].data;
+		int obj_size = opt->lib_ofiles[i].size;
+		unsigned long member_size = (unsigned long)obj_size;
+		unsigned long j;
+
+		if (LE16(&obj_data[0]) == 0)
+			continue;
+
+		memset(&output_buffer[output_real_size], 0x20, 60);
+
+		sprintf((char *)&output_buffer[output_real_size + 0],
+			"%lX.o/", (unsigned long)output_real_size);
+
+		for (j = 0; j < 16; j++) {
+			if (output_buffer[output_real_size + j] == 0x00) {
+				output_buffer[output_real_size + j] = 0x20;
+				break;
+			}
+		}
+
+		output_buffer[output_real_size + 16] = '-';
+		output_buffer[output_real_size + 17] = '1';
+		output_buffer[output_real_size + 40] = '0';
+
+		sprintf((char *)&output_buffer[output_real_size + 48],
+			"%-10lu", member_size);
+
+		output_buffer[output_real_size + 58] = 0x60;
+		output_buffer[output_real_size + 59] = 0x0A;
+
+		memcpy(&output_buffer[output_real_size + 60],
+			&obj_data[0], (size_t)member_size);
+
+		/*
+		 * Update the temporary values in the first member.
+		 */
+		for (j = 0; j < symbols; j++) {
+			unsigned char *p = output_buffer;
+			unsigned long val;
+
+			p += 72;
+			p += (j * 4);
+			val = LE32(&p[0]) >> 1;
+
+			if ((int)val == i)
+				W_LE32(&p[0], output_real_size);
+		}
+
+		output_real_size += 60;
+		output_real_size += member_size;
+
+		/*
+		 * Add padding bytes to align headers.
+		 */
+		while ((output_real_size & 1) != 0)
+			output_buffer[output_real_size++] = 0x0A;
+	}
+
+	/*
+	 * Check and convert the temporary values to final
+	 * values and use big endian integers.
+	 */
+	for (i = 0; i < (int)symbols; i++) {
+		unsigned char *p = output_buffer;
+		unsigned long val;
+
+		p += 72;
+		p += (i * 4);
+		val = LE32(&p[0]);
+
+		if (val == 0 || (val & 1) != 0) {
+			fputs("Library: unexpected behavior\n", stderr);
+			return free(output_buffer), 1;
+		}
+
+		W_BE32(&p[0], val);
+	}
+
+	if (output_buffer_size < output_real_size)
+		fputs("Library: unexpected behavior\n", stderr), exit(1);
+
+	if (opt->verbose) {
+		printf("Library output buffer, %lu bytes\n",
+			(unsigned long)output_buffer_size);
+		printf("Library output file, %lu bytes\n",
+			(unsigned long)output_real_size);
+	}
+
+	return write_lib(opt, output_buffer, output_real_size);
 }
 
 int lib_set_ofiles(struct options *opt)
