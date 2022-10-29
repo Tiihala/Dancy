@@ -331,7 +331,9 @@ int lib_set_ofiles(struct options *opt)
 		return 1;
 
 	/*
-	 * Check what object files from libraries are relevant.
+	 * Check what object files from libraries are relevant. It means
+	 * that in normal object files there are unresolved symbols that
+	 * can be made "resolved" by using the libraries.
 	 */
 	for (;;) {
 		int state = 0;
@@ -365,7 +367,7 @@ int lib_set_ofiles(struct options *opt)
 	}
 
 	/*
-	 * Remove all unnecessary object files from libraries.
+	 * Remove all unnecessary object files that were read from libraries.
 	 */
 	for (i = 0; i < opt->nr_ofiles; i++) {
 		const size_t empty_size = 64;
