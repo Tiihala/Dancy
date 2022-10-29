@@ -19,6 +19,12 @@
 
 #include "program.h"
 
+static int lib_error(const char *lib_name, const char *msg)
+{
+	fprintf(stderr, "%s (library): %s\n", lib_name, msg);
+	return 1;
+}
+
 static int process_lib_file(struct options *opt, int i)
 {
 	const char *lib_name = opt->ofiles[i].name;
@@ -32,6 +38,134 @@ static int process_lib_file(struct options *opt, int i)
 
 	if (lib_size == 8)
 		return 0;
+
+	lib_data += 8;
+	lib_size -= 8;
+
+	while (lib_size > 0) {
+		int obj_file_size = 0;
+		int id[2];
+		int j;
+
+		/*
+		 * Ignore the padding bytes.
+		 */
+		while (lib_data[0] == 0x0A && lib_size > 0) {
+			lib_data += 1;
+			lib_size -= 1;
+		}
+
+		if (lib_size < 60)
+			break;
+
+		id[0] = (int)lib_data[0];
+		id[1] = (int)lib_data[1];
+
+		/*
+		 * Check header ending characters.
+		 */
+		if (lib_data[58] != 0x60 || lib_data[59] != 0x0A)
+			return lib_error(lib_name, "header format");
+
+		for (j = 0; j < 48; j++) {
+			int c = (int)lib_data[j];
+
+			if (c < 0x20 || c > 0x7E)
+				return lib_error(lib_name, "header format");
+		}
+
+		if ((int)lib_data[48] == '0' && (int)lib_data[49] != 0x20)
+			return lib_error(lib_name, "octal file size");
+
+		/*
+		 * File sizes are limited to 999 999 999 bytes.
+		 */
+		if ((int)lib_data[57] != 0x20)
+			return lib_error(lib_name, "object file size");
+
+		for (j = 48; j < 58; j++) {
+			int c = (int)lib_data[j];
+
+			if (c == 0x20)
+				break;
+			if (c < '0' || c > '9')
+				return lib_error(lib_name, "header format");
+
+			obj_file_size *= 10;
+			obj_file_size += (c - '0');
+		}
+
+		lib_data += 60;
+		lib_size -= 60;
+
+		if (lib_size < obj_file_size)
+			return lib_error(lib_name, "erroneous format");
+
+		/*
+		 * Ignore special library members.
+		 */
+		if (id[0] == '/' && id[1] < '0' && id[1] > '9') {
+			lib_data += obj_file_size;
+			lib_size -= obj_file_size;
+			continue;
+		}
+
+		/*
+		 * Check the minimum size of the supported object files.
+		 */
+		if (obj_file_size < 20) {
+			lib_data += obj_file_size;
+			lib_size -= obj_file_size;
+			continue;
+		}
+
+		/*
+		 * Check the supported object file signatures.
+		 */
+		{
+			unsigned long arch_type = LE16(&lib_data[0]);
+
+			if (arch_type != 0x014C && arch_type != 0x8664) {
+				lib_data += obj_file_size;
+				lib_size -= obj_file_size;
+				continue;
+			}
+		}
+
+		/*
+		 * Check the array limit.
+		 */
+		if (opt->nr_ofiles >= OFILES_LIMIT) {
+			fputs("Error: too many library objects\n", stderr);
+			return 1;
+		}
+
+		/*
+		 * Allocate a buffer for the object file and add it to
+		 * the input file array.
+		 */
+		{
+			size_t buffer_size = (size_t)obj_file_size;
+			void *buffer = malloc(buffer_size);
+
+			if (!buffer) {
+				fputs("Error: not enough memory\n", stderr);
+				return 1;
+			}
+
+			memcpy(buffer, &lib_data[0], buffer_size);
+
+			opt->ofiles[opt->nr_ofiles].name = "object";
+			opt->ofiles[opt->nr_ofiles].data = buffer;
+			opt->ofiles[opt->nr_ofiles].size = (int)buffer_size;
+			opt->ofiles[opt->nr_ofiles].type = 1;
+		}
+
+		opt->nr_ofiles += 1;
+
+		lib_data += obj_file_size;
+		lib_size -= obj_file_size;
+	}
 
 	return 0;
 }
