@@ -18,8 +18,8 @@ ARCTIC_LIBC_OBJECTS_64= \
 
 ##############################################################################
 
-./arctic/o32/libc.o: $(ARCTIC_LIBC_OBJECTS_32)
-	$(DY_LINK) -fobj -o$@ $(ARCTIC_LIBC_OBJECTS_32)
+./arctic/o32/libc.a: $(ARCTIC_LIBC_OBJECTS_32)
+	$(DY_LINK) -flib -o$@ $(ARCTIC_LIBC_OBJECTS_32)
 
-./arctic/o64/libc.o: $(ARCTIC_LIBC_OBJECTS_64)
-	$(DY_LINK) -fobj -o$@ $(ARCTIC_LIBC_OBJECTS_64)
+./arctic/o64/libc.a: $(ARCTIC_LIBC_OBJECTS_64)
+	$(DY_LINK) -flib -o$@ $(ARCTIC_LIBC_OBJECTS_64)
