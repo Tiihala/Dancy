@@ -228,13 +228,14 @@ int main(int argc, char *argv[])
 		argv[argc] = NULL;
 	}
 
+	if ((errno = 0, atexit(free_ofiles)))
+		return perror("atexit error"), EXIT_FAILURE;
+
 	opts.operands = (!argv[0]) ? &argv[0] : &argv[1];
 	if (*opts.operands) {
 		int i = 0;
 		int total_size = 0;
 		argv_i = opts.operands;
-		if ((errno = 0, atexit(free_ofiles)))
-			return perror("atexit error"), EXIT_FAILURE;
 		while (*argv_i) {
 			if (read_ofile(*argv_i, i))
 				return EXIT_FAILURE;
