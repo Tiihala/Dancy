@@ -13,14 +13,14 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * dancy/lib.h
+ * common/lib.h
  *      Header of Dancy Operating System
  */
 
-#ifndef DANCY_LIB_H
-#define DANCY_LIB_H
+#ifndef COMMON_LIB_H
+#define COMMON_LIB_H
 
-#include <dancy/types.h>
+#include <common/types.h>
 
 /*
  * Declarations of bitarray.c

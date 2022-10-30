@@ -32,7 +32,7 @@
 
 #include <common/blob.h>
 #include <common/keys.h>
-#include <dancy/lib.h>
+#include <common/lib.h>
 #include <dancy/limits.h>
 #include <dancy/types.h>
 

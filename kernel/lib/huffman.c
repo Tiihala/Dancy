@@ -17,7 +17,7 @@
  *      Huffman coding scheme
  */
 
-#include <dancy/lib.h>
+#include <common/lib.h>
 
 int huffman_init(struct huffman *h, unsigned *symbols, int n)
 {

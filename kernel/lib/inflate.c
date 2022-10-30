@@ -17,7 +17,7 @@
  *      Uncompress Deflate stream
  */
 
-#include <dancy/lib.h>
+#include <common/lib.h>
 
 struct bit_code {
 	unsigned extra;
