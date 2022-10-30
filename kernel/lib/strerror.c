@@ -22,7 +22,7 @@
 static const char *error_array[] = {
 
 #define DANCY_X(a, b) b,
-#include <dancy/error.h>
+#include <kernel/error.h>
 #undef DANCY_X
 
 };

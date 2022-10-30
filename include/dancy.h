@@ -44,7 +44,7 @@
 enum dancy_error {
 
 #define DANCY_X(a, b) a,
-#include <dancy/error.h>
+#include <kernel/error.h>
 #undef DANCY_X
 
 	dancy_error_end
