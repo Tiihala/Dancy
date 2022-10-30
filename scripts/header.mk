@@ -2,8 +2,7 @@
 
 DANCY_VERSION=-DDANCY_MAJOR=$(DANCY_MAJOR) -DDANCY_MINOR=$(DANCY_MINOR)
 
-DANCY_SYSTEM_CPPFLAGS=-I. -I./include -I./arctic/include\
-$(DANCY_VERSION) -DDANCY_SYSTEM
+DANCY_SYSTEM_CPPFLAGS=-I. -I./include -I./arctic/include $(DANCY_VERSION)
 
 DANCY_SYSTEM_CFLAGS=-ffreestanding -O2 -mno-80387 -mno-mmx -mno-sse -mno-sse2\
 -mno-3dnow -mno-aes -mno-avx -fno-ident

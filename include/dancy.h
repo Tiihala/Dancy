@@ -22,7 +22,7 @@
 
 #include <dancy/blob.h>
 
-#ifdef DANCY_SYSTEM
+#if defined(DANCY_32) || defined(DANCY_64)
 
 #include <limits.h>
 #include <stdarg.h>
