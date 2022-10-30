@@ -20,7 +20,7 @@
 #ifndef DANCY_H
 #define DANCY_H
 
-#include <dancy/blob.h>
+#include <common/blob.h>
 
 #if defined(DANCY_32) || defined(DANCY_64)
 
