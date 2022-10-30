@@ -108,7 +108,7 @@ DANCY_HEADERS= \
  ./include/common/blob.h \
  ./include/common/keys.h \
  ./include/common/lib.h \
- ./include/dancy/limits.h \
+ ./include/common/limits.h \
  ./include/dancy/types.h \
  ./include/kernel/base.h \
  ./include/kernel/debug.h \

@@ -26,7 +26,7 @@
 #ifndef va_arg
 #include <stdarg.h>
 #endif
-#include <dancy/limits.h>
+#include <common/limits.h>
 #include <dancy/types.h>
 
 #if defined (DANCY_32)
