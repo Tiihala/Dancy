@@ -35,7 +35,7 @@
 #include <arctic/include/string.h>
 
 #include <common/blob.h>
-#include <dancy/keys.h>
+#include <common/keys.h>
 #include <dancy/limits.h>
 #include <dancy/types.h>
 

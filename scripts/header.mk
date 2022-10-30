@@ -106,7 +106,7 @@ DANCY_HEADERS= \
  ./include/boot/loader.h \
  ./include/boot/uefi.h \
  ./include/common/blob.h \
- ./include/dancy/keys.h \
+ ./include/common/keys.h \
  ./include/dancy/lib.h \
  ./include/dancy/limits.h \
  ./include/dancy/types.h \
