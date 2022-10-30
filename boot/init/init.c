@@ -510,5 +510,3 @@ void init_ap(uint32_t id)
 
 	cpu_halt(0);
 }
-
-DANCY_SYMBOL(init);

@@ -34,7 +34,6 @@
 #include <dancy/keys.h>
 #include <dancy/lib.h>
 #include <dancy/limits.h>
-#include <dancy/symbol.h>
 #include <dancy/types.h>
 
 #include <boot/loader.h>
