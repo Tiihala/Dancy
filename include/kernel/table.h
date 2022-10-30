@@ -20,7 +20,7 @@
 #ifndef KERNEL_TABLE_H
 #define KERNEL_TABLE_H
 
-#include <dancy/types.h>
+#include <common/types.h>
 
 struct kernel_table {
 	size_t table_size;

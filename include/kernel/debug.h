@@ -20,7 +20,7 @@
 #ifndef KERNEL_DEBUG_H
 #define KERNEL_DEBUG_H
 
-#include <dancy/types.h>
+#include <common/types.h>
 
 /*
  * Declarations of debug.c

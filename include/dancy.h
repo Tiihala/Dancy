@@ -39,7 +39,7 @@
 #include <common/keys.h>
 #include <common/lib.h>
 #include <common/limits.h>
-#include <dancy/types.h>
+#include <common/types.h>
 
 enum dancy_error {
 

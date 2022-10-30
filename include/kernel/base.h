@@ -20,7 +20,7 @@
 #ifndef KERNEL_BASE_H
 #define KERNEL_BASE_H
 
-#include <dancy/types.h>
+#include <common/types.h>
 #include <kernel/table.h>
 
 /*

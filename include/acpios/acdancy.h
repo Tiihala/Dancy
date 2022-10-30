@@ -27,7 +27,7 @@
 #include <stdarg.h>
 #endif
 #include <common/limits.h>
-#include <dancy/types.h>
+#include <common/types.h>
 
 #if defined (DANCY_32)
 #define ACPI_MACHINE_WIDTH 32

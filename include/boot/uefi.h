@@ -37,7 +37,7 @@
 #include <common/blob.h>
 #include <common/keys.h>
 #include <common/limits.h>
-#include <dancy/types.h>
+#include <common/types.h>
 
 #include <boot/loader.h>
 

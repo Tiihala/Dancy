@@ -20,7 +20,7 @@
 #ifndef BOOT_LOADER_H
 #define BOOT_LOADER_H
 
-#include <dancy/types.h>
+#include <common/types.h>
 
 #if defined(DANCY_32) || defined(DANCY_64)
 

@@ -20,7 +20,7 @@
 #ifndef KERNEL_VFS_H
 #define KERNEL_VFS_H
 
-#include <dancy/types.h>
+#include <common/types.h>
 
 enum vfs_type {
 	vfs_type_unknown   = 0,

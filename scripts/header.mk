@@ -109,7 +109,7 @@ DANCY_HEADERS= \
  ./include/common/keys.h \
  ./include/common/lib.h \
  ./include/common/limits.h \
- ./include/dancy/types.h \
+ ./include/common/types.h \
  ./include/kernel/base.h \
  ./include/kernel/debug.h \
  ./include/kernel/error.h \

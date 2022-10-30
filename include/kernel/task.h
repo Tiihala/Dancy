@@ -20,7 +20,7 @@
 #ifndef KERNEL_TASK_H
 #define KERNEL_TASK_H
 
-#include <dancy/types.h>
+#include <common/types.h>
 
 enum task_type {
 	task_normal   = 0x00,

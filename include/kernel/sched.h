@@ -20,7 +20,7 @@
 #ifndef KERNEL_SCHED_H
 #define KERNEL_SCHED_H
 
-#include <dancy/types.h>
+#include <common/types.h>
 
 enum sched_priority {
 	sched_priority_kernel = 0, /* default */

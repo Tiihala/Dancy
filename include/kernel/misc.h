@@ -20,7 +20,7 @@
 #ifndef KERNEL_MISC_H
 #define KERNEL_MISC_H
 
-#include <dancy/types.h>
+#include <common/types.h>
 #include <kernel/vfs.h>
 
 /*

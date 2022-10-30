@@ -20,7 +20,7 @@
 #ifndef KERNEL_SYSCALL_H
 #define KERNEL_SYSCALL_H
 
-#include <dancy/types.h>
+#include <common/types.h>
 
 /*
  * Declarations of file.c
