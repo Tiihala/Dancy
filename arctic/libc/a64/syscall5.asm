@@ -13,7 +13,7 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
-;; libc/a64/syscall.asm
+;; libc/a64/syscall5.asm
 ;;      The system call function
 ;;
 
@@ -21,11 +21,11 @@
 
 section .text
 
-        global __dancy_syscall
+        global __dancy_syscall5
 
 align 16
-        ; long long __dancy_syscall(int arg0, ...)
-__dancy_syscall:
+        ; long long __dancy_syscall5(int arg0, ...)
+__dancy_syscall5:
         push rbx                        ; save register rbx
         push rsi                        ; save register rsi
         push rdi                        ; save register rdi

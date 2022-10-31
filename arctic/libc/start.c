@@ -24,7 +24,5 @@ void __dancy_libc_start(void);
 
 void __dancy_libc_start(void)
 {
-	int retval = 0;
 
-	__dancy_syscall(__dancy_syscall_exit, retval);
 }
