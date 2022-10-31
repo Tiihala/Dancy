@@ -8,6 +8,9 @@
 ./arctic/o32/libc/a32/start.o: ./arctic/libc/a32/start.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./arctic/libc/a32/start.asm
 
+./arctic/o32/libc/a32/syscall1.o: ./arctic/libc/a32/syscall1.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./arctic/libc/a32/syscall1.asm
+
 ./arctic/o32/libc/a32/syscall2.o: ./arctic/libc/a32/syscall2.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./arctic/libc/a32/syscall2.asm
 
@@ -28,6 +31,9 @@
 
 ./arctic/o64/libc/a64/start.o: ./arctic/libc/a64/start.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./arctic/libc/a64/start.asm
+
+./arctic/o64/libc/a64/syscall1.o: ./arctic/libc/a64/syscall1.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./arctic/libc/a64/syscall1.asm
 
 ./arctic/o64/libc/a64/syscall2.o: ./arctic/libc/a64/syscall2.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./arctic/libc/a64/syscall2.asm
