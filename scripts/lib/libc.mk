@@ -4,6 +4,7 @@
 
 ARCTIC_LIBC_OBJECTS_32= \
  ./arctic/o32/libc/a32/start.o \
+ ./arctic/o32/libc/a32/syscall0.o \
  ./arctic/o32/libc/a32/syscall1.o \
  ./arctic/o32/libc/a32/syscall2.o \
  ./arctic/o32/libc/a32/syscall3.o \
@@ -15,6 +16,7 @@ ARCTIC_LIBC_OBJECTS_32= \
 
 ARCTIC_LIBC_OBJECTS_64= \
  ./arctic/o64/libc/a64/start.o \
+ ./arctic/o64/libc/a64/syscall0.o \
  ./arctic/o64/libc/a64/syscall1.o \
  ./arctic/o64/libc/a64/syscall2.o \
  ./arctic/o64/libc/a64/syscall3.o \
