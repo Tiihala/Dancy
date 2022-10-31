@@ -36,6 +36,7 @@ enum __dancy_syscall_enum__ {
 	__dancy_syscall_argn__
 };
 
+long long __dancy_syscall4(int arg0, ...);
 long long __dancy_syscall5(int arg0, ...);
 
 __Dancy_Header_End
