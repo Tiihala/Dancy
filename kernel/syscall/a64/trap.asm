@@ -55,7 +55,6 @@ syscall_init_asm:
 align 64
 syscall_asm_handler:
         push rcx                        ; save register rcx
-        push rdx                        ; save register rdx
         push rbp                        ; save register rbp
         push r8                         ; save register r8
         push r9                         ; save register r9
@@ -68,7 +67,7 @@ syscall_asm_handler:
 
         ; long long syscall_handler(int arg0, ...)
         ;
-        ; arg0 = rax
+        ; arg0 = eax (32-bit)
         ; arg1 = rcx
         ; arg2 = rdx
         ; arg3 = rbx
@@ -82,11 +81,12 @@ syscall_asm_handler:
         push rcx                        ; push arg1 (shadow space)
         push rax                        ; push arg0 (shadow space)
 
-        mov rcx, [rsp+0]                ; set arg0
+        mov ecx, [rsp+0]                ; set arg0 (32-bit)
         mov rdx, [rsp+8]                ; set arg1
         mov r8, [rsp+16]                ; set arg2
         mov r9, [rsp+24]                ; set arg3
         call syscall_handler            ; call syscall_handler
+        xor edx, edx                    ; rdx = 0, rax = (long long)retval
 
         mov rsp, rbp                    ; restore stack
         pop r11                         ; restore register r11
@@ -94,6 +94,5 @@ syscall_asm_handler:
         pop r9                          ; restore register r9
         pop r8                          ; restore register r8
         pop rbp                         ; restore register rbp
-        pop rdx                         ; restore register rdx
         pop rcx                         ; restore register rcx
         iretq
