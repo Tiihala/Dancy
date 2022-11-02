@@ -5,6 +5,7 @@
 DANCY_MISC_OBJECTS_32= \
  ./o32/misc/bin.o \
  ./o32/misc/coff.o \
+ ./o32/misc/console.o \
  ./o32/misc/dma.o \
  ./o32/misc/epoch.o \
  ./o32/misc/floppy.o \
@@ -17,6 +18,7 @@ DANCY_MISC_OBJECTS_32= \
 DANCY_MISC_OBJECTS_64= \
  ./o64/misc/bin.o \
  ./o64/misc/coff.o \
+ ./o64/misc/console.o \
  ./o64/misc/dma.o \
  ./o64/misc/epoch.o \
  ./o64/misc/floppy.o \

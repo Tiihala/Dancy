@@ -44,6 +44,7 @@ static struct {
 	{ 0, 0, SYMBOL_PREFIX "bin_init", "Bin Mount" },
 	{ 0, 0, SYMBOL_PREFIX "devfs_init", "Devfs Mount" },
 	{ 0, 0, SYMBOL_PREFIX "zero_init", "Devfs Zero" },
+	{ 0, 0, SYMBOL_PREFIX "console_init", "Devfs Console" },
 	{ 0, 0, SYMBOL_PREFIX "dma_init", "DMA" },
 	{ 0, 0, SYMBOL_PREFIX "floppy_init", "Floppy" },
 	{ 0, 0, SYMBOL_PREFIX "serial_init", "Serial Ports" },

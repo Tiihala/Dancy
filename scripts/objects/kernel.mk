@@ -110,6 +110,9 @@
 ./o32/misc/coff.o: ./kernel/misc/coff.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/coff.c
 
+./o32/misc/console.o: ./kernel/misc/console.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/misc/console.c
+
 ./o32/misc/dma.o: ./kernel/misc/dma.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/dma.c
 
@@ -289,6 +292,9 @@
 
 ./o64/misc/coff.o: ./kernel/misc/coff.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/coff.c
+
+./o64/misc/console.o: ./kernel/misc/console.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/misc/console.c
 
 ./o64/misc/dma.o: ./kernel/misc/dma.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/dma.c
