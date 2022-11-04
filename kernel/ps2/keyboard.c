@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,6 +31,9 @@ static const int data_none = -1;
 static int data_led_state = 0x00;
 static int data_scan_code = 0x02;
 static int data_typematic = 0x00;
+
+static struct vfs_node *kbd_pipe_nodes[2];
+static struct vfs_node kbd_node;
 
 static int send_command(int command, int data, int count, int *response)
 {
@@ -81,6 +84,38 @@ static int send_command(int command, int data, int count, int *response)
 	return 0;
 }
 
+static int n_read(struct vfs_node *node,
+	uint64_t offset, size_t *size, void *buffer)
+{
+	struct vfs_node *pn = kbd_pipe_nodes[0];
+
+	(void)node;
+	(void)offset;
+
+	if ((*size % sizeof(int)) != 0)
+		return *size = 0, DE_ALIGNMENT;
+
+	if (((size_t)((addr_t)buffer) % sizeof(int)) != 0)
+		return *size = 0, DE_ALIGNMENT;
+
+	return pn->n_read(pn, 0, size, buffer);
+}
+
+static int n_write(struct vfs_node *node,
+	uint64_t offset, size_t *size, const void *buffer)
+{
+	(void)node;
+	(void)offset;
+
+	if ((*size % sizeof(int)) != 0)
+		return *size = 0, DE_ALIGNMENT;
+
+	if (((size_t)((addr_t)buffer) % sizeof(int)) != 0)
+		return *size = 0, DE_ALIGNMENT;
+
+	return *size = 0, DE_FULL;
+}
+
 int ps2_kbd_init(void)
 {
 	/*
@@ -122,6 +157,31 @@ int ps2_kbd_init(void)
 	 * Enable keyboard scanning.
 	 */
 	(void)send_command(0xF4, data_none, 0, NULL);
+
+	/*
+	 * Create the device node.
+	 */
+	{
+		const char *name = "/dev/dancy-keyboard";
+		struct vfs_node *node;
+
+		if (vfs_pipe(kbd_pipe_nodes) != 0)
+			return 1;
+
+		if (vfs_open(name, &node, 0, vfs_mode_create) != 0)
+			return 1;
+
+		node->n_release(&node);
+
+		vfs_init_node(&kbd_node, 0);
+		kbd_node.type = vfs_type_character;
+		kbd_node.internal_event = kbd_pipe_nodes[0]->internal_event;
+		kbd_node.n_read = n_read;
+		kbd_node.n_write = n_write;
+
+		if (vfs_mount(name, &kbd_node) != 0)
+			return 1;
+	}
 
 	kbd_ready = 1;
 
@@ -223,7 +283,24 @@ static int kbd_table[128] = {
 
 static void process_keycode(int keycode, int release)
 {
-	(void)keycode; (void)release;
+	struct vfs_node *pn = kbd_pipe_nodes[1];
+	int data = keycode;
+	int r;
+
+	if (release)
+		data |= DANCY_KEYTYP_RELEASE;
+
+	for (;;) {
+		size_t size = sizeof(int);
+		void *buffer = &data;
+
+		r = pn->n_write(pn, 0, &size, buffer);
+
+		if (size == sizeof(int) || r != DE_RETRY)
+			break;
+
+		task_yield();
+	}
 }
 
 void ps2_kbd_handler(void)
