@@ -78,7 +78,7 @@ static int n_read(struct vfs_node *node,
 	*size = 0;
 
 	if (internal_data->type != pipe_type_read)
-		return 0;
+		return DE_ACCESS;
 
 	do {
 		void *lock_local = &shared_data->lock;
@@ -132,7 +132,7 @@ static int n_write(struct vfs_node *node,
 	*size = 0;
 
 	if (internal_data->type != pipe_type_write)
-		return 0;
+		return DE_ACCESS;
 
 	do {
 		void *lock_local = &shared_data->lock;
