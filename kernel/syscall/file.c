@@ -285,7 +285,7 @@ int file_read(int fd, size_t *size, void *buffer)
 				block_capability = 1;
 
 			while (block_capability) {
-				if (*size != 0 || r != DE_RETRY)
+				if (*size != 0 || (r != 0 && r != DE_RETRY))
 					break;
 
 				if ((fte->flags & O_NONBLOCK) != 0)
@@ -351,7 +351,10 @@ int file_write(int fd, size_t *size, const void *buffer)
 				block_capability = 1;
 
 			while (block_capability) {
-				if (*size == requested_size || r != DE_RETRY)
+				if (*size == requested_size)
+					break;
+
+				if (r != 0 && r != DE_RETRY)
 					break;
 
 				if ((fte->flags & O_NONBLOCK) != 0)
