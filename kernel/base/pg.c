@@ -1246,3 +1246,31 @@ int pg_check_user_string(const void *vaddr)
 
 	return 0;
 }
+
+int pg_check_user_vector(const void *vaddr)
+{
+	const addr_t mask = (addr_t)0x0FFF;
+	addr_t s = (addr_t)vaddr;
+	addr_t a = (addr_t)(sizeof(void *));
+	int check_page = 1;
+	int r;
+
+	if ((s % a) != 0)
+		return DE_ALIGNMENT;
+
+	while (a != 0) {
+		if (check_page) {
+			if ((r = pg_check_user_read((const void *)s, 1)) != 0)
+				return r;
+			check_page = 0;
+		}
+
+		if ((s & mask) == (addr_t)(0x1000 - sizeof(void *)))
+			check_page = 1;
+
+		a = *((volatile addr_t *)s);
+		s += sizeof(void *);
+	}
+
+	return 0;
+}
