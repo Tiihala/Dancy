@@ -38,6 +38,8 @@ extern int file_table_count;
 extern struct file_table_entry *file_table;
 
 int file_init(void);
+int file_map_descriptors(int fd_count, const int *fd_map);
+
 int file_open(int *fd, const char *name, int flags, mode_t mode);
 int file_close(int fd);
 int file_read(int fd, size_t *size, void *buffer);
