@@ -62,6 +62,7 @@ struct task {
 	} descendant;
 
 	uint32_t pg_cr3;
+	uint32_t pg_alt_cr3;
 	uint32_t pg_state;
 
 	struct {

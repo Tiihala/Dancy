@@ -215,6 +215,10 @@ void pg_delete(void);
 void pg_enter_kernel(void);
 void pg_leave_kernel(void);
 
+int pg_alt_create(void);
+void pg_alt_accept(void);
+void pg_alt_delete(void);
+
 void *pg_get_entry(cpu_native_t cr3, const void *pte);
 void *pg_map_kernel(phys_addr_t addr, size_t size, int type);
 void *pg_map_user(addr_t vaddr, size_t size);

@@ -884,6 +884,11 @@ void pg_delete(void)
 	cpu_write_cr3(pg_kernel);
 
 	pg_delete_cr3(cr3);
+
+	if ((cr3 = (cpu_native_t)current->pg_alt_cr3) != 0) {
+		current->pg_alt_cr3 = 0;
+		pg_delete_cr3(cr3);
+	}
 }
 
 void pg_enter_kernel(void)
@@ -912,6 +917,66 @@ void pg_leave_kernel(void)
 
 	current->cr3 = (uint32_t)cr3;
 	cpu_write_cr3(cr3);
+}
+
+int pg_alt_create(void)
+{
+	struct task *current = task_current();
+	cpu_native_t cr3;
+
+	if (!current->pg_cr3 || current->pg_alt_cr3)
+		return DE_UNEXPECTED;
+
+	pg_enter_kernel();
+	cr3 = (cpu_native_t)pg_create_cr3();
+	pg_leave_kernel();
+
+	if (!cr3)
+		return DE_MEMORY;
+
+	current->pg_alt_cr3 = current->pg_cr3;
+	current->pg_cr3 = (uint32_t)cr3;
+	current->cr3 = (uint32_t)cr3;
+	cpu_write_cr3(cr3);
+
+	return 0;
+}
+
+void pg_alt_accept(void)
+{
+	struct task *current = task_current();
+	cpu_native_t cr3[2];
+
+	cr3[0] = (cpu_native_t)current->pg_alt_cr3;
+	cr3[1] = cpu_read_cr3();
+
+	if (!cr3[0] || current->pg_cr3 != cr3[1])
+		return;
+
+	current->pg_alt_cr3 = 0;
+
+	pg_enter_kernel();
+	pg_delete_cr3(cr3[0]);
+	pg_leave_kernel();
+}
+
+void pg_alt_delete(void)
+{
+	struct task *current = task_current();
+	cpu_native_t cr3[2];
+
+	cr3[0] = (cpu_native_t)current->pg_alt_cr3;
+	cr3[1] = cpu_read_cr3();
+
+	if (!cr3[0] || current->pg_cr3 != cr3[1])
+		return;
+
+	current->pg_cr3 = current->pg_alt_cr3;
+	current->pg_alt_cr3 = 0;
+
+	pg_enter_kernel();
+	pg_delete_cr3(cr3[1]);
+	pg_leave_kernel();
 }
 
 void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
