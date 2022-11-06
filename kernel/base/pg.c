@@ -93,6 +93,7 @@ static void pg_delete_cr3(cpu_native_t cr3)
 		mm_free_page((phys_addr_t)pte);
 	}
 
+	memset(pde, 0, 0x1000);
 	mm_free_page((phys_addr_t)pde);
 }
 
@@ -344,6 +345,7 @@ static void pg_delete_cr3(cpu_native_t cr3)
 		mm_free_page((phys_addr_t)pdpe);
 	}
 
+	memset(pml4e, 0, 0x1000);
 	mm_free_page((phys_addr_t)pml4e);
 }
 
