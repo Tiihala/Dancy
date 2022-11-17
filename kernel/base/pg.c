@@ -1223,7 +1223,7 @@ int pg_check_user_write(void *vaddr, size_t size)
 	return r;
 }
 
-int pg_check_user_string(const void *vaddr)
+int pg_check_user_string(const void *vaddr, int *count)
 {
 	const addr_t mask = (addr_t)0x0FFF;
 	addr_t s = (addr_t)vaddr;
@@ -1231,7 +1231,12 @@ int pg_check_user_string(const void *vaddr)
 	int check_page = 1;
 	int r;
 
+	*count = -1;
+
 	while (c != 0) {
+		if ((*count += 1) == INT_MAX)
+			return DE_OVERFLOW;
+
 		if (check_page) {
 			if ((r = pg_check_user_read((const void *)s, 1)) != 0)
 				return r;
@@ -1247,7 +1252,7 @@ int pg_check_user_string(const void *vaddr)
 	return 0;
 }
 
-int pg_check_user_vector(const void *vaddr)
+int pg_check_user_vector(const void *vaddr, int *count)
 {
 	const addr_t mask = (addr_t)0x0FFF;
 	addr_t s = (addr_t)vaddr;
@@ -1256,9 +1261,14 @@ int pg_check_user_vector(const void *vaddr)
 	int r;
 
 	if ((s % a) != 0)
-		return DE_ALIGNMENT;
+		return *count = 0, DE_ALIGNMENT;
+
+	*count = -1;
 
 	while (a != 0) {
+		if ((*count += 1) == INT_MAX)
+			return DE_OVERFLOW;
+
 		if (check_page) {
 			if ((r = pg_check_user_read((const void *)s, 1)) != 0)
 				return r;

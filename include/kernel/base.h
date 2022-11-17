@@ -228,8 +228,8 @@ void pg_write_memory(phys_addr_t addr, uint64_t val, size_t size);
 
 int pg_check_user_read(const void *vaddr, size_t size);
 int pg_check_user_write(void *vaddr, size_t size);
-int pg_check_user_string(const void *vaddr);
-int pg_check_user_vector(const void *vaddr);
+int pg_check_user_string(const void *vaddr, int *count);
+int pg_check_user_vector(const void *vaddr, int *count);
 
 /*
  * Declarations of runlevel.c
