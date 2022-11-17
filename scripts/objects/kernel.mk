@@ -158,6 +158,9 @@
 ./o32/syscall/a32/trap.o: ./kernel/syscall/a32/trap.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/syscall/a32/trap.asm
 
+./o32/syscall/arg.o: ./kernel/syscall/arg.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/syscall/arg.c
+
 ./o32/syscall/file.o: ./kernel/syscall/file.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/file.c
 
@@ -340,6 +343,9 @@
 
 ./o64/syscall/a64/trap.o: ./kernel/syscall/a64/trap.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./kernel/syscall/a64/trap.asm
+
+./o64/syscall/arg.o: ./kernel/syscall/arg.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/syscall/arg.c
 
 ./o64/syscall/file.o: ./kernel/syscall/file.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/file.c
