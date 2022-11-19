@@ -33,6 +33,12 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_exit,
 
+	/*
+	 * long long __dancy_syscall_time(
+	 *         void);
+	 */
+	__dancy_syscall_time,
+
 	__dancy_syscall_argn__
 };
 

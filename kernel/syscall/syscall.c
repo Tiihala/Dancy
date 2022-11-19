@@ -29,6 +29,11 @@ static long long dancy_syscall_exit(va_list va)
 	return kernel->panic("__dancy_syscall_exit: unexpected behavior"), 0;
 }
 
+static long long dancy_syscall_time(va_list va)
+{
+	return (void)va, (long long)epoch_read();
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -36,6 +41,7 @@ static long long dancy_syscall_reserved(va_list va)
 
 static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_exit },
+	{ dancy_syscall_time },
 	{ dancy_syscall_reserved }
 };
 
