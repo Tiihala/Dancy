@@ -39,6 +39,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_time,
 
+	/*
+	 * long long __dancy_syscall_execve(
+	 *         const char *path,
+	 *         char *const argv[],
+	 *         char *const envp[]);
+	 */
+	__dancy_syscall_execve,
+
 	__dancy_syscall_argn__
 };
 

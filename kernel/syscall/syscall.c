@@ -34,6 +34,71 @@ static long long dancy_syscall_time(va_list va)
 	return (void)va, (long long)epoch_read();
 }
 
+static long long dancy_syscall_execve(va_list va)
+{
+	const char *path = va_arg(va, const char *);
+	const void *argv = va_arg(va, const void *);
+	const void *envp = va_arg(va, const void *);
+
+	addr_t user_ip, user_sp;
+	struct vfs_node *node;
+	void *arg_state;
+	int r;
+
+	if (pg_check_user_string(path, &r))
+		return -EFAULT;
+
+	if ((r = vfs_open(path, &node, vfs_type_regular, 0)) != 0) {
+		if (r == DE_NAME)
+			return -ENOENT;
+		if (r == DE_TYPE)
+			return -ENOEXEC;
+		return -EINVAL;
+	}
+
+	if ((r = arg_create(&arg_state, argv, envp)) != 0) {
+		node->n_release(&node);
+
+		if (r == DE_MEMORY)
+			return -ENOMEM;
+		return -EFAULT;
+	}
+
+	if (pg_alt_create()) {
+		arg_delete(arg_state);
+		node->n_release(&node);
+
+		return -ENOMEM;
+	}
+
+	if ((r = coff_load_executable(node, &user_ip)) != 0) {
+		pg_alt_delete();
+		arg_delete(arg_state);
+		node->n_release(&node);
+
+		if (r == DE_MEMORY)
+			return -ENOMEM;
+		return -ENOEXEC;
+	}
+
+	if (arg_copy(arg_state, &user_sp)) {
+		pg_alt_delete();
+		arg_delete(arg_state);
+		node->n_release(&node);
+
+		return -ENOMEM;
+	}
+
+	pg_alt_accept();
+	arg_delete(arg_state);
+	node->n_release(&node);
+
+	file_map_descriptors(0, NULL);
+	task_jump(user_ip, user_sp);
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -42,6 +107,7 @@ static long long dancy_syscall_reserved(va_list va)
 static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_exit },
 	{ dancy_syscall_time },
+	{ dancy_syscall_execve },
 	{ dancy_syscall_reserved }
 };
 
