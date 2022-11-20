@@ -20,9 +20,15 @@
 #include <__dancy/core.h>
 #include <__dancy/syscall.h>
 
-void __dancy_libc_start(void);
+void __dancy_libc_start(int argc, char *argv[], char *envp[]);
 
-void __dancy_libc_start(void)
+void __dancy_libc_start(int argc, char *argv[], char *envp[])
 {
+	int retval = 0;
 
+	(void)argc;
+	(void)argv;
+	(void)envp;
+
+	__dancy_syscall1(__dancy_syscall_exit, retval);
 }
