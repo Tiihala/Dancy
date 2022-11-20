@@ -18,3 +18,166 @@
  */
 
 #include <dancy.h>
+
+struct arg_header {
+	cpu_native_t argc;
+	cpu_native_t argv;
+	cpu_native_t envp;
+	cpu_native_t size;
+};
+
+static void *alloc_arg_state(size_t *size)
+{
+	const int retry_count = 4096;
+	void *arg_state = NULL;
+	int i;
+
+	*size = (*size + 0x1F) & 0xFFFFFFE0;
+
+	for (i = 0; i < retry_count; i++) {
+		if ((arg_state = aligned_alloc(0x20, *size)) != NULL)
+			break;
+		task_yield();
+	}
+
+	if (arg_state)
+		memset(arg_state, 0, *size);
+
+	return arg_state;
+}
+
+int arg_create(void **arg_state, const void *argv, const void *envp)
+{
+	size_t size = sizeof(struct arg_header);
+	int argv_count = 0, envp_count = 0;
+	addr_t base, *argv_pointer, *envp_pointer;
+	struct arg_header *ah;
+	int i, r;
+	char *p;
+
+	*arg_state = NULL;
+
+	if (argv && (r = pg_check_user_vector(argv, &argv_count)) != 0)
+		return r;
+
+	if (envp && (r = pg_check_user_vector(envp, &envp_count)) != 0)
+		return r;
+
+	if (argv_count > 0xFFFF || envp_count > 0xFFFF)
+		return DE_OVERFLOW;
+
+	size += ((size_t)(argv_count + 1) * sizeof(void *));
+	size += ((size_t)(envp_count + 1) * sizeof(void *));
+
+	for (i = 0; i < argv_count; i++) {
+		char *s = *(((char **)((addr_t)argv)) + i);
+		int count;
+
+		if ((r = pg_check_user_string(s, &count)) != 0)
+			return r;
+
+		if (!((int)size < INT_MAX - count))
+			return DE_OVERFLOW;
+
+		size += ((size_t)(count + 1));
+	}
+
+	for (i = 0; i < envp_count; i++) {
+		char *s = *(((char **)((addr_t)envp)) + i);
+		int count;
+
+		if ((r = pg_check_user_string(s, &count)) != 0)
+			return r;
+
+		if (!((int)size < INT_MAX - count))
+			return DE_OVERFLOW;
+
+		size += ((size_t)(count + 1));
+	}
+
+	if (size > 0x04000000)
+		return DE_OVERFLOW;
+
+	{
+		size_t total_size = size;
+
+		if ((*arg_state = alloc_arg_state(&total_size)) == NULL)
+			return DE_MEMORY;
+
+		ah = (struct arg_header *)(*arg_state);
+		base = (addr_t)(0x80000000 - total_size);
+
+		ah->argc = (cpu_native_t)argv_count;
+		ah->size = (cpu_native_t)total_size;
+	}
+
+	p = *arg_state;
+	p += (sizeof(struct arg_header));
+	argv_pointer = (addr_t *)((addr_t)p);
+	ah->argv = (cpu_native_t)(base + ((addr_t)p - (addr_t)(*arg_state)));
+
+	p = *arg_state;
+	p += (sizeof(struct arg_header));
+	p += ((size_t)(argv_count + 1) * sizeof(void *));
+	envp_pointer = (addr_t *)((addr_t)p);
+	ah->envp = (cpu_native_t)(base + ((addr_t)p - (addr_t)(*arg_state)));
+
+	p = *arg_state;
+	p += (sizeof(struct arg_header));
+	p += ((size_t)(argv_count + 1) * sizeof(void *));
+	p += ((size_t)(envp_count + 1) * sizeof(void *));
+
+	for (i = 0; i < argv_count; i++) {
+		char *s = *(((char **)((addr_t)argv)) + i);
+
+		*argv_pointer++ = base + ((addr_t)p - (addr_t)(*arg_state));
+
+		while ((*p++ = *s++) != '\0')
+			/* void */;
+	}
+
+	for (i = 0; i < envp_count; i++) {
+		char *s = *(((char **)((addr_t)envp)) + i);
+
+		*envp_pointer++ = base + ((addr_t)p - (addr_t)(*arg_state));
+
+		while ((*p++ = *s++) != '\0')
+			/* void */;
+	}
+
+	if (((addr_t)p - (addr_t)(*arg_state)) != size)
+		kernel->panic("arg_create: unexpected behavior");
+
+	return 0;
+}
+
+int arg_copy(void *arg_state, addr_t *user_sp)
+{
+	struct arg_header *ah = (struct arg_header *)arg_state;
+	addr_t base = (addr_t)(0x80000000 - ah->size);
+	size_t size = (size_t)(ah->size);
+
+	*user_sp = base - (addr_t)sizeof(addr_t);
+
+	if ((base & 0x1F) != 0 || base < 0x7C000000 || base >= 0x80000000)
+		return DE_UNEXPECTED;
+
+	ah->size = 0;
+
+	{
+		addr_t map_base = (addr_t)(base - 0x8000);
+		size_t map_size = (size_t)(size + 0x8000);
+
+		if (!pg_map_user(map_base, map_size))
+			return DE_MEMORY;
+	}
+
+	memcpy((void *)base, arg_state, size);
+
+	return 0;
+}
+
+void arg_delete(void *arg_state)
+{
+	free(arg_state);
+}

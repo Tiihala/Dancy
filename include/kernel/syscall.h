@@ -23,6 +23,13 @@
 #include <common/types.h>
 
 /*
+ * Declarations of arg.c
+ */
+int arg_create(void **arg_state, const void *argv, const void *envp);
+int arg_copy(void *arg_state, addr_t *user_sp);
+void arg_delete(void *arg_state);
+
+/*
  * Declarations of file.c
  */
 struct file_table_entry {
