@@ -27,6 +27,7 @@ section .text
 align 16
 
 ___start:
-        and esp, -16                    ; align the stack
-        call ___dancy_libc_start        ; call the libc start function
-        db 0xCC, 0xEB, 0xFE
+        ; nop                           ; [esp + 4]  = argc
+        ; nop                           ; [esp + 8]  = argv
+        ; nop                           ; [esp + 12] = envp
+        jmp near ___dancy_libc_start    ; jump to the libc start function

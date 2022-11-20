@@ -27,7 +27,7 @@ section .text
 align 16
 
 __start:
-        and rsp, -16                    ; align the stack
-        sub rsp, 32                     ; shadow space
-        call __dancy_libc_start         ; call the libc start function
-        db 0xCC, 0xEB, 0xFE
+        mov rcx, [rsp + 8]              ; rcx = argc
+        mov rdx, [rsp + 16]             ; rdx = argv
+        mov r8,  [rsp + 24]             ; r8  = envp
+        jmp near __dancy_libc_start     ; jump to the libc start function
