@@ -500,7 +500,9 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 			phys_addr_t nt = (phys_addr_t)new_task;
 			addr_t vaddr;
 
+			pg_enter_kernel();
 			vaddr = (addr_t)pg_map_kernel(nt, size, pg_extended);
+			pg_leave_kernel();
 
 			if ((vaddr & high_bit) == 0) {
 				mm_free_pages((phys_addr_t)new_task, 1);
