@@ -99,6 +99,70 @@ static long long dancy_syscall_execve(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_spawn(va_list va)
+{
+	const char *path = va_arg(va, const char *);
+	int fd_count = va_arg(va, int);
+	const int *fd_map = va_arg(va, const int *);
+	const void *argv = va_arg(va, const void *);
+	const void *envp = va_arg(va, const void *);
+
+	struct vfs_node *node;
+	void *arg_state;
+	uint64_t id;
+	int r;
+
+	if (pg_check_user_string(path, &r))
+		return -EFAULT;
+
+	if (fd_count < 0 || fd_count > TASK_FD_STATIC_COUNT)
+		return -EINVAL;
+
+	if (fd_count > 0) {
+		size_t size = (size_t)fd_count * sizeof(int);
+
+		if (((addr_t)fd_map % (addr_t)sizeof(int)) != 0)
+			return -EFAULT;
+
+		if (pg_check_user_read(fd_map, size))
+			return -EFAULT;
+	}
+
+	if ((r = vfs_open(path, &node, vfs_type_regular, 0)) != 0) {
+		if (r == DE_NAME)
+			return -ENOENT;
+		if (r == DE_TYPE)
+			return -ENOEXEC;
+		return -EINVAL;
+	}
+
+	if ((r = arg_create(&arg_state, argv, envp)) != 0) {
+		node->n_release(&node);
+
+		if (r == DE_MEMORY)
+			return -ENOMEM;
+		return -EFAULT;
+	}
+
+	/*
+	 * The new task calls arg_delete(arg_state) if there are no errors.
+	 */
+	if ((r = spawn_task(&id, node, fd_count, fd_map, arg_state)) != 0) {
+		arg_delete(arg_state);
+		node->n_release(&node);
+
+		if (r == DE_MEMORY)
+			return -ENOMEM;
+		if (r == DE_ARGUMENT)
+			return -EINVAL;
+		return -ENOEXEC;
+	}
+
+	node->n_release(&node);
+
+	return (long long)id;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -108,6 +172,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_exit },
 	{ dancy_syscall_time },
 	{ dancy_syscall_execve },
+	{ dancy_syscall_spawn },
 	{ dancy_syscall_reserved }
 };
 

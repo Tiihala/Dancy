@@ -47,6 +47,16 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_execve,
 
+	/*
+	 * long long __dancy_syscall_spawn(
+	 *         const char *path,
+	 *         int fd_count,
+	 *         const int fd_map[],
+	 *         char *const argv[],
+	 *         char *const envp[]);
+	 */
+	__dancy_syscall_spawn,
+
 	__dancy_syscall_argn__
 };
 
