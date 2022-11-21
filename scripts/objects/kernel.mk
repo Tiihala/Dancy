@@ -164,6 +164,9 @@
 ./o32/syscall/file.o: ./kernel/syscall/file.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/file.c
 
+./o32/syscall/spawn.o: ./kernel/syscall/spawn.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/syscall/spawn.c
+
 ./o32/syscall/syscall.o: ./kernel/syscall/syscall.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/syscall.c
 
@@ -349,6 +352,9 @@
 
 ./o64/syscall/file.o: ./kernel/syscall/file.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/file.c
+
+./o64/syscall/spawn.o: ./kernel/syscall/spawn.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/syscall/spawn.c
 
 ./o64/syscall/syscall.o: ./kernel/syscall/syscall.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/syscall.c

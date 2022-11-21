@@ -59,6 +59,12 @@ int file_chdir(const char *name);
 int file_getcwd(void *buffer, size_t size);
 
 /*
+ * Declarations of spawn.c
+ */
+int spawn_task(uint64_t *id, struct vfs_node *node,
+	int fd_count, const int *fd_map, void *arg_state);
+
+/*
  * Declarations of syscall.c
  */
 int syscall_init(void);
