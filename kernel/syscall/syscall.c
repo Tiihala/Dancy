@@ -163,6 +163,25 @@ static long long dancy_syscall_spawn(va_list va)
 	return (long long)id;
 }
 
+static long long dancy_syscall_wait(va_list va)
+{
+	int *status = va_arg(va, int *);
+	uint64_t id;
+
+	if (status) {
+		if (((addr_t)status % (addr_t)sizeof(int *)) != 0)
+			return -EFAULT;
+
+		if (pg_check_user_write(status, sizeof(int *)))
+			return -EFAULT;
+	}
+
+	if (task_wait_descendant(&id, status))
+		return -ECHILD;
+
+	return (long long)id;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -173,6 +192,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_time },
 	{ dancy_syscall_execve },
 	{ dancy_syscall_spawn },
+	{ dancy_syscall_wait },
 	{ dancy_syscall_reserved }
 };
 

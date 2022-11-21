@@ -57,6 +57,12 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_spawn,
 
+	/*
+	 * long long __dancy_syscall_wait(
+	 *         int *status);
+	 */
+	__dancy_syscall_wait,
+
 	__dancy_syscall_argn__
 };
 
