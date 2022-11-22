@@ -24,7 +24,7 @@ static long long dancy_syscall_exit(va_list va)
 {
 	int retval = va_arg(va, int);
 
-	task_exit((int)((unsigned int)retval & 0xFF));
+	task_exit((retval & 0xFF) << 8);
 
 	return kernel->panic("__dancy_syscall_exit: unexpected behavior"), 0;
 }
