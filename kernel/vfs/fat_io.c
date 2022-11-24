@@ -533,6 +533,9 @@ static int n_read_write_common(struct vfs_node *node,
 
 	*size = 0;
 
+	if (node->type == vfs_type_directory)
+		return DE_DIRECTORY;
+
 	if (offset >= 0xFFFFFFFF)
 		return 0;
 
