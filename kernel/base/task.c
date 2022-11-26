@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2022 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -877,30 +877,27 @@ static int task_wait_descendant_func(uint64_t *data)
 static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 {
 	struct task *current = task_current();
+	int descendant_state = 0;
 	uint64_t out_id = 0;
 	int out_retval = 0;
 
 	for (;;) {
 		struct task *t = task_head;
-		int descendant_found = 0;
 
 		current->descendant.data[1] = current->descendant.data[0];
 		task_switch_disable();
 
 		do {
-			int do_locked = 0;
-
-			if (t->owner == current && !t->detached) {
-				descendant_found = 1;
-				do_locked = t->stopped;
-			}
-
-			if (do_locked) {
+			if (t->owner == current) {
 				void *lock_local = &task_lock;
 
 				spin_enter(&lock_local);
 
+				if (t->owner == current)
+					descendant_state = 1;
+
 				if (t->owner == current && t->stopped) {
+					descendant_state = 2;
 					if (spin_trylock(&t->detached)) {
 						out_id = t->id;
 						out_retval = t->retval;
@@ -922,7 +919,7 @@ static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 		if (t != NULL) {
 			uint64_t d0, d1;
 
-			if (!descendant_found)
+			if (!descendant_state)
 				break;
 
 			if ((mode & MODE_TRYWAIT) != 0)
@@ -936,6 +933,8 @@ static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 				task_yield();
 			} while (task_read_event());
 		}
+
+		descendant_state = 0;
 	}
 
 	if (id)
@@ -943,7 +942,10 @@ static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 	if (retval)
 		*retval = out_retval;
 
-	return (!out_id) ? DE_RETRY : 0;
+	if (!out_id)
+		return (descendant_state == 1) ? DE_RETRY : DE_EMPTY;
+
+	return 0;
 }
 
 int task_trywait_descendant(uint64_t *id, int *retval)
