@@ -63,6 +63,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_wait,
 
+	/*
+	 * long long __dancy_syscall_waitpid(
+	 *         __dancy_pid_t pid,
+	 *         int *status,
+	 *         int options);
+	 */
+	__dancy_syscall_waitpid,
+
 	__dancy_syscall_argn__
 };
 

@@ -182,6 +182,52 @@ static long long dancy_syscall_wait(va_list va)
 	return (long long)id;
 }
 
+static long long dancy_syscall_waitpid(va_list va)
+{
+	__dancy_pid_t pid = va_arg(va, __dancy_pid_t);
+	int *status = va_arg(va, int *);
+	int options = va_arg(va, int);
+
+	if (status) {
+		if (((addr_t)status % (addr_t)sizeof(int *)) != 0)
+			return -EFAULT;
+
+		if (pg_check_user_write(status, sizeof(int *)))
+			return -EFAULT;
+	}
+
+	if (pid < -1)
+		return -ECHILD;
+
+	if (pid == -1 || pid == 0) {
+		uint64_t id;
+
+		if ((options & WNOHANG) != 0) {
+			int r = task_trywait_descendant(&id, status);
+			if (r == DE_RETRY)
+				return 0;
+			return -ECHILD;
+		} else {
+			if (task_wait_descendant(&id, status))
+				return -ECHILD;
+		}
+
+		return (long long)id;
+	}
+
+	if ((options & WNOHANG) != 0) {
+		int r = task_trywait((uint64_t)pid, status);
+		if (r == DE_RETRY)
+			return 0;
+		return -ECHILD;
+	} else {
+		if (task_wait((uint64_t)pid, status))
+			return -ECHILD;
+	}
+
+	return (long long)pid;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -193,6 +239,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_execve },
 	{ dancy_syscall_spawn },
 	{ dancy_syscall_wait },
+	{ dancy_syscall_waitpid },
 	{ dancy_syscall_reserved }
 };
 
