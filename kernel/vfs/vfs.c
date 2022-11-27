@@ -368,6 +368,9 @@ int vfs_unlink(const char *name)
 	if ((r = vfs_build_path(name, &vname)) != 0)
 		return r;
 
+	if (vname.type == vfs_type_directory)
+		return DE_DIRECTORY;
+
 	if ((mount_node = get_mount_node(&vname)) == NULL)
 		return DE_UNINITIALIZED;
 
