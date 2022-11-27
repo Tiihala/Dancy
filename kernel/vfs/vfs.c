@@ -383,3 +383,27 @@ int vfs_unlink(const char *name)
 
 	return r;
 }
+
+int vfs_rmdir(const char *name)
+{
+	struct vfs_node *mount_node;
+	struct vfs_name vname;
+	int r;
+
+	if ((r = vfs_build_path(name, &vname)) != 0)
+		return r;
+
+	vname.type = vfs_type_directory;
+
+	if ((mount_node = get_mount_node(&vname)) == NULL)
+		return DE_UNINITIALIZED;
+
+	if (vname.components[0] != NULL)
+		r = mount_node->n_unlink(mount_node, &vname);
+	else
+		r = DE_BUSY;
+
+	mount_node->n_release(&mount_node);
+
+	return r;
+}
