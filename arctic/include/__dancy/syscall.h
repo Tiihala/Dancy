@@ -79,6 +79,12 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_open,
 
+	/*
+	 * long long __dancy_syscall_close(
+	 *         int fd);
+	 */
+	__dancy_syscall_close,
+
 	__dancy_syscall_argn__
 };
 

@@ -262,6 +262,20 @@ static long long dancy_syscall_open(va_list va)
 	return (long long)fd;
 }
 
+static long long dancy_syscall_close(va_list va)
+{
+	int fd = va_arg(va, int);
+	int r;
+
+	if ((r = file_close(fd)) != 0) {
+		if (r == DE_ARGUMENT)
+			return -EBADF;
+		return -EIO;
+	}
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -275,6 +289,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_wait },
 	{ dancy_syscall_waitpid },
 	{ dancy_syscall_open },
+	{ dancy_syscall_close },
 	{ dancy_syscall_reserved }
 };
 
