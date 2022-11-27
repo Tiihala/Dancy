@@ -52,6 +52,8 @@ extern int fat_io_write(int id, size_t lba, size_t *size, const void *buf);
 #define FAT_READ_ONLY_FILE        (0x1A)  /* "read-only file"           */
 #define FAT_READ_ONLY_RECORD      (0x1B)  /* "read-only record"         */
 #define FAT_SEEK_ERROR            (0x1C)  /* "seek error"               */
+#define FAT_DIRECTORY_RECORD      (0x1D)  /* "directory not expected"   */
+#define FAT_FILE_RECORD           (0x1E)  /* "file not expected"        */
 
 extern void free(void *ptr);
 extern void *malloc(size_t size);
@@ -2389,6 +2391,7 @@ int fat_read(void *fat, int fd, size_t *size, void *buf)
 
 int fat_remove(void *fat, const char *name)
 {
+	unsigned int path_entries;
 	unsigned char *record;
 	unsigned int cluster;
 	int fd, r;
@@ -2412,6 +2415,17 @@ int fat_remove(void *fat, const char *name)
 
 	record = get_record(fat, fd);
 	cluster = (LE16(&record[20]) << 16) | LE16(&record[26]);
+
+	if ((path_entries = this_fat->path_entries) == 0)
+		return FAT_INVALID_PARAMETERS;
+
+	if (this_fat->path_buffer[path_entries - 1].is_dir) {
+		if ((record[11] & 0x10) == 0)
+			return FAT_FILE_RECORD;
+	} else {
+		if ((record[11] & 0x10) != 0)
+			return FAT_DIRECTORY_RECORD;
+	}
 
 	if ((record[11] & 0x0C) != 0)
 		return FAT_READ_ONLY_RECORD;
