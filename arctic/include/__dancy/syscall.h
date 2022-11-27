@@ -85,6 +85,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_close,
 
+	/*
+	 * long long __dancy_syscall_read(
+	 *         int fd,
+	 *         void *buffer,
+	 *         size_t size);
+	 */
+	__dancy_syscall_read,
+
 	__dancy_syscall_argn__
 };
 

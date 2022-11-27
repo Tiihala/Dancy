@@ -276,6 +276,32 @@ static long long dancy_syscall_close(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_read(va_list va)
+{
+	int fd = va_arg(va, int);
+	void *buffer = va_arg(va, void *);
+	size_t size = va_arg(va, size_t);
+	int r;
+
+	if (pg_check_user_write(buffer, size))
+		return -EFAULT;
+
+	if (size > 0x7FFFF000)
+		size = 0x7FFFF000;
+
+	if ((r = file_read(fd, &size, buffer)) != 0) {
+		if (r == DE_ARGUMENT)
+			return -EBADF;
+		if (r == DE_RETRY)
+			return -EAGAIN;
+		if (r == DE_DIRECTORY)
+			return -EISDIR;
+		return -EIO;
+	}
+
+	return (long long)size;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -290,6 +316,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_waitpid },
 	{ dancy_syscall_open },
 	{ dancy_syscall_close },
+	{ dancy_syscall_read },
 	{ dancy_syscall_reserved }
 };
 
