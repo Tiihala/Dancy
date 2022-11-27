@@ -93,6 +93,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_read,
 
+	/*
+	 * long long __dancy_syscall_write(
+	 *         int fd,
+	 *         const void *buffer,
+	 *         size_t size);
+	 */
+	__dancy_syscall_write,
+
 	__dancy_syscall_argn__
 };
 
