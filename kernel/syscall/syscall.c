@@ -253,6 +253,8 @@ static long long dancy_syscall_open(va_list va)
 			return -ENOTDIR;
 		if (r == DE_BUSY)
 			return -EBUSY;
+		if (r == DE_FULL)
+			return -ENOSPC;
 		return -EIO;
 	}
 
