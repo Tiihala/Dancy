@@ -71,6 +71,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_waitpid,
 
+	/*
+	 * long long __dancy_syscall_open(
+	 *         const char *path,
+	 *         int flags,
+	 *         __dancy_mode_t mode);
+	 */
+	__dancy_syscall_open,
+
 	__dancy_syscall_argn__
 };
 

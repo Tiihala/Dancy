@@ -228,6 +228,40 @@ static long long dancy_syscall_waitpid(va_list va)
 	return (long long)pid;
 }
 
+static long long dancy_syscall_open(va_list va)
+{
+	const char *path = va_arg(va, const char *);
+	int flags = va_arg(va, int);
+	mode_t mode = va_arg(va, mode_t);
+	int count, fd, r;
+
+	if (pg_check_user_string(path, &count))
+		return -EFAULT;
+
+	if ((r = file_open(&fd, path, flags, mode)) != 0) {
+		if (r == DE_ARGUMENT)
+			return -EINVAL;
+		if (r == DE_NAME)
+			return -ENOENT;
+		if (r == DE_PATH)
+			return -ENOENT;
+		if (r == DE_MEMORY)
+			return -ENOMEM;
+		if (r == DE_OVERFLOW)
+			return -EMFILE;
+		if (r == DE_FILE)
+			return -ENOTDIR;
+		if (r == DE_BUSY)
+			return -EBUSY;
+		return -EIO;
+	}
+
+	if (fd < 0 || fd >= TASK_FD_STATIC_COUNT)
+		kernel->panic("__dancy_syscall_open: unexpected behavior");
+
+	return (long long)fd;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -240,6 +274,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_spawn },
 	{ dancy_syscall_wait },
 	{ dancy_syscall_waitpid },
+	{ dancy_syscall_open },
 	{ dancy_syscall_reserved }
 };
 
