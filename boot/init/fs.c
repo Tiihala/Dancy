@@ -148,6 +148,12 @@ void fs_print_error(int r, const char *name)
 	case FAT_SEEK_ERROR:
 		err = "seek error";
 		break;
+	case FAT_DIRECTORY_RECORD:
+		err = "directory not expected";
+		break;
+	case FAT_FILE_RECORD:
+		err = "file not expected";
+		break;
 	default:
 		break;
 	}

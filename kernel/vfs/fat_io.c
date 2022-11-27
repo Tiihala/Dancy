@@ -117,6 +117,12 @@ static int translate_error(int fat_error)
 	case FAT_SEEK_ERROR:
 		r = DE_SEEK;
 		break;
+	case FAT_DIRECTORY_RECORD:
+		r = DE_DIRECTORY;
+		break;
+	case FAT_FILE_RECORD:
+		r = DE_FILE;
+		break;
 	default:
 		r = DE_UNEXPECTED;
 		break;

@@ -141,6 +141,8 @@ int fat_write(void *fat, int fd, size_t *size, const void *buf);
 #define FAT_READ_ONLY_FILE        (0x1A)  /* "read-only file"           */
 #define FAT_READ_ONLY_RECORD      (0x1B)  /* "read-only record"         */
 #define FAT_SEEK_ERROR            (0x1C)  /* "seek error"               */
+#define FAT_DIRECTORY_RECORD      (0x1D)  /* "directory not expected"   */
+#define FAT_FILE_RECORD           (0x1E)  /* "file not expected"        */
 
 /*
  * Declarations of huffman.c
