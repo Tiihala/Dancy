@@ -284,6 +284,14 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 			return r;
 		}
 
+		if (type == vfs_type_directory) {
+			if (new_node->type != vfs_type_directory) {
+				new_node->n_release(&new_node);
+				mount_node->n_release(&mount_node);
+				return DE_FILE;
+			}
+		}
+
 		if (type != vfs_type_unknown && type != new_node->type) {
 			new_node->n_release(&new_node);
 			mount_node->n_release(&mount_node);
