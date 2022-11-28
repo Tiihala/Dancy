@@ -3,12 +3,12 @@
 ##############################################################################
 
 ARCTIC_HELLO_OBJECTS_32= \
- ./arctic/o32/hello/main.o \
- ./arctic/o32/libc.a \
+ ./o32/_arctic/hello/main.o \
+ ./o32/_arctic/libc.a \
 
 ARCTIC_HELLO_OBJECTS_64= \
- ./arctic/o64/hello/main.o \
- ./arctic/o64/libc.a \
+ ./o64/_arctic/hello/main.o \
+ ./o64/_arctic/libc.a \
 
 ##############################################################################
 

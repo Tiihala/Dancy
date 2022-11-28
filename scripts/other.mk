@@ -66,9 +66,9 @@ distclean: clean
 
 !include .\scripts\lib\libc.mk
 
+!include .\scripts\objects\_arctic.mk
 !include .\scripts\objects\_boot.mk
 !include .\scripts\objects\_common.mk
-!include .\scripts\objects\arctic.mk
 !include .\scripts\objects\kernel.mk
 
 !include .\scripts\dirs.mk
