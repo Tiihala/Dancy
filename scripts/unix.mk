@@ -56,15 +56,14 @@ include ./scripts/at/sched.mk
 include ./scripts/at/syscall.mk
 include ./scripts/at/vfs.mk
 
-include ./scripts/bin/_bin32.mk
-include ./scripts/bin/_bin64.mk
-include ./scripts/bin/_root.mk
-include ./scripts/bin/hello.mk
+include ./scripts/arctic/_bin32.mk
+include ./scripts/arctic/_bin64.mk
+include ./scripts/arctic/_root.mk
+include ./scripts/arctic/hello.mk
+include ./scripts/arctic/libc.mk
 
 include ./scripts/boot/init.mk
 include ./scripts/boot/uefi.mk
-
-include ./scripts/lib/libc.mk
 
 include ./scripts/objects/_arctic.mk
 include ./scripts/objects/_boot.mk
