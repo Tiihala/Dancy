@@ -34,6 +34,10 @@
      ./arctic/libc/a32/syscall5.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./arctic/libc/a32/syscall5.asm
 
+./o32/_arctic/libc/stdio/snprintf.o: \
+     ./arctic/libc/stdio/snprintf.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/snprintf.c
+
 ./o32/_arctic/libc/start.o: \
      ./arctic/libc/start.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/start.c
@@ -69,6 +73,10 @@
 ./o64/_arctic/libc/a64/syscall5.o: \
      ./arctic/libc/a64/syscall5.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./arctic/libc/a64/syscall5.asm
+
+./o64/_arctic/libc/stdio/snprintf.o: \
+     ./arctic/libc/stdio/snprintf.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/snprintf.c
 
 ./o64/_arctic/libc/start.o: \
      ./arctic/libc/start.c $(DANCY_DEPS)
