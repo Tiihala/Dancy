@@ -7,8 +7,6 @@ IF NOT EXIST "scripts\clean.cmd" (
 
 RMDIR /S /Q arctic\bin32 > NUL 2>&1
 RMDIR /S /Q arctic\bin64 > NUL 2>&1
-RMDIR /S /Q arctic\o32 > NUL 2>&1
-RMDIR /S /Q arctic\o64 > NUL 2>&1
 RMDIR /S /Q bin > NUL 2>&1
 RMDIR /S /Q efi > NUL 2>&1
 RMDIR /S /Q include\acpica > NUL 2>&1

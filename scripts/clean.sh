@@ -7,8 +7,6 @@ fi
 
 rm -rf ./arctic/bin32
 rm -rf ./arctic/bin64
-rm -rf ./arctic/o32
-rm -rf ./arctic/o64
 rm -rf ./bin
 rm -rf ./efi
 rm -rf ./include/acpica
