@@ -10,6 +10,20 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/a32/syscall3.o \
  ./o32/_arctic/libc/a32/syscall4.o \
  ./o32/_arctic/libc/a32/syscall5.o \
+ ./o32/_arctic/libc/ctype/isalnum.o \
+ ./o32/_arctic/libc/ctype/isalpha.o \
+ ./o32/_arctic/libc/ctype/isblank.o \
+ ./o32/_arctic/libc/ctype/iscntrl.o \
+ ./o32/_arctic/libc/ctype/isdigit.o \
+ ./o32/_arctic/libc/ctype/isgraph.o \
+ ./o32/_arctic/libc/ctype/islower.o \
+ ./o32/_arctic/libc/ctype/isprint.o \
+ ./o32/_arctic/libc/ctype/ispunct.o \
+ ./o32/_arctic/libc/ctype/isspace.o \
+ ./o32/_arctic/libc/ctype/isupper.o \
+ ./o32/_arctic/libc/ctype/isxdigit.o \
+ ./o32/_arctic/libc/ctype/tolower.o \
+ ./o32/_arctic/libc/ctype/toupper.o \
  ./o32/_arctic/libc/stdio/snprintf.o \
  ./o32/_arctic/libc/start.o \
  ./o32/_common/a32/dark.o \
@@ -23,6 +37,20 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/a64/syscall3.o \
  ./o64/_arctic/libc/a64/syscall4.o \
  ./o64/_arctic/libc/a64/syscall5.o \
+ ./o64/_arctic/libc/ctype/isalnum.o \
+ ./o64/_arctic/libc/ctype/isalpha.o \
+ ./o64/_arctic/libc/ctype/isblank.o \
+ ./o64/_arctic/libc/ctype/iscntrl.o \
+ ./o64/_arctic/libc/ctype/isdigit.o \
+ ./o64/_arctic/libc/ctype/isgraph.o \
+ ./o64/_arctic/libc/ctype/islower.o \
+ ./o64/_arctic/libc/ctype/isprint.o \
+ ./o64/_arctic/libc/ctype/ispunct.o \
+ ./o64/_arctic/libc/ctype/isspace.o \
+ ./o64/_arctic/libc/ctype/isupper.o \
+ ./o64/_arctic/libc/ctype/isxdigit.o \
+ ./o64/_arctic/libc/ctype/tolower.o \
+ ./o64/_arctic/libc/ctype/toupper.o \
  ./o64/_arctic/libc/stdio/snprintf.o \
  ./o64/_arctic/libc/start.o \
  ./o64/_common/a64/dark.o \
