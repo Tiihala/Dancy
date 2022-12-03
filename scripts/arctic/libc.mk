@@ -26,6 +26,11 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/ctype/toupper.o \
  ./o32/_arctic/libc/stdio/snprintf.o \
  ./o32/_arctic/libc/stdlib/qsort.o \
+ ./o32/_arctic/libc/string/strcat.o \
+ ./o32/_arctic/libc/string/strcmp.o \
+ ./o32/_arctic/libc/string/strcpy.o \
+ ./o32/_arctic/libc/string/strncmp.o \
+ ./o32/_arctic/libc/string/strncpy.o \
  ./o32/_arctic/libc/start.o \
  ./o32/_common/a32/dark.o \
  ./o32/_common/a32/string.o \
@@ -54,6 +59,11 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/ctype/toupper.o \
  ./o64/_arctic/libc/stdio/snprintf.o \
  ./o64/_arctic/libc/stdlib/qsort.o \
+ ./o64/_arctic/libc/string/strcat.o \
+ ./o64/_arctic/libc/string/strcmp.o \
+ ./o64/_arctic/libc/string/strcpy.o \
+ ./o64/_arctic/libc/string/strncmp.o \
+ ./o64/_arctic/libc/string/strncpy.o \
  ./o64/_arctic/libc/start.o \
  ./o64/_common/a64/dark.o \
  ./o64/_common/a64/string.o \

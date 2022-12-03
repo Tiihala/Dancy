@@ -98,6 +98,26 @@
      ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/qsort.c
 
+./o32/_arctic/libc/string/strcat.o: \
+     ./arctic/libc/string/strcat.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/string/strcat.c
+
+./o32/_arctic/libc/string/strcmp.o: \
+     ./arctic/libc/string/strcmp.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/string/strcmp.c
+
+./o32/_arctic/libc/string/strcpy.o: \
+     ./arctic/libc/string/strcpy.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/string/strcpy.c
+
+./o32/_arctic/libc/string/strncmp.o: \
+     ./arctic/libc/string/strncmp.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/string/strncmp.c
+
+./o32/_arctic/libc/string/strncpy.o: \
+     ./arctic/libc/string/strncpy.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/string/strncpy.c
+
 ./o32/_arctic/libc/start.o: \
      ./arctic/libc/start.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/start.c
@@ -197,6 +217,26 @@
 ./o64/_arctic/libc/stdlib/qsort.o: \
      ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/qsort.c
+
+./o64/_arctic/libc/string/strcat.o: \
+     ./arctic/libc/string/strcat.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/string/strcat.c
+
+./o64/_arctic/libc/string/strcmp.o: \
+     ./arctic/libc/string/strcmp.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/string/strcmp.c
+
+./o64/_arctic/libc/string/strcpy.o: \
+     ./arctic/libc/string/strcpy.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/string/strcpy.c
+
+./o64/_arctic/libc/string/strncmp.o: \
+     ./arctic/libc/string/strncmp.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/string/strncmp.c
+
+./o64/_arctic/libc/string/strncpy.o: \
+     ./arctic/libc/string/strncpy.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/string/strncpy.c
 
 ./o64/_arctic/libc/start.o: \
      ./arctic/libc/start.c $(DANCY_DEPS)
