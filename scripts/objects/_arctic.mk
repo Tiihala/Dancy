@@ -6,9 +6,29 @@
      ./arctic/hello/main.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/hello/main.c
 
+./o32/_arctic/libc/a32/memcmp.o: \
+     ./arctic/libc/a32/memcmp.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./arctic/libc/a32/memcmp.asm
+
+./o32/_arctic/libc/a32/memcpy.o: \
+     ./arctic/libc/a32/memcpy.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./arctic/libc/a32/memcpy.asm
+
+./o32/_arctic/libc/a32/memmove.o: \
+     ./arctic/libc/a32/memmove.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./arctic/libc/a32/memmove.asm
+
+./o32/_arctic/libc/a32/memset.o: \
+     ./arctic/libc/a32/memset.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./arctic/libc/a32/memset.asm
+
 ./o32/_arctic/libc/a32/start.o: \
      ./arctic/libc/a32/start.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./arctic/libc/a32/start.asm
+
+./o32/_arctic/libc/a32/strlen.o: \
+     ./arctic/libc/a32/strlen.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./arctic/libc/a32/strlen.asm
 
 ./o32/_arctic/libc/a32/syscall0.o: \
      ./arctic/libc/a32/syscall0.asm $(DANCY_DEPS)
@@ -126,9 +146,29 @@
      ./arctic/hello/main.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/hello/main.c
 
+./o64/_arctic/libc/a64/memcmp.o: \
+     ./arctic/libc/a64/memcmp.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./arctic/libc/a64/memcmp.asm
+
+./o64/_arctic/libc/a64/memcpy.o: \
+     ./arctic/libc/a64/memcpy.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./arctic/libc/a64/memcpy.asm
+
+./o64/_arctic/libc/a64/memmove.o: \
+     ./arctic/libc/a64/memmove.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./arctic/libc/a64/memmove.asm
+
+./o64/_arctic/libc/a64/memset.o: \
+     ./arctic/libc/a64/memset.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./arctic/libc/a64/memset.asm
+
 ./o64/_arctic/libc/a64/start.o: \
      ./arctic/libc/a64/start.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./arctic/libc/a64/start.asm
+
+./o64/_arctic/libc/a64/strlen.o: \
+     ./arctic/libc/a64/strlen.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./arctic/libc/a64/strlen.asm
 
 ./o64/_arctic/libc/a64/syscall0.o: \
      ./arctic/libc/a64/syscall0.asm $(DANCY_DEPS)

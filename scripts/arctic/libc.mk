@@ -3,7 +3,12 @@
 ##############################################################################
 
 ARCTIC_LIBC_OBJECTS_32= \
+ ./o32/_arctic/libc/a32/memcmp.o \
+ ./o32/_arctic/libc/a32/memcpy.o \
+ ./o32/_arctic/libc/a32/memmove.o \
+ ./o32/_arctic/libc/a32/memset.o \
  ./o32/_arctic/libc/a32/start.o \
+ ./o32/_arctic/libc/a32/strlen.o \
  ./o32/_arctic/libc/a32/syscall0.o \
  ./o32/_arctic/libc/a32/syscall1.o \
  ./o32/_arctic/libc/a32/syscall2.o \
@@ -33,10 +38,14 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/string/strncpy.o \
  ./o32/_arctic/libc/start.o \
  ./o32/_common/a32/dark.o \
- ./o32/_common/a32/string.o \
 
 ARCTIC_LIBC_OBJECTS_64= \
+ ./o64/_arctic/libc/a64/memcmp.o \
+ ./o64/_arctic/libc/a64/memcpy.o \
+ ./o64/_arctic/libc/a64/memmove.o \
+ ./o64/_arctic/libc/a64/memset.o \
  ./o64/_arctic/libc/a64/start.o \
+ ./o64/_arctic/libc/a64/strlen.o \
  ./o64/_arctic/libc/a64/syscall0.o \
  ./o64/_arctic/libc/a64/syscall1.o \
  ./o64/_arctic/libc/a64/syscall2.o \
@@ -66,7 +75,6 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/string/strncpy.o \
  ./o64/_arctic/libc/start.o \
  ./o64/_common/a64/dark.o \
- ./o64/_common/a64/string.o \
 
 ##############################################################################
 
