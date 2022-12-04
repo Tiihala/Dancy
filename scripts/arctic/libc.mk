@@ -30,6 +30,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/ctype/isxdigit.o \
  ./o32/_arctic/libc/ctype/tolower.o \
  ./o32/_arctic/libc/ctype/toupper.o \
+ ./o32/_arctic/libc/misc/__main.o \
  ./o32/_arctic/libc/stdio/snprintf.o \
  ./o32/_arctic/libc/stdlib/qsort.o \
  ./o32/_arctic/libc/string/strcat.o \
@@ -68,6 +69,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/ctype/isxdigit.o \
  ./o64/_arctic/libc/ctype/tolower.o \
  ./o64/_arctic/libc/ctype/toupper.o \
+ ./o64/_arctic/libc/misc/__main.o \
  ./o64/_arctic/libc/stdio/snprintf.o \
  ./o64/_arctic/libc/stdlib/qsort.o \
  ./o64/_arctic/libc/string/strcat.o \
