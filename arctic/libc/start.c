@@ -24,11 +24,12 @@ void __dancy_libc_start(int argc, char *argv[], char *envp[]);
 
 void __dancy_libc_start(int argc, char *argv[], char *envp[])
 {
-	int retval = 0;
+	extern int main(int argc, char *argv[]);
+	int retval;
 
-	(void)argc;
-	(void)argv;
 	(void)envp;
+
+	retval = main(argc, argv);
 
 	__dancy_syscall1(__dancy_syscall_exit, retval);
 }
