@@ -91,6 +91,7 @@ DANCY_TARGET_RELEASE= \
 DANCY_HEADERS= \
  ./arctic/include/__dancy/core.h \
  ./arctic/include/__dancy/seek.h \
+ ./arctic/include/__dancy/spin.h \
  ./arctic/include/__dancy/ssize.h \
  ./arctic/include/__dancy/syscall.h \
  ./arctic/include/sys/types.h \

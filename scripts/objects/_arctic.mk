@@ -22,6 +22,10 @@
      ./arctic/libc/a32/memset.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./arctic/libc/a32/memset.asm
 
+./o32/_arctic/libc/a32/spin.o: \
+     ./arctic/libc/a32/spin.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./arctic/libc/a32/spin.asm
+
 ./o32/_arctic/libc/a32/start.o: \
      ./arctic/libc/a32/start.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./arctic/libc/a32/start.asm
@@ -161,6 +165,10 @@
 ./o64/_arctic/libc/a64/memset.o: \
      ./arctic/libc/a64/memset.asm $(DANCY_DEPS)
 	$(DANCY_A64)$@ ./arctic/libc/a64/memset.asm
+
+./o64/_arctic/libc/a64/spin.o: \
+     ./arctic/libc/a64/spin.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./arctic/libc/a64/spin.asm
 
 ./o64/_arctic/libc/a64/start.o: \
      ./arctic/libc/a64/start.asm $(DANCY_DEPS)
