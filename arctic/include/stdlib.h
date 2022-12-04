@@ -33,6 +33,12 @@ void free(void *ptr);
 void qsort(void *base, size_t nmemb, size_t size,
 	int (*compar)(const void *, const void *));
 
+#undef EXIT_SUCCESS
+#define EXIT_SUCCESS (0)
+
+#undef EXIT_FAILURE
+#define EXIT_FAILURE (1)
+
 __Dancy_Header_End
 
 #endif
