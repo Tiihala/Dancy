@@ -30,4 +30,14 @@ __start:
         mov rcx, [rsp + 8]              ; rcx = argc
         mov rdx, [rsp + 16]             ; rdx = argv
         mov r8,  [rsp + 24]             ; r8  = envp
+        mov eax, environ                ; rax = address of environ (32-bit)
+        mov [rax], r8                   ; set the environ variable
         jmp near __dancy_libc_start     ; jump to the libc start function
+
+section .data
+
+        global environ
+
+align 8
+        ; char **environ
+environ: dd 0, 0

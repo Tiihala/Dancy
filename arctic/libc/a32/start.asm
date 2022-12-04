@@ -30,4 +30,15 @@ ___start:
         ; nop                           ; [esp + 4]  = argc
         ; nop                           ; [esp + 8]  = argv
         ; nop                           ; [esp + 12] = envp
+        mov eax, _environ               ; eax = address of _environ
+        mov edx, [esp+12]               ; edx = envp
+        mov [eax], edx                  ; set the _environ variable
         jmp near ___dancy_libc_start    ; jump to the libc start function
+
+section .data
+
+        global _environ
+
+align 4
+        ; char **environ
+_environ: dd 0
