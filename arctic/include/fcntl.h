@@ -67,7 +67,7 @@ typedef __dancy_off_t off_t;
 typedef __dancy_pid_t pid_t;
 #endif
 
-int open(const char *name, int flags, ...);
+int open(const char *path, int flags, ...);
 int fcntl(int fd, int cmd, ...);
 
 __Dancy_Header_End
