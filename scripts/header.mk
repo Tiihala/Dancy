@@ -103,6 +103,7 @@ DANCY_HEADERS= \
  ./arctic/include/stdio.h \
  ./arctic/include/stdlib.h \
  ./arctic/include/string.h \
+ ./arctic/include/time.h \
  ./arctic/include/unistd.h \
  ./include/boot/init.h \
  ./include/boot/loader.h \
