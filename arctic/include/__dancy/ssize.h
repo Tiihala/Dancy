@@ -29,9 +29,6 @@ __Dancy_Header_Begin
 #if __DANCY_SIZE_MAX == 4294967295u
 #define __DANCY_SSIZE_TYPE int
 
-#elif defined(__SIZE_MAX__) && __SIZE_MAX__ == 4294967295u
-#define __DANCY_SSIZE_TYPE int
-
 #elif defined(__SIZEOF_LONG__) && __SIZEOF_LONG__ == 8
 #define __DANCY_SSIZE_TYPE long
 
