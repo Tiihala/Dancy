@@ -175,25 +175,6 @@ static int find_drives(void)
 	if ((r = vfs_open("/dev/", &dev_node, 0, 0)) != 0)
 		return free(partitions), r;
 
-	for (i = 0; i < INT_MAX && count < 128; i++) {
-		r = dev_node->n_readdir(dev_node, (uint32_t)i, 16, &buf[0]);
-
-		if (r == DE_PLACEHOLDER)
-			continue;
-		if (r == DE_OVERFLOW)
-			break;
-
-		if (r != 0) {
-			dev_node->n_release(&dev_node);
-			return free(partitions), r;
-		}
-
-		if (strncmp(&buf[0], "hd", 2) && strncmp(&buf[0], "sd", 2))
-			continue;
-
-		memcpy(&partitions[count++].name[0], &buf[0], 16);
-	}
-
 	dev_node->n_release(&dev_node);
 
 	qsort(partitions, (size_t)count, sizeof(*partitions), qsort_func);
