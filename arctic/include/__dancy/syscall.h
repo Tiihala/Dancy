@@ -108,6 +108,15 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_pipe,
 
+	/*
+	 * long long __dancy_syscall_dup(
+	 *         int fd,
+	 *         int min_fd,
+	 *         int max_fd,
+	 *         int flags);
+	 */
+	__dancy_syscall_dup,
+
 	__dancy_syscall_argn__
 };
 

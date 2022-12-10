@@ -358,6 +358,23 @@ static long long dancy_syscall_pipe(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_dup(va_list va)
+{
+	int fd = va_arg(va, int);
+	int min_fd = va_arg(va, int);
+	int max_fd = va_arg(va, int);
+	int flags = va_arg(va, int);
+	int new_fd, r;
+
+	if ((r = file_dup(fd, &new_fd, min_fd, max_fd, flags)) != 0) {
+		if (r == DE_OVERFLOW)
+			return -EMFILE;
+		return -EBADF;
+	}
+
+	return new_fd;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -375,6 +392,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_read },
 	{ dancy_syscall_write },
 	{ dancy_syscall_pipe },
+	{ dancy_syscall_dup },
 	{ dancy_syscall_reserved }
 };
 
