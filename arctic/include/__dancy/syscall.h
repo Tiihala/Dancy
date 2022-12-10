@@ -101,6 +101,13 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_write,
 
+	/*
+	 * long long __dancy_syscall_pipe(
+	 *         int fd[2],
+	 *         int flags);
+	 */
+	__dancy_syscall_pipe,
+
 	__dancy_syscall_argn__
 };
 
