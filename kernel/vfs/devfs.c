@@ -83,6 +83,35 @@ static int n_open(struct vfs_node *node, struct vfs_node **new_node,
 	return mtx_unlock(&devfs_mtx), DE_FULL;
 }
 
+static int n_readdir(struct vfs_node *node,
+	uint32_t offset, struct vfs_dent *dent)
+{
+	(void)node;
+
+	memset(dent, 0, sizeof(*dent));
+
+	if (offset == 0) {
+		strcpy(&dent->name[0], ".");
+		return 0;
+	}
+
+	if (offset == 1) {
+		strcpy(&dent->name[0], "..");
+		return 0;
+	}
+
+	if (offset - 1 >= DEVFS_COUNT)
+		return 0;
+
+	if (mtx_lock(&devfs_mtx) != thrd_success)
+		return DE_UNEXPECTED;
+
+	if (devfs_table[offset - 1].node != NULL)
+		strcpy(&dent->name[0], &devfs_table[offset - 1].name[0]);
+
+	return mtx_unlock(&devfs_mtx), 0;
+}
+
 static struct vfs_node *alloc_node(int i)
 {
 	struct vfs_node *node;
@@ -95,6 +124,7 @@ static struct vfs_node *alloc_node(int i)
 	node->type = (i == 0) ? vfs_type_directory : vfs_type_regular;
 
 	node->n_open = n_open;
+	node->n_readdir = n_readdir;
 
 	devfs_table[i].node = node;
 
