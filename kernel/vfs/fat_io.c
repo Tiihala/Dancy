@@ -658,6 +658,111 @@ static int n_sync(struct vfs_node *node)
 	return r;
 }
 
+static int n_readdir(struct vfs_node *node,
+	uint32_t offset, struct vfs_dent *dent)
+{
+	void *instance;
+	struct fat_internal_data *data = node->internal_data;
+	int read_offset;
+	int i, r;
+
+	memset(dent, 0, sizeof(*dent));
+
+	if (node->type != vfs_type_directory)
+		return DE_TYPE;
+
+	if (offset == 0) {
+		strcpy(&dent->name[0], ".");
+		return 0;
+	}
+
+	if (offset == 1) {
+		strcpy(&dent->name[0], "..");
+		return 0;
+	}
+
+	if (offset > 0x10000)
+		return 0;
+
+	if ((r = enter_fat(node)) != 0)
+		return r;
+
+	if (!strcmp(&data->path[0], "/."))
+		read_offset = (int)(offset - 2) * 32;
+	else
+		read_offset = (int)offset * 32;
+
+	instance = data->io->instance;
+	r = fat_seek(instance, data->fd, read_offset, 0);
+
+	if (!r) {
+		unsigned char fat_record[32];
+		size_t read_size = 32;
+		int fat_attributes;
+
+		r = fat_read(instance, data->fd, &read_size, &fat_record[0]);
+
+		if (!r) {
+			char *name = &dent->name[0];
+			int base_size = 8;
+			int ext_size = 3;
+
+			if (read_size != 32 || fat_record[0] == 0)
+				return leave_fat(node), 0;
+
+			fat_attributes = (int)fat_record[11];
+
+			if (fat_record[0] == 0xE5)
+				return leave_fat(node), DE_PLACEHOLDER;
+
+			if ((fat_attributes & 0x08) != 0)
+				return leave_fat(node), DE_PLACEHOLDER;
+
+			for (i = 0; i < 11; i++) {
+				int c = (int)fat_record[i];
+
+				if (c == '\0') {
+					leave_fat(node);
+					return DE_UNEXPECTED;
+				}
+
+				if (c >= 'A' && c <= 'Z') {
+					int lower = c + 32;
+					fat_record[i] = (unsigned char)lower;
+				}
+			}
+
+			for (i = 7; i >= 0; i--) {
+				if (fat_record[i] != 0x20)
+					break;
+				base_size -= 1;
+			}
+
+			if (base_size == 0)
+				return leave_fat(node), DE_PLACEHOLDER;
+
+			for (i = 10; i >= 8; i--) {
+				if (fat_record[i] != 0x20)
+					break;
+				ext_size -= 1;
+			}
+
+			for (i = 0; i < base_size; i++)
+				*name++ = (char)fat_record[i];
+
+			if (ext_size != 0)
+				*name++ = '.';
+
+			for (i = 8; i < ext_size + 8; i++)
+				*name++ = (char)fat_record[i];
+		}
+	}
+
+	leave_fat(node);
+
+	return (r != 0) ? translate_error(r) : 0;
+}
+
 static int n_rename(struct vfs_node *node,
 	struct vfs_name *old_vname, struct vfs_name *new_vname)
 {
@@ -909,6 +1014,7 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->n_write    = n_write;
 		node->n_append   = n_append;
 		node->n_sync     = n_sync;
+		node->n_readdir  = n_readdir;
 		node->n_rename   = n_rename;
 		node->n_stat     = n_stat;
 		node->n_truncate = n_truncate;
