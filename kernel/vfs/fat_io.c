@@ -601,6 +601,9 @@ static int n_append(struct vfs_node *node, size_t *size, const void *buffer)
 
 	*size = 0;
 
+	if (node->type == vfs_type_directory)
+		return DE_DIRECTORY;
+
 	if ((r = enter_fat(node)) != 0)
 		return r;
 
