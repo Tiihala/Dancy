@@ -76,6 +76,18 @@ static int vfs_default_sync(struct vfs_node *node)
 	return 0;
 }
 
+static int vfs_default_readdir(struct vfs_node *node,
+	uint32_t offset, struct vfs_dent *dent)
+{
+	(void)node;
+	(void)offset;
+
+	if (dent)
+		memset(dent, 0, sizeof(*dent));
+
+	return DE_UNSUPPORTED;
+}
+
 static int vfs_default_rename(struct vfs_node *node,
 	struct vfs_name *old_vname, struct vfs_name *new_vname)
 {
@@ -120,6 +132,7 @@ void vfs_default(struct vfs_node *node)
 	node->n_write    = vfs_default_write;
 	node->n_append   = vfs_default_append;
 	node->n_sync     = vfs_default_sync;
+	node->n_readdir  = vfs_default_readdir;
 	node->n_rename   = vfs_default_rename;
 	node->n_stat     = vfs_default_stat;
 	node->n_truncate = vfs_default_truncate;
