@@ -44,6 +44,7 @@ enum vfs_mode {
 };
 
 struct vfs_name;
+struct vfs_dent;
 struct vfs_stat;
 
 struct vfs_node {
@@ -72,6 +73,9 @@ struct vfs_node {
 
 	int (*n_sync)(struct vfs_node *node);
 
+	int (*n_readdir)(struct vfs_node *node,
+		uint32_t offset, struct vfs_dent *dent);
+
 	int (*n_rename)(struct vfs_node *node,
 		struct vfs_name *old_vname, struct vfs_name *new_vname);
 
@@ -89,6 +93,10 @@ struct vfs_name {
 struct vfs_timespec {
 	dancy_time_t tv_sec;
 	long tv_nsec;
+};
+
+struct vfs_dent {
+	char name[256];
 };
 
 struct vfs_stat {
