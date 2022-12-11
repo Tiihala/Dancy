@@ -165,6 +165,7 @@ static int find_drives(void)
 {
 	struct { char name[16]; } *partitions;
 	struct vfs_node *dev_node;
+	struct vfs_dent dent;
 	int letter = 'c', count = 0;
 	char buf[16];
 	int i, r;
@@ -174,6 +175,30 @@ static int find_drives(void)
 
 	if ((r = vfs_open("/dev/", &dev_node, 0, 0)) != 0)
 		return free(partitions), r;
+
+	for (i = 0; i < INT_MAX && count < 128; i++) {
+		int add_partition = 0;
+
+		r = dev_node->n_readdir(dev_node, (uint32_t)i, &dent);
+
+		if (r != 0) {
+			dev_node->n_release(&dev_node);
+			return free(partitions), r;
+		}
+
+		if (dent.name[0] == '\0')
+			break;
+
+		if (dent.name[0] == 'h' && dent.name[1] == 'd')
+			add_partition = 1;
+		if (dent.name[0] == 's' && dent.name[1] == 'd')
+			add_partition = 1;
+
+		if (!add_partition)
+			continue;
+
+		memcpy(&partitions[count++].name[0], &dent.name[0], 16);
+	}
 
 	dev_node->n_release(&dev_node);
 
