@@ -117,6 +117,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_dup,
 
+	/*
+	 * long long __dancy_syscall_lseek(
+	 *         int fd,
+	 *         __dancy_off_t offset,
+	 *         int whence);
+	 */
+	__dancy_syscall_lseek,
+
 	__dancy_syscall_argn__
 };
 

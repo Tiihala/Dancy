@@ -375,6 +375,28 @@ static long long dancy_syscall_dup(va_list va)
 	return new_fd;
 }
 
+static long long dancy_syscall_lseek(va_list va)
+{
+	int fd = va_arg(va, int);
+	off_t offset = va_arg(va, off_t);
+	int whence = va_arg(va, int);
+	uint64_t new_offset;
+	int r;
+
+	if ((r = file_lseek(fd, offset, &new_offset, whence)) != 0) {
+		if (r == DE_ARGUMENT)
+			return -EBADF;
+		if (r == DE_ACCESS)
+			return -ESPIPE;
+		return -EINVAL;
+	}
+
+	if (new_offset > (uint64_t)(LLONG_MAX))
+		new_offset = (uint64_t)(LLONG_MAX);
+
+	return (long long)new_offset;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -393,6 +415,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_write },
 	{ dancy_syscall_pipe },
 	{ dancy_syscall_dup },
+	{ dancy_syscall_lseek },
 	{ dancy_syscall_reserved }
 };
 

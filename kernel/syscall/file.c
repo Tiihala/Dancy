@@ -435,7 +435,7 @@ int file_write(int fd, size_t *size, const void *buffer)
 int file_lseek(int fd, off_t offset, uint64_t *new_offset, int whence)
 {
 	struct task *task = task_current();
-	int r = DE_ARGUMENT;
+	int r = DE_UNSUPPORTED;
 
 	if (new_offset)
 		*new_offset = 0;
@@ -455,6 +455,10 @@ int file_lseek(int fd, off_t offset, uint64_t *new_offset, int whence)
 					spin_unlock(&fte->lock[1]);
 					return DE_DIRECTORY;
 				}
+
+			} else if (fte->node->type != vfs_type_regular) {
+					spin_unlock(&fte->lock[1]);
+					return DE_ACCESS;
 			}
 
 			if (whence == SEEK_SET && offset >= 0) {
