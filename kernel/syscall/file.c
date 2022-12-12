@@ -432,10 +432,13 @@ int file_write(int fd, size_t *size, const void *buffer)
 	return *size = 0, DE_ARGUMENT;
 }
 
-int file_lseek(int fd, off_t offset, int whence)
+int file_lseek(int fd, off_t offset, uint64_t *new_offset, int whence)
 {
 	struct task *task = task_current();
 	int r = DE_ARGUMENT;
+
+	if (new_offset)
+		*new_offset = 0;
 
 	if (fd >= 0 && fd < (int)task->fd.state) {
 		struct file_table_entry *fte;
@@ -446,6 +449,13 @@ int file_lseek(int fd, off_t offset, int whence)
 
 			while (!spin_trylock(&fte->lock[1]))
 				task_yield();
+
+			if (fte->node->type == vfs_type_directory) {
+				if (whence != SEEK_SET || offset != 0) {
+					spin_unlock(&fte->lock[1]);
+					return DE_DIRECTORY;
+				}
+			}
 
 			if (whence == SEEK_SET && offset >= 0) {
 				fte->offset = (uint64_t)offset;
@@ -487,6 +497,9 @@ int file_lseek(int fd, off_t offset, int whence)
 					r = 0;
 				}
 			}
+
+			if (new_offset)
+				*new_offset = fte->offset;
 
 			spin_unlock(&fte->lock[1]);
 
