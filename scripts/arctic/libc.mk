@@ -44,6 +44,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/unistd/_exit.o \
  ./o32/_arctic/libc/unistd/close.o \
  ./o32/_arctic/libc/unistd/dup.o \
+ ./o32/_arctic/libc/unistd/dup2.o \
  ./o32/_arctic/libc/unistd/lseek.o \
  ./o32/_arctic/libc/unistd/read.o \
  ./o32/_arctic/libc/unistd/write.o \
@@ -92,6 +93,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/unistd/_exit.o \
  ./o64/_arctic/libc/unistd/close.o \
  ./o64/_arctic/libc/unistd/dup.o \
+ ./o64/_arctic/libc/unistd/dup2.o \
  ./o64/_arctic/libc/unistd/lseek.o \
  ./o64/_arctic/libc/unistd/read.o \
  ./o64/_arctic/libc/unistd/write.o \
