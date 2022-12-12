@@ -21,6 +21,26 @@
 #include <errno.h>
 #include <unistd.h>
 
+#if __DANCY_SIZE_MAX == 4294967295u
+
+off_t lseek(int fd, off_t offset, int whence)
+{
+	size_t o1 = (size_t)((offset >>  0) & 0xFFFFFFFF);
+	size_t o2 = (size_t)((offset >> 32) & 0xFFFFFFFF);
+	long long r;
+
+	r = __dancy_syscall4(__dancy_syscall_lseek, fd, o1, o2, whence);
+
+	if (r < 0)
+		errno = -((int)r), r = -1;
+
+	return (off_t)r;
+}
+
+#endif
+
+#if __DANCY_SIZE_MAX == 18446744073709551615ull
+
 off_t lseek(int fd, off_t offset, int whence)
 {
 	long long r;
@@ -32,3 +52,5 @@ off_t lseek(int fd, off_t offset, int whence)
 
 	return (off_t)r;
 }
+
+#endif
