@@ -169,10 +169,10 @@ static long long dancy_syscall_wait(va_list va)
 	uint64_t id;
 
 	if (status) {
-		if (((addr_t)status % (addr_t)sizeof(int *)) != 0)
+		if (((addr_t)status % (addr_t)sizeof(int)) != 0)
 			return -EFAULT;
 
-		if (pg_check_user_write(status, sizeof(int *)))
+		if (pg_check_user_write(status, sizeof(int)))
 			return -EFAULT;
 	}
 
@@ -189,10 +189,10 @@ static long long dancy_syscall_waitpid(va_list va)
 	int options = va_arg(va, int);
 
 	if (status) {
-		if (((addr_t)status % (addr_t)sizeof(int *)) != 0)
+		if (((addr_t)status % (addr_t)sizeof(int)) != 0)
 			return -EFAULT;
 
-		if (pg_check_user_write(status, sizeof(int *)))
+		if (pg_check_user_write(status, sizeof(int)))
 			return -EFAULT;
 	}
 
@@ -340,7 +340,7 @@ static long long dancy_syscall_pipe(va_list va)
 	int flags = va_arg(va, int);
 	int fd[2], r;
 
-	if (((addr_t)out_fd % (addr_t)sizeof(int *)) != 0)
+	if (((addr_t)out_fd % (addr_t)sizeof(int)) != 0)
 		return -EFAULT;
 
 	if (pg_check_user_write(out_fd, sizeof(int) + sizeof(int)))
