@@ -517,7 +517,7 @@ int file_lseek(int fd, off_t offset, uint64_t *new_offset, int whence)
 int file_fcntl(int fd, int cmd, int arg, int *retval)
 {
 	struct task *task = task_current();
-	int r = DE_ARGUMENT;
+	int r = DE_UNSUPPORTED;
 
 	*retval = -1;
 
