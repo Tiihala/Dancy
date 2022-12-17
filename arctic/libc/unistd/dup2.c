@@ -19,11 +19,15 @@
 
 #include <__dancy/syscall.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 int dup2(int fd, int new_fd)
 {
 	int r;
+
+	if (fd == new_fd)
+		return (fcntl(fd, F_GETFD) == -1) ? -1 : new_fd;
 
 	r = (int)__dancy_syscall4(__dancy_syscall_dup, fd, new_fd, new_fd, 0);
 
