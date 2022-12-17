@@ -118,6 +118,10 @@
      ./arctic/libc/errno/errno.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/errno/errno.c
 
+./o32/_arctic/libc/fcntl/fcntl.o: \
+     ./arctic/libc/fcntl/fcntl.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/fcntl/fcntl.c
+
 ./o32/_arctic/libc/fcntl/open.o: \
      ./arctic/libc/fcntl/open.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/fcntl/open.c
@@ -317,6 +321,10 @@
 ./o64/_arctic/libc/errno/errno.o: \
      ./arctic/libc/errno/errno.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/errno/errno.c
+
+./o64/_arctic/libc/fcntl/fcntl.o: \
+     ./arctic/libc/fcntl/fcntl.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/fcntl/fcntl.c
 
 ./o64/_arctic/libc/fcntl/open.o: \
      ./arctic/libc/fcntl/open.c $(DANCY_DEPS)
