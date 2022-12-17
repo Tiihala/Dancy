@@ -125,6 +125,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_lseek,
 
+	/*
+	 * long long __dancy_syscall_fcntl(
+	 *         int fd,
+	 *         int cmd,
+	 *         int arg);
+	 */
+	__dancy_syscall_fcntl,
+
 	__dancy_syscall_argn__
 };
 
