@@ -130,6 +130,10 @@
      ./arctic/libc/misc/__main.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/misc/__main.c
 
+./o32/_arctic/libc/spawn/spawn.o: \
+     ./arctic/libc/spawn/spawn.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/spawn.c
+
 ./o32/_arctic/libc/stdio/snprintf.o: \
      ./arctic/libc/stdio/snprintf.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/snprintf.c
@@ -333,6 +337,10 @@
 ./o64/_arctic/libc/misc/__main.o: \
      ./arctic/libc/misc/__main.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/misc/__main.c
+
+./o64/_arctic/libc/spawn/spawn.o: \
+     ./arctic/libc/spawn/spawn.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/spawn.c
 
 ./o64/_arctic/libc/stdio/snprintf.o: \
      ./arctic/libc/stdio/snprintf.c $(DANCY_DEPS)

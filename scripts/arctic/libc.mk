@@ -34,6 +34,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/fcntl/fcntl.o \
  ./o32/_arctic/libc/fcntl/open.o \
  ./o32/_arctic/libc/misc/__main.o \
+ ./o32/_arctic/libc/spawn/spawn.o \
  ./o32/_arctic/libc/stdio/snprintf.o \
  ./o32/_arctic/libc/stdlib/qsort.o \
  ./o32/_arctic/libc/string/strcat.o \
@@ -87,6 +88,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/fcntl/fcntl.o \
  ./o64/_arctic/libc/fcntl/open.o \
  ./o64/_arctic/libc/misc/__main.o \
+ ./o64/_arctic/libc/spawn/spawn.o \
  ./o64/_arctic/libc/stdio/snprintf.o \
  ./o64/_arctic/libc/stdlib/qsort.o \
  ./o64/_arctic/libc/string/strcat.o \
