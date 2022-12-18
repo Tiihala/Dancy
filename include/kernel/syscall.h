@@ -59,6 +59,8 @@ int file_getcwd(void *buffer, size_t size);
 /*
  * Declarations of spawn.c
  */
+int spawn_task(uint64_t *id, struct vfs_node *node,
+	void *arg_state, const void *options);
 
 /*
  * Declarations of syscall.c
