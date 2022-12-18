@@ -133,6 +133,7 @@ static long long dancy_syscall_spawn(va_list va)
 
 	if ((r = arg_create(&arg_state, argv, envp)) != 0) {
 		node->n_release(&node);
+
 		if (r == DE_MEMORY)
 			return -ENOMEM;
 		return -EFAULT;
@@ -144,6 +145,7 @@ static long long dancy_syscall_spawn(va_list va)
 	if ((r = spawn_task(&id, node, arg_state, options)) != 0) {
 		arg_delete(arg_state);
 		node->n_release(&node);
+
 		if (r == DE_MEMORY)
 			return -ENOMEM;
 		if (r == DE_ARGUMENT)
