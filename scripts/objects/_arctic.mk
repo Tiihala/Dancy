@@ -134,6 +134,10 @@
      ./arctic/libc/spawn/actions.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/spawn/actions.c
 
+./o32/_arctic/libc/spawn/attr.o: \
+     ./arctic/libc/spawn/attr.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/attr.c
+
 ./o32/_arctic/libc/spawn/spawn.o: \
      ./arctic/libc/spawn/spawn.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/spawn/spawn.c
@@ -345,6 +349,10 @@
 ./o64/_arctic/libc/spawn/actions.o: \
      ./arctic/libc/spawn/actions.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/spawn/actions.c
+
+./o64/_arctic/libc/spawn/attr.o: \
+     ./arctic/libc/spawn/attr.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/attr.c
 
 ./o64/_arctic/libc/spawn/spawn.o: \
      ./arctic/libc/spawn/spawn.c $(DANCY_DEPS)
