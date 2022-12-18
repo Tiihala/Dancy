@@ -34,6 +34,39 @@ typedef __dancy_mode_t mode_t;
 typedef __dancy_pid_t pid_t;
 #endif
 
+#define POSIX_SPAWN_RESETIDS        (0x0001)
+#define POSIX_SPAWN_SETPGROUP       (0x0002)
+#define POSIX_SPAWN_SETSIGDEF       (0x0004)
+#define POSIX_SPAWN_SETSIGMASK      (0x0008)
+#define POSIX_SPAWN_SETSCHEDPARAM   (0x0010)
+#define POSIX_SPAWN_SETSCHEDULER    (0x0020)
+
+typedef struct {
+	unsigned int __state;
+} posix_spawn_file_actions_t;
+
+typedef struct {
+	unsigned int __state;
+	unsigned int __flags;
+} posix_spawnattr_t;
+
+int posix_spawn(pid_t *pid, const char *path,
+	const posix_spawn_file_actions_t *actions,
+	const posix_spawnattr_t *attrp,
+	char *const argv[], char *const envp[]);
+
+int posix_spawn_file_actions_init(posix_spawn_file_actions_t *actions);
+int posix_spawn_file_actions_destroy(posix_spawn_file_actions_t *actions);
+
+int posix_spawn_file_actions_addclose(
+	posix_spawn_file_actions_t *actions, int fd);
+
+int posix_spawn_file_actions_adddup2(
+	posix_spawn_file_actions_t *actions, int fd, int new_fd);
+
+int posix_spawnattr_init(posix_spawnattr_t *attrp);
+int posix_spawnattr_destroy(posix_spawnattr_t *attrp);
+
 __Dancy_Header_End
 
 #endif
