@@ -100,6 +100,7 @@ DANCY_HEADERS= \
  ./arctic/include/ctype.h \
  ./arctic/include/errno.h \
  ./arctic/include/fcntl.h \
+ ./arctic/include/spawn.h \
  ./arctic/include/stdio.h \
  ./arctic/include/stdlib.h \
  ./arctic/include/string.h \
