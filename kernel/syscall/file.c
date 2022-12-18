@@ -172,53 +172,6 @@ int file_init(void)
 	return 0;
 }
 
-int file_map_descriptors(int fd_count, const int *fd_map)
-{
-	struct task *task = task_current();
-	size_t size = (size_t)TASK_FD_STATIC_COUNT * sizeof(uint32_t);
-	uint32_t *new_table;
-	int i;
-
-	if (fd_map == NULL) {
-		if (fd_count != 0)
-			return DE_ARGUMENT;
-		for (i = 0; i < (int)task->fd.state; i++) {
-			if ((task->fd.table[i] & fd_cloexec) != 0)
-				file_close(i);
-		}
-		return 0;
-	}
-
-	if (task->fd.state == 0)
-		return 0;
-
-	if (fd_count <= 0 || fd_count > TASK_FD_STATIC_COUNT)
-		return DE_ARGUMENT;
-
-	if ((new_table = malloc(size)) == NULL)
-		return DE_MEMORY;
-
-	memset(new_table, 0, size);
-
-	for (i = 0; i < fd_count; i++) {
-		int fd = fd_map[i];
-
-		if (fd < 0 || fd >= TASK_FD_STATIC_COUNT)
-			continue;
-
-		new_table[i] = task->fd.table[fd] & table_mask;
-		task->fd.table[fd] = 0;
-	}
-
-	for (i = 0; i < (int)task->fd.state; i++)
-		file_close(i);
-
-	memcpy(task->fd.table, new_table, size);
-	task->fd.state = (uint32_t)fd_count;
-
-	return free(new_table), 0;
-}
-
 int file_open(int *fd, const char *name, int flags, mode_t mode)
 {
 
