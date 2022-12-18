@@ -75,8 +75,6 @@ LOADER_FILE=-t 2019-03-03T08:58:39 --read-only
 DANCY_ZIP_FILES= \
  ./README \
  ./release/dancy.iso \
- ./release/fdd1440.img \
- ./release/usbtiny.img \
 
 ./release/dancy.zip: $(DANCY_TARGET_IMAGES) ./README
 	$(DY_ZIP) -o $@ --single-dir $(DANCY_ZIP_FILES)
