@@ -31,7 +31,7 @@ static int new_task(void *arg)
 {
 	struct task_arg *ta = arg;
 	addr_t user_ip, user_sp;
-	int r;
+	int i, r;
 
 	if ((r = pg_create()) != 0) {
 		ta->retval = r;
@@ -52,6 +52,16 @@ static int new_task(void *arg)
 	}
 
 	arg_delete(ta->arg_state);
+
+	{
+		const uint32_t fd_cloexec = 0x80000000;
+		struct task *task = task_current();
+
+		for (i = 0; i < (int)task->fd.state; i++) {
+			if ((task->fd.table[i] & fd_cloexec) != 0)
+				file_close(i);
+		}
+	}
 
 	ta->retval = 0;
 	spin_unlock(&ta->lock);
