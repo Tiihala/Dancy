@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <arctic/include/__dancy/spawn.h>
 #include <arctic/include/__dancy/syscall.h>
 #include <arctic/include/sys/wait.h>
 #include <arctic/include/ctype.h>

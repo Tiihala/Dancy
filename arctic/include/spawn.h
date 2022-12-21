@@ -21,6 +21,7 @@
 #define __DANCY_SPAWN_H
 
 #include <__dancy/core.h>
+#include <__dancy/spawn.h>
 
 __Dancy_Header_Begin
 
@@ -41,14 +42,11 @@ typedef __dancy_pid_t pid_t;
 #define POSIX_SPAWN_SETSCHEDPARAM   (0x0010)
 #define POSIX_SPAWN_SETSCHEDULER    (0x0020)
 
-typedef struct {
-	unsigned int __state;
-} posix_spawn_file_actions_t;
+typedef struct __dancy_spawn_file_actions
+	posix_spawn_file_actions_t;
 
-typedef struct {
-	unsigned int __state;
-	unsigned int __flags;
-} posix_spawnattr_t;
+typedef struct __dancy_spawn_attributes
+	posix_spawnattr_t;
 
 int posix_spawn(pid_t *pid, const char *path,
 	const posix_spawn_file_actions_t *actions,
