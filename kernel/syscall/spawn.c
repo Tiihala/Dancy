@@ -25,6 +25,10 @@ struct task_arg {
 
 	struct vfs_node *node;
 	void *arg_state;
+
+	struct __dancy_spawn_file_actions *actions;
+	struct __dancy_spawn_attributes *attrp;
+	struct __dancy_spawn_attributes __attr;
 };
 
 static int new_task(void *arg)
@@ -71,13 +75,45 @@ static int new_task(void *arg)
 	return 0;
 }
 
+static int handle_options(struct task_arg *ta,
+	const struct __dancy_spawn_options *options)
+{
+	if (((addr_t)options % (addr_t)sizeof(void *)) != 0)
+		return DE_ARGUMENT;
+
+	if (pg_check_user_read(options, sizeof(*options)))
+		return DE_ARGUMENT;
+
+	if (options->actions) {
+		size_t size = sizeof(*options->actions);
+
+		if (pg_check_user_read(options->actions, size))
+			return DE_ARGUMENT;
+
+		if ((ta->actions = malloc(size)) == NULL)
+			return DE_MEMORY;
+
+		memcpy(ta->actions, options->actions, size);
+	}
+
+	if (options->attrp) {
+		size_t size = sizeof(*options->attrp);
+
+		if (pg_check_user_read(options->attrp, size))
+			return DE_ARGUMENT;
+
+		ta->attrp = &ta->__attr;
+		memcpy(ta->attrp, options->attrp, size);
+	}
+
+	return 0;
+}
+
 int spawn_task(uint64_t *id, struct vfs_node *node,
-	void *arg_state, const void *options)
+	void *arg_state, const struct __dancy_spawn_options *options)
 {
 	struct task_arg ta;
-
-	if (options != NULL)
-		return *id = 0, DE_ARGUMENT;
+	int r;
 
 	memset(&ta, 0, sizeof(ta));
 
@@ -87,11 +123,17 @@ int spawn_task(uint64_t *id, struct vfs_node *node,
 	ta.node = node;
 	ta.arg_state = arg_state;
 
+	if (options && (r = handle_options(&ta, options)) != 0)
+		return free(ta.actions), *id = 0, r;
+
 	if ((*id = task_create(new_task, &ta, 0)) == 0)
-		return DE_MEMORY;
+		return free(ta.actions), DE_MEMORY;
 
 	while (!spin_trylock(&ta.lock))
 		task_yield();
+
+	if (ta.actions)
+		free(ta.actions);
 
 	if (ta.retval)
 		task_wait(*id, NULL);
