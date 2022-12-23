@@ -1,0 +1,42 @@
+/*
+ * Copyright (c) 2022 Antti Tiihala
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * signal.h
+ *      The C Standard Library
+ */
+
+#ifndef __DANCY_SIGNAL_H
+#define __DANCY_SIGNAL_H
+
+#include <__dancy/core.h>
+#include <__dancy/signum.h>
+
+__Dancy_Header_Begin
+
+#ifndef __DANCY_TYPEDEF_SIG_ATOMIC_T
+#define __DANCY_TYPEDEF_SIG_ATOMIC_T
+typedef int sig_atomic_t;
+#endif
+
+#define SIG_DFL ((void (*)(int))( 0))
+#define SIG_ERR ((void (*)(int))(-1))
+#define SIG_IGN ((void (*)(int))( 1))
+
+void (*signal(int sig, void (*func)(int)))(int);
+int raise(int sig);
+
+__Dancy_Header_End
+
+#endif
