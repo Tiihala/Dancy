@@ -128,11 +128,11 @@ int rtc_read(struct rtc_time *rt)
 	memset(&regs1, 0, sizeof(regs1));
 	memset(&regs2, 0, sizeof(regs2));
 
-	if (kernel->acpi && kernel->acpi->rtc_century_idx)
-		regs1.century = cmos((int)kernel->acpi->rtc_century_idx);
-
 	if (mtx_lock(&rtc_mtx) != thrd_success)
 		return DE_UNEXPECTED;
+
+	if (kernel->acpi && kernel->acpi->rtc_century_idx)
+		regs1.century = cmos((int)kernel->acpi->rtc_century_idx);
 
 	task_switch_disable();
 
