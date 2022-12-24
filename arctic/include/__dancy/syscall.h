@@ -142,6 +142,22 @@ long long __dancy_syscall3(int arg0, ...);
 long long __dancy_syscall4(int arg0, ...);
 long long __dancy_syscall5(int arg0, ...);
 
+#if __DANCY_SIZE_MAX == 18446744073709551615ull
+
+#define __dancy_syscall1e(...) __dancy_syscall1(__VA_ARGS__)
+#define __dancy_syscall2e(...) __dancy_syscall2(__VA_ARGS__)
+#define __dancy_syscall3e(...) __dancy_syscall3(__VA_ARGS__)
+#define __dancy_syscall4e(...) __dancy_syscall4(__VA_ARGS__)
+
+#else
+
+#define __dancy_syscall1e(...) __dancy_syscall2(__VA_ARGS__)
+#define __dancy_syscall2e(...) __dancy_syscall3(__VA_ARGS__)
+#define __dancy_syscall3e(...) __dancy_syscall4(__VA_ARGS__)
+#define __dancy_syscall4e(...) __dancy_syscall5(__VA_ARGS__)
+
+#endif
+
 __Dancy_Header_End
 
 #endif

@@ -25,11 +25,8 @@ pid_t waitpid(pid_t pid, int *status, int options)
 {
 	long long r;
 
-#if __DANCY_SIZE_MAX == 18446744073709551615ull
-	r = __dancy_syscall3(__dancy_syscall_waitpid, pid, status, options);
-#else
-	r = __dancy_syscall4(__dancy_syscall_waitpid, pid, status, options);
-#endif
+	r = __dancy_syscall3e(__dancy_syscall_waitpid, pid, status, options);
+
 	if (r < 0)
 		errno = -((int)r), r = -1;
 

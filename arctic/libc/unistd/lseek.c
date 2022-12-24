@@ -25,11 +25,8 @@ off_t lseek(int fd, off_t offset, int whence)
 {
 	long long r;
 
-#if __DANCY_SIZE_MAX == 18446744073709551615ull
-	r = __dancy_syscall3(__dancy_syscall_lseek, fd, offset, whence);
-#else
-	r = __dancy_syscall4(__dancy_syscall_lseek, fd, offset, whence);
-#endif
+	r = __dancy_syscall3e(__dancy_syscall_lseek, fd, offset, whence);
+
 	if (r < 0)
 		errno = -((int)r), r = -1;
 
