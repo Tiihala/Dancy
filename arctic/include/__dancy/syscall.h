@@ -64,7 +64,7 @@ enum __dancy_syscall_enum__ {
 
 	/*
 	 * long long __dancy_syscall_waitpid(
-	 *         __dancy_pid_t pid,
+	 *         pid_t pid,
 	 *         int *status,
 	 *         int options);
 	 */
@@ -74,7 +74,7 @@ enum __dancy_syscall_enum__ {
 	 * long long __dancy_syscall_open(
 	 *         const char *path,
 	 *         int flags,
-	 *         __dancy_mode_t mode);
+	 *         mode_t mode);
 	 */
 	__dancy_syscall_open,
 
@@ -119,7 +119,7 @@ enum __dancy_syscall_enum__ {
 	/*
 	 * long long __dancy_syscall_lseek(
 	 *         int fd,
-	 *         __dancy_off_t offset,
+	 *         off_t offset,
 	 *         int whence);
 	 */
 	__dancy_syscall_lseek,
