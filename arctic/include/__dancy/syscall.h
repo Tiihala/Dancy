@@ -35,7 +35,8 @@ enum __dancy_syscall_enum__ {
 
 	/*
 	 * long long __dancy_syscall_time(
-	 *         void);
+	 *         clockid_t id,
+	 *         struct timespec *tp);
 	 */
 	__dancy_syscall_time,
 

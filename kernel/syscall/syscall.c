@@ -31,7 +31,32 @@ static long long dancy_syscall_exit(va_list va)
 
 static long long dancy_syscall_time(va_list va)
 {
-	return (void)va, (long long)epoch_read();
+	clockid_t id = va_arg(va, clockid_t);
+	struct timespec *tp = va_arg(va, struct timespec *);
+	long long r = -EINVAL;
+
+	struct timespec t;
+	memset(&t, 0, sizeof(t));
+
+	if (id == CLOCK_REALTIME) {
+		r = (long long)epoch_read();
+		t.tv_sec = (time_t)r;
+
+	} else if (id == CLOCK_MONOTONIC) {
+		uint64_t ms = timer_read();
+
+		r = (long long)(ms / 1000);
+		t.tv_sec = (time_t)r;
+		t.tv_nsec = (long)(ms % 1000) * 1000000L;
+	}
+
+	if (r >= 0 && tp != NULL) {
+		if (pg_check_user_write(tp, sizeof(*tp)))
+			return -EFAULT;
+		memcpy(tp, &t, sizeof(t));
+	}
+
+	return r;
 }
 
 static long long dancy_syscall_execve(va_list va)
