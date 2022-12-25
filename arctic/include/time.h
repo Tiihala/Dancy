@@ -27,7 +27,22 @@
 
 __Dancy_Header_Begin
 
+#ifndef __DANCY_TYPEDEF_PID_T
+#define __DANCY_TYPEDEF_PID_T
+typedef __dancy_pid_t pid_t;
+#endif
+
 time_t time(time_t *tloc);
+
+clock_t clock(void);
+int clock_getcpuclockid(pid_t pid, clockid_t *id);
+int clock_getres(clockid_t id, struct timespec *res);
+
+int clock_gettime(clockid_t id, struct timespec *tp);
+int clock_settime(clockid_t id, const struct timespec *tp);
+
+int clock_nanosleep(clockid_t id, int flags,
+	const struct timespec *request, struct timespec *remain);
 
 __Dancy_Header_End
 
