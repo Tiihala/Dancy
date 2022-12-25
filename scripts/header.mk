@@ -96,6 +96,7 @@ DANCY_HEADERS= \
  ./arctic/include/__dancy/spin.h \
  ./arctic/include/__dancy/ssize.h \
  ./arctic/include/__dancy/syscall.h \
+ ./arctic/include/__dancy/timedef.h \
  ./arctic/include/__dancy/timespec.h \
  ./arctic/include/__dancy/tm.h \
  ./arctic/include/sys/types.h \
