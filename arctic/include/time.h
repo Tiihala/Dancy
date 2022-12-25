@@ -21,15 +21,11 @@
 #define __DANCY_TIME_H
 
 #include <__dancy/core.h>
+#include <__dancy/timedef.h>
 #include <__dancy/timespec.h>
 #include <__dancy/tm.h>
 
 __Dancy_Header_Begin
-
-#ifndef __DANCY_TYPEDEF_CLOCK_T
-#define __DANCY_TYPEDEF_CLOCK_T
-typedef __dancy_clock_t clock_t;
-#endif
 
 time_t time(time_t *tloc);
 

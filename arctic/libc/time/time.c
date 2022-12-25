@@ -22,7 +22,8 @@
 
 time_t time(time_t *tloc)
 {
-	time_t r = (time_t)__dancy_syscall0(__dancy_syscall_time);
+	clockid_t id = CLOCK_REALTIME;
+	time_t r = (time_t)__dancy_syscall2(__dancy_syscall_time, id, NULL);
 
 	if (tloc)
 		*tloc = r;
