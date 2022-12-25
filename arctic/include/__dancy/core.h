@@ -58,6 +58,8 @@ __Dancy_Header_Begin
 
 typedef int __dancy_mode_t;
 typedef int __dancy_suseconds_t;
+typedef int __dancy_sig_atomic_t;
+typedef int __dancy_clockid_t;
 
 typedef long long __dancy_off_t;
 typedef long long __dancy_id_t;
