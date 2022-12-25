@@ -47,6 +47,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/sys/wait.o \
  ./o32/_arctic/libc/sys/waitpid.o \
  ./o32/_arctic/libc/time/gettime.o \
+ ./o32/_arctic/libc/time/settime.o \
  ./o32/_arctic/libc/time/time.o \
  ./o32/_arctic/libc/unistd/_exit.o \
  ./o32/_arctic/libc/unistd/close.o \
@@ -104,6 +105,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/sys/wait.o \
  ./o64/_arctic/libc/sys/waitpid.o \
  ./o64/_arctic/libc/time/gettime.o \
+ ./o64/_arctic/libc/time/settime.o \
  ./o64/_arctic/libc/time/time.o \
  ./o64/_arctic/libc/unistd/_exit.o \
  ./o64/_arctic/libc/unistd/close.o \

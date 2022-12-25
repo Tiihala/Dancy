@@ -182,6 +182,10 @@
      ./arctic/libc/time/gettime.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/time/gettime.c
 
+./o32/_arctic/libc/time/settime.o: \
+     ./arctic/libc/time/settime.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/time/settime.c
+
 ./o32/_arctic/libc/time/time.o: \
      ./arctic/libc/time/time.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/time/time.c
@@ -401,6 +405,10 @@
 ./o64/_arctic/libc/time/gettime.o: \
      ./arctic/libc/time/gettime.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/time/gettime.c
+
+./o64/_arctic/libc/time/settime.o: \
+     ./arctic/libc/time/settime.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/time/settime.c
 
 ./o64/_arctic/libc/time/time.o: \
      ./arctic/libc/time/time.c $(DANCY_DEPS)
