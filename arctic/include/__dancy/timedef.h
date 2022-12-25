@@ -46,6 +46,8 @@ typedef __dancy_time_t time_t;
 #define CLOCK_PROCESS_CPUTIME_ID    2
 #define CLOCK_THREAD_CPUTIME_ID     3
 
+#define TIMER_ABSTIME               0x0001
+
 __Dancy_Header_End
 
 #endif
