@@ -27,7 +27,7 @@ __Dancy_Header_Begin
 
 #ifndef __DANCY_TYPEDEF_SIG_ATOMIC_T
 #define __DANCY_TYPEDEF_SIG_ATOMIC_T
-typedef int sig_atomic_t;
+typedef __dancy_sig_atomic_t sig_atomic_t;
 #endif
 
 #define SIG_DFL ((void (*)(int))( 0))
