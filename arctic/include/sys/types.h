@@ -25,9 +25,44 @@
 
 __Dancy_Header_Begin
 
+#ifndef __DANCY_TYPEDEF_BLKCNT_T
+#define __DANCY_TYPEDEF_BLKCNT_T
+typedef __dancy_blkcnt_t blkcnt_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_BLKSIZE_T
+#define __DANCY_TYPEDEF_BLKSIZE_T
+typedef __dancy_blksize_t blksize_t;
+#endif
+
 #ifndef __DANCY_TYPEDEF_CLOCK_T
 #define __DANCY_TYPEDEF_CLOCK_T
 typedef __dancy_clock_t clock_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_CLOCKID_T
+#define __DANCY_TYPEDEF_CLOCKID_T
+typedef __dancy_clockid_t clockid_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_DEV_T
+#define __DANCY_TYPEDEF_DEV_T
+typedef __dancy_dev_t dev_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_FSBLKCNT_T
+#define __DANCY_TYPEDEF_FSBLKCNT_T
+typedef __dancy_fsblkcnt_t fsblkcnt_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_FSFILCNT_T
+#define __DANCY_TYPEDEF_FSFILCNT_T
+typedef __dancy_fsfilcnt_t fsfilcnt_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_GID_T
+#define __DANCY_TYPEDEF_GID_T
+typedef __dancy_gid_t gid_t;
 #endif
 
 #ifndef __DANCY_TYPEDEF_ID_T
@@ -35,9 +70,19 @@ typedef __dancy_clock_t clock_t;
 typedef __dancy_id_t id_t;
 #endif
 
+#ifndef __DANCY_TYPEDEF_INO_T
+#define __DANCY_TYPEDEF_INO_T
+typedef __dancy_ino_t ino_t;
+#endif
+
 #ifndef __DANCY_TYPEDEF_MODE_T
 #define __DANCY_TYPEDEF_MODE_T
 typedef __dancy_mode_t mode_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_NLINK_T
+#define __DANCY_TYPEDEF_NLINK_T
+typedef __dancy_nlink_t nlink_t;
 #endif
 
 #ifndef __DANCY_TYPEDEF_OFF_T
@@ -58,6 +103,16 @@ typedef __dancy_suseconds_t suseconds_t;
 #ifndef __DANCY_TYPEDEF_TIME_T
 #define __DANCY_TYPEDEF_TIME_T
 typedef __dancy_time_t time_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_TIMER_T
+#define __DANCY_TYPEDEF_TIMER_T
+typedef __dancy_timer_t timer_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_UID_T
+#define __DANCY_TYPEDEF_UID_T
+typedef __dancy_uid_t uid_t;
 #endif
 
 __Dancy_Header_End
