@@ -60,13 +60,25 @@ typedef int __dancy_mode_t;
 typedef int __dancy_suseconds_t;
 typedef int __dancy_sig_atomic_t;
 typedef int __dancy_clockid_t;
+typedef int __dancy_nlink_t;
+typedef int __dancy_timer_t;
+typedef int __dancy_blksize_t;
 
+typedef int __dancy_uid_t;
+typedef int __dancy_gid_t;
+
+typedef long long __dancy_dev_t;
 typedef long long __dancy_off_t;
 typedef long long __dancy_id_t;
 typedef long long __dancy_pid_t;
 
 typedef long long __dancy_clock_t;
 typedef long long __dancy_time_t;
+typedef long long __dancy_blkcnt_t;
+
+typedef unsigned long long __dancy_ino_t;
+typedef unsigned long long __dancy_fsblkcnt_t;
+typedef unsigned long long __dancy_fsfilcnt_t;
 
 void __dancy_assert(const char *expression, const char *name, int line);
 int *__dancy_errno(void);
