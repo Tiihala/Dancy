@@ -101,6 +101,7 @@ DANCY_HEADERS= \
  ./arctic/include/__dancy/timedef.h \
  ./arctic/include/__dancy/timespec.h \
  ./arctic/include/__dancy/tm.h \
+ ./arctic/include/sys/stat.h \
  ./arctic/include/sys/types.h \
  ./arctic/include/sys/wait.h \
  ./arctic/include/assert.h \
