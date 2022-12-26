@@ -43,11 +43,12 @@ static long long dancy_syscall_time(va_list va)
 		t.tv_sec = (time_t)r;
 
 	} else if (id == CLOCK_MONOTONIC) {
-		uint64_t ms = timer_read();
+		uint64_t ms64 = timer_read();
+		uint32_t ms32 = (uint32_t)ms64;
 
-		r = (long long)(ms / 1000);
+		r = (long long)(ms64 / 1000);
 		t.tv_sec = (time_t)r;
-		t.tv_nsec = (long)(ms % 1000) * 1000000L;
+		t.tv_nsec = (long)(ms32 % 1000) * 1000000L;
 	}
 
 	if (r >= 0 && tp != NULL) {
