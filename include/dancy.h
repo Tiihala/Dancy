@@ -31,6 +31,7 @@
 
 #include <arctic/include/__dancy/signum.h>
 #include <arctic/include/__dancy/spawn.h>
+#include <arctic/include/__dancy/stat.h>
 #include <arctic/include/__dancy/syscall.h>
 #include <arctic/include/__dancy/timedef.h>
 #include <arctic/include/__dancy/timespec.h>
