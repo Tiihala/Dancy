@@ -90,6 +90,7 @@ DANCY_TARGET_RELEASE= \
 
 DANCY_HEADERS= \
  ./arctic/include/__dancy/core.h \
+ ./arctic/include/__dancy/mode.h \
  ./arctic/include/__dancy/seek.h \
  ./arctic/include/__dancy/signum.h \
  ./arctic/include/__dancy/spawn.h \

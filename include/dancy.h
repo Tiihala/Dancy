@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <arctic/include/__dancy/mode.h>
 #include <arctic/include/__dancy/signum.h>
 #include <arctic/include/__dancy/spawn.h>
 #include <arctic/include/__dancy/stat.h>
