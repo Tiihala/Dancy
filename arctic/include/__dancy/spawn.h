@@ -30,6 +30,12 @@ struct __dancy_spawn_file_actions {
 
 struct __dancy_spawn_attributes {
 	unsigned int __state;
+	int __flags;
+	unsigned long long __pgroup;
+	unsigned long long __sigdef;
+	unsigned long long __sigmask;
+	int __sched[2];
+	int __other[2];
 };
 
 struct __dancy_spawn_options {
