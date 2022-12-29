@@ -24,8 +24,17 @@
 
 __Dancy_Header_Begin
 
+#define __DANCY_SPAWN_ADD_CLOSE (1)
+#define __DANCY_SPAWN_ADD_DUP2  (2)
+#define __DANCY_SPAWN_ADD_OPEN  (3)
+
 struct __dancy_spawn_file_actions {
 	unsigned int __state;
+	struct {
+		int __type;
+		int __args[3];
+		const void *__path;
+	} __actions[128];
 };
 
 struct __dancy_spawn_attributes {
