@@ -18,3 +18,15 @@
  */
 
 #include <spawn.h>
+
+int posix_spawnattr_getsigdefault(
+	const posix_spawnattr_t *attrp, sigset_t *sigdefault)
+{
+	return (*sigdefault = (sigset_t)attrp->__sigdef), 0;
+}
+
+int posix_spawnattr_setsigdefault(
+	posix_spawnattr_t *attrp, const sigset_t *sigdefault)
+{
+	return (attrp->__sigdef = (unsigned long long)(*sigdefault)), 0;
+}

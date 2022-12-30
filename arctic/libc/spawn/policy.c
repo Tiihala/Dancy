@@ -18,3 +18,15 @@
  */
 
 #include <spawn.h>
+
+int posix_spawnattr_getschedpolicy(
+	const posix_spawnattr_t *attrp, int *policy)
+{
+	return (*policy = attrp->__sched[1]), 0;
+}
+
+int posix_spawnattr_setschedpolicy(
+	posix_spawnattr_t *attrp, int policy)
+{
+	return (attrp->__sched[1] = policy), 0;
+}

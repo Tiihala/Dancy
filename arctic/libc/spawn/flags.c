@@ -18,3 +18,13 @@
  */
 
 #include <spawn.h>
+
+int posix_spawnattr_getflags(const posix_spawnattr_t *attrp, short *flags)
+{
+	return (*flags = (short)attrp->__flags), 0;
+}
+
+int posix_spawnattr_setflags(posix_spawnattr_t *attrp, short flags)
+{
+	return (attrp->__flags = flags), 0;
+}
