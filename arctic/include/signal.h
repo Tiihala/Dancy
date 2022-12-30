@@ -30,6 +30,11 @@ __Dancy_Header_Begin
 typedef __dancy_sig_atomic_t sig_atomic_t;
 #endif
 
+#ifndef __DANCY_TYPEDEF_SIGSET_T
+#define __DANCY_TYPEDEF_SIGSET_T
+typedef __dancy_sigset_t sigset_t;
+#endif
+
 #define SIG_DFL ((void (*)(int))( 0))
 #define SIG_ERR ((void (*)(int))(-1))
 #define SIG_IGN ((void (*)(int))( 1))

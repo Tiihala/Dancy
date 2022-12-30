@@ -79,6 +79,7 @@ typedef long long __dancy_blkcnt_t;
 typedef unsigned long long __dancy_ino_t;
 typedef unsigned long long __dancy_fsblkcnt_t;
 typedef unsigned long long __dancy_fsfilcnt_t;
+typedef unsigned long long __dancy_sigset_t;
 
 void __dancy_assert(const char *expression, const char *name, int line);
 int *__dancy_errno(void);
