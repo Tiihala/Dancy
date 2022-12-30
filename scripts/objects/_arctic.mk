@@ -134,13 +134,53 @@
      ./arctic/libc/spawn/actions.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/spawn/actions.c
 
+./o32/_arctic/libc/spawn/addclose.o: \
+     ./arctic/libc/spawn/addclose.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/addclose.c
+
+./o32/_arctic/libc/spawn/adddup2.o: \
+     ./arctic/libc/spawn/adddup2.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/adddup2.c
+
+./o32/_arctic/libc/spawn/addopen.o: \
+     ./arctic/libc/spawn/addopen.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/addopen.c
+
 ./o32/_arctic/libc/spawn/attr.o: \
      ./arctic/libc/spawn/attr.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/spawn/attr.c
 
+./o32/_arctic/libc/spawn/flags.o: \
+     ./arctic/libc/spawn/flags.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/flags.c
+
+./o32/_arctic/libc/spawn/pgroup.o: \
+     ./arctic/libc/spawn/pgroup.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/pgroup.c
+
+./o32/_arctic/libc/spawn/policy.o: \
+     ./arctic/libc/spawn/policy.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/policy.c
+
+./o32/_arctic/libc/spawn/sched.o: \
+     ./arctic/libc/spawn/sched.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/sched.c
+
+./o32/_arctic/libc/spawn/sigdef.o: \
+     ./arctic/libc/spawn/sigdef.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/sigdef.c
+
+./o32/_arctic/libc/spawn/sigmask.o: \
+     ./arctic/libc/spawn/sigmask.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/sigmask.c
+
 ./o32/_arctic/libc/spawn/spawn.o: \
      ./arctic/libc/spawn/spawn.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/spawn/spawn.c
+
+./o32/_arctic/libc/spawn/spawnp.o: \
+     ./arctic/libc/spawn/spawnp.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/spawnp.c
 
 ./o32/_arctic/libc/stdio/snprintf.o: \
      ./arctic/libc/stdio/snprintf.c $(DANCY_DEPS)
@@ -358,13 +398,53 @@
      ./arctic/libc/spawn/actions.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/spawn/actions.c
 
+./o64/_arctic/libc/spawn/addclose.o: \
+     ./arctic/libc/spawn/addclose.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/addclose.c
+
+./o64/_arctic/libc/spawn/adddup2.o: \
+     ./arctic/libc/spawn/adddup2.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/adddup2.c
+
+./o64/_arctic/libc/spawn/addopen.o: \
+     ./arctic/libc/spawn/addopen.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/addopen.c
+
 ./o64/_arctic/libc/spawn/attr.o: \
      ./arctic/libc/spawn/attr.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/spawn/attr.c
 
+./o64/_arctic/libc/spawn/flags.o: \
+     ./arctic/libc/spawn/flags.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/flags.c
+
+./o64/_arctic/libc/spawn/pgroup.o: \
+     ./arctic/libc/spawn/pgroup.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/pgroup.c
+
+./o64/_arctic/libc/spawn/policy.o: \
+     ./arctic/libc/spawn/policy.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/policy.c
+
+./o64/_arctic/libc/spawn/sched.o: \
+     ./arctic/libc/spawn/sched.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/sched.c
+
+./o64/_arctic/libc/spawn/sigdef.o: \
+     ./arctic/libc/spawn/sigdef.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/sigdef.c
+
+./o64/_arctic/libc/spawn/sigmask.o: \
+     ./arctic/libc/spawn/sigmask.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/sigmask.c
+
 ./o64/_arctic/libc/spawn/spawn.o: \
      ./arctic/libc/spawn/spawn.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/spawn/spawn.c
+
+./o64/_arctic/libc/spawn/spawnp.o: \
+     ./arctic/libc/spawn/spawnp.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/spawnp.c
 
 ./o64/_arctic/libc/stdio/snprintf.o: \
      ./arctic/libc/stdio/snprintf.c $(DANCY_DEPS)

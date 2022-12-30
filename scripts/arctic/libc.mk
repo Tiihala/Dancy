@@ -35,8 +35,18 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/fcntl/open.o \
  ./o32/_arctic/libc/misc/__main.o \
  ./o32/_arctic/libc/spawn/actions.o \
+ ./o32/_arctic/libc/spawn/addclose.o \
+ ./o32/_arctic/libc/spawn/adddup2.o \
+ ./o32/_arctic/libc/spawn/addopen.o \
  ./o32/_arctic/libc/spawn/attr.o \
+ ./o32/_arctic/libc/spawn/flags.o \
+ ./o32/_arctic/libc/spawn/pgroup.o \
+ ./o32/_arctic/libc/spawn/policy.o \
+ ./o32/_arctic/libc/spawn/sched.o \
+ ./o32/_arctic/libc/spawn/sigdef.o \
+ ./o32/_arctic/libc/spawn/sigmask.o \
  ./o32/_arctic/libc/spawn/spawn.o \
+ ./o32/_arctic/libc/spawn/spawnp.o \
  ./o32/_arctic/libc/stdio/snprintf.o \
  ./o32/_arctic/libc/stdlib/qsort.o \
  ./o32/_arctic/libc/string/strcat.o \
@@ -93,8 +103,18 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/fcntl/open.o \
  ./o64/_arctic/libc/misc/__main.o \
  ./o64/_arctic/libc/spawn/actions.o \
+ ./o64/_arctic/libc/spawn/addclose.o \
+ ./o64/_arctic/libc/spawn/adddup2.o \
+ ./o64/_arctic/libc/spawn/addopen.o \
  ./o64/_arctic/libc/spawn/attr.o \
+ ./o64/_arctic/libc/spawn/flags.o \
+ ./o64/_arctic/libc/spawn/pgroup.o \
+ ./o64/_arctic/libc/spawn/policy.o \
+ ./o64/_arctic/libc/spawn/sched.o \
+ ./o64/_arctic/libc/spawn/sigdef.o \
+ ./o64/_arctic/libc/spawn/sigmask.o \
  ./o64/_arctic/libc/spawn/spawn.o \
+ ./o64/_arctic/libc/spawn/spawnp.o \
  ./o64/_arctic/libc/stdio/snprintf.o \
  ./o64/_arctic/libc/stdlib/qsort.o \
  ./o64/_arctic/libc/string/strcat.o \
