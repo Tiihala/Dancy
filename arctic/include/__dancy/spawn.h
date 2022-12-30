@@ -30,6 +30,7 @@ __Dancy_Header_Begin
 
 struct __dancy_spawn_file_actions {
 	unsigned int __state;
+	unsigned int __count;
 	struct {
 		int __type;
 		int __args[3];
