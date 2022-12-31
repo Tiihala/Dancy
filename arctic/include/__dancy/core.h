@@ -56,6 +56,8 @@ __Dancy_Header_Begin
 #error "Unsupported __SIZE_MAX__ or __DANCY_SIZE_MAX"
 #endif
 
+#define __DANCY_OPEN_MAX 64
+
 typedef int __dancy_mode_t;
 typedef int __dancy_suseconds_t;
 typedef int __dancy_sig_atomic_t;
