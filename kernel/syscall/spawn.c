@@ -47,7 +47,7 @@ static int new_task(void *arg)
 	if (ta->actions) {
 		int count = (int)ta->actions->__count;
 
-		for (i = 0; r != 0 && i < count; i++) {
+		for (i = 0; r == 0 && i < count; i++) {
 			int type = ta->actions->__actions[i].__type;
 			int flags, mode, fd[3];
 			const void *p;
