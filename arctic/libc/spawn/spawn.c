@@ -20,3 +20,25 @@
 #include <__dancy/syscall.h>
 #include <errno.h>
 #include <spawn.h>
+
+int posix_spawn(pid_t *pid, const char *path,
+	const posix_spawn_file_actions_t *actions,
+	const posix_spawnattr_t *attrp,
+	char *const argv[], char *const envp[])
+{
+	struct __dancy_spawn_options opts;
+	long long r;
+
+	opts.actions = actions;
+	opts.attrp = attrp;
+
+	r = __dancy_syscall4(__dancy_syscall_spawn, path, argv, envp, &opts);
+
+	if (r < 0)
+		errno = -((int)r), r = -((int)r);
+
+	if (pid)
+		*pid = (pid_t)r;
+
+	return 0;
+}
