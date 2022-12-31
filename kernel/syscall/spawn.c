@@ -35,7 +35,66 @@ static int new_task(void *arg)
 {
 	struct task_arg *ta = arg;
 	addr_t user_ip, user_sp;
-	int i, r;
+	int i, r = 0;
+
+	if (ta->attrp) {
+		int flags = ta->attrp->__flags;
+
+		if (flags != 0)
+			r = DE_ARGUMENT;
+	}
+
+	if (ta->actions) {
+		int count = (int)ta->actions->__count;
+
+		for (i = 0; r != 0 && i < count; i++) {
+			int type = ta->actions->__actions[i].__type;
+			int flags, mode, fd[3];
+			const void *p;
+
+			if (type == __DANCY_SPAWN_ADD_CLOSE) {
+				fd[0] = ta->actions->__actions[i].__args[0];
+				r = file_close(fd[0]);
+
+			} else if (type == __DANCY_SPAWN_ADD_DUP2) {
+				fd[0] = ta->actions->__actions[i].__args[0];
+				fd[1] = ta->actions->__actions[i].__args[1];
+
+				r = file_dup(fd[0], &fd[2], fd[1], fd[1], 0);
+
+				if (fd[1] != fd[2])
+					r = DE_ARGUMENT;
+
+			} else if (type == __DANCY_SPAWN_ADD_OPEN) {
+				fd[1] = ta->actions->__actions[i].__args[0];
+				flags = ta->actions->__actions[i].__args[1];
+				mode = ta->actions->__actions[i].__args[2];
+				p = ta->actions->__actions[i].__path;
+
+				r = file_open(&fd[0], p, flags, (mode_t)mode);
+
+				if (r || fd[0] == fd[1])
+					continue;
+
+				r = file_dup(fd[0], &fd[2], fd[1], fd[1], 0);
+
+				if (fd[1] != fd[2])
+					r = DE_ARGUMENT;
+
+				(void)file_close(fd[0]);
+
+			} else {
+				r = DE_ARGUMENT;
+				break;
+			}
+		}
+	}
+
+	if (r != 0) {
+		ta->retval = r;
+		spin_unlock(&ta->lock);
+		return 0;
+	}
 
 	if ((r = pg_create()) != 0) {
 		ta->retval = r;
@@ -86,7 +145,8 @@ static int handle_options(struct task_arg *ta,
 
 	if (options->actions) {
 		size_t size = sizeof(*options->actions);
-		struct __dancy_spawn_file_actions *dst, *src;
+		const struct __dancy_spawn_file_actions *src;
+		struct __dancy_spawn_file_actions *dst;
 		unsigned int i;
 
 		if (pg_check_user_read(options->actions, size))
