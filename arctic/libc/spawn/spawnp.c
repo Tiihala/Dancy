@@ -47,7 +47,7 @@ int posix_spawnp(pid_t *pid, const char *file,
 	r = __dancy_syscall4(__dancy_syscall_spawn, path, argv, envp, &opts);
 
 	if (r < 0)
-		errno = -((int)r), r = -((int)r);
+		return (errno = -((int)r)), -((int)r);
 
 	if (pid)
 		*pid = (pid_t)r;
