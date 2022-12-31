@@ -41,12 +41,12 @@ typedef __dancy_pid_t pid_t;
 typedef __dancy_sigset_t sigset_t;
 #endif
 
-#define POSIX_SPAWN_RESETIDS        (0x0001)
-#define POSIX_SPAWN_SETPGROUP       (0x0002)
-#define POSIX_SPAWN_SETSIGDEF       (0x0004)
-#define POSIX_SPAWN_SETSIGMASK      (0x0008)
-#define POSIX_SPAWN_SETSCHEDPARAM   (0x0010)
-#define POSIX_SPAWN_SETSCHEDULER    (0x0020)
+#define POSIX_SPAWN_RESETIDS        __DANCY_SPAWN_RESETIDS
+#define POSIX_SPAWN_SETPGROUP       __DANCY_SPAWN_SETPGROUP
+#define POSIX_SPAWN_SETSIGDEF       __DANCY_SPAWN_SETSIGDEF
+#define POSIX_SPAWN_SETSIGMASK      __DANCY_SPAWN_SETSIGMASK
+#define POSIX_SPAWN_SETSCHEDPARAM   __DANCY_SPAWN_SETSCHEDPARAM
+#define POSIX_SPAWN_SETSCHEDULER    __DANCY_SPAWN_SETSCHEDULER
 
 typedef struct __dancy_spawn_file_actions
 	posix_spawn_file_actions_t;
