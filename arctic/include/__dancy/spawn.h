@@ -38,6 +38,13 @@ struct __dancy_spawn_file_actions {
 	} __actions[128];
 };
 
+#define __DANCY_SPAWN_RESETIDS        (0x0001)
+#define __DANCY_SPAWN_SETPGROUP       (0x0002)
+#define __DANCY_SPAWN_SETSIGDEF       (0x0004)
+#define __DANCY_SPAWN_SETSIGMASK      (0x0008)
+#define __DANCY_SPAWN_SETSCHEDPARAM   (0x0010)
+#define __DANCY_SPAWN_SETSCHEDULER    (0x0020)
+
 struct __dancy_spawn_attributes {
 	unsigned int __state;
 	int __flags;
@@ -49,8 +56,8 @@ struct __dancy_spawn_attributes {
 };
 
 struct __dancy_spawn_options {
-	struct __dancy_spawn_file_actions *actions;
-	struct __dancy_spawn_attributes *attrp;
+	const struct __dancy_spawn_file_actions *actions;
+	const struct __dancy_spawn_attributes *attrp;
 };
 
 __Dancy_Header_End
