@@ -60,6 +60,12 @@ static int new_task(void *arg)
 				fd[0] = ta->actions->__actions[i].__args[0];
 				fd[1] = ta->actions->__actions[i].__args[1];
 
+				if (fd[0] == fd[1]) {
+					int cmd = F_GETFD;
+					r = file_fcntl(fd[0], cmd, 0, &fd[2]);
+					continue;
+				}
+
 				r = file_dup(fd[0], &fd[2], fd[1], fd[1], 0);
 
 				if (fd[1] != fd[2])
