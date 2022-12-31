@@ -86,6 +86,8 @@ static int handle_options(struct task_arg *ta,
 
 	if (options->actions) {
 		size_t size = sizeof(*options->actions);
+		struct __dancy_spawn_file_actions *dst, *src;
+		unsigned int i;
 
 		if (pg_check_user_read(options->actions, size))
 			return DE_ARGUMENT;
@@ -93,7 +95,50 @@ static int handle_options(struct task_arg *ta,
 		if ((ta->actions = malloc(size)) == NULL)
 			return DE_MEMORY;
 
-		memcpy(ta->actions, options->actions, size);
+		dst = ta->actions;
+		src = options->actions;
+
+		memset(dst, 0, size);
+		dst->__state = src->__state;
+		dst->__count = src->__count;
+
+		{
+			int t1 = (int)sizeof(dst->__actions);
+			int t2 = (int)sizeof(*dst->__actions);
+
+			if (dst->__count >= (unsigned int)(t1 / t2)) {
+				dst->__state = 0, dst->__count = 0;
+				return DE_ARGUMENT;
+			}
+		}
+
+		for (i = 0; i < dst->__count; i++) {
+			const char *path = src->__actions[i].__path;
+			const char *dup_path = NULL;
+			int value;
+
+			value = src->__actions[i].__type;
+			dst->__actions[i].__type = value;
+
+			value = src->__actions[i].__args[0];
+			dst->__actions[i].__args[0] = value;
+
+			value = src->__actions[i].__args[1];
+			dst->__actions[i].__args[1] = value;
+
+			value = src->__actions[i].__args[2];
+			dst->__actions[i].__args[2] = value;
+
+			if (path) {
+				if (pg_check_user_string(path, &value))
+					return DE_ARGUMENT;
+
+				if ((dup_path = strdup(path)) == NULL)
+					return DE_MEMORY;
+			}
+
+			dst->__actions[i].__path = dup_path;
+		}
 	}
 
 	if (options->attrp) {
@@ -107,6 +152,24 @@ static int handle_options(struct task_arg *ta,
 	}
 
 	return 0;
+}
+
+static void release_actions(struct task_arg *ta)
+{
+	unsigned int i;
+
+	if (!ta->actions)
+		return;
+
+	for (i = 0; i < ta->actions->__count; i++) {
+		if (ta->actions->__actions[i].__path)
+			free((void *)(ta->actions->__actions[i].__path));
+	}
+
+	memset(ta->actions, 0, sizeof(*ta->actions));
+	free(ta->actions);
+
+	ta->actions = NULL;
 }
 
 int spawn_task(uint64_t *id, struct vfs_node *node,
@@ -124,16 +187,15 @@ int spawn_task(uint64_t *id, struct vfs_node *node,
 	ta.arg_state = arg_state;
 
 	if (options && (r = handle_options(&ta, options)) != 0)
-		return free(ta.actions), *id = 0, r;
+		return release_actions(&ta), *id = 0, r;
 
 	if ((*id = task_create(new_task, &ta, 0)) == 0)
-		return free(ta.actions), DE_MEMORY;
+		return release_actions(&ta), DE_MEMORY;
 
 	while (!spin_trylock(&ta.lock))
 		task_yield();
 
-	if (ta.actions)
-		free(ta.actions);
+	release_actions(&ta);
 
 	if (ta.retval)
 		task_wait(*id, NULL);
