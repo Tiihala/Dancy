@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -735,4 +735,90 @@ int file_getcwd(void *buffer, size_t size)
 	}
 
 	return 0;
+}
+
+int file_getdents(int fd, void *buffer, size_t size, int count, int flags)
+{
+	struct task *task = task_current();
+	struct vfs_dent dent;
+	char *e, *p, **pp;
+	int i, j, r = 0;
+
+	memset(buffer, 0, size);
+
+	if (count < 0 || flags != 0)
+		return DE_UNSUPPORTED;
+
+	if (count > 0xFFFF)
+		count = 0xFFFF;
+
+	if (size < ((size_t)(count + 1) * sizeof(char *)))
+		return DE_BUFFER;
+
+	e = buffer;
+	e += size;
+
+	p = buffer;
+	p += ((size_t)(count + 1) * sizeof(char *));
+	pp = buffer;
+
+	if (fd >= 0 && fd < (int)task->fd.state) {
+		struct file_table_entry *fte;
+		uint64_t offset;
+		uint32_t t;
+
+		if ((t = task->fd.table[fd]) != 0) {
+			fte = (void *)((addr_t)(t & table_mask));
+
+			while (!spin_trylock(&fte->lock[1]))
+				task_yield();
+
+			offset = fte->offset;
+
+			for (i = 0; r == 0 && i < count; i++) {
+				struct vfs_node *n = fte->node;
+
+				if (offset > 0xFFFFFFFF)
+					break;
+
+				r = n->n_readdir(n, (uint32_t)offset, &dent);
+				offset += 1;
+
+				if (r != 0) {
+					if (r == DE_PLACEHOLDER)
+						r = 0;
+					continue;
+				}
+
+				if (dent.name[0] == '\0')
+					break;
+
+				*pp++ = p;
+
+				for (j = 0; r == 0; j++) {
+					char c = dent.name[j];
+
+					if (p < e)
+						*p++ = c;
+					else
+						r = DE_BUFFER;
+
+					if (c == '\0')
+						break;
+				}
+			}
+
+			if (r == 0)
+				fte->offset = offset;
+
+			spin_unlock(&fte->lock[1]);
+
+			if (r != 0)
+				memset(buffer, 0, size);
+
+			return r;
+		}
+	}
+
+	return DE_ARGUMENT;
 }

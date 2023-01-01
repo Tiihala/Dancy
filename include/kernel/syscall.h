@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -55,6 +55,7 @@ int file_dup(int fd, int *new_fd, int min_fd, int max_fd, int flags);
 int file_pipe(int fd[2], int flags);
 int file_chdir(const char *name);
 int file_getcwd(void *buffer, size_t size);
+int file_getdents(int fd, void *buffer, size_t size, int count, int flags);
 
 /*
  * Declarations of spawn.c
