@@ -65,6 +65,7 @@ int truncate(const char *path, off_t length);
 
 pid_t getpid(void);
 void _exit(int status);
+char *getcwd(char *buffer, size_t size);
 
 extern char **environ;
 
