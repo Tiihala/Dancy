@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -434,6 +434,27 @@ static long long dancy_syscall_fcntl(va_list va)
 	return (long long)((retval >= 0) ? retval : 0);
 }
 
+static long long dancy_syscall_getcwd(va_list va)
+{
+	void *buffer = va_arg(va, void *);
+	size_t size = va_arg(va, size_t);
+	int r;
+
+	if (size == 0)
+		return -EINVAL;
+
+	if (pg_check_user_write(buffer, size))
+		return -EFAULT;
+
+	if ((r = file_getcwd(buffer, size)) != 0) {
+		if (r == DE_OVERFLOW)
+			return -ERANGE;
+		return -EACCES;
+	}
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -454,6 +475,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_dup },
 	{ dancy_syscall_lseek },
 	{ dancy_syscall_fcntl },
+	{ dancy_syscall_getcwd },
 	{ dancy_syscall_reserved }
 };
 

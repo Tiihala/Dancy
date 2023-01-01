@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -132,6 +132,13 @@ enum __dancy_syscall_enum__ {
 	 *         int arg);
 	 */
 	__dancy_syscall_fcntl,
+
+	/*
+	 * long long __dancy_syscall_getcwd(
+	 *         void *buffer,
+	 *         size_t size);
+	 */
+	__dancy_syscall_getcwd,
 
 	__dancy_syscall_argn__
 };
