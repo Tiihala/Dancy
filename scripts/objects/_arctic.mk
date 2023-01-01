@@ -246,6 +246,10 @@
      ./arctic/libc/unistd/dup2.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/dup2.c
 
+./o32/_arctic/libc/unistd/execve.o: \
+     ./arctic/libc/unistd/execve.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/execve.c
+
 ./o32/_arctic/libc/unistd/lseek.o: \
      ./arctic/libc/unistd/lseek.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/lseek.c
@@ -509,6 +513,10 @@
 ./o64/_arctic/libc/unistd/dup2.o: \
      ./arctic/libc/unistd/dup2.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/dup2.c
+
+./o64/_arctic/libc/unistd/execve.o: \
+     ./arctic/libc/unistd/execve.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/execve.c
 
 ./o64/_arctic/libc/unistd/lseek.o: \
      ./arctic/libc/unistd/lseek.c $(DANCY_DEPS)

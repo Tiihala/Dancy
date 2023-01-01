@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -65,6 +65,10 @@ int truncate(const char *path, off_t length);
 
 pid_t getpid(void);
 void _exit(int status);
+
+extern char **environ;
+
+int execve(const char *path, char *const argv[], char *const envp[]);
 
 __Dancy_Header_End
 
