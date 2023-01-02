@@ -737,29 +737,30 @@ int file_getcwd(void *buffer, size_t size)
 	return 0;
 }
 
-int file_getdents(int fd, void *buffer, size_t size, int count, int flags)
+int file_getdents(int fd, void *buffer, size_t size, int *count, int flags)
 {
 	struct task *task = task_current();
+	int requested_count = *count;
 	struct vfs_dent dent;
 	char *e, *p, **pp;
 	int i, j, r = 0;
 
-	memset(buffer, 0, size);
+	*count = 0, memset(buffer, 0, size);
 
-	if (count < 0 || flags != 0)
+	if (requested_count < 0 || flags != 0)
 		return DE_UNSUPPORTED;
 
-	if (count > 0xFFFF)
-		count = 0xFFFF;
+	if (requested_count > 0xFFFF)
+		requested_count = 0xFFFF;
 
-	if (size < ((size_t)(count + 1) * sizeof(char *)))
+	if (size < ((size_t)(requested_count + 1) * sizeof(char *)))
 		return DE_BUFFER;
 
 	e = buffer;
 	e += size;
 
 	p = buffer;
-	p += ((size_t)(count + 1) * sizeof(char *));
+	p += ((size_t)(requested_count + 1) * sizeof(char *));
 	pp = buffer;
 
 	if (fd >= 0 && fd < (int)task->fd.state) {
@@ -775,7 +776,7 @@ int file_getdents(int fd, void *buffer, size_t size, int count, int flags)
 
 			offset = fte->offset;
 
-			for (i = 0; r == 0 && i < count; i++) {
+			for (i = 0; r == 0 && i < requested_count; i++) {
 				struct vfs_node *n = fte->node;
 
 				if (offset > 0xFFFFFFFF)
@@ -790,9 +791,12 @@ int file_getdents(int fd, void *buffer, size_t size, int count, int flags)
 					continue;
 				}
 
-				if (dent.name[0] == '\0')
+				if (dent.name[0] == '\0') {
+					offset = (uint64_t)(ULLONG_MAX);
 					break;
+				}
 
+				*count += 1;
 				*pp++ = p;
 
 				for (j = 0; r == 0; j++) {
@@ -814,7 +818,7 @@ int file_getdents(int fd, void *buffer, size_t size, int count, int flags)
 			spin_unlock(&fte->lock[1]);
 
 			if (r != 0)
-				memset(buffer, 0, size);
+				*count = 0, memset(buffer, 0, size);
 
 			return r;
 		}
