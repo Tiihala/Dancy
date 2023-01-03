@@ -455,6 +455,32 @@ static long long dancy_syscall_getcwd(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_getdents(va_list va)
+{
+	int fd = va_arg(va, int);
+	void *buffer = va_arg(va, void *);
+	size_t size = va_arg(va, size_t);
+	int count = va_arg(va, int);
+	int flags = va_arg(va, int);
+	int r;
+
+	if (((addr_t)buffer % (addr_t)sizeof(void *)) != 0)
+		return -EFAULT;
+
+	if (pg_check_user_write(buffer, size))
+		return -EFAULT;
+
+	if ((r = file_getdents(fd, buffer, size, &count, flags)) != 0) {
+		if (r == DE_ARGUMENT)
+			return -EBADF;
+		if (r == DE_BUFFER)
+			return -EOVERFLOW;
+		return -ENOENT;
+	}
+
+	return count;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -476,6 +502,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_lseek },
 	{ dancy_syscall_fcntl },
 	{ dancy_syscall_getcwd },
+	{ dancy_syscall_getdents },
 	{ dancy_syscall_reserved }
 };
 

@@ -140,6 +140,16 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_getcwd,
 
+	/*
+	 * long long __dancy_syscall_getdents(
+	 *         int fd,
+	 *         void *buffer,
+	 *         size_t size,
+	 *         int count,
+	 *         int flags);
+	 */
+	__dancy_syscall_getdents,
+
 	__dancy_syscall_argn__
 };
 
