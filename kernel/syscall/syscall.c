@@ -481,6 +481,25 @@ static long long dancy_syscall_getdents(va_list va)
 	return count;
 }
 
+static long long dancy_syscall_chdir(va_list va)
+{
+	const char *path = va_arg(va, const char *);
+	int count, r;
+
+	if (pg_check_user_string(path, &count))
+		return -EFAULT;
+
+	if ((r = file_chdir(path)) != 0) {
+		if (r == DE_FILE)
+			return -ENOTDIR;
+		if (r == DE_TYPE)
+			return -ENOTDIR;
+		return -ENOENT;
+	}
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -503,6 +522,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_fcntl },
 	{ dancy_syscall_getcwd },
 	{ dancy_syscall_getdents },
+	{ dancy_syscall_chdir },
 	{ dancy_syscall_reserved }
 };
 
