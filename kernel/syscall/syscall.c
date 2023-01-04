@@ -652,11 +652,14 @@ static long long dancy_syscall_stat(va_list va)
 	buffer->st_size = (off_t)vstat.size;
 
 	{
-		size_t size = sizeof(struct timespec);
+		buffer->st_atim.tv_sec  = vstat.access_time.tv_sec;
+		buffer->st_atim.tv_nsec = vstat.access_time.tv_nsec;
 
-		memcpy(&buffer->st_atim, &vstat.access_time, size);
-		memcpy(&buffer->st_mtim, &vstat.write_time, size);
-		memcpy(&buffer->st_ctim, &vstat.creation_time, size);
+		buffer->st_mtim.tv_sec  = vstat.write_time.tv_sec;
+		buffer->st_mtim.tv_nsec = vstat.write_time.tv_nsec;
+
+		buffer->st_ctim.tv_sec  = vstat.creation_time.tv_sec;
+		buffer->st_ctim.tv_nsec = vstat.creation_time.tv_nsec;
 	}
 
 	return 0;
