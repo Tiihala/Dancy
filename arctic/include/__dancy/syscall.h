@@ -162,6 +162,12 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_rmdir,
 
+	/*
+	 * long long __dancy_syscall_unlink(
+	 *         const char *path);
+	 */
+	__dancy_syscall_unlink,
+
 	__dancy_syscall_argn__
 };
 
