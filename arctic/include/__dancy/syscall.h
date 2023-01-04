@@ -156,6 +156,12 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_chdir,
 
+	/*
+	 * long long __dancy_syscall_rmdir(
+	 *         const char *path);
+	 */
+	__dancy_syscall_rmdir,
+
 	__dancy_syscall_argn__
 };
 
