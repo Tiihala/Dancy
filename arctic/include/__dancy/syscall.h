@@ -175,6 +175,15 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_rename,
 
+	/*
+	 * long long __dancy_syscall_stat(
+	 *         int fd,
+	 *         const char *path,
+	 *         struct stat *buffer,
+	 *         int flags);
+	 */
+	__dancy_syscall_stat,
+
 	__dancy_syscall_argn__
 };
 

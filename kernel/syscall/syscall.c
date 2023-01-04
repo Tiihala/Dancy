@@ -567,6 +567,101 @@ static long long dancy_syscall_rename(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_stat(va_list va)
+{
+	int fd = va_arg(va, int);
+	const char *path = va_arg(va, const char *);
+	struct stat *buffer = va_arg(va, struct stat *);
+	int flags = va_arg(va, int);
+
+	struct vfs_node *node = NULL;
+	struct vfs_stat vstat;
+	int count, r = 0;
+
+	if (flags != 0)
+		return -EINVAL;
+
+	if (((addr_t)buffer % (addr_t)sizeof(void *)) != 0)
+		return -EFAULT;
+
+	if (pg_check_user_write(buffer, sizeof(*buffer)))
+		return -EFAULT;
+
+	if (path) {
+		if (pg_check_user_string(path, &count))
+			return -EFAULT;
+
+		if ((r = vfs_open(path, &node, 0, 0)) != 0) {
+			if (r == DE_NAME)
+				return -ENOENT;
+			return -EINVAL;
+		}
+
+	} else {
+		const uint32_t table_mask = 0x0FFFFFFF;
+		struct task *task = task_current();
+		struct file_table_entry *fte;
+		uint32_t t;
+
+		if (fd < 0 || fd >= (int)task->fd.state)
+			return -EBADF;
+
+		if ((t = task->fd.table[fd]) == 0)
+			return -EBADF;
+
+		fte = (void *)((addr_t)(t & table_mask));
+
+		while (!spin_trylock(&fte->lock[1]))
+			task_yield();
+
+		node = fte->node;
+		vfs_increment_count(node);
+
+		spin_unlock(&fte->lock[1]);
+	}
+
+	if (node->n_stat(node, &vstat)) {
+		node->n_release(&node);
+		return -EIO;
+	}
+
+	memset(buffer, 0, sizeof(*buffer));
+
+	if (node->type == vfs_type_regular)
+		buffer->st_mode = __DANCY_S_IFREG;
+
+	else if (node->type == vfs_type_buffer)
+		buffer->st_mode = __DANCY_S_IFIFO;
+
+	else if (node->type == vfs_type_directory)
+		buffer->st_mode = __DANCY_S_IFDIR;
+
+	else if (node->type == vfs_type_character)
+		buffer->st_mode = __DANCY_S_IFCHR;
+
+	else if (node->type == vfs_type_block)
+		buffer->st_mode = __DANCY_S_IFBLK;
+
+	else if (node->type == vfs_type_socket)
+		buffer->st_mode = __DANCY_S_IFSOCK;
+
+	node->n_release(&node);
+
+	buffer->st_mode |= 0x1FF;
+	buffer->st_nlink = 1;
+	buffer->st_size = (off_t)vstat.size;
+
+	{
+		size_t size = sizeof(struct timespec);
+
+		memcpy(&buffer->st_atim, &vstat.access_time, size);
+		memcpy(&buffer->st_mtim, &vstat.write_time, size);
+		memcpy(&buffer->st_ctim, &vstat.creation_time, size);
+	}
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -593,6 +688,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_rmdir },
 	{ dancy_syscall_unlink },
 	{ dancy_syscall_rename },
+	{ dancy_syscall_stat },
 	{ dancy_syscall_reserved }
 };
 
