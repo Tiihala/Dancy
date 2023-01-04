@@ -168,6 +168,13 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_unlink,
 
+	/*
+	 * long long __dancy_syscall_rename(
+	 *         const char *old_path,
+	 *         const char *new_path);
+	 */
+	__dancy_syscall_rename,
+
 	__dancy_syscall_argn__
 };
 

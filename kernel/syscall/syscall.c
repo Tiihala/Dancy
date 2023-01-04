@@ -546,6 +546,27 @@ static long long dancy_syscall_unlink(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_rename(va_list va)
+{
+	const char *old_path = va_arg(va, const char *);
+	const char *new_path = va_arg(va, const char *);
+	int count, r;
+
+	if (pg_check_user_string(old_path, &count))
+		return -EFAULT;
+
+	if (pg_check_user_string(new_path, &count))
+		return -EFAULT;
+
+	if ((r = vfs_rename(old_path, new_path)) != 0) {
+		if (r == DE_UNSUPPORTED)
+			return -EXDEV;
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -571,6 +592,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_chdir },
 	{ dancy_syscall_rmdir },
 	{ dancy_syscall_unlink },
+	{ dancy_syscall_rename },
 	{ dancy_syscall_reserved }
 };
 
