@@ -226,6 +226,10 @@
      ./arctic/libc/sys/lstat.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/lstat.c
 
+./o32/_arctic/libc/sys/mkdir.o: \
+     ./arctic/libc/sys/mkdir.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/sys/mkdir.c
+
 ./o32/_arctic/libc/sys/stat.o: \
      ./arctic/libc/sys/stat.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/stat.c
@@ -529,6 +533,10 @@
 ./o64/_arctic/libc/sys/lstat.o: \
      ./arctic/libc/sys/lstat.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/sys/lstat.c
+
+./o64/_arctic/libc/sys/mkdir.o: \
+     ./arctic/libc/sys/mkdir.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/sys/mkdir.c
 
 ./o64/_arctic/libc/sys/stat.o: \
      ./arctic/libc/sys/stat.c $(DANCY_DEPS)

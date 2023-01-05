@@ -58,6 +58,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/string/strncpy.o \
  ./o32/_arctic/libc/sys/fstat.o \
  ./o32/_arctic/libc/sys/lstat.o \
+ ./o32/_arctic/libc/sys/mkdir.o \
  ./o32/_arctic/libc/sys/stat.o \
  ./o32/_arctic/libc/sys/wait.o \
  ./o32/_arctic/libc/sys/waitpid.o \
@@ -136,6 +137,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/string/strncpy.o \
  ./o64/_arctic/libc/sys/fstat.o \
  ./o64/_arctic/libc/sys/lstat.o \
+ ./o64/_arctic/libc/sys/mkdir.o \
  ./o64/_arctic/libc/sys/stat.o \
  ./o64/_arctic/libc/sys/wait.o \
  ./o64/_arctic/libc/sys/waitpid.o \

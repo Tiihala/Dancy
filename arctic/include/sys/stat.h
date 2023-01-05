@@ -66,6 +66,8 @@ int stat(const char *path, struct stat *buffer);
 int lstat(const char *path, struct stat *buffer);
 int fstat(int fd, struct stat *buffer);
 
+int mkdir(const char *path, mode_t mode);
+
 __Dancy_Header_End
 
 #endif
