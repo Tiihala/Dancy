@@ -26,6 +26,8 @@ char *strerror(int errnum)
 {
 	const char *r;
 
+	if (errnum == 0)
+		return (char *)("Success");
 	if (errnum == EDOM)
 		return (char *)("EDOM");
 	if (errnum == EILSEQ)
@@ -114,6 +116,7 @@ char *strerror(int errnum)
 		errnum_switch_entry(EXDEV);
 
 		default:
+			errno = EINVAL;
 			r = "**** unknown error ****";
 			break;
 	}
