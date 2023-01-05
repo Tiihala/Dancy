@@ -182,6 +182,10 @@
      ./arctic/libc/spawn/spawnp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/spawn/spawnp.c
 
+./o32/_arctic/libc/stdio/rename.o: \
+     ./arctic/libc/stdio/rename.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/rename.c
+
 ./o32/_arctic/libc/stdio/snprintf.o: \
      ./arctic/libc/stdio/snprintf.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/snprintf.c
@@ -465,6 +469,10 @@
 ./o64/_arctic/libc/spawn/spawnp.o: \
      ./arctic/libc/spawn/spawnp.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/spawn/spawnp.c
+
+./o64/_arctic/libc/stdio/rename.o: \
+     ./arctic/libc/stdio/rename.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/rename.c
 
 ./o64/_arctic/libc/stdio/snprintf.o: \
      ./arctic/libc/stdio/snprintf.c $(DANCY_DEPS)

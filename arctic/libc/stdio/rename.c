@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023 Antti Tiihala
+ * Copyright (c) 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,26 +13,22 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * stdio.h
- *      The C Standard Library
+ * libc/stdio/rename.c
+ *      Rename a file or directory
  */
 
-#ifndef __DANCY_STDIO_H
-#define __DANCY_STDIO_H
+#include <__dancy/syscall.h>
+#include <errno.h>
+#include <stdio.h>
 
-#include <__dancy/core.h>
+int rename(const char *old_path, const char *new_path)
+{
+	int r;
 
-#include <stdarg.h>
+	r = (int)__dancy_syscall2(__dancy_syscall_rename, old_path, new_path);
 
-__Dancy_Header_Begin
+	if (r < 0)
+		errno = -r, r = -1;
 
-int printf(const char *format, ...);
-
-int snprintf(char *s, size_t n, const char *format, ...);
-int vsnprintf(char *s, size_t n, const char *format, va_list arg);
-
-int rename(const char *old_path, const char *new_path);
-
-__Dancy_Header_End
-
-#endif
+	return r;
+}
