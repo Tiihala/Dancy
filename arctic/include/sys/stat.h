@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -61,6 +61,10 @@ __Dancy_Header_Begin
 #define S_ISREG(mode)   (((mode) & __DANCY_S_IFMT) == __DANCY_S_IFREG)
 #define S_ISLNK(mode)   (((mode) & __DANCY_S_IFMT) == __DANCY_S_IFLNK)
 #define S_ISSOCK(mode)  (((mode) & __DANCY_S_IFMT) == __DANCY_S_IFSOCK)
+
+int stat(const char *path, struct stat *buffer);
+int lstat(const char *path, struct stat *buffer);
+int fstat(int fd, struct stat *buffer);
 
 __Dancy_Header_End
 
