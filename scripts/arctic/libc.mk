@@ -55,6 +55,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/string/strcpy.o \
  ./o32/_arctic/libc/string/strncmp.o \
  ./o32/_arctic/libc/string/strncpy.o \
+ ./o32/_arctic/libc/sys/stat.o \
  ./o32/_arctic/libc/sys/wait.o \
  ./o32/_arctic/libc/sys/waitpid.o \
  ./o32/_arctic/libc/time/gettime.o \
@@ -129,6 +130,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/string/strcpy.o \
  ./o64/_arctic/libc/string/strncmp.o \
  ./o64/_arctic/libc/string/strncpy.o \
+ ./o64/_arctic/libc/sys/stat.o \
  ./o64/_arctic/libc/sys/wait.o \
  ./o64/_arctic/libc/sys/waitpid.o \
  ./o64/_arctic/libc/time/gettime.o \
