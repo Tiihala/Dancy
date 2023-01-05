@@ -578,7 +578,7 @@ static long long dancy_syscall_stat(va_list va)
 	struct vfs_stat vstat;
 	int count, r = 0;
 
-	if (flags != 0)
+	if (flags != 0 && flags != 1)
 		return -EINVAL;
 
 	if (((addr_t)buffer % (addr_t)sizeof(void *)) != 0)
