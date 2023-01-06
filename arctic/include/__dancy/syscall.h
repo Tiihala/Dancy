@@ -184,6 +184,15 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_stat,
 
+	/*
+	 * long long __dancy_syscall_sleep(
+	 *         clockid_t id,
+	 *         int flags,
+	 *         const struct timespec *request,
+	 *         struct timespec *remain);
+	 */
+	__dancy_syscall_sleep,
+
 	__dancy_syscall_argn__
 };
 

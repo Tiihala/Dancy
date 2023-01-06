@@ -665,6 +665,85 @@ static long long dancy_syscall_stat(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_sleep(va_list va)
+{
+	clockid_t id = va_arg(va, clockid_t);
+	int flags = va_arg(va, int);
+	const struct timespec *request = va_arg(va, const struct timespec *);
+	struct timespec *remain = va_arg(va, struct timespec *);
+
+	uint64_t requested_ms;
+
+	if (id != CLOCK_REALTIME && id != CLOCK_MONOTONIC)
+		return -EINVAL;
+
+	if (flags != 0 && flags != TIMER_ABSTIME)
+		return -EINVAL;
+
+	if (((addr_t)request % (addr_t)sizeof(void *)) != 0)
+		return -EFAULT;
+
+	if (pg_check_user_read(request, sizeof(*request)))
+		return -EFAULT;
+
+	if (remain != NULL) {
+		if (((addr_t)remain % (addr_t)sizeof(void *)) != 0)
+			return -EFAULT;
+
+		if (pg_check_user_read(remain, sizeof(*remain)))
+			return -EFAULT;
+	}
+
+	if (request->tv_sec < 0 || request->tv_nsec < 0)
+		return -EINVAL;
+
+	if ((unsigned long long)request->tv_sec < 0x0000FFFFFFFFFFFFull) {
+		requested_ms = (uint64_t)(request->tv_sec * 1000);
+		requested_ms += (uint64_t)(request->tv_nsec / 1000000);
+	} else {
+		requested_ms = (uint64_t)(ULLONG_MAX);
+	}
+
+	if (requested_ms < 2)
+		requested_ms = 2;
+
+	if (flags == 0) {
+		task_sleep(requested_ms);
+		return 0;
+	}
+
+	while (id == CLOCK_REALTIME) {
+		long long t1 = (long long)(epoch_read() * 1000);
+		long long t2 = (long long)(request->tv_sec * 1000);
+		long long d = t2 - t1;
+
+		if (d == 0 && request->tv_nsec == 0)
+			break;
+		if (d <= -1000)
+			break;
+
+		if (d > 1000)
+			task_sleep((uint64_t)d);
+		else
+			task_yield();
+	}
+
+	while (id == CLOCK_MONOTONIC) {
+		long long t1 = (long long)timer_read();
+		long long t2 = (long long)(request->tv_sec * 1000);
+		long long t3 = (long long)(request->tv_nsec / 1000000);
+		long long d = (t2 + t3) - t1;
+
+		if (d <= 0)
+			break;
+
+		if (d > 10)
+			task_sleep((uint64_t)d);
+	}
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -692,6 +771,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_unlink },
 	{ dancy_syscall_rename },
 	{ dancy_syscall_stat },
+	{ dancy_syscall_sleep },
 	{ dancy_syscall_reserved }
 };
 
