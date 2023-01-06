@@ -36,6 +36,10 @@ __Dancy_Header_Begin
 #define __DANCY_MAP_ANON        (0x0020)
 #define __DANCY_MAP_ANONYMOUS   (0x0020)
 
+#define __DANCY_MS_ASYNC        (0x0001)
+#define __DANCY_MS_INVALIDATE   (0x0002)
+#define __DANCY_MS_SYNC         (0x0004)
+
 struct __dancy_mmap_options {
 	void *__address;
 	size_t __size;
