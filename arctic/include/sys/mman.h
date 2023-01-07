@@ -51,6 +51,8 @@ typedef __dancy_off_t off_t;
 #define MS_INVALIDATE   __DANCY_MS_INVALIDATE
 #define MS_SYNC         __DANCY_MS_SYNC
 
+#define MAP_FAILED      ((void *)(-1))
+
 void *mmap(void *address, size_t size,
 	int prot, int flags, int fd, off_t offset);
 
