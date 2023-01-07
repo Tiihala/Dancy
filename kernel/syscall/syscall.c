@@ -826,6 +826,31 @@ static long long dancy_syscall_mprotect(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_msync(va_list va)
+{
+	void *address = va_arg(va, void *);
+	size_t size = va_arg(va, size_t);
+	unsigned int flags = va_arg(va, unsigned int);
+
+	int ms_async = (flags & __DANCY_MS_ASYNC) ? 1 : 0;
+	int ms_sync = (flags & __DANCY_MS_SYNC) ? 1 : 0;
+
+	if ((addr_t)address < 0x80000000)
+		return -EINVAL;
+
+	flags &= (~((unsigned int)__DANCY_MS_ASYNC));
+	flags &= (~((unsigned int)__DANCY_MS_SYNC));
+	flags &= (~((unsigned int)__DANCY_MS_INVALIDATE));
+
+	if (flags != 0 || (ms_async != 0 && ms_sync != 0))
+		return -EINVAL;
+
+	if (size && pg_check_user_read(address, size))
+		return -ENOMEM;
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -857,6 +882,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_mmap },
 	{ dancy_syscall_munmap },
 	{ dancy_syscall_mprotect },
+	{ dancy_syscall_msync },
 	{ dancy_syscall_reserved }
 };
 

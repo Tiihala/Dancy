@@ -216,6 +216,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_mprotect,
 
+	/*
+	 * long long __dancy_syscall_msync(
+	 *         void *address,
+	 *         size_t size,
+	 *         int flags);
+	 */
+	__dancy_syscall_msync,
+
 	__dancy_syscall_argn__
 };
 
