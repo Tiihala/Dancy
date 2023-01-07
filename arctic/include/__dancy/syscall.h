@@ -193,6 +193,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_sleep,
 
+	/*
+	 * long long __dancy_syscall_mmap(
+	 *         void *address,
+	 *         size_t size,
+	 *         const void *options);
+	 */
+	__dancy_syscall_mmap,
+
 	__dancy_syscall_argn__
 };
 

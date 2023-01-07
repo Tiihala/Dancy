@@ -744,6 +744,55 @@ static long long dancy_syscall_sleep(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_mmap(va_list va)
+{
+	void *address = va_arg(va, void *);
+	size_t size = va_arg(va, size_t);
+	const struct __dancy_mmap_options *options = va_arg(va, const void *);
+
+	unsigned int prot, flags;
+	addr_t vaddr;
+
+	if (((addr_t)options % (addr_t)sizeof(void *)) != 0)
+		return -EFAULT;
+
+	if (pg_check_user_read(options, sizeof(*options)))
+		return -EFAULT;
+
+	if (address != options->__address)
+		return -EINVAL;
+
+	if (size == 0 || size != options->__size)
+		return -EINVAL;
+
+	if (options->__prot < 0 || options->__flags < 0)
+		return -EINVAL;
+
+	prot = (unsigned int)options->__prot;
+	prot &= (~((unsigned int)__DANCY_PROT_READ));
+	prot &= (~((unsigned int)__DANCY_PROT_WRITE));
+	prot &= (~((unsigned int)__DANCY_PROT_EXEC));
+
+	if (prot != 0)
+		return -EINVAL;
+
+	flags = (unsigned int)options->__flags;
+	flags ^= ((unsigned int)__DANCY_MAP_ANONYMOUS);
+	flags ^= ((unsigned int)__DANCY_MAP_PRIVATE);
+	flags ^= ((unsigned int)__DANCY_MAP_FIXED);
+
+	if (flags != 0)
+		return -ENOTSUP;
+
+	if ((vaddr = (addr_t)address) < 0x80000000)
+		return -ENOTSUP;
+
+	if ((addr_t)pg_map_user(vaddr, size) != vaddr)
+		return -ENOMEM;
+
+	return (long long)vaddr;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -772,6 +821,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_rename },
 	{ dancy_syscall_stat },
 	{ dancy_syscall_sleep },
+	{ dancy_syscall_mmap },
 	{ dancy_syscall_reserved }
 };
 
