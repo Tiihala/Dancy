@@ -208,6 +208,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_munmap,
 
+	/*
+	 * long long __dancy_syscall_mprotect(
+	 *         void *address,
+	 *         size_t size,
+	 *         int prot);
+	 */
+	__dancy_syscall_mprotect,
+
 	__dancy_syscall_argn__
 };
 
