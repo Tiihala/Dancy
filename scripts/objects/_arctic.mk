@@ -234,6 +234,10 @@
      ./arctic/libc/sys/mmap.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/mmap.c
 
+./o32/_arctic/libc/sys/munmap.o: \
+     ./arctic/libc/sys/munmap.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/sys/munmap.c
+
 ./o32/_arctic/libc/sys/stat.o: \
      ./arctic/libc/sys/stat.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/stat.c
@@ -549,6 +553,10 @@
 ./o64/_arctic/libc/sys/mmap.o: \
      ./arctic/libc/sys/mmap.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/sys/mmap.c
+
+./o64/_arctic/libc/sys/munmap.o: \
+     ./arctic/libc/sys/munmap.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/sys/munmap.c
 
 ./o64/_arctic/libc/sys/stat.o: \
      ./arctic/libc/sys/stat.c $(DANCY_DEPS)
