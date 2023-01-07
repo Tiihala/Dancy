@@ -42,5 +42,5 @@ void *mmap(void *address, size_t size,
 	if (r < 0)
 		return (errno = -((int)r)), MAP_FAILED;
 
-	return (void *)((unsigned long long)r);
+	return (void *)((size_t)r);
 }
