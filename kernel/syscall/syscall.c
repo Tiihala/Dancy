@@ -793,6 +793,17 @@ static long long dancy_syscall_mmap(va_list va)
 	return (long long)vaddr;
 }
 
+static long long dancy_syscall_munmap(va_list va)
+{
+	void *address = va_arg(va, void *);
+	size_t size = va_arg(va, size_t);
+
+	if ((addr_t)address < 0x80000000 || size == 0)
+		return -EINVAL;
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -822,6 +833,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_stat },
 	{ dancy_syscall_sleep },
 	{ dancy_syscall_mmap },
+	{ dancy_syscall_munmap },
 	{ dancy_syscall_reserved }
 };
 

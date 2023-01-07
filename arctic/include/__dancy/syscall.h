@@ -201,6 +201,13 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_mmap,
 
+	/*
+	 * long long __dancy_syscall_munmap(
+	 *         void *address,
+	 *         size_t size);
+	 */
+	__dancy_syscall_munmap,
+
 	__dancy_syscall_argn__
 };
 
