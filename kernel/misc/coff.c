@@ -107,8 +107,9 @@ static int coff_allocate(struct coff *coff)
 	size_t size;
 
 	vaddr -= (addr_t)coff->stack_aligned_size;
+	size = coff->stack_aligned_size - 0x1000;
 
-	if ((addr_t)pg_map_user(vaddr, coff->stack_aligned_size) != vaddr)
+	if (size && (addr_t)pg_map_user(vaddr, size) != vaddr)
 		return DE_MEMORY;
 
 	if ((coff->stack_vaddr[0] = vaddr) < 0x78000000)
