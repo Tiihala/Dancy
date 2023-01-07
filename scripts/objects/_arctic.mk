@@ -258,6 +258,10 @@
      ./arctic/libc/sys/waitpid.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/waitpid.c
 
+./o32/_arctic/libc/threads/mtx.o: \
+     ./arctic/libc/threads/mtx.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/threads/mtx.c
+
 ./o32/_arctic/libc/time/gettime.o: \
      ./arctic/libc/time/gettime.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/time/gettime.c
@@ -585,6 +589,10 @@
 ./o64/_arctic/libc/sys/waitpid.o: \
      ./arctic/libc/sys/waitpid.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/sys/waitpid.c
+
+./o64/_arctic/libc/threads/mtx.o: \
+     ./arctic/libc/threads/mtx.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/threads/mtx.c
 
 ./o64/_arctic/libc/time/gettime.o: \
      ./arctic/libc/time/gettime.c $(DANCY_DEPS)

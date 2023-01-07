@@ -25,8 +25,8 @@
 
 __Dancy_Header_Begin
 
-typedef void *mtx_t;
-typedef void *thrd_t;
+typedef struct { void *__m; } mtx_t;
+typedef struct { void *__t; } thrd_t;
 
 typedef int (*thrd_start_t)(void *);
 
