@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -195,10 +195,13 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 
 	offset = (int)((vaddr >> 12) & 0x3FF);
 
-	if ((ptr[offset] & 1) == 0)
+	if ((ptr[offset] & 1) == 0) {
 		ptr[offset] = page | page_bits;
-	else
-		mm_free_page(addr);
+	} else {
+		uint32_t old_page = ptr[offset] & 0xFFFFF000;
+		ptr[offset] = page | page_bits;
+		mm_free_page((phys_addr_t)old_page);
+	}
 
 	return 0;
 }
@@ -560,10 +563,13 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 
 	offset = (int)((vaddr >> 12) & 0x1FF);
 
-	if ((ptr[offset] & 1) == 0)
+	if ((ptr[offset] & 1) == 0) {
 		ptr[offset] = page | page_bits;
-	else
-		mm_free_page(addr);
+	} else {
+		uint64_t old_page = ptr[offset] & 0xFFFFFFFFFFFFF000ull;
+		ptr[offset] = page | page_bits;
+		mm_free_page((phys_addr_t)old_page);
+	}
 
 	return 0;
 }
