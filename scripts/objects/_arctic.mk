@@ -190,6 +190,10 @@
      ./arctic/libc/stdio/snprintf.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/snprintf.c
 
+./o32/_arctic/libc/stdlib/alloc.o: \
+     ./arctic/libc/stdlib/alloc.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/alloc.c
+
 ./o32/_arctic/libc/stdlib/qsort.o: \
      ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/qsort.c
@@ -521,6 +525,10 @@
 ./o64/_arctic/libc/stdio/snprintf.o: \
      ./arctic/libc/stdio/snprintf.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/snprintf.c
+
+./o64/_arctic/libc/stdlib/alloc.o: \
+     ./arctic/libc/stdlib/alloc.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/alloc.c
 
 ./o64/_arctic/libc/stdlib/qsort.o: \
      ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
