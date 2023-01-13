@@ -109,6 +109,7 @@ DANCY_HEADERS= \
  ./arctic/include/sys/wait.h \
  ./arctic/include/assert.h \
  ./arctic/include/ctype.h \
+ ./arctic/include/dirent.h \
  ./arctic/include/errno.h \
  ./arctic/include/fcntl.h \
  ./arctic/include/signal.h \
