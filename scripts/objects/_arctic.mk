@@ -114,6 +114,10 @@
      ./arctic/libc/ctype/toupper.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/ctype/toupper.c
 
+./o32/_arctic/libc/dirent/dir.o: \
+     ./arctic/libc/dirent/dir.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/dirent/dir.c
+
 ./o32/_arctic/libc/errno/errno.o: \
      ./arctic/libc/errno/errno.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/errno/errno.c
@@ -449,6 +453,10 @@
 ./o64/_arctic/libc/ctype/toupper.o: \
      ./arctic/libc/ctype/toupper.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/ctype/toupper.c
+
+./o64/_arctic/libc/dirent/dir.o: \
+     ./arctic/libc/dirent/dir.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/dirent/dir.c
 
 ./o64/_arctic/libc/errno/errno.o: \
      ./arctic/libc/errno/errno.c $(DANCY_DEPS)
