@@ -34,7 +34,11 @@ struct dirent {
 	char d_name[256];
 };
 
-typedef struct { void *__data; } DIR;
+typedef struct {
+	int __state;
+	int __fd;
+	void *__data;
+} DIR;
 
 DIR *opendir(const char *name);
 DIR *fdopendir(int fd);
