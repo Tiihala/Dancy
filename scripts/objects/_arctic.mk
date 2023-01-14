@@ -122,6 +122,10 @@
      ./arctic/libc/dirent/dirfd.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/dirent/dirfd.c
 
+./o32/_arctic/libc/dirent/rewind.o: \
+     ./arctic/libc/dirent/rewind.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/dirent/rewind.c
+
 ./o32/_arctic/libc/errno/errno.o: \
      ./arctic/libc/errno/errno.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/errno/errno.c
@@ -465,6 +469,10 @@
 ./o64/_arctic/libc/dirent/dirfd.o: \
      ./arctic/libc/dirent/dirfd.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/dirent/dirfd.c
+
+./o64/_arctic/libc/dirent/rewind.o: \
+     ./arctic/libc/dirent/rewind.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/dirent/rewind.c
 
 ./o64/_arctic/libc/errno/errno.o: \
      ./arctic/libc/errno/errno.c $(DANCY_DEPS)

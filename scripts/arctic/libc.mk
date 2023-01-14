@@ -32,6 +32,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/ctype/toupper.o \
  ./o32/_arctic/libc/dirent/dir.o \
  ./o32/_arctic/libc/dirent/dirfd.o \
+ ./o32/_arctic/libc/dirent/rewind.o \
  ./o32/_arctic/libc/errno/errno.o \
  ./o32/_arctic/libc/fcntl/fcntl.o \
  ./o32/_arctic/libc/fcntl/open.o \
@@ -120,6 +121,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/ctype/toupper.o \
  ./o64/_arctic/libc/dirent/dir.o \
  ./o64/_arctic/libc/dirent/dirfd.o \
+ ./o64/_arctic/libc/dirent/rewind.o \
  ./o64/_arctic/libc/errno/errno.o \
  ./o64/_arctic/libc/fcntl/fcntl.o \
  ./o64/_arctic/libc/fcntl/open.o \
