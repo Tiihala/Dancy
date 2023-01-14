@@ -105,7 +105,7 @@ static int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat)
 	if (stat)
 		memset(stat, 0, sizeof(*stat));
 
-	return DE_UNSUPPORTED;
+	return 0;
 }
 
 static int vfs_default_truncate(struct vfs_node *node, uint64_t size)
