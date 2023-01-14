@@ -885,8 +885,11 @@ static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 
 	leave_fat(node);
 
-	if (r)
+	if (r) {
+		if (!strcmp(&data->path[0], "/."))
+			return 0;
 		return translate_error(r);
+	}
 
 	stat->size = (uint64_t)LE32(&record[28]);
 
