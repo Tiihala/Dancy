@@ -24,7 +24,7 @@ static int epoch_lock;
 static uint64_t cached_epoch;
 static uint64_t cached_timer;
 
-static uint64_t fast_read(uint64_t max_msec_diff)
+static uint64_t fast_read(int force_read)
 {
 	void *lock_local = &epoch_lock;
 	uint64_t msec, retval = 0;
@@ -32,11 +32,9 @@ static uint64_t fast_read(uint64_t max_msec_diff)
 	spin_enter(&lock_local);
 	msec = timer_read();
 
-	if (cached_epoch) {
+	if (cached_epoch || force_read) {
 		uint64_t msec_diff = msec - cached_timer;
-
-		if (msec_diff < max_msec_diff)
-			retval = cached_epoch + msec_diff / 1000;
+		retval = cached_epoch + msec_diff;
 	}
 
 	spin_leave(&lock_local);
@@ -67,7 +65,7 @@ static uint64_t slow_read(void)
 		if ((s = epoch_seconds(&buf[0])) < 0)
 			return 0;
 
-		retval = (uint64_t)s;
+		retval = (uint64_t)(s * 1000);
 	}
 
 	spin_enter(&lock_local);
@@ -131,32 +129,34 @@ unsigned long long epoch_read(void)
 {
 	uint64_t retval;
 
-	if ((retval = fast_read(60000)) != 0)
+	if ((retval = fast_read(0)) != 0)
+		return (unsigned long long)(retval / 1000);
+
+	if ((retval = slow_read()) != 0)
+		return (unsigned long long)(retval / 1000);
+
+	return (unsigned long long)(fast_read(1) / 1000);
+}
+
+unsigned long long epoch_read_ms(void)
+{
+	uint64_t retval;
+
+	if ((retval = fast_read(0)) != 0)
 		return (unsigned long long)retval;
 
 	if ((retval = slow_read()) != 0)
 		return (unsigned long long)retval;
 
-	retval = fast_read(ULLONG_MAX);
-
-	return (unsigned long long)retval;
-}
-
-unsigned long long epoch_read_ms(void)
-{
-	return 0;
+	return (unsigned long long)fast_read(1);
 }
 
 void epoch_sync(void)
 {
-	void *lock_local = &epoch_lock;
+	uint64_t ms, next_ms;
 
-	slow_read();
-	spin_enter(&lock_local);
+	ms = next_ms = slow_read();
 
-	cached_timer = 0;
-	cached_epoch = 0;
-
-	spin_leave(&lock_local);
-	slow_read();
+	while (ms != 0 && ms == next_ms)
+		next_ms = slow_read();
 }
