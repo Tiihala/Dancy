@@ -886,8 +886,11 @@ static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 	leave_fat(node);
 
 	if (r) {
-		if (!strcmp(&data->path[0], "/."))
+		if (!strcmp(&data->path[0], "/.")) {
+			if (node->node_stat)
+				memcpy(stat, node->node_stat, sizeof(*stat));
 			return 0;
+		}
 		return translate_error(r);
 	}
 
