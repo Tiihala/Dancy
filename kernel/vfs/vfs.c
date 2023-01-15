@@ -162,12 +162,17 @@ static int mount_locked(struct vfs_name *vname, struct vfs_node *node)
 
 int vfs_mount(const char *name, struct vfs_node *node)
 {
+	size_t stat_size = sizeof(struct vfs_stat);
+	struct vfs_stat target_node_stat;
 	struct vfs_node *target_node;
 	struct vfs_name vname;
 	int r;
 
 	if ((r = vfs_open(name, &target_node, 0, 0)) != 0)
 		return r;
+
+	if (target_node->n_stat(target_node, &target_node_stat))
+		memset(&target_node_stat, 0, stat_size);
 
 	if (target_node->type != node->type) {
 		int type_incompatible = 0;
@@ -194,7 +199,11 @@ int vfs_mount(const char *name, struct vfs_node *node)
 		return DE_UNEXPECTED;
 	}
 
-	r = mount_locked(&vname, node);
+	if ((r = mount_locked(&vname, node)) == 0) {
+		if ((node->node_stat = malloc(stat_size)) != NULL)
+			memcpy(node->node_stat, &target_node_stat, stat_size);
+	}
+
 	mtx_unlock(&mount_mtx);
 
 	target_node->n_release(&target_node);

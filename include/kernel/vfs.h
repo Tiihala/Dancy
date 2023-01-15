@@ -56,6 +56,7 @@ struct vfs_node {
 
 	void *internal_data;
 	event_t *internal_event;
+	struct vfs_stat *node_stat;
 
 	void (*n_release)(struct vfs_node **node);
 
