@@ -39,8 +39,12 @@ static long long dancy_syscall_time(va_list va)
 	memset(&t, 0, sizeof(t));
 
 	if (id == CLOCK_REALTIME) {
-		r = (long long)epoch_read();
+		uint64_t ms64 = (uint64_t)epoch_read_ms();
+		uint32_t ms32 = (uint32_t)ms64;
+
+		r = (long long)(ms64 / 1000);
 		t.tv_sec = (time_t)r;
+		t.tv_nsec = (long)(ms32 % 1000) * 1000000L;
 
 	} else if (id == CLOCK_MONOTONIC) {
 		uint64_t ms64 = timer_read();
