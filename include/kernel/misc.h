@@ -50,6 +50,7 @@ phys_addr_t dma_set_floppy_write(size_t size);
  * Declarations of epoch.c
  */
 unsigned long long epoch_read(void);
+unsigned long long epoch_read_ms(void);
 void epoch_sync(void);
 
 /*

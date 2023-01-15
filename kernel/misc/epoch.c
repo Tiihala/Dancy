@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -82,19 +82,22 @@ static uint64_t slow_read(void)
 
 int epoch_init(void)
 {
+	typedef unsigned long long (*epoch_read_func)(void);
 	int state = 0;
 	int i;
 
 #ifdef DANCY_32
-	const char *name[2] = { "_epoch_read", "_epoch_sync" };
+	const char *name[3] = {
+		"_epoch_read", "_epoch_read_ms", "_epoch_sync" };
 #else
-	const char *name[2] = { "epoch_read", "epoch_sync" };
+	const char *name[3] = {
+		"epoch_read", "epoch_read_ms", "epoch_sync" };
 #endif
 
 	for (i = 0; i < kernel->symbol_count; i++) {
 		if (!strcmp(kernel->symbol[i].name, name[0])) {
 			addr_t a = (addr_t)kernel->symbol[i].value;
-			kernel->epoch_read = (unsigned long long (*)(void))a;
+			kernel->epoch_read = (epoch_read_func)a;
 			state += 1;
 			break;
 		}
@@ -103,13 +106,22 @@ int epoch_init(void)
 	for (i = 0; i < kernel->symbol_count; i++) {
 		if (!strcmp(kernel->symbol[i].name, name[1])) {
 			addr_t a = (addr_t)kernel->symbol[i].value;
+			kernel->epoch_read_ms = (epoch_read_func)a;
+			state += 1;
+			break;
+		}
+	}
+
+	for (i = 0; i < kernel->symbol_count; i++) {
+		if (!strcmp(kernel->symbol[i].name, name[2])) {
+			addr_t a = (addr_t)kernel->symbol[i].value;
 			kernel->epoch_sync = (void (*)(void))a;
 			state += 1;
 			break;
 		}
 	}
 
-	if (state != 2)
+	if (state != 3)
 		return DE_UNEXPECTED;
 
 	return 0;
@@ -128,6 +140,11 @@ unsigned long long epoch_read(void)
 	retval = fast_read(ULLONG_MAX);
 
 	return (unsigned long long)retval;
+}
+
+unsigned long long epoch_read_ms(void)
+{
+	return 0;
 }
 
 void epoch_sync(void)

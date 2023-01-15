@@ -214,6 +214,7 @@ struct kernel_table {
 	 * System date and time functions.
 	 */
 	unsigned long long (*epoch_read)(void);
+	unsigned long long (*epoch_read_ms)(void);
 	void (*epoch_sync)(void);
 };
 
