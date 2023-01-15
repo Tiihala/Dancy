@@ -22,8 +22,6 @@
 static struct vfs_node null_node;
 static struct vfs_node zero_node;
 
-static dancy_time_t default_tv_sec;
-
 static int n_read_null(struct vfs_node *node,
 	uint64_t offset, size_t *size, void *buffer)
 {
@@ -56,19 +54,6 @@ static int n_write(struct vfs_node *node,
 	return 0;
 }
 
-static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
-{
-	(void)node;
-
-	memset(stat, 0, sizeof(*stat));
-
-	stat->access_time.tv_sec = default_tv_sec;
-	stat->creation_time.tv_sec = default_tv_sec;
-	stat->write_time.tv_sec = default_tv_sec;
-
-	return 0;
-}
-
 int zero_init(void)
 {
 	static int run_once;
@@ -97,15 +82,11 @@ int zero_init(void)
 	null_node.type = vfs_type_character;
 	null_node.n_read = n_read_null;
 	null_node.n_write = n_write;
-	null_node.n_stat = n_stat;
 
 	vfs_init_node(&zero_node, 0);
 	zero_node.type = vfs_type_character;
 	zero_node.n_read = n_read_zero;
 	zero_node.n_write = n_write;
-	zero_node.n_stat = n_stat;
-
-	default_tv_sec = (dancy_time_t)epoch_read();
 
 	if ((r = vfs_mount("/dev/null", &null_node)) != 0)
 		return r;
