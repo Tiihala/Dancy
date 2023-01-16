@@ -716,6 +716,38 @@ static long long dancy_syscall_sleep(va_list va)
 		return 0;
 	}
 
+	while ((flags & TIMER_ABSTIME) != 0) {
+		uint64_t ms64;
+		uint32_t ms32;
+		struct timespec t;
+		time_t d;
+
+		if (id == CLOCK_REALTIME)
+			ms64 = (uint64_t)epoch_read_ms();
+		else
+			ms64 = (uint64_t)timer_read();
+
+		ms32 = (uint32_t)ms64;
+
+		t.tv_sec = (time_t)(ms64 / 1000);
+		t.tv_nsec = (long)(ms32 % 1000) * 1000000L;
+
+		if (request->tv_sec < t.tv_sec)
+			break;
+
+		d = request->tv_sec - t.tv_sec;
+
+		if (d > 0) {
+			task_sleep((uint64_t)((d > 1) ? 1000 : 10));
+			continue;
+		}
+
+		if (request->tv_nsec <= t.tv_nsec)
+			break;
+
+		task_yield();
+	}
+
 	return 0;
 }
 
