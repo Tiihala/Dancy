@@ -716,35 +716,6 @@ static long long dancy_syscall_sleep(va_list va)
 		return 0;
 	}
 
-	while (id == CLOCK_REALTIME) {
-		long long t1 = (long long)(epoch_read() * 1000);
-		long long t2 = (long long)(request->tv_sec * 1000);
-		long long d = t2 - t1;
-
-		if (d == 0 && request->tv_nsec == 0)
-			break;
-		if (d <= -1000)
-			break;
-
-		if (d > 1000)
-			task_sleep((uint64_t)d);
-		else
-			task_yield();
-	}
-
-	while (id == CLOCK_MONOTONIC) {
-		long long t1 = (long long)timer_read();
-		long long t2 = (long long)(request->tv_sec * 1000);
-		long long t3 = (long long)(request->tv_nsec / 1000000);
-		long long d = (t2 + t3) - t1;
-
-		if (d <= 0)
-			break;
-
-		if (d > 10)
-			task_sleep((uint64_t)d);
-	}
-
 	return 0;
 }
 
