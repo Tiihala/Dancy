@@ -763,12 +763,12 @@ int floppy_init(void)
 	cpu_add32(&floppy_state, 1);
 
 	if (drive_data[0].type) {
-		if ((r = mount_floppy(0, "/mnt/floppy_a/")) != 0)
+		if ((r = mount_floppy(0, "/mnt/drive_a/")) != 0)
 			return r;
 	}
 
 	if (drive_data[1].type) {
-		if ((r = mount_floppy(1, "/mnt/floppy_b/")) != 0)
+		if ((r = mount_floppy(1, "/mnt/drive_b/")) != 0)
 			return r;
 	}
 
