@@ -824,7 +824,7 @@ static int n_rename(struct vfs_node *node,
 	}
 
 	if ((r = enter_fat(node)) != 0)
-		return r;
+		return free(tmp_buf), r;
 
 	instance = data->io->instance;
 
