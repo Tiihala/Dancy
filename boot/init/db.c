@@ -216,11 +216,11 @@ int db_read(const char *name, unsigned char **buf, size_t *size)
 
 		if (!err) {
 			size_t out_size = (size_t)pk_size_uncompressed;
-			void *out = malloc(out_size);
+			void *out;
 
 			if (!out_size)
 				return 0;
-			if (!out)
+			if ((out = malloc(out_size)) == NULL)
 				return 2;
 
 			if (!pk_method) {
