@@ -126,7 +126,7 @@ int mm_init(void)
 		next = kernel->memory_map[i + 1].base;
 
 		if (next != 0 && base > next)
-			return DE_UNEXPECTED;
+			return free(mm_array), DE_UNEXPECTED;
 
 		if (base < 0x10000)
 			base = 0x10000;
