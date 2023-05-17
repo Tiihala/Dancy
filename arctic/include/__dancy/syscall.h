@@ -224,6 +224,16 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_msync,
 
+	/*
+	 * long long __dancy_syscall_getpid(void);
+	 */
+	__dancy_syscall_getpid,
+
+	/*
+	 * long long __dancy_syscall_getppid(void);
+	 */
+	__dancy_syscall_getppid,
+
 	__dancy_syscall_argn__
 };
 

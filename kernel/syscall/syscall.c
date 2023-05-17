@@ -858,6 +858,16 @@ static long long dancy_syscall_msync(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_getpid(va_list va)
+{
+	return (void)va, (long long)task_current()->id;
+}
+
+static long long dancy_syscall_getppid(va_list va)
+{
+	return (void)va, (long long)task_current()->id_owner;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -890,6 +900,8 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_munmap },
 	{ dancy_syscall_mprotect },
 	{ dancy_syscall_msync },
+	{ dancy_syscall_getpid },
+	{ dancy_syscall_getppid },
 	{ dancy_syscall_reserved }
 };
 
