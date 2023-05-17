@@ -64,6 +64,8 @@ int ftruncate(int fd, off_t length);
 int truncate(const char *path, off_t length);
 
 pid_t getpid(void);
+pid_t getppid(void);
+
 void _exit(int status);
 char *getcwd(char *buffer, size_t size);
 
