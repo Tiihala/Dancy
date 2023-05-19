@@ -48,7 +48,8 @@ static struct kernel_object kernel_objects[] = {
 	{ 0, NULL, NULL, OBJECT_PREFIX "ps2.at" },
 	{ 0, NULL, NULL, OBJECT_PREFIX "syscall.at" },
 	{ 1, NULL, NULL, OBJECT_PREFIX "acpica.at" },
-	{ 1, NULL, NULL, OBJECT_PREFIX "debug.at" }
+	{ 1, NULL, NULL, OBJECT_PREFIX "debug.at" },
+	{ 0, NULL, NULL, OBJECT_PREFIX "run.at" }
 };
 
 static struct ld_object *ld_obj_array = NULL;

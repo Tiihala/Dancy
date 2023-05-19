@@ -52,6 +52,7 @@ distclean: clean
 !include .\scripts\at\misc.mk
 !include .\scripts\at\pci.mk
 !include .\scripts\at\ps2.mk
+!include .\scripts\at\run.mk
 !include .\scripts\at\sched.mk
 !include .\scripts\at\syscall.mk
 !include .\scripts\at\vfs.mk

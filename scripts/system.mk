@@ -18,6 +18,7 @@ DANCY_DB_100_FILES= \
  ./o32/misc.at \
  ./o32/pci.at \
  ./o32/ps2.at \
+ ./o32/run.at \
  ./o32/sched.at \
  ./o32/syscall.at \
  ./o32/vfs.at \
@@ -30,6 +31,7 @@ DANCY_DB_200_FILES= \
  ./o64/misc.at \
  ./o64/pci.at \
  ./o64/ps2.at \
+ ./o64/run.at \
  ./o64/sched.at \
  ./o64/syscall.at \
  ./o64/vfs.at \

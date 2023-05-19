@@ -55,7 +55,8 @@ static struct {
 	{ 0, 0, SYMBOL_PREFIX "file_init", "File" },
 	{ 0, 0, SYMBOL_PREFIX "syscall_init", "System Calls" },
 	{ 1, 0, SYMBOL_PREFIX "acpios_init", "ACPICA" },
-	{ 1, 0, SYMBOL_PREFIX "debug_init", "Debug" }
+	{ 1, 0, SYMBOL_PREFIX "debug_init", "Debug" },
+	{ 0, 0, SYMBOL_PREFIX "run_init", "Run Executable" }
 };
 
 static int ap_count;

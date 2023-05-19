@@ -152,6 +152,9 @@
 ./o32/ps2/mouse.o: ./kernel/ps2/mouse.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/ps2/mouse.c
 
+./o32/run/run.o: ./kernel/run/run.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/run/run.c
+
 ./o32/sched/sched.o: ./kernel/sched/sched.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/sched/sched.c
 
@@ -340,6 +343,9 @@
 
 ./o64/ps2/mouse.o: ./kernel/ps2/mouse.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/ps2/mouse.c
+
+./o64/run/run.o: ./kernel/run/run.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/run/run.c
 
 ./o64/sched/sched.o: ./kernel/sched/sched.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/sched/sched.c
