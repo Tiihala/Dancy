@@ -64,6 +64,7 @@ enum dancy_error {
 #include <kernel/misc.h>
 #include <kernel/pci.h>
 #include <kernel/ps2.h>
+#include <kernel/run.h>
 #include <kernel/sched.h>
 #include <kernel/syscall.h>
 #include <kernel/table.h>
