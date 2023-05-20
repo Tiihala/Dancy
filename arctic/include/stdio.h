@@ -21,10 +21,52 @@
 #define __DANCY_STDIO_H
 
 #include <__dancy/core.h>
+#include <__dancy/seek.h>
+#include <__dancy/ssize.h>
 
 #include <stdarg.h>
 
 __Dancy_Header_Begin
+
+#ifndef __DANCY_TYPEDEF_OFF_T
+#define __DANCY_TYPEDEF_OFF_T
+typedef __dancy_off_t off_t;
+#endif
+
+struct __dancy_fpos_t {
+	__dancy_off_t __position;
+};
+
+struct __dancy_FILE {
+	int __reserved;
+	int __fd;
+};
+
+typedef struct __dancy_fpos_t fpos_t;
+typedef struct __dancy_FILE FILE;
+
+#define BUFSIZ (4096)
+#define EOF    (-1)
+
+#define _IOFBF (0)
+#define _IOLBF (1)
+#define _IONBF (2)
+
+#define FILENAME_MAX (255)
+#define FOPEN_MAX    (32)
+#define TMP_MAX      (10000)
+
+#define L_ctermid (16)
+#define L_tmpnam  (16)
+
+#define P_tmpdir "/tmp"
+
+extern FILE *stdin;
+extern FILE *stdout;
+extern FILE *stderr;
+
+void __dancy_stdio_init(void);
+void __dancy_stdio_fini(void);
 
 int printf(const char *format, ...);
 
