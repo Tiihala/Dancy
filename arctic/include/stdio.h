@@ -37,9 +37,30 @@ struct __dancy_fpos_t {
 	__dancy_off_t __position;
 };
 
+#define __DANCY_FILE_STATIC_BUFFER (1u << 16)
+#define __DANCY_FILE_STATIC_NAME   (1u << 17)
+#define __DANCY_FILE_WRITTEN_BYTES (1u << 18)
+
 struct __dancy_FILE {
 	int __reserved;
 	int __fd;
+
+	int __i;
+	int __error;
+	int __eof;
+	int __ungetc;
+
+	unsigned int __mode;
+	unsigned int __state;
+
+	__dancy_mtx_t __mtx;
+
+	int __buffer_start;
+	int __buffer_end;
+	unsigned char *__buffer;
+	size_t __buffer_size;
+
+	char *__name;
 };
 
 typedef struct __dancy_fpos_t fpos_t;
@@ -65,8 +86,22 @@ extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;
 
+extern FILE *__dancy_io_array[];
+extern __dancy_mtx_t __dancy_io_array_mtx;
+
 void __dancy_stdio_init(void);
 void __dancy_stdio_fini(void);
+int __dancy_internal_fflush(FILE *stream);
+
+FILE *fopen(const char *path, const char *mode);
+int fclose(FILE *stream);
+int fflush(FILE *stream);
+
+size_t fread(void *buffer, size_t size, size_t nmemb, FILE *stream);
+size_t fwrite(const void *buffer, size_t size, size_t nmemb, FILE *stream);
+
+int fgetc(FILE *stream);
+int fputc(int c, FILE *stream);
 
 int printf(const char *format, ...);
 
