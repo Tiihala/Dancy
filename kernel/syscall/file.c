@@ -290,6 +290,11 @@ int file_read(int fd, size_t *size, void *buffer)
 
 				*size = requested_size;
 				r = n->n_read(n, o, size, buffer);
+
+				if (!n->internal_event) {
+					if (*size == 0 && r == 0)
+						break;
+				}
 			}
 
 			fte->offset += (uint64_t)(*size);
