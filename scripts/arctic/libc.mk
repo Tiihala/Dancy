@@ -52,6 +52,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/spawn/spawnp.o \
  ./o32/_arctic/libc/stdio/_io.o \
  ./o32/_arctic/libc/stdio/fclose.o \
+ ./o32/_arctic/libc/stdio/fflush.o \
  ./o32/_arctic/libc/stdio/fputc.o \
  ./o32/_arctic/libc/stdio/rename.o \
  ./o32/_arctic/libc/stdio/snprintf.o \
@@ -146,6 +147,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/spawn/spawnp.o \
  ./o64/_arctic/libc/stdio/_io.o \
  ./o64/_arctic/libc/stdio/fclose.o \
+ ./o64/_arctic/libc/stdio/fflush.o \
  ./o64/_arctic/libc/stdio/fputc.o \
  ./o64/_arctic/libc/stdio/rename.o \
  ./o64/_arctic/libc/stdio/snprintf.o \
