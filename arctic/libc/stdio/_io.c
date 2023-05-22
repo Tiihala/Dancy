@@ -86,7 +86,7 @@ void __dancy_stdio_init(void)
 	default_streams[2].__i = 2;
 	default_streams[2].__mode = O_WRONLY;
 	default_streams[2].__state = _IONBF;
-	default_streams[1].__state |= __DANCY_FILE_STATIC_NAME;
+	default_streams[2].__state |= __DANCY_FILE_STATIC_NAME;
 
 	mtx_init(&default_streams[2].__mtx, mtx_plain);
 	default_streams[2].__name = &name_stderr[0];
