@@ -39,6 +39,12 @@ static int internal_fgetc(FILE *stream)
 		}
 	}
 
+	if (stream->__ungetc) {
+		int c = (int)(stream->__ungetc & 0xFF);
+		stream->__ungetc = 0;
+		return c;
+	}
+
 	if (buffer_mode == _IOFBF || buffer_mode == _IOLBF) {
 		if (stream->__buffer_start >= stream->__buffer_end) {
 			size_t size = stream->__buffer_size;
