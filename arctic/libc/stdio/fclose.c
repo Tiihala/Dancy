@@ -36,15 +36,17 @@ int fclose(FILE *stream)
 	}
 
 	if (mtx_lock(&stream->__mtx) == thrd_success) {
+		unsigned int state = stream->__state;
+
 		r = __dancy_internal_fflush(stream);
 
 		if (close(stream->__fd) == -1)
 			r = EOF;
 
-		if ((stream->__state & __DANCY_FILE_STATIC_BUFFER) == 0)
+		if ((state & __DANCY_FILE_STATIC_BUFFER) == 0)
 			free(stream->__buffer), stream->__buffer = NULL;
 
-		if ((stream->__state & __DANCY_FILE_STATIC_NAME) == 0)
+		if ((state & __DANCY_FILE_STATIC_NAME) == 0)
 			free(stream->__name), stream->__name = NULL;
 
 		mtx_unlock(&stream->__mtx);
@@ -52,6 +54,9 @@ int fclose(FILE *stream)
 
 		memset(stream, 0, sizeof(FILE));
 		stream->__fd = -1;
+
+		if ((state & __DANCY_FILE_MALLOC_STRUCT) != 0)
+			free(stream);
 	}
 
 	return r;

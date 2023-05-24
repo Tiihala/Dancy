@@ -40,6 +40,7 @@ struct __dancy_fpos_t {
 #define __DANCY_FILE_STATIC_BUFFER (1u << 16)
 #define __DANCY_FILE_STATIC_NAME   (1u << 17)
 #define __DANCY_FILE_WRITTEN_BYTES (1u << 18)
+#define __DANCY_FILE_MALLOC_STRUCT (1u << 19)
 
 struct __dancy_FILE {
 	int __reserved;
