@@ -79,10 +79,6 @@ static int internal_fputc(int c, FILE *stream)
 			return (errno = EIO), EOF;
 		}
 
-		stream->__state &= ~__DANCY_FILE_WRITTEN_BYTES;
-		stream->__buffer_start = 0;
-		stream->__buffer_end = 0;
-
 		return c;
 	}
 
