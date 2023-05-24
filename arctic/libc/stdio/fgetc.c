@@ -92,10 +92,6 @@ static int internal_fgetc(FILE *stream)
 			return EOF;
 		}
 
-		stream->__state &= ~__DANCY_FILE_WRITTEN_BYTES;
-		stream->__buffer_start = 0;
-		stream->__buffer_end = 0;
-
 		return (int)buffer[0];
 	}
 
