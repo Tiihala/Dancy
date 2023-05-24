@@ -75,8 +75,9 @@ static size_t my_write(const unsigned char *buffer, size_t size, FILE *stream)
 			stream->__error = 1;
 		else if (w == 0)
 			stream->__eof = 1;
+		else
+			ret_size += (size_t)w;
 
-		ret_size += (size_t)w;
 		return ret_size;
 	}
 
