@@ -105,6 +105,7 @@ int fgetc(FILE *stream);
 int fputc(int c, FILE *stream);
 
 void clearerr(FILE *stream);
+int feof(FILE *stream);
 
 int printf(const char *format, ...);
 
