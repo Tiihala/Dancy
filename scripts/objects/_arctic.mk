@@ -210,6 +210,10 @@
      ./arctic/libc/stdio/feof.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/feof.c
 
+./o32/_arctic/libc/stdio/ferror.o: \
+     ./arctic/libc/stdio/ferror.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/ferror.c
+
 ./o32/_arctic/libc/stdio/fflush.o: \
      ./arctic/libc/stdio/fflush.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fflush.c
@@ -601,6 +605,10 @@
 ./o64/_arctic/libc/stdio/feof.o: \
      ./arctic/libc/stdio/feof.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/feof.c
+
+./o64/_arctic/libc/stdio/ferror.o: \
+     ./arctic/libc/stdio/ferror.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/ferror.c
 
 ./o64/_arctic/libc/stdio/fflush.o: \
      ./arctic/libc/stdio/fflush.c $(DANCY_DEPS)
