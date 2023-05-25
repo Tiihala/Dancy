@@ -198,6 +198,10 @@
      ./arctic/libc/stdio/_io.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/_io.c
 
+./o32/_arctic/libc/stdio/clearerr.o: \
+     ./arctic/libc/stdio/clearerr.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/clearerr.c
+
 ./o32/_arctic/libc/stdio/fclose.o: \
      ./arctic/libc/stdio/fclose.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fclose.c
@@ -581,6 +585,10 @@
 ./o64/_arctic/libc/stdio/_io.o: \
      ./arctic/libc/stdio/_io.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/_io.c
+
+./o64/_arctic/libc/stdio/clearerr.o: \
+     ./arctic/libc/stdio/clearerr.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/clearerr.c
 
 ./o64/_arctic/libc/stdio/fclose.o: \
      ./arctic/libc/stdio/fclose.c $(DANCY_DEPS)
