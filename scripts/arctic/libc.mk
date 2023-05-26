@@ -61,6 +61,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/stdio/fread.o \
  ./o32/_arctic/libc/stdio/fwrite.o \
  ./o32/_arctic/libc/stdio/rename.o \
+ ./o32/_arctic/libc/stdio/setvbuf.o \
  ./o32/_arctic/libc/stdio/snprintf.o \
  ./o32/_arctic/libc/stdlib/alloc.o \
  ./o32/_arctic/libc/stdlib/qsort.o \
@@ -162,6 +163,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/stdio/fread.o \
  ./o64/_arctic/libc/stdio/fwrite.o \
  ./o64/_arctic/libc/stdio/rename.o \
+ ./o64/_arctic/libc/stdio/setvbuf.o \
  ./o64/_arctic/libc/stdio/snprintf.o \
  ./o64/_arctic/libc/stdlib/alloc.o \
  ./o64/_arctic/libc/stdlib/qsort.o \

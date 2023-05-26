@@ -108,6 +108,8 @@ void clearerr(FILE *stream);
 int feof(FILE *stream);
 int ferror(FILE *stream);
 
+int setvbuf(FILE *stream, char *buffer, int mode, size_t size);
+
 int printf(const char *format, ...);
 
 int snprintf(char *s, size_t n, const char *format, ...);
