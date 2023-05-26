@@ -58,6 +58,8 @@ static int my_setvbuf(FILE *stream, char *buffer, int mode, size_t size)
 
 	if (dynamic_buffer)
 		stream->__state &= ~__DANCY_FILE_STATIC_BUFFER;
+	else
+		stream->__state |= __DANCY_FILE_STATIC_BUFFER;
 
 	stream->__buffer = (unsigned char *)buffer;
 	stream->__buffer_size = size;
