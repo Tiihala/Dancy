@@ -112,6 +112,7 @@ void setbuf(FILE *stream, char *buffer);
 int setvbuf(FILE *stream, char *buffer, int mode, size_t size);
 
 int printf(const char *format, ...);
+int fprintf(FILE *stream, const char *format, ...);
 
 int snprintf(char *s, size_t n, const char *format, ...);
 int vsnprintf(char *s, size_t n, const char *format, va_list arg);
