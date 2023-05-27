@@ -669,6 +669,22 @@ void task_exit(int retval)
 
 	pg_delete();
 
+	if (current->id == 1) {
+		char buffer[64];
+
+		while (!retval)
+			task_wait_descendant(NULL, NULL);
+
+		if ((retval & 127) != 0)
+			snprintf(&buffer[0], sizeof(buffer),
+				"TASK ID 1, SIGNAL %d", retval & 127);
+		else
+			snprintf(&buffer[0], sizeof(buffer),
+				"TASK ID 1, ERROR %d", (retval >> 8) & 255);
+
+		panic(&buffer[0]);
+	}
+
 	current->retval = retval;
 
 	if (!current->id_owner || !spin_trylock(&current->stopped))
