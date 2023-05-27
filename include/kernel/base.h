@@ -131,6 +131,11 @@ void idt_install_asm(int num, const uint8_t asm_handler[]);
 void idt_load(const void *idt_ptr);
 
 /*
+ * Declarations of idt_user.c
+ */
+int idt_user_exception(int num, void *stack);
+
+/*
  * Declarations of irq.c
  */
 extern void (*irq_handler_apic)(int irq);

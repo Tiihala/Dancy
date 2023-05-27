@@ -481,6 +481,24 @@ void idt_handler(int num, void *stack)
 	if (num == 0xFF)
 		return;
 
+	/*
+	 * User space exceptions.
+	 */
+	if (num >= 0x00 && num <= 0x1F && num != 0x02) {
+		cpu_native_t *p = stack;
+		cpu_native_t cs = p[1];
+		int r = 1;
+
+		if ((cs & 3) == 3) {
+			cpu_ints(1);
+			r = idt_user_exception(num, stack);
+			cpu_ints(0);
+		}
+
+		if (r == 0)
+			return;
+	}
+
 	idt_panic(num, stack, NULL);
 }
 
