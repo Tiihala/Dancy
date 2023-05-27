@@ -21,5 +21,25 @@
 
 int idt_user_exception(int num, void *stack)
 {
+	const cpu_native_t *p = stack;
+
+	/*
+	 * Page-Fault Exception
+	 */
+	if (num == 14) {
+		const cpu_native_t stack_min = 0x7FC00000;
+		const cpu_native_t stack_max = 0x7FFFFFFF;
+
+		cpu_native_t code = p[-1];
+		cpu_native_t cr2 = cpu_read_cr2();
+
+		if ((code & 1) == 0 && cr2 >= stack_min && cr2 <= stack_max) {
+			if (pg_map_user((addr_t)cr2, 1))
+				return 0;
+		}
+
+		task_exit(SIGSEGV);
+	}
+
 	return 1;
 }
