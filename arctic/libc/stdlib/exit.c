@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,39 +13,24 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * stdlib.h
+ * libc/stdlib/exit.c
  *      The C Standard Library
  */
 
-#ifndef __DANCY_STDLIB_H
-#define __DANCY_STDLIB_H
+#include <__dancy/syscall.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <threads.h>
 
-#include <__dancy/core.h>
+void _Exit(int status)
+{
+	__dancy_syscall1(__dancy_syscall_exit, status);
+}
 
-__Dancy_Header_Begin
+void exit(int status)
+{
+	__dancy_atexit_fini();
+	__dancy_stdio_fini();
 
-void *aligned_alloc(size_t alignment, size_t size);
-void *calloc(size_t nmemb, size_t size);
-void *malloc(size_t size);
-void *realloc(void *ptr, size_t size);
-void free(void *ptr);
-
-void qsort(void *base, size_t nmemb, size_t size,
-	int (*compar)(const void *, const void *));
-
-#undef EXIT_SUCCESS
-#define EXIT_SUCCESS (0)
-
-#undef EXIT_FAILURE
-#define EXIT_FAILURE (1)
-
-void __dancy_atexit_init(void);
-void __dancy_atexit_fini(void);
-int atexit(void (*func)(void));
-
-void _Exit(int status);
-void exit(int status);
-
-__Dancy_Header_End
-
-#endif
+	_Exit(status);
+}

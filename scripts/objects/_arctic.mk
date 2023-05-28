@@ -270,6 +270,10 @@
      ./arctic/libc/stdlib/atexit.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/atexit.c
 
+./o32/_arctic/libc/stdlib/exit.o: \
+     ./arctic/libc/stdlib/exit.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/exit.c
+
 ./o32/_arctic/libc/stdlib/qsort.o: \
      ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/qsort.c
@@ -689,6 +693,10 @@
 ./o64/_arctic/libc/stdlib/atexit.o: \
      ./arctic/libc/stdlib/atexit.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/atexit.c
+
+./o64/_arctic/libc/stdlib/exit.o: \
+     ./arctic/libc/stdlib/exit.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/exit.c
 
 ./o64/_arctic/libc/stdlib/qsort.o: \
      ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
