@@ -29,7 +29,11 @@ void __dancy_libc_start(int argc, char *argv[])
 	int retval;
 
 	__dancy_stdio_init();
+	__dancy_atexit_init();
+
 	retval = main(argc, argv);
+
+	__dancy_atexit_fini();
 	__dancy_stdio_fini();
 
 	__dancy_syscall1(__dancy_syscall_exit, retval);

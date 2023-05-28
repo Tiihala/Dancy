@@ -39,6 +39,10 @@ void qsort(void *base, size_t nmemb, size_t size,
 #undef EXIT_FAILURE
 #define EXIT_FAILURE (1)
 
+void __dancy_atexit_init(void);
+void __dancy_atexit_fini(void);
+int atexit(void (*func)(void));
+
 __Dancy_Header_End
 
 #endif
