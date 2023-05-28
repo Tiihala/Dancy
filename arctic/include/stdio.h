@@ -119,6 +119,7 @@ int snprintf(char *s, size_t n, const char *format, ...);
 int vsnprintf(char *s, size_t n, const char *format, va_list arg);
 
 int rename(const char *old_path, const char *new_path);
+void perror(const char *s);
 
 __Dancy_Header_End
 
