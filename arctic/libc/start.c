@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,6 +20,7 @@
 #include <__dancy/core.h>
 #include <__dancy/syscall.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void __dancy_libc_start(int argc, char *argv[]);
 
