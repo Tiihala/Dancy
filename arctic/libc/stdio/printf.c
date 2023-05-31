@@ -30,6 +30,9 @@ int printf(const char *format, ...)
 	r = vsnprintf(&buffer[0], sizeof(buffer), format, va);
 	va_end(va);
 
+	if (r >= (int)sizeof(buffer))
+		r = (int)sizeof(buffer) - 1;
+
 	if (r > 0)
 		r = (int)fwrite(&buffer[0], (size_t)r, 1, stdout);
 
