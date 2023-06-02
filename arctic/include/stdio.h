@@ -123,6 +123,7 @@ void perror(const char *s);
 
 long int ftell(FILE *stream);
 int fseek(FILE *stream, long offset, int whence);
+int ungetc(int c, FILE *stream);
 
 __Dancy_Header_End
 
