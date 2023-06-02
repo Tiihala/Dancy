@@ -122,6 +122,7 @@ int rename(const char *old_path, const char *new_path);
 void perror(const char *s);
 
 long int ftell(FILE *stream);
+int fseek(FILE *stream, long offset, int whence);
 
 __Dancy_Header_End
 
