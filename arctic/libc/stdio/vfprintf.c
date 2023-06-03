@@ -24,6 +24,9 @@ int vfprintf(FILE *stream, const char *format, va_list arg)
 	char buffer[4096];
 	int r = vsnprintf(&buffer[0], sizeof(buffer), format, arg);
 
+	if (r >= (int)sizeof(buffer))
+		r = (int)sizeof(buffer) - 1;
+
 	if (r > 0)
 		r = (int)fwrite(&buffer[0], 1, (size_t)r, stream);
 
