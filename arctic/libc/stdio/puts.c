@@ -24,9 +24,8 @@
 #include <threads.h>
 #include <unistd.h>
 
-static int my_puts(const char *s)
+static int my_puts(const char *s, FILE *stream)
 {
-	FILE *stream = stdout;
 	int buffer_mode = stream->__state & 0xFF;
 	size_t size = strlen(s);
 
@@ -114,7 +113,7 @@ int puts(const char *s)
 		return (errno = EBADF), EOF;
 	}
 
-	r = my_puts(s);
+	r = my_puts(s, stream);
 	mtx_unlock(&stream->__mtx);
 
 	return r;
