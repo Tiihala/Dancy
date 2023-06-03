@@ -98,6 +98,7 @@ FILE *fopen(const char *path, const char *mode)
 	r->__fd = fd;
 	r->__i = -1;
 
+	r->__mode = o_flags;
 	r->__state = _IOLBF;
 	r->__state |= __DANCY_FILE_MALLOC_STRUCT;
 
