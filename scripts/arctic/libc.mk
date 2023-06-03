@@ -57,6 +57,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/stdio/ferror.o \
  ./o32/_arctic/libc/stdio/fflush.o \
  ./o32/_arctic/libc/stdio/fgetc.o \
+ ./o32/_arctic/libc/stdio/fopen.o \
  ./o32/_arctic/libc/stdio/fprintf.o \
  ./o32/_arctic/libc/stdio/fputc.o \
  ./o32/_arctic/libc/stdio/fread.o \
@@ -169,6 +170,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/stdio/ferror.o \
  ./o64/_arctic/libc/stdio/fflush.o \
  ./o64/_arctic/libc/stdio/fgetc.o \
+ ./o64/_arctic/libc/stdio/fopen.o \
  ./o64/_arctic/libc/stdio/fprintf.o \
  ./o64/_arctic/libc/stdio/fputc.o \
  ./o64/_arctic/libc/stdio/fread.o \
