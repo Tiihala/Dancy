@@ -118,6 +118,7 @@ int vfprintf(FILE *stream, const char *format, va_list arg);
 int snprintf(char *s, size_t n, const char *format, ...);
 int vsnprintf(char *s, size_t n, const char *format, va_list arg);
 
+int remove(const char *path);
 int rename(const char *old_path, const char *new_path);
 void perror(const char *s);
 
