@@ -262,6 +262,10 @@
      ./arctic/libc/stdio/printf.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/printf.c
 
+./o32/_arctic/libc/stdio/puts.o: \
+     ./arctic/libc/stdio/puts.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/puts.c
+
 ./o32/_arctic/libc/stdio/remove.o: \
      ./arctic/libc/stdio/remove.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/remove.c
@@ -717,6 +721,10 @@
 ./o64/_arctic/libc/stdio/printf.o: \
      ./arctic/libc/stdio/printf.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/printf.c
+
+./o64/_arctic/libc/stdio/puts.o: \
+     ./arctic/libc/stdio/puts.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/puts.c
 
 ./o64/_arctic/libc/stdio/remove.o: \
      ./arctic/libc/stdio/remove.c $(DANCY_DEPS)
