@@ -104,6 +104,8 @@ size_t fwrite(const void *buffer, size_t size, size_t nmemb, FILE *stream);
 int fgetc(FILE *stream);
 int fputc(int c, FILE *stream);
 
+int fputs(const char *s, FILE *stream);
+
 void clearerr(FILE *stream);
 int feof(FILE *stream);
 int ferror(FILE *stream);

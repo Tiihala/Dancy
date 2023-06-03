@@ -234,6 +234,10 @@
      ./arctic/libc/stdio/fputc.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fputc.c
 
+./o32/_arctic/libc/stdio/fputs.o: \
+     ./arctic/libc/stdio/fputs.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fputs.c
+
 ./o32/_arctic/libc/stdio/fread.o: \
      ./arctic/libc/stdio/fread.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fread.c
@@ -685,6 +689,10 @@
 ./o64/_arctic/libc/stdio/fputc.o: \
      ./arctic/libc/stdio/fputc.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/fputc.c
+
+./o64/_arctic/libc/stdio/fputs.o: \
+     ./arctic/libc/stdio/fputs.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/fputs.c
 
 ./o64/_arctic/libc/stdio/fread.o: \
      ./arctic/libc/stdio/fread.c $(DANCY_DEPS)
