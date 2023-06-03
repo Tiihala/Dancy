@@ -25,7 +25,7 @@ int vfprintf(FILE *stream, const char *format, va_list arg)
 	int r = vsnprintf(&buffer[0], sizeof(buffer), format, arg);
 
 	if (r > 0)
-		r = (int)fwrite(&buffer[0], (size_t)r, 1, stream);
+		r = (int)fwrite(&buffer[0], 1, (size_t)r, stream);
 
 	return r;
 }

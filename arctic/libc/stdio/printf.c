@@ -34,7 +34,7 @@ int printf(const char *format, ...)
 		r = (int)sizeof(buffer) - 1;
 
 	if (r > 0)
-		r = (int)fwrite(&buffer[0], (size_t)r, 1, stdout);
+		r = (int)fwrite(&buffer[0], 1, (size_t)r, stdout);
 
 	return r;
 }
