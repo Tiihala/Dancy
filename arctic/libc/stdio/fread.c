@@ -81,9 +81,6 @@ static size_t my_read(unsigned char *buffer, size_t size, FILE *stream)
 
 			*p = (c = stream->__buffer[stream->__buffer_start++]);
 
-			if (buffer_mode == _IOLBF && c == 0x0A)
-				return ret_size;
-
 			if (stream->__buffer_start >= stream->__buffer_end)
 				break;
 		}
@@ -107,6 +104,14 @@ static size_t my_read(unsigned char *buffer, size_t size, FILE *stream)
 		}
 
 		w = read(stream->__fd, buffer, size);
+
+		if (w > 0 && (size_t)w < size) {
+			ret_size += (size_t)w;
+			buffer += w;
+			size -= (size_t)w;
+
+			w = read(stream->__fd, buffer, size);
+		}
 
 		if (w < 0)
 			stream->__error = 1;
@@ -141,5 +146,5 @@ size_t fread(void *buffer, size_t size, size_t nmemb, FILE *stream)
 	r = my_read(buffer, total_size, stream);
 	mtx_unlock(&stream->__mtx);
 
-	return r;
+	return (r / size);
 }
