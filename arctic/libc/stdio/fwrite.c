@@ -71,12 +71,11 @@ static size_t my_write(const unsigned char *buffer, size_t size, FILE *stream)
 	if (buffer_mode == _IONBF) {
 		ssize_t w = write(stream->__fd, buffer, size);
 
-		if (w < 0)
-			stream->__error = 1;
-		else if (w == 0)
-			stream->__eof = 1;
-		else
+		if (w > 0)
 			ret_size += (size_t)w;
+
+		if (w < 0 || (size_t)w < size)
+			stream->__error = 1;
 
 		return ret_size;
 	}
@@ -104,5 +103,5 @@ size_t fwrite(const void *buffer, size_t size, size_t nmemb, FILE *stream)
 	r = my_write(buffer, total_size, stream);
 	mtx_unlock(&stream->__mtx);
 
-	return r;
+	return (r / size);
 }
