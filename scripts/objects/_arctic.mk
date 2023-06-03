@@ -262,6 +262,10 @@
      ./arctic/libc/stdio/rename.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/rename.c
 
+./o32/_arctic/libc/stdio/rewind.o: \
+     ./arctic/libc/stdio/rewind.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/rewind.c
+
 ./o32/_arctic/libc/stdio/setbuf.o: \
      ./arctic/libc/stdio/setbuf.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/setbuf.c
@@ -705,6 +709,10 @@
 ./o64/_arctic/libc/stdio/rename.o: \
      ./arctic/libc/stdio/rename.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/rename.c
+
+./o64/_arctic/libc/stdio/rewind.o: \
+     ./arctic/libc/stdio/rewind.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/rewind.c
 
 ./o64/_arctic/libc/stdio/setbuf.o: \
      ./arctic/libc/stdio/setbuf.c $(DANCY_DEPS)
