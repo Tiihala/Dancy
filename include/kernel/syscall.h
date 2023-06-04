@@ -56,6 +56,7 @@ int file_pipe(int fd[2], int flags);
 int file_chdir(const char *name);
 int file_getcwd(void *buffer, size_t size);
 int file_getdents(int fd, void *buffer, size_t size, int *count, int flags);
+int file_realpath(const char *name, void *buffer, size_t size);
 
 /*
  * Declarations of spawn.c

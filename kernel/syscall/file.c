@@ -831,3 +831,56 @@ int file_getdents(int fd, void *buffer, size_t size, int *count, int flags)
 
 	return DE_ARGUMENT;
 }
+
+int file_realpath(const char *name, void *buffer, size_t size)
+{
+	struct vfs_name vname;
+	struct vfs_node *node;
+	char *p = buffer;
+	size_t s = 0;
+	int i, r;
+
+	memset(buffer, 0, size);
+
+	if (size < 2)
+		return DE_OVERFLOW;
+
+	r = vfs_open(name, &node, 0, 0);
+
+	if (r != 0 && r != DE_BUSY)
+		return r;
+
+	r = vfs_build_path(name, &vname);
+
+	if (node != NULL)
+		node->n_release(&node);
+
+	if (r != 0)
+		return r;
+
+	p[0] = '/';
+
+	for (i = 0; /* void */; i++) {
+		char *component = vname.components[i];
+
+		if (!component || (*component == '\0'))
+			break;
+
+		if ((s + 1) >= size) {
+			memset(buffer, 0, size);
+			return DE_OVERFLOW;
+		}
+
+		p[s++] = '/';
+
+		while (*component != '\0') {
+			if ((s + 1) >= size) {
+				memset(buffer, 0, size);
+				return DE_OVERFLOW;
+			}
+			p[s++] = *component++;
+		}
+	}
+
+	return 0;
+}
