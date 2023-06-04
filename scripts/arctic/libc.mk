@@ -81,6 +81,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/_arctic/libc/stdlib/atexit.o \
  ./o32/_arctic/libc/stdlib/exit.o \
  ./o32/_arctic/libc/stdlib/qsort.o \
+ ./o32/_arctic/libc/stdlib/realpath.o \
  ./o32/_arctic/libc/string/strcat.o \
  ./o32/_arctic/libc/string/strcmp.o \
  ./o32/_arctic/libc/string/strcpy.o \
@@ -199,6 +200,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/_arctic/libc/stdlib/atexit.o \
  ./o64/_arctic/libc/stdlib/exit.o \
  ./o64/_arctic/libc/stdlib/qsort.o \
+ ./o64/_arctic/libc/stdlib/realpath.o \
  ./o64/_arctic/libc/string/strcat.o \
  ./o64/_arctic/libc/string/strcmp.o \
  ./o64/_arctic/libc/string/strcpy.o \

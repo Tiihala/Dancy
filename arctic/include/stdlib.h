@@ -46,6 +46,8 @@ int atexit(void (*func)(void));
 void _Exit(int status);
 void exit(int status);
 
+char *realpath(const char *path, char *buffer);
+
 __Dancy_Header_End
 
 #endif

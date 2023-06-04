@@ -318,6 +318,10 @@
      ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/qsort.c
 
+./o32/_arctic/libc/stdlib/realpath.o: \
+     ./arctic/libc/stdlib/realpath.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/realpath.c
+
 ./o32/_arctic/libc/string/strcat.o: \
      ./arctic/libc/string/strcat.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/string/strcat.c
@@ -781,6 +785,10 @@
 ./o64/_arctic/libc/stdlib/qsort.o: \
      ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/qsort.c
+
+./o64/_arctic/libc/stdlib/realpath.o: \
+     ./arctic/libc/stdlib/realpath.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/realpath.c
 
 ./o64/_arctic/libc/string/strcat.o: \
      ./arctic/libc/string/strcat.c $(DANCY_DEPS)
