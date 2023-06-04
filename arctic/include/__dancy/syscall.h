@@ -234,6 +234,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_getppid,
 
+	/*
+	 * long long __dancy_syscall_realpath(
+	 *         const char *path,
+	 *         void *buffer,
+	 *         size_t size);
+	 */
+	__dancy_syscall_realpath,
+
 	__dancy_syscall_argn__
 };
 

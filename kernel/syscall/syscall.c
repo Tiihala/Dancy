@@ -868,6 +868,36 @@ static long long dancy_syscall_getppid(va_list va)
 	return (void)va, (long long)task_current()->id_owner;
 }
 
+static long long dancy_syscall_realpath(va_list va)
+{
+	const char *path = va_arg(va, const char *);
+	void *buffer = va_arg(va, void *);
+	size_t size = va_arg(va, size_t);
+	int r, count;
+
+	if (pg_check_user_string(path, &count))
+		return -EFAULT;
+
+	if (pg_check_user_write(buffer, size))
+		return -EFAULT;
+
+	if ((r = file_realpath(path, buffer, size)) != 0) {
+		if (r == DE_ARGUMENT)
+			return -EINVAL;
+		if (r == DE_NAME)
+			return -ENOENT;
+		if (r == DE_PATH)
+			return -ENOENT;
+		if (r == DE_MEMORY)
+			return -ENOMEM;
+		if (r == DE_OVERFLOW)
+			return -EOVERFLOW;
+		return -EIO;
+	}
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -902,6 +932,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_msync },
 	{ dancy_syscall_getpid },
 	{ dancy_syscall_getppid },
+	{ dancy_syscall_realpath },
 	{ dancy_syscall_reserved }
 };
 
