@@ -95,6 +95,8 @@ void __dancy_stdio_fini(void);
 int __dancy_internal_fflush(FILE *stream);
 
 FILE *fopen(const char *path, const char *mode);
+FILE *freopen(const char *path, const char *mode, FILE *stream);
+
 int fclose(FILE *stream);
 int fflush(FILE *stream);
 
