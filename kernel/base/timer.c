@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,12 +21,13 @@
 
 void timer_handler(void)
 {
-	uint32_t ticks = 1000;
+	uint32_t ticks = 20;
 
 	timer_ticks_wait = ticks;
+	task_yield();
 }
 
 void timer_handler_ap(void)
 {
-
+	task_yield();
 }
