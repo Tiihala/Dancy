@@ -122,11 +122,11 @@ static struct file_table_entry *alloc_file_entry(void)
 
 static void file_decrement_count(struct file_table_entry *fte)
 {
-	void *lock_local = &fte->lock[1];
 	struct vfs_node *node = NULL;
 	int count;
 
-	spin_enter(&lock_local);
+	while (!spin_trylock(&fte->lock[1]))
+		task_yield();
 
 	if (fte->count > 0)
 		fte->count -= 1;
@@ -141,7 +141,7 @@ static void file_decrement_count(struct file_table_entry *fte)
 
 	count = fte->count;
 
-	spin_leave(&lock_local);
+	spin_unlock(&fte->lock[1]);
 
 	if (node)
 		node->n_release(&node);
