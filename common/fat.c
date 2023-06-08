@@ -2490,6 +2490,7 @@ int fat_rename(void *fat, const char *old_name, const char *new_name)
 	unsigned int path_entries;
 	unsigned char fat_new_name[12];
 	unsigned char *record;
+	unsigned int cluster;
 	unsigned int i, is_dir = 0;
 	int fd, r;
 
@@ -2516,6 +2517,49 @@ int fat_rename(void *fat, const char *old_name, const char *new_name)
 
 	if ((r = fill_record_buffer(fat, fd)) != 0)
 		return r;
+
+	record = get_record(fat, fd);
+	cluster = (LE16(&record[20]) << 16) | LE16(&record[26]);
+
+	/*
+	 * Rename directories only if they are empty.
+	 */
+	if ((record[11] & 0x10) != 0 && cluster != 0) {
+		unsigned int cluster_size = this_fat->cluster_size;
+		unsigned int iterate_limit = (65536 * 32) / cluster_size;
+		unsigned int dir_cluster = cluster;
+		unsigned int j = 64;
+
+		while (iterate_limit) {
+			int found_zero = 0;
+
+			if ((r = read_cluster(fat, dir_cluster, 0)) != 0)
+				return r;
+
+			for (/* void */; j < cluster_size; j += 32) {
+				unsigned int c = this_fat->cluster_buffer[j];
+
+				if (c == 0) {
+					found_zero = 1;
+					break;
+				}
+				if (c != 0xE5)
+					return FAT_DIRECTORY_NOT_EMPTY;
+			}
+
+			if (found_zero)
+				break;
+
+			dir_cluster = get_table_value(fat, dir_cluster);
+			if (dir_cluster < 2 || dir_cluster >= 0x0FFFFFF8)
+				break;
+
+			iterate_limit -= 1;
+			j = 0;
+		}
+		if (iterate_limit == 0)
+			return FAT_INCONSISTENT_STATE;
+	}
 
 	/*
 	 * The new name must not exist.
