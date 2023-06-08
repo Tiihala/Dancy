@@ -563,6 +563,8 @@ static long long dancy_syscall_rename(va_list va)
 		return -EFAULT;
 
 	if ((r = vfs_rename(old_path, new_path)) != 0) {
+		if (r == DE_BUSY)
+			return -EBUSY;
 		if (r == DE_UNSUPPORTED)
 			return -EXDEV;
 		return -EINVAL;
