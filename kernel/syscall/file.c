@@ -569,10 +569,6 @@ int file_dup(int fd, int *new_fd, int min_fd, int max_fd, int flags)
 		if ((t = task->fd.table[fd]) != 0) {
 			int empty_fd = -1;
 
-			fte = (void *)((addr_t)(t & table_mask));
-
-			lock_fte(fte, 0);
-
 			for (i = min_fd; i < max_fd; i++) {
 				if (i >= TASK_FD_STATIC_COUNT)
 					break;
@@ -586,6 +582,10 @@ int file_dup(int fd, int *new_fd, int min_fd, int max_fd, int flags)
 				if (min_fd < TASK_FD_STATIC_COUNT)
 					file_close(empty_fd = min_fd);
 			}
+
+			fte = (void *)((addr_t)(t & table_mask));
+
+			lock_fte(fte, 0);
 
 			if (empty_fd >= 0 && fte->count < INT_MAX) {
 				uint32_t state = (uint32_t)(empty_fd + 1);
