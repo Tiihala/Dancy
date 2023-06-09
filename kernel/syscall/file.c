@@ -26,23 +26,15 @@ static struct file_table_entry _file_table[4096];
 static const uint32_t table_mask = 0x0FFFFFFF;
 static const uint32_t fd_cloexec = 0x80000000;
 
-static void lock_fte(struct file_table_entry *fte, int rw)
+static void lock_fte(struct file_table_entry *fte)
 {
-	int i = 1;
-
-	(void)rw;
-
-	while (!spin_trylock(&fte->lock[i]))
+	while (!spin_trylock(&fte->lock[1]))
 		task_yield();
 }
 
-static void unlock_fte(struct file_table_entry *fte, int rw)
+static void unlock_fte(struct file_table_entry *fte)
 {
-	int i = 1;
-
-	(void)rw;
-
-	spin_unlock(&fte->lock[i]);
+	spin_unlock(&fte->lock[1]);
 }
 
 static void fd_release_func(struct task *task)
@@ -86,14 +78,14 @@ static void fd_clone_func(struct task *task, struct task *new_task)
 		fte = (void *)((addr_t)(t & table_mask));
 
 		if (fte) {
-			lock_fte(fte, 0);
+			lock_fte(fte);
 
 			if (fte->count > 0 && fte->count < INT_MAX)
 				fte->count += 1;
 			else
 				new_task->fd.table[i] = 0;
 
-			unlock_fte(fte, 0);
+			unlock_fte(fte);
 		}
 	}
 }
@@ -143,7 +135,7 @@ static void file_decrement_count(struct file_table_entry *fte)
 	struct vfs_node *node = NULL;
 	int count;
 
-	lock_fte(fte, 0);
+	lock_fte(fte);
 
 	if (fte->count > 0)
 		fte->count -= 1;
@@ -158,7 +150,7 @@ static void file_decrement_count(struct file_table_entry *fte)
 
 	count = fte->count;
 
-	unlock_fte(fte, 0);
+	unlock_fte(fte);
 
 	if (node)
 		node->n_release(&node);
@@ -278,10 +270,10 @@ int file_read(int fd, size_t *size, void *buffer)
 
 			fte = (void *)((addr_t)(t & table_mask));
 
-			lock_fte(fte, 1);
+			lock_fte(fte);
 
 			if ((fte->flags & O_ACCMODE) == O_WRONLY) {
-				unlock_fte(fte, 1);
+				unlock_fte(fte);
 				return *size = 0, DE_ARGUMENT;
 			}
 
@@ -301,14 +293,14 @@ int file_read(int fd, size_t *size, void *buffer)
 				if ((fte->flags & O_NONBLOCK) != 0)
 					break;
 
-				unlock_fte(fte, 1);
+				unlock_fte(fte);
 
 				if (n->internal_event)
 					event_wait(*n->internal_event, 2000);
 				else
 					task_yield();
 
-				lock_fte(fte, 1);
+				lock_fte(fte);
 
 				*size = requested_size;
 
@@ -322,7 +314,7 @@ int file_read(int fd, size_t *size, void *buffer)
 			}
 
 			fte->offset += (uint64_t)(*size);
-			unlock_fte(fte, 1);
+			unlock_fte(fte);
 
 			return r;
 		}
@@ -349,10 +341,10 @@ int file_write(int fd, size_t *size, const void *buffer)
 
 			fte = (void *)((addr_t)(t & table_mask));
 
-			lock_fte(fte, 1);
+			lock_fte(fte);
 
 			if ((fte->flags & O_ACCMODE) == O_RDONLY) {
-				unlock_fte(fte, 1);
+				unlock_fte(fte);
 				return *size = 0, DE_ARGUMENT;
 			}
 
@@ -388,9 +380,9 @@ int file_write(int fd, size_t *size, const void *buffer)
 				}
 
 				if (*size == 0) {
-					unlock_fte(fte, 1);
+					unlock_fte(fte);
 					task_yield();
-					lock_fte(fte, 1);
+					lock_fte(fte);
 				}
 
 				requested_size -= (*size);
@@ -408,7 +400,7 @@ int file_write(int fd, size_t *size, const void *buffer)
 				}
 			}
 
-			unlock_fte(fte, 1);
+			unlock_fte(fte);
 
 			return r;
 		}
@@ -432,16 +424,16 @@ int file_lseek(int fd, off_t offset, uint64_t *new_offset, int whence)
 		if ((t = task->fd.table[fd]) != 0) {
 			fte = (void *)((addr_t)(t & table_mask));
 
-			lock_fte(fte, 0);
+			lock_fte(fte);
 
 			if (fte->node->type == vfs_type_directory) {
 				if (whence != SEEK_SET || offset != 0) {
-					unlock_fte(fte, 0);
+					unlock_fte(fte);
 					return DE_DIRECTORY;
 				}
 
 			} else if (fte->node->type != vfs_type_regular) {
-					unlock_fte(fte, 0);
+					unlock_fte(fte);
 					return DE_ACCESS;
 			}
 
@@ -489,7 +481,7 @@ int file_lseek(int fd, off_t offset, uint64_t *new_offset, int whence)
 			if (new_offset)
 				*new_offset = fte->offset;
 
-			unlock_fte(fte, 0);
+			unlock_fte(fte);
 
 			return r;
 		}
@@ -512,7 +504,7 @@ int file_fcntl(int fd, int cmd, int arg, int *retval)
 		if ((t = task->fd.table[fd]) != 0) {
 			fte = (void *)((addr_t)(t & table_mask));
 
-			lock_fte(fte, 0);
+			lock_fte(fte);
 
 			if (cmd == F_DUPFD || cmd == F_DUPFD_CLOEXEC) {
 				int flags = 0;
@@ -520,7 +512,7 @@ int file_fcntl(int fd, int cmd, int arg, int *retval)
 				if (cmd == F_DUPFD_CLOEXEC)
 					flags = O_CLOEXEC;
 
-				unlock_fte(fte, 0);
+				unlock_fte(fte);
 				r = file_dup(fd, retval, arg, INT_MAX, flags);
 				return r;
 
@@ -551,7 +543,7 @@ int file_fcntl(int fd, int cmd, int arg, int *retval)
 				r = 0;
 			}
 
-			unlock_fte(fte, 0);
+			unlock_fte(fte);
 
 			return r;
 		}
@@ -597,7 +589,7 @@ int file_dup(int fd, int *new_fd, int min_fd, int max_fd, int flags)
 
 			fte = (void *)((addr_t)(t & table_mask));
 
-			lock_fte(fte, 0);
+			lock_fte(fte);
 
 			if (empty_fd >= 0 && fte->count < INT_MAX) {
 				uint32_t state = (uint32_t)(empty_fd + 1);
@@ -606,7 +598,7 @@ int file_dup(int fd, int *new_fd, int min_fd, int max_fd, int flags)
 					task->fd.state = state;
 
 				if (task->fd.table[empty_fd] != 0) {
-					unlock_fte(fte, 0);
+					unlock_fte(fte);
 					return DE_UNEXPECTED;
 				}
 
@@ -620,7 +612,7 @@ int file_dup(int fd, int *new_fd, int min_fd, int max_fd, int flags)
 				r = 0;
 			}
 
-			unlock_fte(fte, 0);
+			unlock_fte(fte);
 
 			return r;
 		}
@@ -800,7 +792,7 @@ int file_getdents(int fd, void *buffer, size_t size, int *count, int flags)
 		if ((t = task->fd.table[fd]) != 0) {
 			fte = (void *)((addr_t)(t & table_mask));
 
-			lock_fte(fte, 0);
+			lock_fte(fte);
 
 			offset = fte->offset;
 
@@ -843,7 +835,7 @@ int file_getdents(int fd, void *buffer, size_t size, int *count, int flags)
 			if (r == 0)
 				fte->offset = offset;
 
-			unlock_fte(fte, 0);
+			unlock_fte(fte);
 
 			if (r != 0)
 				*count = 0, memset(buffer, 0, size);
