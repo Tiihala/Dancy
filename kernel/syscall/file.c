@@ -301,10 +301,18 @@ int file_read(int fd, size_t *size, void *buffer)
 				if ((fte->flags & O_NONBLOCK) != 0)
 					break;
 
+				unlock_fte(fte, 1);
+
 				if (n->internal_event)
 					event_wait(*n->internal_event, 2000);
+				else
+					task_yield();
+
+				lock_fte(fte, 1);
 
 				*size = requested_size;
+
+				o = fte->offset;
 				r = n->n_read(n, o, size, buffer);
 
 				if (!n->internal_event) {
@@ -379,8 +387,11 @@ int file_write(int fd, size_t *size, const void *buffer)
 					break;
 				}
 
-				if (*size == 0)
+				if (*size == 0) {
+					unlock_fte(fte, 1);
 					task_yield();
+					lock_fte(fte, 1);
+				}
 
 				requested_size -= (*size);
 				ptr += (*size);
@@ -391,6 +402,7 @@ int file_write(int fd, size_t *size, const void *buffer)
 					r = n->n_append(n, size, ptr);
 					fte->offset = get_file_size(n);
 				} else {
+					o = fte->offset;
 					r = n->n_write(n, o, size, ptr);
 					fte->offset += (uint64_t)(*size);
 				}
