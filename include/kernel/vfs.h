@@ -79,7 +79,6 @@ struct vfs_node {
 
 	int (*n_stat)(struct vfs_node *node, struct vfs_stat *stat);
 	int (*n_truncate)(struct vfs_node *node, uint64_t size);
-	int (*n_unlink)(struct vfs_node *node, struct vfs_name *vname);
 };
 
 struct vfs_name {
