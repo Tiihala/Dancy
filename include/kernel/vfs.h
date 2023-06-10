@@ -60,8 +60,8 @@ struct vfs_node {
 
 	void (*n_release)(struct vfs_node **node);
 
-	int (*n_open)(struct vfs_node *node, struct vfs_node **new_node,
-		int type, int mode, struct vfs_name *vname);
+	int (*n_open)(struct vfs_node *node, const char *name,
+		struct vfs_node **new_node, int type, int mode);
 
 	int (*n_read)(struct vfs_node *node,
 		uint64_t offset, size_t *size, void *buffer);
