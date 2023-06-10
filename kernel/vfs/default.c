@@ -25,14 +25,14 @@ static void vfs_default_release(struct vfs_node **node)
 	*node = NULL;
 }
 
-static int vfs_default_open(struct vfs_node *node, struct vfs_node **new_node,
-	int type, int mode, struct vfs_name *vname)
+static int vfs_default_open(struct vfs_node *node, const char *name,
+	struct vfs_node **new_node, int type, int mode)
 {
 	(void)node;
+	(void)name;
 	(void)new_node;
 	(void)type;
 	(void)mode;
-	(void)vname;
 
 	return DE_UNSUPPORTED;
 }
