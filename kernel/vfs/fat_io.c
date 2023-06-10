@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -766,108 +766,6 @@ static int n_readdir(struct vfs_node *node,
 	return (r != 0) ? translate_error(r) : 0;
 }
 
-static int n_rename(struct vfs_node *node,
-	struct vfs_name *old_vname, struct vfs_name *new_vname)
-{
-	void *instance;
-	struct fat_internal_data *data = node->internal_data;
-	char *tmp_buf, *buf1, *buf2;
-	int size1 = 0, size2 = 0;
-	int i, r;
-
-	if ((tmp_buf = malloc(512)) == NULL)
-		return DE_MEMORY;
-
-	buf1 = tmp_buf + 0;
-	buf2 = tmp_buf + 256;
-
-	buf1[0] = '\0', buf2[0] = '\0';
-
-	for (i = 0; old_vname->components[i] != NULL; i++) {
-		char *p = old_vname->components[i];
-
-		while ((buf1[size1] = (char)tolower((int)*p++)) != '\0') {
-			if (size1 > 253)
-				return free(tmp_buf), DE_PATH;
-			size1 += 1;
-		}
-
-		buf1[size1++] = '/', buf1[size1] = '\0';
-	}
-
-	for (i = 0; new_vname->components[i] != NULL; i++) {
-		char *p = new_vname->components[i];
-
-		while ((buf2[size2] = (char)tolower((int)*p++)) != '\0') {
-			if (size2 > 253)
-				return free(tmp_buf), DE_PATH;
-			size2 += 1;
-		}
-
-		buf2[size2++] = '/', buf2[size2] = '\0';
-	}
-
-	if (buf1[0] == '\0' || buf2[0] == '\0')
-		return free(tmp_buf), DE_PATH;
-
-	buf1[size1 - 1] = '\0';
-	buf2[size2 - 1] = '\0';
-
-	if (!strcmp(&buf1[0], &buf2[0])) {
-		struct vfs_node *test_node;
-
-		if ((r = n_open(node, &test_node, 0, 0, old_vname)) != 0)
-			return free(tmp_buf), r;
-
-		test_node->n_release(&test_node);
-		return free(tmp_buf), 0;
-	}
-
-	if ((r = enter_fat(node)) != 0)
-		return free(tmp_buf), r;
-
-	instance = data->io->instance;
-
-	if (find_node(node, &buf1[0]) || find_node(node, &buf2[0]))
-		return leave_fat(node), free(tmp_buf), DE_BUSY;
-
-	if (new_vname->type == vfs_type_directory) {
-		buf1[size1 - 1] = '/';
-		buf2[size2 - 1] = '/';
-	}
-
-	r = fat_rename(instance, &buf1[0], &buf2[0]);
-
-	leave_fat(node);
-
-	if (r && r != FAT_FILE_NOT_FOUND) {
-		int buf_modified = 0;
-
-		for (size1 = size1 - 2; size1 >= 0; size1--) {
-			if (buf1[size1] == '/') {
-				buf1[size1] = '\0';
-				buf_modified = 1;
-				break;
-			}
-		}
-
-		for (size2 = size2 - 2; size2 >= 0; size2--) {
-			if (buf2[size2] == '/') {
-				buf2[size2] = '\0';
-				buf_modified = 1;
-				break;
-			}
-		}
-
-		if (buf_modified && strcmp(&buf1[0], &buf2[0]))
-			return free(tmp_buf), DE_UNSUPPORTED;
-	}
-
-	free(tmp_buf);
-
-	return (r != 0) ? translate_error(r) : 0;
-}
-
 static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 {
 	void *instance;
@@ -1024,7 +922,6 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->n_append   = n_append;
 		node->n_sync     = n_sync;
 		node->n_readdir  = n_readdir;
-		node->n_rename   = n_rename;
 		node->n_stat     = n_stat;
 		node->n_truncate = n_truncate;
 		node->n_unlink   = n_unlink;

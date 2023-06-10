@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -88,16 +88,6 @@ static int vfs_default_readdir(struct vfs_node *node,
 	return DE_UNSUPPORTED;
 }
 
-static int vfs_default_rename(struct vfs_node *node,
-	struct vfs_name *old_vname, struct vfs_name *new_vname)
-{
-	(void)node;
-	(void)old_vname;
-	(void)new_vname;
-
-	return DE_UNSUPPORTED;
-}
-
 static int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat)
 {
 	if (node->node_stat)
@@ -133,7 +123,6 @@ void vfs_default(struct vfs_node *node)
 	node->n_append   = vfs_default_append;
 	node->n_sync     = vfs_default_sync;
 	node->n_readdir  = vfs_default_readdir;
-	node->n_rename   = vfs_default_rename;
 	node->n_stat     = vfs_default_stat;
 	node->n_truncate = vfs_default_truncate;
 	node->n_unlink   = vfs_default_unlink;

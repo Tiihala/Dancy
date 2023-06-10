@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -76,9 +76,6 @@ struct vfs_node {
 
 	int (*n_readdir)(struct vfs_node *node,
 		uint32_t offset, struct vfs_dent *dent);
-
-	int (*n_rename)(struct vfs_node *node,
-		struct vfs_name *old_vname, struct vfs_name *new_vname);
 
 	int (*n_stat)(struct vfs_node *node, struct vfs_stat *stat);
 	int (*n_truncate)(struct vfs_node *node, uint64_t size);

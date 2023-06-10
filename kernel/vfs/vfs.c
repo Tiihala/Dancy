@@ -316,56 +316,10 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 
 int vfs_rename(const char *old_name, const char *new_name)
 {
-	struct vfs_name old_vname, new_vname;
-	struct vfs_node *node1, *node2;
-	int rename_allowed = 1;
-	void *buffer;
-	int r;
+	(void)old_name;
+	(void)new_name;
 
-	if ((r = vfs_build_path(old_name, &old_vname)) != 0)
-		return r;
-
-	if ((r = vfs_duplicate_path(&old_vname)) != 0)
-		return r;
-
-	buffer = old_vname.buffer;
-
-	if ((r = vfs_build_path(new_name, &new_vname)) != 0)
-		return free(buffer), r;
-
-	if (old_vname.type == vfs_type_directory)
-		new_vname.type = vfs_type_directory;
-
-	old_vname.type = new_vname.type;
-
-	if (mtx_lock(&mount_mtx) != thrd_success)
-		return free(buffer), DE_UNEXPECTED;
-
-	node1 = get_mount_node_locked(&old_vname);
-	node2 = get_mount_node_locked(&new_vname);
-
-	if (node1 == NULL || node1 != node2)
-		rename_allowed = 0;
-
-	if (rename_allowed && old_vname.components[0] == NULL)
-		rename_allowed = 0;
-
-	if (rename_allowed && new_vname.components[0] == NULL)
-		rename_allowed = 0;
-
-	if (rename_allowed)
-		r = node1->n_rename(node1, &old_vname, &new_vname);
-	else
-		r = DE_UNSUPPORTED;
-
-	if (node1)
-		node1->n_release(&node1);
-	if (node2)
-		node2->n_release(&node2);
-
-	mtx_unlock(&mount_mtx);
-
-	return free(buffer), r;
+	return DE_UNSUPPORTED;
 }
 
 int vfs_unlink(const char *name)
