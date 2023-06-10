@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,22 +32,16 @@ static struct devfs_data devfs_table[DEVFS_COUNT];
 
 static struct vfs_node *alloc_node(int i);
 
-static int n_open(struct vfs_node *node, struct vfs_node **new_node,
-	int type, int mode, struct vfs_name *vname)
+static int n_open(struct vfs_node *node, const char *name,
+	struct vfs_node **new_node, int type, int mode)
 {
-	const char *name;
 	int i;
 
 	(void)node;
 	*new_node = NULL;
 
-	if (type == vfs_type_directory || vname->type == vfs_type_directory)
+	if (type == vfs_type_directory)
 		return DE_TYPE;
-
-	if (vname->components[0] == NULL || vname->components[1] != NULL)
-		return DE_PATH;
-
-	name = vname->components[0];
 
 	if (strlen(name) >= sizeof(devfs_table[0].name))
 		return DE_PATH;
