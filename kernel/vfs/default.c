@@ -90,6 +90,8 @@ static int vfs_default_readdir(struct vfs_node *node,
 
 static int vfs_default_stat(struct vfs_node *node, struct vfs_stat *stat)
 {
+	(void)node;
+
 	memset(stat, 0, sizeof(*stat));
 
 	return 0;
