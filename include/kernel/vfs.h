@@ -54,9 +54,14 @@ struct vfs_node {
 	int type;
 	int mode;
 
+	struct vfs_node *tree[3];
+	unsigned int tree_state;
+	unsigned int mount_state;
+
 	void *internal_data;
 	event_t *internal_event;
 
+	void (*__release)(struct vfs_node **node);
 	void (*n_release)(struct vfs_node **node);
 
 	int (*n_open)(struct vfs_node *node, const char *name,
@@ -78,6 +83,8 @@ struct vfs_node {
 
 	int (*n_stat)(struct vfs_node *node, struct vfs_stat *stat);
 	int (*n_truncate)(struct vfs_node *node, uint64_t size);
+
+	char name[256];
 };
 
 struct vfs_name {
@@ -141,6 +148,9 @@ int vfs_init_root(struct vfs_node **node);
  */
 int vfs_init(void);
 void vfs_init_node(struct vfs_node *node, size_t size);
+
+void vfs_lock_tree(void);
+void vfs_unlock_tree(void);
 
 int vfs_increment_count(struct vfs_node *node);
 int vfs_decrement_count(struct vfs_node *node);
