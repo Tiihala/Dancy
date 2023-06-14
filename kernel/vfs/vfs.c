@@ -153,14 +153,6 @@ int vfs_decrement_count(struct vfs_node *node)
 	return r;
 }
 
-int vfs_mount(const char *name, struct vfs_node *node)
-{
-	(void)name;
-	(void)node;
-
-	return DE_UNSUPPORTED;
-}
-
 static void n_release(struct vfs_node **node)
 {
 	struct vfs_node *n = *node;
@@ -175,15 +167,23 @@ static void n_release(struct vfs_node **node)
 		vfs_decrement_count(n);
 	}
 
-	if (n->tree_state == 0 && n->tree[2] == NULL)
-		remove_leaf_node(n);
+	if (n->mount_state != 0) {
+		vfs_unlock_tree();
+		return;
+	}
 
-	n->__release(&n);
+	if (n->tree_state == 0 && n->tree[2] == NULL) {
+		remove_leaf_node(n);
+		n->__release(&n);
+	}
 
 	while (owner != root_node) {
 		struct vfs_node *unused_node;
 
 		if (owner->tree_state != 0 || owner->tree[2] != NULL)
+			break;
+
+		if (owner->mount_state != 0)
 			break;
 
 		unused_node = owner;
@@ -194,6 +194,113 @@ static void n_release(struct vfs_node **node)
 	}
 
 	vfs_unlock_tree();
+}
+
+static void n_release_panic(struct vfs_node **node)
+{
+	(void)node, kernel->panic(unexpected_tree_error);
+}
+
+static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
+{
+	struct vfs_node *mount = node->mount;
+
+	return mount->n_stat(mount, stat);
+}
+
+int vfs_mount(const char *name, struct vfs_node *node)
+{
+	struct vfs_node *target_node;
+	int r;
+
+	if ((r = vfs_open(name, &target_node, 0, 0)) != 0)
+		return r;
+
+	if (node == root_node || target_node == root_node)
+		return target_node->n_release(&target_node), DE_BUSY;
+
+	if (target_node->type != node->type) {
+		if (target_node->type == vfs_type_directory)
+			return target_node->n_release(&target_node), DE_TYPE;
+
+		if (node->type == vfs_type_directory)
+			return target_node->n_release(&target_node), DE_TYPE;
+	}
+
+	vfs_lock_tree();
+
+	{
+		int de_busy = 0;
+
+		de_busy += (target_node->count > 2);
+		de_busy += (target_node->tree[2] != NULL);
+
+		de_busy += (target_node->tree_state != 1);
+		de_busy += (target_node->mount_state != 0);
+
+		de_busy += (node->tree[0] != NULL);
+		de_busy += (node->tree[1] != NULL);
+		de_busy += (node->tree[2] != NULL);
+
+		de_busy += (node->tree_state != 0);
+		de_busy += (node->mount_state != 0);
+
+		if (de_busy) {
+			vfs_unlock_tree();
+			target_node->n_release(&target_node);
+			return DE_BUSY;
+		}
+	}
+
+	vfs_increment_count(node);
+	strcpy(&node->name[0], &target_node->name[0]);
+
+	node->tree[0] = target_node->tree[0];
+	node->tree[1] = target_node->tree[1];
+
+	{
+		struct vfs_node *owner = target_node->tree[0];
+		struct vfs_node *p1 = NULL;
+		struct vfs_node *p2 = owner->tree[2];
+		int i = 0;
+
+		if (p2 == NULL)
+			kernel->panic(unexpected_tree_error);
+
+		if (p2 == target_node)
+			owner->tree[2] = node;
+
+		while (p2 != target_node) {
+			p1 = p2;
+			p2 = p2->tree[1];
+
+			if (++i == INT_MAX || p2 == NULL)
+				kernel->panic(unexpected_tree_error);
+		}
+
+		if (p1 != NULL)
+			p1->tree[1] = node;
+	}
+
+	target_node->tree[0] = NULL;
+	target_node->tree[1] = NULL;
+
+	if (node->tree[2] != NULL || target_node->tree[2] != NULL)
+		kernel->panic(unexpected_tree_error);
+
+	node->mount = target_node;
+	node->tree_state = 0;
+	node->mount_state = 1;
+
+	node->__release = n_release_panic;
+	node->n_release = n_release;
+
+	if (node->type == vfs_type_directory)
+		node->n_stat = n_stat;
+
+	vfs_unlock_tree();
+
+	return 0;
 }
 
 int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
@@ -275,6 +382,9 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 		if (owner->tree_state != 0 || owner->tree[2] != NULL)
 			break;
 
+		if (owner->mount_state != 0)
+			break;
+
 		unused_node = owner;
 		owner = owner->tree[0];
 
@@ -295,6 +405,13 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 	if (type != vfs_type_unknown && type != new_node->type) {
 		new_node->n_release(&new_node);
 		return (*node = NULL), DE_TYPE;
+	}
+
+	if ((new_node->mode & vfs_mode_truncate) != 0) {
+		if ((r = new_node->n_truncate(new_node, 0)) != 0) {
+			new_node->n_release(&new_node);
+			return (*node = NULL), r;
+		}
 	}
 
 	return 0;

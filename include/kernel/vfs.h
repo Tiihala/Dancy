@@ -55,6 +55,7 @@ struct vfs_node {
 	int mode;
 
 	struct vfs_node *tree[3];
+	struct vfs_node *mount;
 	unsigned int tree_state;
 	unsigned int mount_state;
 
