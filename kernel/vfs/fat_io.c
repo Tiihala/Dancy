@@ -293,13 +293,170 @@ static struct vfs_node *alloc_node(struct fat_io *io);
 static int n_open(struct vfs_node *node, const char *name,
 	struct vfs_node **new_node, int type, int mode)
 {
-	(void)node;
-	(void)name;
-	(void)new_node;
-	(void)type;
-	(void)mode;
+	struct fat_internal_data *data = node->internal_data;
+	struct fat_io *io = data->io;
+	struct vfs_node *allocated_node;
+	int write_record = 0, root_dir = 0;
+	unsigned char record[32];
+	char buf[256];
+	int size = 0;
+	int i, r;
 
-	return DE_UNSUPPORTED;
+	*new_node = NULL;
+
+	if (type != vfs_type_unknown) {
+		if (type != vfs_type_regular && type != vfs_type_directory)
+			return DE_TYPE;
+	}
+
+	buf[0] = '\0';
+
+	{
+		struct vfs_node *owner = node;
+		int depth = 0;
+		const char *p;
+
+		while (owner->tree[0] != NULL && owner->mount_state == 0)
+			owner = owner->tree[0], depth += 1;
+
+		while (depth >= 0) {
+			owner = node;
+			p = name;
+
+			if (--depth >= 0) {
+				for (i = 0; i < depth; i++)
+					owner = owner->tree[0];
+				p = &owner->name[0];
+			}
+
+			while ((buf[size] = (char)tolower((int)*p++)) != 0) {
+				if (size > (int)(sizeof(buf) - 3))
+					return DE_PATH;
+				size += 1;
+			}
+
+			buf[size++] = '/', buf[size] = '\0';
+		}
+	}
+
+	if (buf[0] == '\0') {
+		if (type == vfs_type_regular)
+			return DE_TYPE;
+		/*
+		 * The root directory of the file system.
+		 */
+		buf[0] = '/', buf[1] = '.', buf[2] = '\0';
+
+		size = 3, buf[size] = '\0';
+		root_dir = 1;
+	}
+
+	buf[size - 1] = '\0';
+
+	if ((r = enter_fat(node)) != 0)
+		return r;
+
+	if ((allocated_node = alloc_node(io)) == NULL)
+		return leave_fat(node), DE_MEMORY;
+
+	data = allocated_node->internal_data;
+	strcpy(&data->path[0], &buf[0]);
+	i = 0;
+
+	while (i < (int)(sizeof(io->node_array) / sizeof(*io->node_array))) {
+		if (io->node_array[i] == NULL) {
+			if (io->node_count < i + 1)
+				io->node_count = i + 1;
+			io->node_array[i] = allocated_node;
+			data->fd = i;
+			break;
+		}
+		i += 1;
+	}
+
+	if (data->fd < 0) {
+		leave_fat(node);
+		allocated_node->n_release(&allocated_node);
+		return DE_MEMORY;
+	}
+
+	if (type == vfs_type_directory)
+		buf[size - 1] = '/';
+
+	if ((mode & vfs_mode_exclusive) != 0) {
+		if ((mode & vfs_mode_create) != 0) {
+			r = fat_open(io->instance, data->fd, &buf[0], "rb");
+
+			if (!r) {
+				fat_close(io->instance, data->fd);
+				leave_fat(node);
+				allocated_node->n_release(&allocated_node);
+				return DE_BUSY;
+			}
+
+			if (r != FAT_FILE_NOT_FOUND) {
+				leave_fat(node);
+				allocated_node->n_release(&allocated_node);
+				return translate_error(r);
+			}
+		}
+	}
+
+	r = fat_open(io->instance, data->fd, &buf[0], "rb+");
+
+	if (r == FAT_READ_ONLY_FILE)
+		r = fat_open(io->instance, data->fd, &buf[0], "rb");
+
+	if (r == FAT_FILE_NOT_FOUND && (mode & vfs_mode_create) != 0)
+		r = fat_open(io->instance, data->fd, &buf[0], "wb+");
+
+	if (!r) {
+		if (!root_dir) {
+			r = fat_control(io->instance, data->fd, 0, record);
+		} else {
+			memset(&record[0], 0, sizeof(record));
+			record[11] = 0x10;
+		}
+	}
+
+	if (!r) {
+		unsigned long file_size = 0;
+		int fat_attributes = (int)record[11];
+
+		if ((mode & vfs_mode_truncate) != 0) {
+			W_LE32(&record[28], file_size);
+			write_record = 1;
+		}
+
+		if ((mode & vfs_mode_exclusive) != 0)
+			allocated_node->mode |= vfs_mode_exclusive;
+
+		if ((fat_attributes & 0x01) != 0)
+			allocated_node->mode |= vfs_mode_read_only;
+		if ((fat_attributes & 0x02) != 0)
+			allocated_node->mode |= vfs_mode_hidden;
+		if ((fat_attributes & 0x04) != 0)
+			allocated_node->mode |= vfs_mode_system;
+
+		if ((fat_attributes & 0x10) != 0)
+			allocated_node->type = vfs_type_directory;
+		else
+			allocated_node->type = vfs_type_regular;
+	}
+
+	if (write_record && !root_dir)
+		r = fat_control(io->instance, data->fd, 1, record);
+
+	leave_fat(node);
+
+	if (r) {
+		allocated_node->n_release(&allocated_node);
+		return translate_error(r);
+	}
+
+	*new_node = allocated_node;
+
+	return 0;
 }
 
 static int n_read_write_common(struct vfs_node *node,
