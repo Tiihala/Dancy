@@ -105,6 +105,14 @@ static int vfs_default_truncate(struct vfs_node *node, uint64_t size)
 	return DE_UNSUPPORTED;
 }
 
+static int vfs_default_unlink(struct vfs_node *node, const char *name)
+{
+	(void)node;
+	(void)name;
+
+	return DE_UNSUPPORTED;
+}
+
 void vfs_default(struct vfs_node *node)
 {
 	node->n_release  = vfs_default_release;
@@ -116,4 +124,5 @@ void vfs_default(struct vfs_node *node)
 	node->n_readdir  = vfs_default_readdir;
 	node->n_stat     = vfs_default_stat;
 	node->n_truncate = vfs_default_truncate;
+	node->n_unlink   = vfs_default_unlink;
 }
