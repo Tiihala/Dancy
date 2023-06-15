@@ -22,6 +22,9 @@
 static mtx_t tree_mtx;
 static struct vfs_node *root_node;
 
+static void n_release(struct vfs_node **node);
+static void n_release_panic(struct vfs_node **node);
+
 int vfs_init(void)
 {
 	static int run_once;
@@ -35,6 +38,14 @@ int vfs_init(void)
 
 	if ((r = vfs_init_root(&root_node)) != 0)
 		return r;
+
+	vfs_lock_tree();
+
+	root_node->mount_state = 1;
+	root_node->__release = n_release_panic;
+	root_node->n_release = n_release;
+
+	vfs_unlock_tree();
 
 	return 0;
 }
@@ -156,7 +167,7 @@ int vfs_decrement_count(struct vfs_node *node)
 static void n_release(struct vfs_node **node)
 {
 	struct vfs_node *n = *node;
-	struct vfs_node *owner = n->tree[0];
+	struct vfs_node *owner;
 
 	*node = NULL;
 
@@ -171,6 +182,8 @@ static void n_release(struct vfs_node **node)
 		vfs_unlock_tree();
 		return;
 	}
+
+	owner = n->tree[0];
 
 	if (n->tree_state == 0 && n->tree[2] == NULL) {
 		remove_leaf_node(n);
@@ -326,6 +339,13 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 	if (vname.components[0] == NULL) {
 		if (type != vfs_type_unknown && type != vfs_type_directory)
 			return DE_TYPE;
+
+		vfs_lock_tree();
+
+		root_node->tree_state += 1;
+		vfs_increment_count(root_node);
+
+		vfs_unlock_tree();
 
 		return *node = root_node, 0;
 	}
