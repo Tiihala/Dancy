@@ -437,6 +437,75 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 	return 0;
 }
 
+int vfs_remove(const char *name, int dir)
+{
+	struct vfs_node *owner = root_node;
+	struct vfs_name vname;
+	int i, r;
+
+	if ((r = vfs_build_path(name, &vname)) != 0)
+		return r;
+
+	if (!dir && vname.type == vfs_type_directory)
+		return DE_TYPE;
+
+	if (vname.components[0] == NULL)
+		return DE_BUSY;
+
+	vfs_lock_tree();
+
+	for (i = 0; vname.components[i] != NULL; i++) {
+		const char *n = vname.components[i];
+		int last_component = (vname.components[i + 1] == NULL);
+		struct vfs_node *new_node;
+
+		if ((new_node = find_node(owner, n)) != NULL) {
+			if (last_component) {
+				r = DE_BUSY;
+				break;
+			}
+
+			owner = new_node;
+			continue;
+		}
+
+		if (last_component) {
+			r = owner->n_remove(owner, n, dir);
+			break;
+		}
+
+		if ((r = owner->n_open(owner, n, &new_node, 0, 0)) != 0)
+			break;
+
+		new_node->__release = new_node->n_release;
+		new_node->n_release = n_release;
+		strcpy(&new_node->name[0], n);
+
+		add_node(owner, new_node);
+		owner = new_node;
+	}
+
+	while (owner != root_node) {
+		struct vfs_node *unused_node;
+
+		if (owner->tree_state != 0 || owner->tree[2] != NULL)
+			break;
+
+		if (owner->mount_state != 0)
+			break;
+
+		unused_node = owner;
+		owner = owner->tree[0];
+
+		remove_leaf_node(unused_node);
+		unused_node->__release(&unused_node);
+	}
+
+	vfs_unlock_tree();
+
+	return r;
+}
+
 int vfs_rename(const char *old_name, const char *new_name)
 {
 	(void)old_name;
