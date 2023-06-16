@@ -160,8 +160,11 @@ int vfs_decrement_count(struct vfs_node *node);
 
 int vfs_mount(const char *name, struct vfs_node *node);
 int vfs_open(const char *name, struct vfs_node **node, int type, int mode);
+
+int vfs_remove(const char *name, int dir);
 int vfs_rename(const char *old_name, const char *new_name);
-int vfs_unlink(const char *name);
-int vfs_rmdir(const char *name);
+
+#define vfs_unlink(name) (vfs_remove(name, 0))
+#define vfs_rmdir(name) (vfs_remove(name, 1))
 
 #endif

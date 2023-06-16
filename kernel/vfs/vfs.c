@@ -444,17 +444,3 @@ int vfs_rename(const char *old_name, const char *new_name)
 
 	return DE_UNSUPPORTED;
 }
-
-int vfs_unlink(const char *name)
-{
-	(void)name;
-
-	return DE_UNSUPPORTED;
-}
-
-int vfs_rmdir(const char *name)
-{
-	(void)name;
-
-	return DE_UNSUPPORTED;
-}
