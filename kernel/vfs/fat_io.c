@@ -296,7 +296,7 @@ static int n_open(struct vfs_node *node, const char *name,
 	struct fat_internal_data *data = node->internal_data;
 	struct fat_io *io = data->io;
 	struct vfs_node *allocated_node;
-	int write_record = 0, root_dir = 0;
+	int write_record = 0;
 	unsigned char record[32];
 	char buf[256];
 	int size = 0;
@@ -339,19 +339,10 @@ static int n_open(struct vfs_node *node, const char *name,
 		}
 	}
 
-	if (buf[0] == '\0') {
-		if (type == vfs_type_regular)
-			return DE_TYPE;
-		/*
-		 * The root directory of the file system.
-		 */
-		buf[0] = '/', buf[1] = '.', buf[2] = '\0';
-
-		size = 3, buf[size] = '\0';
-		root_dir = 1;
-	}
-
 	buf[size - 1] = '\0';
+
+	if (buf[0] == '\0')
+		return DE_PATH;
 
 	if ((r = enter_fat(node)) != 0)
 		return r;
@@ -410,14 +401,8 @@ static int n_open(struct vfs_node *node, const char *name,
 	if (r == FAT_FILE_NOT_FOUND && (mode & vfs_mode_create) != 0)
 		r = fat_open(io->instance, data->fd, &buf[0], "wb+");
 
-	if (!r) {
-		if (!root_dir) {
-			r = fat_control(io->instance, data->fd, 0, record);
-		} else {
-			memset(&record[0], 0, sizeof(record));
-			record[11] = 0x10;
-		}
-	}
+	if (!r)
+		r = fat_control(io->instance, data->fd, 0, record);
 
 	if (!r) {
 		unsigned long file_size = 0;
@@ -444,7 +429,7 @@ static int n_open(struct vfs_node *node, const char *name,
 			allocated_node->type = vfs_type_regular;
 	}
 
-	if (write_record && !root_dir)
+	if (write_record)
 		r = fat_control(io->instance, data->fd, 1, record);
 
 	leave_fat(node);
