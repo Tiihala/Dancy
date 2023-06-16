@@ -779,6 +779,64 @@ static int n_truncate(struct vfs_node *node, uint64_t size)
 	return (r != 0) ? translate_error(r) : 0;
 }
 
+static int n_remove(struct vfs_node *node, const char *name, int dir)
+{
+	void *instance;
+	struct fat_internal_data *data = node->internal_data;
+	char buf[256];
+	int size = 0;
+	int i, r;
+
+	buf[0] = '\0';
+
+	{
+		struct vfs_node *owner = node;
+		int depth = 0;
+		const char *p;
+
+		while (owner->tree[0] != NULL && owner->mount_state == 0)
+			owner = owner->tree[0], depth += 1;
+
+		while (depth >= 0) {
+			owner = node;
+			p = name;
+
+			if (--depth >= 0) {
+				for (i = 0; i < depth; i++)
+					owner = owner->tree[0];
+				p = &owner->name[0];
+			}
+
+			while ((buf[size] = (char)tolower((int)*p++)) != 0) {
+				if (size > (int)(sizeof(buf) - 3))
+					return DE_PATH;
+				size += 1;
+			}
+
+			buf[size++] = '/', buf[size] = '\0';
+		}
+	}
+
+	buf[size - 1] = '\0';
+
+	if (buf[0] == '\0')
+		return 0;
+
+	if ((r = enter_fat(node)) != 0)
+		return r;
+
+	instance = data->io->instance;
+
+	if (dir)
+		buf[size - 1] = '/';
+
+	r = fat_remove(instance, &buf[0]);
+
+	leave_fat(node);
+
+	return (r != 0) ? translate_error(r) : 0;
+}
+
 static struct vfs_node *alloc_node(struct fat_io *io)
 {
 	struct vfs_node *node;
@@ -809,6 +867,7 @@ static struct vfs_node *alloc_node(struct fat_io *io)
 		node->n_readdir  = n_readdir;
 		node->n_stat     = n_stat;
 		node->n_truncate = n_truncate;
+		node->n_remove   = n_remove;
 
 		data = node->internal_data;
 		data->io = io;
