@@ -85,6 +85,8 @@ struct vfs_node {
 	int (*n_stat)(struct vfs_node *node, struct vfs_stat *stat);
 	int (*n_truncate)(struct vfs_node *node, uint64_t size);
 
+	int (*n_remove)(struct vfs_node *node, const char *name, int dir);
+
 	char name[256];
 };
 
