@@ -21,6 +21,7 @@
 
 section .text
 
+        extern _ret_user_handler
         extern _syscall_handler
         global _syscall_init_asm
 
@@ -69,6 +70,8 @@ _syscall_asm_handler:
         ; arg4 = esi
         ; arg5 = edi
 
+        push 0                          ; push 0
+        push 0                          ; push 0
         push edi                        ; push arg5
         push esi                        ; push arg4
         push ebx                        ; push arg3
@@ -77,6 +80,32 @@ _syscall_asm_handler:
         push eax                        ; push arg0
         call _syscall_handler           ; call syscall_handler
 
+        mov ecx, esp                    ; ecx = stack pointer
+        and ecx, 0xFFFFE000             ; ecx = address of current task
+        cmp dword [ecx+28], 0           ; test task->asm_data3
+        je short .L2
+
+        add esp, 24                     ; pop six dwords
+        push eax                        ; save register eax
+        push edx                        ; save register edx
+
+        lea edx, [ebp+16]               ; edx = address of iret stack
+        mov eax, [edx+4]                ; eax = segment register cs
+        and eax, 3                      ; eax = eax & 3
+        cmp eax, 3                      ; test user space segment
+        jne short .L1
+
+        push 0                          ; push 0
+        push 0                          ; push 0
+        push edx                        ; push address of iret stack
+        push ecx                        ; push address of current task
+        call _ret_user_handler          ; call _ret_user_handler
+        add esp, 16                     ; pop four dwords
+
+.L1:    pop edx                         ; restore register edx
+        pop eax                         ; restore register eax
+
+.L2:    ; nop
         mov esp, ebp                    ; restore stack
         pop ds                          ; restore segment register ds
         pop es                          ; restore segment register es

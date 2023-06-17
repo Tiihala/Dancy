@@ -21,6 +21,7 @@
 
 section .text
 
+        extern ret_user_handler
         extern timer_handler
         extern timer_handler_ap
         global timer_apic_base
@@ -113,6 +114,20 @@ timer_call_handler:
         and rsp, -16                    ; align stack
         sub rsp, 32                     ; shadow space
         call timer_handler              ; call timer_handler
+
+        mov rcx, rsp                    ; rcx = stack pointer
+        and rcx, -8192                  ; rcx = address of current task
+        cmp dword [rcx+28], 0           ; test task->asm_data3
+        je short .L2
+
+        lea rdx, [rbx+64]               ; rdx = address of iret stack
+        mov rax, [rdx+8]                ; rax = segment register cs
+        and eax, 3                      ; eax = eax & 3
+        cmp eax, 3                      ; test user space segment
+        jne short .L2
+        call ret_user_handler           ; call ret_user_handler
+
+.L2:    ; nop
         mov rsp, rbx                    ; restore stack
 
         cli                             ; disable interrupts
@@ -162,6 +177,20 @@ timer_asm_handler_apic_ap:
         and rsp, -16                    ; align stack
         sub rsp, 32                     ; shadow space
         call timer_handler_ap           ; call timer_handler_ap
+
+        mov rcx, rsp                    ; rcx = stack pointer
+        and rcx, -8192                  ; rcx = address of current task
+        cmp dword [rcx+28], 0           ; test task->asm_data3
+        je short .L2
+
+        lea rdx, [rbx+64]               ; rdx = address of iret stack
+        mov rax, [rdx+8]                ; rax = segment register cs
+        and eax, 3                      ; eax = eax & 3
+        cmp eax, 3                      ; test user space segment
+        jne short .L2
+        call ret_user_handler           ; call ret_user_handler
+
+.L2:    ; nop
         mov rsp, rbx                    ; restore stack
 
         cli                             ; disable interrupts

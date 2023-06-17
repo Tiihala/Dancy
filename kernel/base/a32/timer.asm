@@ -21,6 +21,7 @@
 
 section .text
 
+        extern _ret_user_handler
         extern _timer_handler
         extern _timer_handler_ap
         global _timer_apic_base
@@ -129,6 +130,25 @@ _timer_call_handler:
 .L1:    sti                             ; enable interrupts
         and esp, 0xFFFFFFF0             ; align stack
         call _timer_handler             ; call _timer_handler
+
+        mov ecx, esp                    ; ecx = stack pointer
+        and ecx, 0xFFFFE000             ; ecx = address of current task
+        cmp dword [ecx+28], 0           ; test task->asm_data3
+        je short .L2
+
+        lea edx, [ebp+28]               ; edx = address of iret stack
+        mov eax, [edx+4]                ; eax = segment register cs
+        and eax, 3                      ; eax = eax & 3
+        cmp eax, 3                      ; test user space segment
+        jne short .L2
+
+        push 0                          ; push 0
+        push 0                          ; push 0
+        push edx                        ; push address of iret stack
+        push ecx                        ; push address of current task
+        call _ret_user_handler          ; call _ret_user_handler
+
+.L2:    ; nop
         mov esp, ebp                    ; restore stack
 
         cli                             ; disable interrupts
@@ -173,6 +193,25 @@ _timer_asm_handler_apic_ap:
 .L1:    sti                             ; enable interrupts
         and esp, 0xFFFFFFF0             ; align stack
         call _timer_handler_ap          ; call _timer_handler_ap
+
+        mov ecx, esp                    ; ecx = stack pointer
+        and ecx, 0xFFFFE000             ; ecx = address of current task
+        cmp dword [ecx+28], 0           ; test task->asm_data3
+        je short .L2
+
+        lea edx, [ebx+24]               ; edx = address of iret stack
+        mov eax, [edx+4]                ; eax = segment register cs
+        and eax, 3                      ; eax = eax & 3
+        cmp eax, 3                      ; test user space segment
+        jne short .L2
+
+        push 0                          ; push 0
+        push 0                          ; push 0
+        push edx                        ; push address of iret stack
+        push ecx                        ; push address of current task
+        call _ret_user_handler          ; call _ret_user_handler
+
+.L2:    ; nop
         mov esp, ebx                    ; restore stack
 
         cli                             ; disable interrupts

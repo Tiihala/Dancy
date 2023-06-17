@@ -21,6 +21,7 @@
 
 section .text
 
+        extern _ret_user_handler
         extern _idt_handler
         extern _idt_panic
         global _idt_asm_array
@@ -100,6 +101,30 @@ _idt_asm_handler:
         push ecx                        ; push "num"
         call _idt_handler               ; call idt_handler
 
+        mov ecx, esp                    ; ecx = stack pointer
+        and ecx, 0xFFFFE000             ; ecx = address of current task
+        cmp dword [ecx+28], 0           ; test task->asm_data3
+        je short .L1
+
+        lea edx, [ebx+28]               ; edx = address of iret stack
+        mov eax, [edx+4]                ; eax = segment register cs
+        and eax, 3                      ; eax = eax & 3
+        cmp eax, 3                      ; test user space segment
+        jne short .L1
+
+        ; void ret_user_handler(struct task *current, void *stack)
+        ;
+        ;   current    current task structure
+        ;   stack      stack at "instruction pointer"
+
+        push 0                          ; push 0
+        push 0                          ; push 0
+        push edx                        ; push "stack"
+        push ecx                        ; push "current"
+        sti                             ; enable interrupts
+        call _ret_user_handler          ; call _ret_user_handler
+
+.L1:    ; nop
         mov esp, ebx                    ; restore stack
         pop ds                          ; restore segment register ds
         pop es                          ; restore segment register es

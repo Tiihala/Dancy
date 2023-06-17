@@ -18,3 +18,9 @@
  */
 
 #include <dancy.h>
+
+void ret_user_handler(struct task *current, void *stack)
+{
+	(void)current;
+	(void)stack;
+}

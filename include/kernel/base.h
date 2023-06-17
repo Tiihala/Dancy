@@ -22,6 +22,7 @@
 
 #include <common/types.h>
 #include <kernel/table.h>
+#include <kernel/task.h>
 
 /*
  * Declarations of apic.c
@@ -235,6 +236,11 @@ int pg_check_user_read(const void *vaddr, size_t size);
 int pg_check_user_write(void *vaddr, size_t size);
 int pg_check_user_string(const void *vaddr, int *count);
 int pg_check_user_vector(const void *vaddr, int *count);
+
+/*
+ * Declarations of ret_user.c
+ */
+void ret_user_handler(struct task *current, void *stack);
 
 /*
  * Declarations of runlevel.c

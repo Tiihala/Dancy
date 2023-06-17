@@ -21,6 +21,7 @@
 
 section .text
 
+        extern ret_user_handler
         extern syscall_handler
         global syscall_init_asm
 
@@ -88,6 +89,32 @@ syscall_asm_handler:
         call syscall_handler            ; call syscall_handler
         xor edx, edx                    ; rdx = 0, rax = (long long)retval
 
+        mov rcx, rsp                    ; rcx = stack pointer
+        and rcx, -8192                  ; rcx = address of current task
+        cmp dword [rcx+28], 0           ; test task->asm_data3
+        je short .L2
+
+        add rsp, 48                     ; pop six qwords
+        push rax                        ; save register rax
+        push rdx                        ; save register rdx
+
+        push rdx                        ; push 0 (shadow space)
+        push rdx                        ; push 0 (shadow space)
+        push rdx                        ; push 0 (shadow space)
+        push rdx                        ; push 0 (shadow space)
+
+        lea rdx, [rbp+48]               ; rdx = address of iret stack
+        mov rax, [rdx+8]                ; rax = segment register cs
+        and eax, 3                      ; eax = eax & 3
+        cmp eax, 3                      ; test user space segment
+        jne short .L1
+
+        call ret_user_handler           ; call ret_user_handler
+.L1:    add rsp, 32                     ; pop four qwords
+        pop rdx                         ; restore register rdx
+        pop rax                         ; restore register rax
+
+.L2:    ; nop
         mov rsp, rbp                    ; restore stack
         pop r11                         ; restore register r11
         pop r10                         ; restore register r10
