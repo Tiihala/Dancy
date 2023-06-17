@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -95,7 +95,7 @@ int task_init(void);
 int task_init_ap(void);
 
 struct task *task_current(void);
-struct task *task_find(uint64_t id);
+struct task *task_send_signal(uint64_t id, int sig);
 
 uint64_t task_create(int (*func)(void *), void *arg, int type);
 int task_list(struct task_list_entry *buf, size_t buf_size);
