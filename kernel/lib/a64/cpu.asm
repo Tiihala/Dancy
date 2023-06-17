@@ -33,6 +33,8 @@ section .text
         global cpu_wrmsr
         global cpu_add32
         global cpu_sub32
+        global cpu_btr32
+        global cpu_bts32
         global cpu_in8
         global cpu_in16
         global cpu_in32
@@ -210,6 +212,22 @@ cpu_sub32:
 
         mov eax, ecx                    ; eax = latest value
         pop rbx                         ; restore register rbx
+        ret
+
+align 16
+        ; int cpu_btr32(void *address, uint32_t value)
+cpu_btr32:
+        xor eax, eax                    ; eax = 0
+        lock btr [rcx], edx             ; bit test and reset
+        adc eax, 0                      ; eax = return value
+        ret
+
+align 16
+        ; int cpu_bts32(void *address, uint32_t value)
+cpu_bts32:
+        xor eax, eax                    ; eax = 0
+        lock bts [rcx], edx             ; bit test and set
+        adc eax, 0                      ; eax = return value
         ret
 
 align 16
