@@ -91,6 +91,7 @@ struct task *task_current(void);
 struct task *task_find(uint64_t id);
 
 uint64_t task_create(int (*func)(void *), void *arg, int type);
+void task_foreach(int (*func)(struct task *, void *), void *arg);
 
 int task_check_event(struct task *task);
 int task_read_event(void);

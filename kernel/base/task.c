@@ -553,6 +553,39 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	return id;
 }
 
+void task_foreach(int (*func)(struct task *, void *), void *arg)
+{
+	struct task *t = task_head;
+
+	if ((cpu_read_flags() & CPU_INTERRUPT_FLAG) == 0)
+		panic("Enumerating task structs while interrupts disabled.");
+
+	if (t != NULL) {
+		/*
+		 * Do not disable interrupts. Task switching must be
+		 * temporarily suspended.
+		 */
+		task_switch_disable();
+		spin_lock(&task_lock);
+
+		/*
+		 * The circular linked list must be fully valid when the
+		 * task lock is acquired. No other code can modify task
+		 * structure identifications or the linked list.
+		 */
+		do {
+			if (func(t, arg) != 0)
+				break;
+
+			t = task_read_next(t);
+
+		} while (t != task_head);
+
+		spin_unlock(&task_lock);
+		task_switch_enable();
+	}
+}
+
 int task_check_event(struct task *task)
 {
 	int r = 0;
