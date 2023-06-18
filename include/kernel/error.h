@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, 2021, 2022 Antti Tiihala
+ * Copyright (c) 2020, 2021, 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -34,6 +34,8 @@ DANCY_X(DE_EMPTY                     , "no data available"               )
 DANCY_X(DE_UNINITIALIZED             , "uninitialized"                   )
 DANCY_X(DE_UNSUPPORTED               , "unsupported"                     )
 DANCY_X(DE_PLACEHOLDER               , "placeholder data"                )
+DANCY_X(DE_SEARCH                    , "resource not found"              )
+DANCY_X(DE_INTERRUPT                 , "function interrupted"            )
 DANCY_X(DE_BUFFER                    , "buffer size too small"           )
 DANCY_X(DE_NAME                      , "name not found"                  )
 DANCY_X(DE_PATH                      , "erroneous path"                  )
