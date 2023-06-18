@@ -420,7 +420,7 @@ int task_init_ap(void)
 	return 0;
 }
 
-struct task *task_send_signal(uint64_t id, int sig)
+struct task *task_find(uint64_t id)
 {
 	struct task *t = task_head;
 	struct task *r = NULL;
@@ -443,11 +443,6 @@ struct task *task_send_signal(uint64_t id, int sig)
 		 */
 		do {
 			if (t->id == id) {
-				if (sig > 0 && sig < 32) {
-					void *address = &t->asm_data3;
-					uint32_t value = (uint32_t)sig;
-					cpu_bts32(address, value);
-				}
 				r = t;
 				break;
 			}
@@ -768,7 +763,7 @@ int task_trywait(uint64_t id, int *retval)
 	if (retval)
 		*retval = r;
 
-	if ((t = task_send_signal(id, 0)) == NULL)
+	if ((t = task_find(id)) == NULL)
 		return DE_ARGUMENT;
 
 	r = task_read_retval(t, id, retval);
@@ -799,7 +794,7 @@ int task_wait(uint64_t id, int *retval)
 	if (retval)
 		*retval = r;
 
-	if ((t = task_send_signal(id, 0)) == NULL)
+	if ((t = task_find(id)) == NULL)
 		return DE_ARGUMENT;
 
 	for (;;) {
