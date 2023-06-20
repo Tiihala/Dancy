@@ -336,6 +336,9 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 			return DE_TYPE;
 	}
 
+	if ((mode & vfs_mode_exclusive) != 0 && type == vfs_type_directory)
+		return DE_ARGUMENT;
+
 	if (vname.components[0] == NULL) {
 		if (type != vfs_type_unknown && type != vfs_type_directory)
 			return DE_TYPE;
@@ -358,10 +361,18 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 
 		if ((new_node = find_node(owner, n)) != NULL) {
 			if (last_component) {
+				int new_type = new_node->type;
 				int new_mode = new_node->mode;
+				int excl = 0;
 
-				if ((new_mode & vfs_mode_exclusive) != 0) {
-					r = DE_BUSY;
+				excl |= (mode & vfs_mode_exclusive);
+				excl |= (new_mode & vfs_mode_exclusive);
+
+				if (excl) {
+					if (new_type == vfs_type_directory)
+						r = DE_ARGUMENT;
+					else
+						r = DE_BUSY;
 					break;
 				}
 
@@ -376,8 +387,26 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 			continue;
 		}
 
-		if ((r = owner->n_open(owner, n, &new_node, type, mode)) != 0)
-			break;
+		if (last_component) {
+			r = owner->n_open(owner, n, &new_node, type, mode);
+
+			if (r != 0)
+				break;
+
+			if ((new_node->mode & vfs_mode_exclusive) != 0) {
+				if (new_node->type == vfs_type_directory) {
+					new_node->n_release(&new_node);
+					r = DE_ARGUMENT;
+					break;
+				}
+			}
+
+		} else {
+			r = owner->n_open(owner, n, &new_node, 0, 0);
+
+			if (r != 0)
+				break;
+		}
 
 		new_node->__release = new_node->n_release;
 		new_node->n_release = n_release;
