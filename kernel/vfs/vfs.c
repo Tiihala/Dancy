@@ -437,6 +437,53 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 	return 0;
 }
 
+int vfs_realpath(struct vfs_node *node, void *buffer, size_t size)
+{
+	struct vfs_node *n = node;
+	char *b = buffer;
+	size_t s = 0;
+	int depth = 0;
+	int i, j;
+
+	if (size < 2) {
+		if (size != 0)
+			b[s] = '\0';
+		return DE_OVERFLOW;
+	}
+
+	while (n->tree[0] != NULL)
+		n = n->tree[0], depth += 1;
+
+	if (depth == 0) {
+		if (node != root_node)
+			return memset(buffer, 0, size), DE_UNEXPECTED;
+		b[s++] = '/';
+	}
+
+	for (i = 0; i < depth; i++) {
+		const char *p = &node->name[0];
+		char c = '/';
+
+		for (j = i + 1, n = node; j < depth; j++)
+			n = n->tree[0], p = &n->name[0];
+
+		if (p[0] == '\0')
+			return memset(buffer, 0, size), DE_UNEXPECTED;
+
+		do {
+			if ((s + 1) >= size)
+				return memset(buffer, 0, size), DE_OVERFLOW;
+
+			b[s++] = c;
+
+		} while ((c = *p++) != '\0');
+	}
+
+	b[s] = '\0';
+
+	return 0;
+}
+
 int vfs_remove(const char *name, int dir)
 {
 	struct vfs_node *owner = root_node;

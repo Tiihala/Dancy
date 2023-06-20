@@ -160,6 +160,7 @@ int vfs_decrement_count(struct vfs_node *node);
 
 int vfs_mount(const char *name, struct vfs_node *node);
 int vfs_open(const char *name, struct vfs_node **node, int type, int mode);
+int vfs_realpath(struct vfs_node *node, void *buffer, size_t size);
 
 int vfs_remove(const char *name, int dir);
 int vfs_rename(const char *old_name, const char *new_name);
