@@ -91,7 +91,6 @@ struct vfs_node {
 };
 
 struct vfs_name {
-	void *buffer;
 	char **components;
 	int type;
 };
@@ -134,7 +133,6 @@ int fat_io_create(struct vfs_node **new_node, struct vfs_node *dev_node);
 void vfs_clone_path(void *task, void *new_task);
 int vfs_build_path(const char *name, struct vfs_name *vname);
 int vfs_chdir(const char *name);
-int vfs_duplicate_path(struct vfs_name *vname);
 
 /*
  * Declarations of pipe.c

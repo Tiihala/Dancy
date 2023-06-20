@@ -150,8 +150,6 @@ static int set_vname(struct vfs_path *path, struct vfs_name *vname, int val)
 	}
 
 	memset(vname, 0, sizeof(*vname));
-
-	vname->buffer = NULL;
 	vname->components = &path->absolute_path[1];
 
 	if (path->absolute_path[0][0] == 'D')
@@ -343,47 +341,6 @@ int vfs_chdir(const char *name)
 				break;
 		}
 	}
-
-	return 0;
-}
-
-int vfs_duplicate_path(struct vfs_name *vname)
-{
-	size_t size = sizeof(struct vfs_path);
-	struct vfs_path *original_path = get_vfs_path();
-	struct vfs_path *path;
-	int i;
-
-	memset(vname, 0, sizeof(*vname));
-
-	if ((path = malloc(size)) == NULL)
-		return DE_MEMORY;
-
-	memcpy(path, original_path, size);
-	vname->buffer = path;
-
-	for (i = 0; i < VFS_PATH_COUNT; i++) {
-		char *p = original_path->absolute_path[i];
-		addr_t offset;
-
-		path->working_directory[i] = NULL;
-
-		if ((addr_t)p <= (addr_t)original_path)
-			continue;
-
-		if ((addr_t)p >= (addr_t)original_path + (addr_t)size)
-			continue;
-
-		offset = (addr_t)p - (addr_t)original_path;
-		path->absolute_path[i] = (char *)((addr_t)path + offset);
-	}
-
-	vname->components = &path->absolute_path[1];
-
-	if (path->absolute_path[0][0] == 'D')
-		vname->type = vfs_type_directory;
-	else
-		vname->type = vfs_type_unknown;
 
 	return 0;
 }
