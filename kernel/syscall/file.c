@@ -718,44 +718,23 @@ int file_chdir(const char *name)
 
 int file_getcwd(void *buffer, size_t size)
 {
-	struct vfs_name vname;
-	char *p = buffer;
-	size_t s = 0;
-	int i, r;
+	struct vfs_node *wd_node = task_current()->fd.wd_node;
 
-	memset(buffer, 0, size);
+	if (wd_node == NULL) {
+		char *b = buffer;
 
-	if (size < 2)
-		return DE_OVERFLOW;
-
-	if ((r = vfs_build_path(NULL, &vname)) != 0)
-		return r;
-
-	p[0] = '/';
-
-	for (i = 0; /* void */; i++) {
-		char *component = vname.components[i];
-
-		if (!component || (*component == '\0'))
-			break;
-
-		if ((s + 1) >= size) {
-			memset(buffer, 0, size);
+		if (size < 2) {
+			if (size != 0)
+				b[0] = '\0';
 			return DE_OVERFLOW;
 		}
 
-		p[s++] = '/';
+		b[0] = '/', b[1] = '\0';
 
-		while (*component != '\0') {
-			if ((s + 1) >= size) {
-				memset(buffer, 0, size);
-				return DE_OVERFLOW;
-			}
-			p[s++] = *component++;
-		}
+		return 0;
 	}
 
-	return 0;
+	return vfs_realpath(wd_node, buffer, size);
 }
 
 int file_getdents(int fd, void *buffer, size_t size, int *count, int flags)
