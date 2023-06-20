@@ -834,12 +834,19 @@ int file_realpath(const char *name, void *buffer, size_t size)
 	size_t s = 0;
 	int i, r;
 
-	memset(buffer, 0, size);
+	if (size != 0)
+		p[0] = '\0';
 
 	if (size < 2)
 		return DE_OVERFLOW;
 
 	r = vfs_open(name, &node, 0, 0);
+
+	if (r == 0) {
+		r = vfs_realpath(node, buffer, size);
+		node->n_release(&node);
+		return r;
+	}
 
 	if (r != 0 && r != DE_BUSY)
 		return r;
@@ -875,6 +882,11 @@ int file_realpath(const char *name, void *buffer, size_t size)
 			p[s++] = *component++;
 		}
 	}
+
+	if (s != 0)
+		p[s] = '\0';
+	else
+		p[1] = '\0';
 
 	return 0;
 }
