@@ -122,6 +122,7 @@ static int check_uefi_file(void)
 	static const char *format_err = "Error: uefi-object-file format\n";
 	const size_t min_size = EF_HEADER_SIZE + 212;
 	const size_t max_size = 0x00180000;
+	unsigned long text_size, rdata_size, data_size, bss_size;
 
 	if (uefi_file_size < min_size || uefi_file_size > max_size)
 		return fputs("Error: uefi-object-file size\n", stderr), 1;
@@ -140,6 +141,23 @@ static int check_uefi_file(void)
 		return fputs(format_err, stderr), 1;
 	if (memcmp(&uefi_file[EF_HEADER_SIZE + 140], ".bss", 5))
 		return fputs(format_err, stderr), 1;
+
+	text_size  = LE32(&uefi_file[EF_HEADER_SIZE + 20 + 16]);
+	rdata_size = LE32(&uefi_file[EF_HEADER_SIZE + 60 + 16]);
+	data_size  = LE32(&uefi_file[EF_HEADER_SIZE + 100 + 16]);
+	bss_size   = LE32(&uefi_file[EF_HEADER_SIZE + 140 + 16]);
+
+	if (text_size == 0 || text_size > max_size)
+		return fputs("Error: .text size\n", stderr), 1;
+	if (rdata_size > max_size)
+		return fputs("Error: .rdata size\n", stderr), 1;
+	if (data_size > max_size)
+		return fputs("Error: .data size\n", stderr), 1;
+	if (bss_size > max_size)
+		return fputs("Error: .bss size\n", stderr), 1;
+
+	if (text_size + rdata_size + data_size + bss_size > max_size)
+		return fputs("Error: uefi-object-file size\n", stderr), 1;
 	return 0;
 }
 
