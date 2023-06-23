@@ -608,8 +608,8 @@ void task_set_cmdline(struct task *task, void *line, const char *cline)
 			task->cmd._line[i++] = (uint8_t)c;
 		}
 
-		task->cmd.line[i + 0] = 0;
-		task->cmd.line[i + 1] = 0;
+		task->cmd._line[i + 0] = 0;
+		task->cmd._line[i + 1] = 0;
 		task->cmd.line = &task->cmd._line[0];
 	}
 
