@@ -586,6 +586,39 @@ void task_foreach(int (*func)(struct task *, void *), void *arg)
 	}
 }
 
+void task_set_cmdline(struct task *task, void *line, const char *cline)
+{
+	void *lock_local = &task_lock;
+	void *prev = NULL;
+
+	spin_enter(&lock_local);
+
+	if (task->cmd.line != &task->cmd._line[0])
+		prev = task->cmd.line;
+
+	task->cmd.line = line;
+
+	if (line == NULL && cline != NULL) {
+		int i = 0;
+		char c;
+
+		while (i < (TASK_CMD_STATIC_SIZE - 2)) {
+			if ((c = cline[i]) == 0)
+				break;
+			task->cmd._line[i++] = (uint8_t)c;
+		}
+
+		task->cmd.line[i + 0] = 0;
+		task->cmd.line[i + 1] = 0;
+		task->cmd.line = &task->cmd._line[0];
+	}
+
+	spin_leave(&lock_local);
+
+	if (prev != NULL)
+		free(prev);
+}
+
 int task_check_event(struct task *task)
 {
 	int r = 0;
@@ -640,6 +673,8 @@ void task_exit(int retval)
 {
 	static const char *unexpected = "task_exit: unexpected behavior";
 	struct task *current = task_current();
+
+	task_set_cmdline(current, NULL, "[exit]");
 
 	if (current->fd.state)
 		current->fd.release(current);

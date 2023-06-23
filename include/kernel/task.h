@@ -28,6 +28,7 @@ enum task_type {
 	task_uniproc  = 0x02
 };
 
+#define TASK_CMD_STATIC_SIZE 32
 #define TASK_FD_STATIC_COUNT 64
 
 struct task {
@@ -72,6 +73,11 @@ struct task {
 	} sched;
 
 	struct {
+		uint8_t *line;
+		uint8_t _line[TASK_CMD_STATIC_SIZE];
+	} cmd;
+
+	struct {
 		uint32_t state;
 		void (*release)(struct task *task);
 		void (*clone)(struct task *task, struct task *new_task);
@@ -92,6 +98,7 @@ struct task *task_find(uint64_t id);
 
 uint64_t task_create(int (*func)(void *), void *arg, int type);
 void task_foreach(int (*func)(struct task *, void *), void *arg);
+void task_set_cmdline(struct task *task, void *line, const char *cline);
 
 int task_check_event(struct task *task);
 int task_read_event(void);
