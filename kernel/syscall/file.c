@@ -338,41 +338,51 @@ int file_write(int fd, size_t *size, const void *buffer)
 
 		if ((t = task->fd.table[fd]) != 0) {
 			int block_capability = 0;
-			uint64_t o;
+			int f;
 
 			fte = (void *)((addr_t)(t & table_mask));
 
 			lock_fte(fte);
 
-			if ((fte->flags & O_ACCMODE) == O_RDONLY) {
-				unlock_fte(fte);
-				return *size = 0, DE_ARGUMENT;
-			}
-
 			n = fte->node;
-			o = fte->offset;
-
-			if ((fte->flags & O_APPEND) != 0) {
-				r = n->n_append(n, size, buffer);
-				fte->offset = get_file_size(n);
-			} else {
-				r = n->n_write(n, o, size, buffer);
-				fte->offset += (uint64_t)(*size);
-			}
+			f = fte->flags;
 
 			if (n->type == vfs_type_buffer)
 				block_capability = 1;
 			else if (n->type == vfs_type_character)
 				block_capability = 1;
 
-			while (block_capability) {
-				if (*size == requested_size)
+			if ((f & O_ACCMODE) == O_RDONLY) {
+				unlock_fte(fte);
+				return *size = 0, DE_ARGUMENT;
+			}
+
+			if (!block_capability) {
+				if ((f & O_APPEND) != 0) {
+					r = n->n_append(n, size, buffer);
+					fte->offset = get_file_size(n);
+				} else {
+					uint64_t o = fte->offset;
+					r = n->n_write(n, o, size, buffer);
+					fte->offset += (uint64_t)(*size);
+				}
+
+				unlock_fte(fte);
+				return r;
+			}
+
+			unlock_fte(fte);
+
+			if ((f & O_APPEND) != 0)
+				r = n->n_append(n, size, ptr);
+			else
+				r = n->n_write(n, 0, size, ptr);
+
+			while (*size != requested_size) {
+				if ((f & O_NONBLOCK) != 0)
 					break;
 
 				if (r != 0 && r != DE_RETRY)
-					break;
-
-				if ((fte->flags & O_NONBLOCK) != 0)
 					break;
 
 				if (*size > requested_size) {
@@ -380,28 +390,19 @@ int file_write(int fd, size_t *size, const void *buffer)
 					break;
 				}
 
-				if (*size == 0) {
-					unlock_fte(fte);
+				if (*size == 0)
 					task_yield();
-					lock_fte(fte);
-				}
 
 				requested_size -= (*size);
 				ptr += (*size);
 
 				*size = requested_size;
 
-				if ((fte->flags & O_APPEND) != 0) {
+				if ((f & O_APPEND) != 0)
 					r = n->n_append(n, size, ptr);
-					fte->offset = get_file_size(n);
-				} else {
-					o = fte->offset;
-					r = n->n_write(n, o, size, ptr);
-					fte->offset += (uint64_t)(*size);
-				}
+				else
+					r = n->n_write(n, 0, size, ptr);
 			}
-
-			unlock_fte(fte);
 
 			return r;
 		}
