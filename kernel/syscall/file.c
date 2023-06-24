@@ -266,55 +266,56 @@ int file_read(int fd, size_t *size, void *buffer)
 
 		if ((t = task->fd.table[fd]) != 0) {
 			int block_capability = 0;
-			uint64_t o;
+			int f;
 
 			fte = (void *)((addr_t)(t & table_mask));
 
 			lock_fte(fte);
 
-			if ((fte->flags & O_ACCMODE) == O_WRONLY) {
-				unlock_fte(fte);
-				return *size = 0, DE_ARGUMENT;
-			}
-
 			n = fte->node;
-			o = fte->offset;
-			r = n->n_read(n, o, size, buffer);
+			f = fte->flags;
 
 			if (n->type == vfs_type_buffer)
 				block_capability = 1;
 			else if (n->type == vfs_type_character)
 				block_capability = 1;
 
-			while (block_capability) {
-				if (*size != 0 || (r != 0 && r != DE_RETRY))
-					break;
+			if ((f & O_ACCMODE) == O_WRONLY) {
+				unlock_fte(fte);
+				return *size = 0, DE_ARGUMENT;
+			}
 
-				if ((fte->flags & O_NONBLOCK) != 0)
-					break;
+			if (!block_capability) {
+				r = n->n_read(n, fte->offset, size, buffer);
+				fte->offset += (uint64_t)(*size);
 
 				unlock_fte(fte);
+				return r;
+			}
+
+			unlock_fte(fte);
+			r = n->n_read(n, 0, size, buffer);
+
+			while (*size == 0) {
+				if ((f & O_NONBLOCK) != 0)
+					break;
+
+				if (r != 0 && r != DE_RETRY)
+					break;
 
 				if (n->internal_event)
 					event_wait(*n->internal_event, 2000);
 				else
 					task_yield();
 
-				lock_fte(fte);
-
 				*size = requested_size;
-
-				o = fte->offset;
-				r = n->n_read(n, o, size, buffer);
+				r = n->n_read(n, 0, size, buffer);
 
 				if (!n->internal_event) {
 					if (*size == 0 && r == 0)
 						break;
 				}
 			}
-
-			fte->offset += (uint64_t)(*size);
-			unlock_fte(fte);
 
 			return r;
 		}
