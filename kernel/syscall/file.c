@@ -168,6 +168,17 @@ static uint64_t get_file_size(struct vfs_node *node)
 	return 0;
 }
 
+static int detect_interrupt(int r)
+{
+	if (r != 0 && r != DE_RETRY)
+		return r;
+
+	if (task_current()->asm_data3 != 0)
+		return DE_INTERRUPT;
+
+	return 0;
+}
+
 int file_init(void)
 {
 	static int run_once;
@@ -300,7 +311,7 @@ int file_read(int fd, size_t *size, void *buffer)
 				if ((f & O_NONBLOCK) != 0)
 					break;
 
-				if (r != 0 && r != DE_RETRY)
+				if ((r = detect_interrupt(r)) != 0)
 					break;
 
 				if (n->internal_event)
@@ -382,7 +393,7 @@ int file_write(int fd, size_t *size, const void *buffer)
 				if ((f & O_NONBLOCK) != 0)
 					break;
 
-				if (r != 0 && r != DE_RETRY)
+				if ((r = detect_interrupt(r)) != 0)
 					break;
 
 				if (*size > requested_size) {
