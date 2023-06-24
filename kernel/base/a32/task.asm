@@ -22,7 +22,6 @@
 section .text
 
         extern _task_exit
-        extern _task_yield
         global _task_create_asm
         global _task_current
         global _task_jump_asm
@@ -186,22 +185,11 @@ _task_switch_disable:
 align 16
         ; void task_switch_enable(void)
 _task_switch_enable:
-        push ebp                        ; save register ebp
         mov eax, esp                    ; eax = stack pointer
         and eax, 0xFFFFE000             ; eax = address of current task
         sub dword [eax+20], 2           ; decrement asm_data1 (ignore bit 0)
         js short _state_error
-
-        cmp dword [eax+20], 1           ; test if switching was skipped
-        jne short .L1
         and dword [eax+20], 0xFFFFFFFE  ; clear bit 0
-
-        mov ebp, esp                    ; save stack pointer
-        and esp, 0xFFFFFFF0             ; align stack
-        call _task_yield                ; switch to another task
-        mov esp, ebp                    ; restore stack pointer
-
-.L1:    pop ebp                         ; restore register epb
         ret
 
 _state_error:
