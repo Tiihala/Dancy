@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -173,6 +173,81 @@ int arg_copy(void *arg_state, addr_t *user_sp)
 	}
 
 	memcpy((void *)base, arg_state, size);
+
+	return 0;
+}
+
+int arg_set_cmdline(struct vfs_node *node, addr_t user_sp)
+{
+	struct task *current = task_current();
+	uint8_t *buffer = &current->cmd._line[0];
+	size_t buffer_size = 1;
+	size_t size = 0;
+
+	addr_t ah_user_addr = user_sp + (addr_t)sizeof(addr_t);
+	struct arg_header *ah = (struct arg_header *)((void *)ah_user_addr);
+	int argc = (int)ah->argc;
+	char **argv = (char **)ah->argv;
+
+	char path[256];
+	int i, r;
+
+	if ((r = vfs_realpath(node, &path[0], sizeof(path))) != 0)
+		return r;
+
+	buffer_size += (strlen(&path[0]) + 1);
+
+	if (buffer_size <= 2 || buffer_size >= sizeof(path))
+		return DE_UNEXPECTED;
+
+	for (i = 1; i < argc; i++) {
+		size_t add = strlen(argv[i]);
+
+		if (add != 0)
+			buffer_size += (add + 1);
+	}
+
+	if (buffer_size > TASK_CMD_STATIC_SIZE) {
+		const int retry_count = 4096;
+
+		for (i = 0; i < retry_count; i++) {
+			if ((buffer = malloc(buffer_size)) != NULL)
+				break;
+			task_yield();
+		}
+
+		if (buffer == NULL)
+			return DE_MEMORY;
+
+	} else if (buffer[0] != 0) {
+		/*
+		 * Remove all previous content from the static
+		 * task-specific buffer. This is not necessary.
+		 */
+		memset(buffer, 0, TASK_CMD_STATIC_SIZE);
+	}
+
+	for (i = 0; /* void */; i++) {
+		if ((buffer[size++] = (uint8_t)path[i]) == 0)
+			break;
+	}
+
+	for (i = 1; i < argc; i++) {
+		const uint8_t *p = (const uint8_t *)argv[i];
+
+		if (p[0] == 0)
+			continue;
+
+		while ((buffer[size++] = *p++) != 0)
+			/* void */;
+	}
+
+	buffer[size++] = 0;
+
+	if (size != buffer_size)
+		kernel->panic("arg_set_cmdline: unexpected behavior");
+
+	task_set_cmdline(current, buffer, NULL);
 
 	return 0;
 }

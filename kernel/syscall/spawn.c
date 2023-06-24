@@ -120,6 +120,12 @@ static int new_task(void *arg)
 		return 0;
 	}
 
+	if ((r = arg_set_cmdline(ta->node, user_sp)) != 0) {
+		ta->retval = r;
+		spin_unlock(&ta->lock);
+		return 0;
+	}
+
 	arg_delete(ta->arg_state);
 
 	{

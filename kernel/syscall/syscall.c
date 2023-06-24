@@ -119,6 +119,14 @@ static long long dancy_syscall_execve(va_list va)
 		return -ENOMEM;
 	}
 
+	if (arg_set_cmdline(node, user_sp)) {
+		pg_alt_delete();
+		arg_delete(arg_state);
+		node->n_release(&node);
+
+		return -ENOMEM;
+	}
+
 	pg_alt_accept();
 	arg_delete(arg_state);
 	node->n_release(&node);
