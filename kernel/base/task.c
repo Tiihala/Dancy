@@ -988,5 +988,10 @@ int task_wait_descendant(uint64_t *id, int *retval)
 
 void task_yield(void)
 {
+	int task_switch_disabled = (task_current()->asm_data1 > 1);
+
+	if (task_switch_disabled)
+		return;
+
 	kernel->scheduler.yield();
 }
