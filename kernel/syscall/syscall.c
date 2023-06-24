@@ -324,7 +324,9 @@ static long long dancy_syscall_read(va_list va)
 	if (size > 0x7FFFF000)
 		size = 0x7FFFF000;
 
-	if ((r = file_read(fd, &size, buffer)) != 0) {
+	if ((r = file_read(fd, &size, buffer)) != 0 && size == 0) {
+		if (r == DE_INTERRUPT)
+			return -EINTR;
 		if (r == DE_ARGUMENT)
 			return -EBADF;
 		if (r == DE_RETRY)
@@ -350,7 +352,9 @@ static long long dancy_syscall_write(va_list va)
 	if (size > 0x7FFFF000)
 		size = 0x7FFFF000;
 
-	if ((r = file_write(fd, &size, buffer)) != 0) {
+	if ((r = file_write(fd, &size, buffer)) != 0 && size == 0) {
+		if (r == DE_INTERRUPT)
+			return -EINTR;
 		if (r == DE_ARGUMENT)
 			return -EBADF;
 		if (r == DE_RETRY)
