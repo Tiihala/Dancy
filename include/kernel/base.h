@@ -258,7 +258,7 @@ void kernel_start(void);
 void kernel_start_ap(void);
 
 /*
- * Declarations of timer.asm and timer.c
+ * Declarations of timer.asm
  */
 extern uint8_t timer_apic_base[];
 extern const uint8_t timer_asm_handler_apic[];
@@ -271,8 +271,6 @@ extern volatile uint32_t timer_ticks_wait;
 
 extern volatile uint32_t timer_fault_count;
 
-void timer_handler(void);
-void timer_handler_ap(void);
 uint64_t timer_read(void);
 
 #endif

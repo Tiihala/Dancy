@@ -71,9 +71,6 @@
 ./o32/base/task.o: ./kernel/base/task.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/task.c
 
-./o32/base/timer.o: ./kernel/base/timer.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/base/timer.c
-
 ./o32/debug/debug.o: ./kernel/debug/debug.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/debug/debug.c
 
@@ -268,9 +265,6 @@
 
 ./o64/base/task.o: ./kernel/base/task.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/task.c
-
-./o64/base/timer.o: ./kernel/base/timer.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/base/timer.c
 
 ./o64/debug/debug.o: ./kernel/debug/debug.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/debug/debug.c
