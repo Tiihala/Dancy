@@ -873,6 +873,9 @@ int task_wait(uint64_t id, int *retval)
 		if (r != DE_RETRY)
 			break;
 
+		if (task_current()->asm_data3 != 0)
+			return DE_INTERRUPT;
+
 		d0 = (uint64_t)((addr_t)t);
 		d1 = (uint64_t)timer_ticks;
 		task_write_event(task_wait_func, d0, d1);
@@ -908,6 +911,7 @@ static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 	int descendant_state = 0;
 	uint64_t out_id = 0;
 	int out_retval = 0;
+	int de_interrupt = 0;
 
 	for (;;) {
 		struct task *t = task_head;
@@ -953,6 +957,11 @@ static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 			if ((mode & MODE_TRYWAIT) != 0)
 				break;
 
+			if (current->asm_data3 != 0) {
+				de_interrupt = 1;
+				break;
+			}
+
 			d0 = (uint64_t)((addr_t)t);
 			d1 = (uint64_t)timer_ticks;
 			task_write_event(task_wait_descendant_func, d0, d1);
@@ -969,6 +978,9 @@ static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 		*id = out_id;
 	if (retval)
 		*retval = out_retval;
+
+	if (de_interrupt)
+		return DE_INTERRUPT;
 
 	if (!out_id)
 		return (descendant_state == 1) ? DE_RETRY : DE_EMPTY;
