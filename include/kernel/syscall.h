@@ -60,6 +60,12 @@ int file_getdents(int fd, void *buffer, size_t size, int *count, int flags);
 int file_realpath(const char *name, void *buffer, size_t size);
 
 /*
+ * Declarations of sleep.c
+ */
+int sleep_internal(clockid_t id, int flags,
+	const struct timespec *request,  struct timespec *remain);
+
+/*
  * Declarations of spawn.c
  */
 int spawn_task(uint64_t *id, struct vfs_node *node,
