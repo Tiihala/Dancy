@@ -200,6 +200,7 @@ static long long dancy_syscall_wait(va_list va)
 {
 	int *status = va_arg(va, int *);
 	uint64_t id;
+	int r;
 
 	if (status) {
 		if (((addr_t)status % (addr_t)sizeof(int)) != 0)
@@ -209,8 +210,11 @@ static long long dancy_syscall_wait(va_list va)
 			return -EFAULT;
 	}
 
-	if (task_wait_descendant(&id, status))
+	if ((r = task_wait_descendant(&id, status)) != 0) {
+		if (r == DE_INTERRUPT)
+			return -EINTR;
 		return -ECHILD;
+	}
 
 	return (long long)id;
 }
@@ -220,6 +224,7 @@ static long long dancy_syscall_waitpid(va_list va)
 	__dancy_pid_t pid = va_arg(va, __dancy_pid_t);
 	int *status = va_arg(va, int *);
 	int options = va_arg(va, int);
+	int r;
 
 	if (status) {
 		if (((addr_t)status % (addr_t)sizeof(int)) != 0)
@@ -236,26 +241,36 @@ static long long dancy_syscall_waitpid(va_list va)
 		uint64_t id;
 
 		if ((options & WNOHANG) != 0) {
-			int r = task_trywait_descendant(&id, status);
-			if (r == DE_RETRY)
-				return 0;
-			return -ECHILD;
-		} else {
-			if (task_wait_descendant(&id, status))
+			if ((r = task_trywait_descendant(&id, status)) != 0) {
+				if (r == DE_RETRY)
+					return 0;
 				return -ECHILD;
+			}
+
+		} else {
+			if ((r = task_wait_descendant(&id, status)) != 0) {
+				if (r == DE_INTERRUPT)
+					return -EINTR;
+				return -ECHILD;
+			}
 		}
 
 		return (long long)id;
 	}
 
 	if ((options & WNOHANG) != 0) {
-		int r = task_trywait((uint64_t)pid, status);
-		if (r == DE_RETRY)
-			return 0;
-		return -ECHILD;
-	} else {
-		if (task_wait((uint64_t)pid, status))
+		if ((r = task_trywait((uint64_t)pid, status)) != 0) {
+			if (r == DE_RETRY)
+				return 0;
 			return -ECHILD;
+		}
+
+	} else {
+		if ((r = task_wait((uint64_t)pid, status)) != 0) {
+			if (r == DE_INTERRUPT)
+				return -EINTR;
+			return -ECHILD;
+		}
 	}
 
 	return (long long)pid;
