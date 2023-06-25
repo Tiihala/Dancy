@@ -704,14 +704,7 @@ static long long dancy_syscall_sleep(va_list va)
 	int flags = va_arg(va, int);
 	const struct timespec *request = va_arg(va, const struct timespec *);
 	struct timespec *remain = va_arg(va, struct timespec *);
-
-	uint64_t requested_ms;
-
-	if (id != CLOCK_REALTIME && id != CLOCK_MONOTONIC)
-		return -EINVAL;
-
-	if (flags != 0 && flags != TIMER_ABSTIME)
-		return -EINVAL;
+	int r;
 
 	if (((addr_t)request % (addr_t)sizeof(void *)) != 0)
 		return -EFAULT;
@@ -723,58 +716,16 @@ static long long dancy_syscall_sleep(va_list va)
 		if (((addr_t)remain % (addr_t)sizeof(void *)) != 0)
 			return -EFAULT;
 
-		if (pg_check_user_read(remain, sizeof(*remain)))
+		if (pg_check_user_write(remain, sizeof(*remain)))
 			return -EFAULT;
 	}
 
-	if (request->tv_sec < 0 || request->tv_nsec < 0)
+	if ((r = sleep_internal(id, flags, request, remain)) != 0) {
+		if (r == DE_INTERRUPT)
+			return -EINTR;
+		if (r == DE_UNSUPPORTED)
+			return -ENOTSUP;
 		return -EINVAL;
-
-	if ((unsigned long long)request->tv_sec < 0x0000FFFFFFFFFFFFull) {
-		requested_ms = (uint64_t)(request->tv_sec * 1000);
-		requested_ms += (uint64_t)(request->tv_nsec / 1000000);
-	} else {
-		requested_ms = (uint64_t)(ULLONG_MAX);
-	}
-
-	if (requested_ms < 2)
-		requested_ms = 2;
-
-	if (flags == 0) {
-		task_sleep(requested_ms);
-		return 0;
-	}
-
-	while ((flags & TIMER_ABSTIME) != 0) {
-		uint64_t ms64;
-		uint32_t ms32;
-		struct timespec t;
-		time_t d;
-
-		if (id == CLOCK_REALTIME)
-			ms64 = (uint64_t)epoch_read_ms();
-		else
-			ms64 = (uint64_t)timer_read();
-
-		ms32 = (uint32_t)ms64;
-
-		t.tv_sec = (time_t)(ms64 / 1000);
-		t.tv_nsec = (long)(ms32 % 1000) * 1000000L;
-
-		if (request->tv_sec < t.tv_sec)
-			break;
-
-		d = request->tv_sec - t.tv_sec;
-
-		if (d > 0) {
-			task_sleep((uint64_t)((d > 1) ? 1000 : 10));
-			continue;
-		}
-
-		if (request->tv_nsec <= t.tv_nsec)
-			break;
-
-		task_yield();
 	}
 
 	return 0;
