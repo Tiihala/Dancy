@@ -22,8 +22,7 @@
 section .text
 
         extern _ret_user_handler
-        extern _timer_handler
-        extern _timer_handler_ap
+        extern _task_yield
         global _timer_apic_base
         global _timer_asm_handler_apic
         global _timer_asm_handler_apic_ap
@@ -129,7 +128,7 @@ _timer_call_handler:
 
 .L1:    sti                             ; enable interrupts
         and esp, 0xFFFFFFF0             ; align stack
-        call _timer_handler             ; call _timer_handler
+        call _task_yield                ; call _task_yield
 
         mov ecx, esp                    ; ecx = stack pointer
         and ecx, 0xFFFFE000             ; ecx = address of current task
@@ -192,7 +191,7 @@ _timer_asm_handler_apic_ap:
 
 .L1:    sti                             ; enable interrupts
         and esp, 0xFFFFFFF0             ; align stack
-        call _timer_handler_ap          ; call _timer_handler_ap
+        call _task_yield                ; call _task_yield
 
         mov ecx, esp                    ; ecx = stack pointer
         and ecx, 0xFFFFE000             ; ecx = address of current task
@@ -242,8 +241,6 @@ _timer_read:
 section .data
 
         global _timer_ticks
-        global _timer_ticks_64
-        global _timer_ticks_wait
         global _timer_fault_count
 
 align 16

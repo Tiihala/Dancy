@@ -22,8 +22,7 @@
 section .text
 
         extern ret_user_handler
-        extern timer_handler
-        extern timer_handler_ap
+        extern task_yield
         global timer_apic_base
         global timer_asm_handler_apic
         global timer_asm_handler_apic_ap
@@ -113,7 +112,7 @@ timer_call_handler:
 .L1:    sti                             ; enable interrupts
         and rsp, -16                    ; align stack
         sub rsp, 32                     ; shadow space
-        call timer_handler              ; call timer_handler
+        call task_yield                 ; call task_yield
 
         mov rcx, rsp                    ; rcx = stack pointer
         and rcx, -8192                  ; rcx = address of current task
@@ -176,7 +175,7 @@ timer_asm_handler_apic_ap:
 .L1:    sti                             ; enable interrupts
         and rsp, -16                    ; align stack
         sub rsp, 32                     ; shadow space
-        call timer_handler_ap           ; call timer_handler_ap
+        call task_yield                 ; call task_yield
 
         mov rcx, rsp                    ; rcx = stack pointer
         and rcx, -8192                  ; rcx = address of current task
@@ -218,8 +217,6 @@ timer_read:
 section .data
 
         global timer_ticks
-        global timer_ticks_64
-        global timer_ticks_wait
         global timer_fault_count
 
 align 16

@@ -266,9 +266,6 @@ extern const uint8_t timer_asm_handler_apic_ap[];
 extern const uint8_t timer_asm_handler_pic[];
 
 extern volatile uint32_t timer_ticks;
-extern volatile uint64_t timer_ticks_64;
-extern volatile uint32_t timer_ticks_wait;
-
 extern volatile uint32_t timer_fault_count;
 
 uint64_t timer_read(void);
