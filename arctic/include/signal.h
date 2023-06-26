@@ -25,6 +25,11 @@
 
 __Dancy_Header_Begin
 
+#ifndef __DANCY_TYPEDEF_PID_T
+#define __DANCY_TYPEDEF_PID_T
+typedef __dancy_pid_t pid_t;
+#endif
+
 #ifndef __DANCY_TYPEDEF_SIG_ATOMIC_T
 #define __DANCY_TYPEDEF_SIG_ATOMIC_T
 typedef __dancy_sig_atomic_t sig_atomic_t;
@@ -41,6 +46,8 @@ typedef __dancy_sigset_t sigset_t;
 
 void (*signal(int sig, void (*func)(int)))(int);
 int raise(int sig);
+
+int kill(pid_t pid, int sig);
 
 __Dancy_Header_End
 
