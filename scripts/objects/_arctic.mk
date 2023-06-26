@@ -146,6 +146,10 @@
      ./arctic/libc/signal/kill.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/signal/kill.c
 
+./o32/_arctic/libc/signal/raise.o: \
+     ./arctic/libc/signal/raise.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/signal/raise.c
+
 ./o32/_arctic/libc/spawn/actions.o: \
      ./arctic/libc/spawn/actions.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/spawn/actions.c
@@ -617,6 +621,10 @@
 ./o64/_arctic/libc/signal/kill.o: \
      ./arctic/libc/signal/kill.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/signal/kill.c
+
+./o64/_arctic/libc/signal/raise.o: \
+     ./arctic/libc/signal/raise.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/signal/raise.c
 
 ./o64/_arctic/libc/spawn/actions.o: \
      ./arctic/libc/spawn/actions.c $(DANCY_DEPS)
