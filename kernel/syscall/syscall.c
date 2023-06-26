@@ -878,6 +878,27 @@ static long long dancy_syscall_realpath(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_kill(va_list va)
+{
+	__dancy_pid_t pid = va_arg(va, __dancy_pid_t);
+	int sig = va_arg(va, int);
+	int flags = va_arg(va, int);
+	int r;
+
+	if (pid == 1 && task_current()->id != 1)
+		return -EPERM;
+
+	if ((r = kill_internal(pid, sig, flags)) != 0) {
+		if (r == DE_ACCESS)
+			return -EPERM;
+		if (r == DE_SEARCH)
+			return -ESRCH;
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -913,6 +934,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_getpid },
 	{ dancy_syscall_getppid },
 	{ dancy_syscall_realpath },
+	{ dancy_syscall_kill },
 	{ dancy_syscall_reserved }
 };
 

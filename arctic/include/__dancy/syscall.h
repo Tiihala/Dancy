@@ -242,6 +242,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_realpath,
 
+	/*
+	 * long long __dancy_syscall_kill(
+	 *         pid_t pid,
+	 *         int sig,
+	 *         int flags);
+	 */
+	__dancy_syscall_kill,
+
 	__dancy_syscall_argn__
 };
 
