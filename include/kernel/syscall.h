@@ -60,6 +60,11 @@ int file_getdents(int fd, void *buffer, size_t size, int *count, int flags);
 int file_realpath(const char *name, void *buffer, size_t size);
 
 /*
+ * Declarations of kill.c
+ */
+int kill_internal(__dancy_pid_t pid, int sig, int flags);
+
+/*
  * Declarations of sleep.c
  */
 int sleep_internal(clockid_t id, int flags,

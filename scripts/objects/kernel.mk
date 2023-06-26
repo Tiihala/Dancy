@@ -170,6 +170,9 @@
 ./o32/syscall/file.o: ./kernel/syscall/file.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/file.c
 
+./o32/syscall/kill.o: ./kernel/syscall/kill.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/syscall/kill.c
+
 ./o32/syscall/sleep.o: ./kernel/syscall/sleep.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/sleep.c
 
@@ -367,6 +370,9 @@
 
 ./o64/syscall/file.o: ./kernel/syscall/file.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/file.c
+
+./o64/syscall/kill.o: ./kernel/syscall/kill.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/syscall/kill.c
 
 ./o64/syscall/sleep.o: ./kernel/syscall/sleep.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/sleep.c
