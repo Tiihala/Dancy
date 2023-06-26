@@ -21,6 +21,25 @@
 
 void ret_user_handler(struct task *current, void *stack)
 {
-	(void)current;
-	(void)stack;
+	int sig = 0;
+	int i;
+
+	if (current->asm_data3 != 0) {
+		void *address = &current->asm_data3;
+
+		for (i = 0; sig == 0 && i < 31; i++) {
+			if (cpu_btr32(address, (uint32_t)i))
+				sig = i + 1;
+		}
+	}
+
+	if (sig != 0) {
+		cpu_native_t *ip = ((cpu_native_t *)stack) + 0;
+		cpu_native_t *sp = ((cpu_native_t *)stack) + 3;
+
+		*ip = 0;
+		*sp = 0;
+
+		task_exit(sig);
+	}
 }
