@@ -124,6 +124,9 @@ extern const uint8_t idt_asm_gp_handler[];
 extern const uint8_t idt_asm_handler[];
 extern const uint8_t idt_asm_panic[];
 
+extern uint32_t idt_nmi_panic[];
+extern uint32_t idt_nmi_unknown;
+
 int idt_init(void);
 int idt_init_ap(void);
 

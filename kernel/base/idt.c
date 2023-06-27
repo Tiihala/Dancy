@@ -33,6 +33,9 @@ static struct {
 static uint8_t *idt_global = NULL;
 static void *idt_ptr = NULL;
 
+uint32_t idt_nmi_panic[3] = { 0, 0, 0 };
+uint32_t idt_nmi_unknown = 0;
+
 #ifdef DANCY_32
 
 struct idt_context {
@@ -457,6 +460,24 @@ void idt_handler(int num, void *stack)
 				cpu_halt(0);
 			}
 		}
+
+		/*
+		 * Detect whether this CPU should be halted or not (panic.c).
+		 */
+		if (cpu_read32(&panic_lock)) {
+			if (cpu_read32(&idt_nmi_panic[0]) == 0)
+				return;
+			if (cpu_read32(&idt_nmi_panic[0]) == 1)
+				return;
+			if (cpu_read32(&idt_nmi_panic[1]) == current_id)
+				return;
+
+			cpu_add32(&idt_nmi_panic[2], 1);
+			cpu_halt(0);
+		}
+
+		cpu_add32(&idt_nmi_unknown, 1);
+		return;
 	}
 
 	/*

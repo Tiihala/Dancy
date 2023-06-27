@@ -28,10 +28,20 @@ void panic(const char *message)
 
 	cpu_ints(0);
 
+	if (cpu_bts32(&idt_nmi_panic[0], 0))
+		cpu_halt(0);
+
 	if (!spin_trylock(&panic_lock))
 		cpu_halt(0);
 
 	current_id = apic_id();
+
+	/*
+	 * After executing the next two functions, the non-maskable
+	 * interrupt handler halts the CPU (except the current one).
+	 */
+	cpu_write32(&idt_nmi_panic[1], current_id);
+	cpu_write32(&idt_nmi_panic[0], 0xFFFFFFFF);
 
 	/*
 	 * Send a non-maskable interrupt to every other
@@ -65,6 +75,23 @@ void panic(const char *message)
 
 	apic_wait_delivery();
 	delay(1000000);
+
+	/*
+	 * Extra check for making sure that at least the count
+	 * of executed non-maskable interrupts is what it should be.
+	 * Theoretically the same CPU could execute it more than
+	 * once if there are nested interrupts or some bugs in the
+	 * sending logic above. Or unexpected hardware failures.
+	 */
+	for (i = 0; i < 20; i++) {
+		const int bsp = 1;
+		uint32_t count = (uint32_t)(bsp + kernel->smp_ap_count - 1);
+
+		if (cpu_read32(&idt_nmi_panic[2]) == count)
+			break;
+
+		delay(1000000000);
+	}
 
 	/*
 	 * Print the message.
