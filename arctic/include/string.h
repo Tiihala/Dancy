@@ -38,6 +38,7 @@ char *strncpy(char *s1, const char *s2, size_t n);
 
 char *strdup(const char *s);
 char *strerror(int errnum);
+char *strtok(char *s1, const char *s2);
 
 __Dancy_Header_End
 
