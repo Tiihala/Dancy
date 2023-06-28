@@ -110,6 +110,7 @@ int fputs(const char *s, FILE *stream);
 int puts(const char *s);
 
 int getc(FILE *stream);
+int getchar(void);
 
 void clearerr(FILE *stream);
 int feof(FILE *stream);
