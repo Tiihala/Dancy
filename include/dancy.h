@@ -42,6 +42,7 @@
 #include <arctic/include/sys/wait.h>
 #include <arctic/include/ctype.h>
 #include <arctic/include/fcntl.h>
+#include <arctic/include/poll.h>
 #include <arctic/include/stdio.h>
 #include <arctic/include/stdlib.h>
 #include <arctic/include/string.h>
