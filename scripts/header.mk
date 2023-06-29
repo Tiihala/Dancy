@@ -93,6 +93,7 @@ DANCY_HEADERS= \
  ./arctic/include/__dancy/keys.h \
  ./arctic/include/__dancy/mman.h \
  ./arctic/include/__dancy/mode.h \
+ ./arctic/include/__dancy/pollfd.h \
  ./arctic/include/__dancy/sched.h \
  ./arctic/include/__dancy/seek.h \
  ./arctic/include/__dancy/signum.h \
