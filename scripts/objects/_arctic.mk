@@ -142,6 +142,10 @@
      ./arctic/libc/misc/__main.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/misc/__main.c
 
+./o32/_arctic/libc/poll/poll.o: \
+     ./arctic/libc/poll/poll.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/poll/poll.c
+
 ./o32/_arctic/libc/signal/kill.o: \
      ./arctic/libc/signal/kill.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/signal/kill.c
@@ -629,6 +633,10 @@
 ./o64/_arctic/libc/misc/__main.o: \
      ./arctic/libc/misc/__main.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/misc/__main.c
+
+./o64/_arctic/libc/poll/poll.o: \
+     ./arctic/libc/poll/poll.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/poll/poll.c
 
 ./o64/_arctic/libc/signal/kill.o: \
      ./arctic/libc/signal/kill.c $(DANCY_DEPS)
