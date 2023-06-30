@@ -903,3 +903,8 @@ int file_realpath(const char *name, void *buffer, size_t size)
 
 	return 0;
 }
+
+int file_poll(struct pollfd fds[], int nfds, int timeout, int *retval)
+{
+	return DE_UNSUPPORTED;
+}

@@ -58,6 +58,7 @@ int file_chdir(const char *name);
 int file_getcwd(void *buffer, size_t size);
 int file_getdents(int fd, void *buffer, size_t size, int *count, int flags);
 int file_realpath(const char *name, void *buffer, size_t size);
+int file_poll(struct pollfd fds[], int nfds, int timeout, int *retval);
 
 /*
  * Declarations of kill.c

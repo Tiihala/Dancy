@@ -899,6 +899,36 @@ static long long dancy_syscall_kill(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_poll(va_list va)
+{
+	struct pollfd *fds = va_arg(va, struct pollfd *);
+	nfds_t nfds = va_arg(va, nfds_t);
+	int timeout = va_arg(va, int);
+	size_t size;
+	int r, retval;
+
+	if ((size_t)nfds > 0x7FFF)
+		return -EINVAL;
+
+	size = (size_t)nfds * sizeof(struct pollfd);
+
+	if (((addr_t)fds % (addr_t)sizeof(int)) != 0)
+		return -EFAULT;
+
+	if (pg_check_user_write(fds, size))
+		return -EFAULT;
+
+	if ((r = file_poll(&fds[0], (int)nfds, timeout, &retval)) != 0) {
+		if (r == DE_INTERRUPT)
+			return -EINTR;
+		if (r == DE_MEMORY)
+			return -EAGAIN;
+		return -EINVAL;
+	}
+
+	return (long long)retval;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -935,6 +965,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_getppid },
 	{ dancy_syscall_realpath },
 	{ dancy_syscall_kill },
+	{ dancy_syscall_poll },
 	{ dancy_syscall_reserved }
 };
 

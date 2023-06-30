@@ -250,6 +250,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_kill,
 
+	/*
+	 * long long __dancy_syscall_poll(
+	 *         struct pollfd fds[],
+	 *         nfds_t nfds,
+	 *         int timeout);
+	 */
+	__dancy_syscall_poll,
+
 	__dancy_syscall_argn__
 };
 
