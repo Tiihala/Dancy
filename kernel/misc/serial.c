@@ -284,6 +284,40 @@ static int n_write(struct vfs_node *node,
 	return 0;
 }
 
+static int n_poll(struct vfs_node *node, int events, int *revents)
+{
+	int start = 0, end = 0, r = 0;
+
+	if (serial_ready) {
+		void *lock_local = &serial_lock;
+		const int *port = node->internal_data;
+		int i = (*port) - 1;
+
+		spin_enter(&lock_local);
+
+		start = com_buffer[i].start;
+		end = com_buffer[i].end;
+
+		spin_leave(&lock_local);
+	}
+
+	if ((events & POLLIN) != 0 && start != end)
+		r |= POLLIN;
+
+	if ((events & POLLRDNORM) != 0 && start != end)
+		r |= POLLRDNORM;
+
+	if ((events & POLLOUT) != 0)
+		r |= POLLOUT;
+
+	if ((events & POLLWRNORM) != 0)
+		r |= POLLWRNORM;
+
+	*revents = r;
+
+	return 0;
+}
+
 static int mount_serial_port(int port)
 {
 	struct vfs_node *dev_node, *node;
@@ -303,6 +337,7 @@ static int mount_serial_port(int port)
 
 	dev_node->n_read  = n_read;
 	dev_node->n_write = n_write;
+	dev_node->n_poll  = n_poll;
 
 	snprintf(&name[0], sizeof(name), "/dev/ttyS%d", port - 1);
 
