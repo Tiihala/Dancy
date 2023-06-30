@@ -110,6 +110,24 @@ static int n_write(struct vfs_node *node,
 	return *size = 0, DE_FULL;
 }
 
+static int n_poll(struct vfs_node *node, int events, int *revents)
+{
+	struct vfs_node *pn = mse_pipe_nodes[0];
+	int r;
+
+	(void)node;
+	*revents = 0;
+
+	if ((r = pn->n_poll(pn, events, revents)) == 0) {
+		if ((events & POLLOUT) != 0)
+			*revents |= POLLOUT;
+		if ((events & POLLWRNORM) != 0)
+			*revents |= POLLWRNORM;
+	}
+
+	return r;
+}
+
 int ps2_mse_init(void)
 {
 	int response[2];
@@ -186,6 +204,7 @@ int ps2_mse_init(void)
 		mse_node.internal_event = mse_pipe_nodes[0]->internal_event;
 		mse_node.n_read = n_read;
 		mse_node.n_write = n_write;
+		mse_node.n_poll = n_poll;
 
 		if (vfs_mount(name, &mse_node) != 0)
 			return 1;
