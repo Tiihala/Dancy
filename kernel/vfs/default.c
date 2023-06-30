@@ -69,6 +69,32 @@ static int vfs_default_append(struct vfs_node *node,
 	return node->n_write(node, (uint64_t)offset, size, buffer);
 }
 
+static int vfs_default_poll(struct vfs_node *node, int events, int *revents)
+{
+	int r = 0;
+
+	(void)node;
+
+	if (revents == NULL)
+		return DE_ARGUMENT;
+
+	if ((events & POLLIN) != 0)
+		r |= POLLIN;
+
+	if ((events & POLLOUT) != 0)
+		r |= POLLOUT;
+
+	if ((events & POLLRDNORM) != 0)
+		r |= POLLRDNORM;
+
+	if ((events & POLLWRNORM) != 0)
+		r |= POLLWRNORM;
+
+	*revents = r;
+
+	return 0;
+}
+
 static int vfs_default_sync(struct vfs_node *node)
 {
 	(void)node;
@@ -122,6 +148,7 @@ void vfs_default(struct vfs_node *node)
 	node->n_read     = vfs_default_read;
 	node->n_write    = vfs_default_write;
 	node->n_append   = vfs_default_append;
+	node->n_poll     = vfs_default_poll;
 	node->n_sync     = vfs_default_sync;
 	node->n_readdir  = vfs_default_readdir;
 	node->n_stat     = vfs_default_stat;
