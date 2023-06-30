@@ -116,6 +116,24 @@ static int n_write(struct vfs_node *node,
 	return *size = 0, DE_FULL;
 }
 
+static int n_poll(struct vfs_node *node, int events, int *revents)
+{
+	struct vfs_node *pn = kbd_pipe_nodes[0];
+	int r;
+
+	(void)node;
+	*revents = 0;
+
+	if ((r = pn->n_poll(pn, events, revents)) == 0) {
+		if ((events & POLLOUT) != 0)
+			*revents |= POLLOUT;
+		if ((events & POLLWRNORM) != 0)
+			*revents |= POLLWRNORM;
+	}
+
+	return r;
+}
+
 int ps2_kbd_init(void)
 {
 	/*
@@ -178,6 +196,7 @@ int ps2_kbd_init(void)
 		kbd_node.internal_event = kbd_pipe_nodes[0]->internal_event;
 		kbd_node.n_read = n_read;
 		kbd_node.n_write = n_write;
+		kbd_node.n_poll = n_poll;
 
 		if (vfs_mount(name, &kbd_node) != 0)
 			return 1;
