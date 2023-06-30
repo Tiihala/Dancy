@@ -906,5 +906,58 @@ int file_realpath(const char *name, void *buffer, size_t size)
 
 int file_poll(struct pollfd fds[], int nfds, int timeout, int *retval)
 {
-	return DE_UNSUPPORTED;
+	struct task *task = task_current();
+	uint64_t start = timer_read();
+	uint64_t end = 0;
+	int i, r = 0;
+
+	if (timeout >= 0)
+		end = start + (uint64_t)timeout;
+
+	do {
+		for (i = 0; i < nfds; i++) {
+			int fd = fds[i].fd;
+			int events = (int)fds[i].events;
+			int revents = POLLNVAL;
+			uint32_t t = 0;
+
+			if (fd < 0) {
+				fds[i].revents = 0;
+				continue;
+			}
+
+			if (fd < (int)task->fd.state)
+				t = task->fd.table[fd];
+
+			if (t != 0) {
+				struct file_table_entry *fte;
+				struct vfs_node *node;
+
+				fte = (void *)((addr_t)(t & table_mask));
+
+				lock_fte(fte);
+
+				if ((node = fte->node) != NULL)
+					node->n_poll(node, events, &revents);
+
+				unlock_fte(fte);
+			}
+
+			if ((fds[i].revents = (short)revents) != 0)
+				r += 1;
+		}
+
+		if (r != 0 || timeout == 0)
+			break;
+
+		if (detect_interrupt(0))
+			return (*retval = 0), DE_INTERRUPT;
+
+		task_yield();
+
+	} while (timeout < 0 || timer_read() < end);
+
+	*retval = r;
+
+	return 0;
 }
