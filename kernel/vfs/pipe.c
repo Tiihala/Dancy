@@ -185,6 +185,51 @@ static int n_write(struct vfs_node *node,
 	return 0;
 }
 
+static int n_poll(struct vfs_node *node, int events, int *revents)
+{
+	struct pipe_internal_data *internal_data = node->internal_data;
+	struct pipe_shared_data *shared_data = internal_data->shared_data;
+	void *lock_local = &shared_data->lock;
+
+	int read_ok = 0, write_ok = 0, r = 0;
+	int start, end;
+
+	spin_enter(&lock_local);
+
+	start = shared_data->start;
+	end = shared_data->end;
+
+	spin_leave(&lock_local);
+
+	if (internal_data->type == pipe_type_read)
+		read_ok = (start != end);
+
+	if (internal_data->type == pipe_type_write) {
+		int count = end - start;
+
+		if (count < 0)
+			count = (PIPE_SIZE + end) - start;
+
+		write_ok = (count < (PIPE_SIZE / 2));
+	}
+
+	if (read_ok && (events & POLLIN) != 0)
+		r |= POLLIN;
+
+	if (read_ok && (events & POLLRDNORM) != 0)
+		r |= POLLRDNORM;
+
+	if (write_ok && (events & POLLOUT) != 0)
+		r |= POLLOUT;
+
+	if (write_ok && (events & POLLWRNORM) != 0)
+		r |= POLLWRNORM;
+
+	*revents = r;
+
+	return 0;
+}
+
 static struct vfs_node *alloc_node(int type,
 	struct pipe_shared_data *shared_data)
 {
@@ -213,6 +258,7 @@ static struct vfs_node *alloc_node(int type,
 		node->n_release = n_release;
 		node->n_read    = n_read;
 		node->n_write   = n_write;
+		node->n_poll    = n_poll;
 
 		data = node->internal_data;
 
