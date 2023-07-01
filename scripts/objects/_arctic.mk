@@ -234,6 +234,10 @@
      ./arctic/libc/stdio/fgetc.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fgetc.c
 
+./o32/_arctic/libc/stdio/fgetpos.o: \
+     ./arctic/libc/stdio/fgetpos.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fgetpos.c
+
 ./o32/_arctic/libc/stdio/fopen.o: \
      ./arctic/libc/stdio/fopen.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fopen.c
@@ -733,6 +737,10 @@
 ./o64/_arctic/libc/stdio/fgetc.o: \
      ./arctic/libc/stdio/fgetc.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/fgetc.c
+
+./o64/_arctic/libc/stdio/fgetpos.o: \
+     ./arctic/libc/stdio/fgetpos.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/fgetpos.c
 
 ./o64/_arctic/libc/stdio/fopen.o: \
      ./arctic/libc/stdio/fopen.c $(DANCY_DEPS)
