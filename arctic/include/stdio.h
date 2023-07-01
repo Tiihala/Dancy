@@ -133,6 +133,8 @@ void perror(const char *s);
 long int ftell(FILE *stream);
 int fseek(FILE *stream, long offset, int whence);
 
+off_t ftello(FILE *stream);
+
 void rewind(FILE *stream);
 int ungetc(int c, FILE *stream);
 

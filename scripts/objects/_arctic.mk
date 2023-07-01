@@ -266,6 +266,10 @@
      ./arctic/libc/stdio/ftell.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/ftell.c
 
+./o32/_arctic/libc/stdio/ftello.o: \
+     ./arctic/libc/stdio/ftello.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/ftello.c
+
 ./o32/_arctic/libc/stdio/fwrite.o: \
      ./arctic/libc/stdio/fwrite.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fwrite.c
@@ -757,6 +761,10 @@
 ./o64/_arctic/libc/stdio/ftell.o: \
      ./arctic/libc/stdio/ftell.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/ftell.c
+
+./o64/_arctic/libc/stdio/ftello.o: \
+     ./arctic/libc/stdio/ftello.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/ftello.c
 
 ./o64/_arctic/libc/stdio/fwrite.o: \
      ./arctic/libc/stdio/fwrite.c $(DANCY_DEPS)
