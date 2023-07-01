@@ -270,6 +270,10 @@
      ./arctic/libc/stdio/fseeko.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fseeko.c
 
+./o32/_arctic/libc/stdio/fsetpos.o: \
+     ./arctic/libc/stdio/fsetpos.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fsetpos.c
+
 ./o32/_arctic/libc/stdio/ftell.o: \
      ./arctic/libc/stdio/ftell.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/ftell.c
@@ -773,6 +777,10 @@
 ./o64/_arctic/libc/stdio/fseeko.o: \
      ./arctic/libc/stdio/fseeko.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/fseeko.c
+
+./o64/_arctic/libc/stdio/fsetpos.o: \
+     ./arctic/libc/stdio/fsetpos.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/fsetpos.c
 
 ./o64/_arctic/libc/stdio/ftell.o: \
      ./arctic/libc/stdio/ftell.c $(DANCY_DEPS)

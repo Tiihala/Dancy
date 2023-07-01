@@ -137,6 +137,7 @@ off_t ftello(FILE *stream);
 int fseeko(FILE *stream, off_t offset, int whence);
 
 int fgetpos(FILE *stream, fpos_t *pos);
+int fsetpos(FILE *stream, const fpos_t *pos);
 
 void rewind(FILE *stream);
 int ungetc(int c, FILE *stream);
