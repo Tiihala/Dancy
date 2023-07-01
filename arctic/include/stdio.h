@@ -134,6 +134,7 @@ long int ftell(FILE *stream);
 int fseek(FILE *stream, long offset, int whence);
 
 off_t ftello(FILE *stream);
+int fseeko(FILE *stream, off_t offset, int whence);
 
 void rewind(FILE *stream);
 int ungetc(int c, FILE *stream);
