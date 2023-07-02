@@ -69,6 +69,7 @@ include ./scripts/boot/uefi.mk
 include ./scripts/dirs.mk
 include ./scripts/external.mk
 include ./scripts/legacy.mk
+include ./scripts/objects.mk
 include ./scripts/release.mk
 include ./scripts/system.mk
 include ./scripts/tools.mk
