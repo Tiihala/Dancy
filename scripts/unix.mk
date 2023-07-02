@@ -66,11 +66,6 @@ include ./scripts/arctic/libc.mk
 include ./scripts/boot/init.mk
 include ./scripts/boot/uefi.mk
 
-include ./scripts/objects/_arctic.mk
-include ./scripts/objects/_boot.mk
-include ./scripts/objects/_common.mk
-include ./scripts/objects/kernel.mk
-
 include ./scripts/dirs.mk
 include ./scripts/external.mk
 include ./scripts/legacy.mk
