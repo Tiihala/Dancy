@@ -674,14 +674,6 @@
     ./common/utf8.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./common/utf8.c
 
-./o32/kernel/acpios/a32/glblock.o: \
-    ./kernel/acpios/a32/glblock.asm $(DANCY_DEPS)
-	$(DANCY_A32)$@ ./kernel/acpios/a32/glblock.asm
-
-./o32/kernel/acpios/osdancy.o: \
-    ./kernel/acpios/osdancy.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/acpios/osdancy.c
-
 ./o32/kernel/base/a32/fb.o: \
     ./kernel/base/a32/fb.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./kernel/base/a32/fb.asm
@@ -1695,14 +1687,6 @@
 ./o64/common/utf8.o: \
     ./common/utf8.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./common/utf8.c
-
-./o64/kernel/acpios/a64/glblock.o: \
-    ./kernel/acpios/a64/glblock.asm $(DANCY_DEPS)
-	$(DANCY_A64)$@ ./kernel/acpios/a64/glblock.asm
-
-./o64/kernel/acpios/osdancy.o: \
-    ./kernel/acpios/osdancy.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/acpios/osdancy.c
 
 ./o64/kernel/base/a64/fb.o: \
     ./kernel/base/a64/fb.asm $(DANCY_DEPS)
