@@ -3,30 +3,30 @@
 ##############################################################################
 
 DANCY_MISC_OBJECTS_32= \
- ./o32/misc/bin.o \
- ./o32/misc/coff.o \
- ./o32/misc/console.o \
- ./o32/misc/dma.o \
- ./o32/misc/epoch.o \
- ./o32/misc/floppy.o \
- ./o32/misc/hdd_fat.o \
- ./o32/misc/hdd_part.o \
- ./o32/misc/rtc.o \
- ./o32/misc/serial.o \
- ./o32/misc/zero.o \
+ ./o32/kernel/misc/bin.o \
+ ./o32/kernel/misc/coff.o \
+ ./o32/kernel/misc/console.o \
+ ./o32/kernel/misc/dma.o \
+ ./o32/kernel/misc/epoch.o \
+ ./o32/kernel/misc/floppy.o \
+ ./o32/kernel/misc/hdd_fat.o \
+ ./o32/kernel/misc/hdd_part.o \
+ ./o32/kernel/misc/rtc.o \
+ ./o32/kernel/misc/serial.o \
+ ./o32/kernel/misc/zero.o \
 
 DANCY_MISC_OBJECTS_64= \
- ./o64/misc/bin.o \
- ./o64/misc/coff.o \
- ./o64/misc/console.o \
- ./o64/misc/dma.o \
- ./o64/misc/epoch.o \
- ./o64/misc/floppy.o \
- ./o64/misc/hdd_fat.o \
- ./o64/misc/hdd_part.o \
- ./o64/misc/rtc.o \
- ./o64/misc/serial.o \
- ./o64/misc/zero.o \
+ ./o64/kernel/misc/bin.o \
+ ./o64/kernel/misc/coff.o \
+ ./o64/kernel/misc/console.o \
+ ./o64/kernel/misc/dma.o \
+ ./o64/kernel/misc/epoch.o \
+ ./o64/kernel/misc/floppy.o \
+ ./o64/kernel/misc/hdd_fat.o \
+ ./o64/kernel/misc/hdd_part.o \
+ ./o64/kernel/misc/rtc.o \
+ ./o64/kernel/misc/serial.o \
+ ./o64/kernel/misc/zero.o \
 
 ##############################################################################
 
