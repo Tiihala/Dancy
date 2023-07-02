@@ -20,12 +20,12 @@
 #include <boot/init.h>
 
 #ifdef DANCY_32
-static const char *init_at = "o32/_boot/init.at";
+static const char *init_at = "o32/boot/init.at";
 static const char *init_symbol = "_init";
 #endif
 
 #ifdef DANCY_64
-static const char *init_at = "o64/_boot/init.at";
+static const char *init_at = "o64/boot/init.at";
 static const char *init_symbol = "init";
 #endif
 
