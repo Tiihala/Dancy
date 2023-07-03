@@ -2,10 +2,6 @@
 
 ##############################################################################
 
-./o32/arctic/hello/main.o: \
-    ./arctic/hello/main.c $(DANCY_DEPS)
-	$(ARCTIC_O32)$@ ./arctic/hello/main.c
-
 ./o32/arctic/libc/a32/memcmp.o: \
     ./arctic/libc/a32/memcmp.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./arctic/libc/a32/memcmp.asm
@@ -943,10 +939,6 @@
 	$(DANCY_O32)$@ ./kernel/vfs/vfs.c
 
 ##############################################################################
-
-./o64/arctic/hello/main.o: \
-    ./arctic/hello/main.c $(DANCY_DEPS)
-	$(ARCTIC_O64)$@ ./arctic/hello/main.c
 
 ./o64/arctic/libc/a64/memcmp.o: \
     ./arctic/libc/a64/memcmp.asm $(DANCY_DEPS)
