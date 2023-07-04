@@ -516,6 +516,16 @@
     ./arctic/libc/unistd/write.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/write.c
 
+./o32/arctic/programs/init/main.o: \
+    ./arctic/programs/init/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_INIT_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/init/main.c
+
+./o32/arctic/programs/init/operate.o: \
+    ./arctic/programs/init/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_INIT_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/init/operate.c
+
 ./o32/boot/init/a32/gdt.o: \
     ./boot/init/a32/gdt.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./boot/init/a32/gdt.asm
@@ -1463,6 +1473,16 @@
 ./o64/arctic/libc/unistd/write.o: \
     ./arctic/libc/unistd/write.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/write.c
+
+./o64/arctic/programs/init/main.o: \
+    ./arctic/programs/init/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_INIT_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/init/main.c
+
+./o64/arctic/programs/init/operate.o: \
+    ./arctic/programs/init/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_INIT_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/init/operate.c
 
 ./o64/boot/init/a64/gdt.o: \
     ./boot/init/a64/gdt.asm $(DANCY_DEPS)
