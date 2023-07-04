@@ -62,6 +62,7 @@ distclean: clean
 !include .\scripts\arctic\_root.mk
 !include .\scripts\arctic\apps.mk
 !include .\scripts\arctic\libc.mk
+!include .\scripts\arctic\programs.mk
 
 !include .\scripts\boot\init.mk
 !include .\scripts\boot\uefi.mk
