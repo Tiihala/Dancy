@@ -95,6 +95,16 @@ static int vfs_default_poll(struct vfs_node *node, int events, int *revents)
 	return 0;
 }
 
+static int vfs_default_ioctl(struct vfs_node *node,
+	int request, long long arg)
+{
+	(void)node;
+	(void)request;
+	(void)arg;
+
+	return DE_UNSUPPORTED;
+}
+
 static int vfs_default_sync(struct vfs_node *node)
 {
 	(void)node;
@@ -149,6 +159,7 @@ void vfs_default(struct vfs_node *node)
 	node->n_write    = vfs_default_write;
 	node->n_append   = vfs_default_append;
 	node->n_poll     = vfs_default_poll;
+	node->n_ioctl    = vfs_default_ioctl;
 	node->n_sync     = vfs_default_sync;
 	node->n_readdir  = vfs_default_readdir;
 	node->n_stat     = vfs_default_stat;

@@ -78,6 +78,7 @@ struct vfs_node {
 		size_t *size, const void *buffer);
 
 	int (*n_poll)(struct vfs_node *node, int events, int *revents);
+	int (*n_ioctl)(struct vfs_node *node, int request, long long arg);
 	int (*n_sync)(struct vfs_node *node);
 
 	int (*n_readdir)(struct vfs_node *node,
