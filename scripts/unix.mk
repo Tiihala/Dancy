@@ -6,6 +6,7 @@ DANCY_EXT=./external/VERSION
 
 include ./VERSION
 include ./scripts/header.mk
+include ./scripts/deps.mk
 
 DANCY_MK=touch ./scripts/dancy.mk
 

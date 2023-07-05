@@ -6,6 +6,7 @@ DANCY_EXT=
 
 !include .\VERSION
 !include .\scripts\header.mk
+!include .\scripts\deps.mk
 
 DANCY_MK=copy NUL scripts\dancy.mk
 
