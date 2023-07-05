@@ -35,6 +35,7 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/sys/stat.h \
  ./arctic/include/sys/types.h \
  ./arctic/include/sys/wait.h \
+ ./arctic/include/termios.h \
  ./arctic/include/threads.h \
  ./arctic/include/time.h \
  ./arctic/include/unistd.h \
@@ -142,6 +143,9 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/sys/wait.h \
 		::include/sys/wait.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/termios.h \
+		::include/termios.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/threads.h \
 		::include/threads.h

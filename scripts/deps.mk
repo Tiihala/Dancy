@@ -35,6 +35,7 @@ DANCY_HEADERS= \
  ./arctic/include/sys/stat.h \
  ./arctic/include/sys/types.h \
  ./arctic/include/sys/wait.h \
+ ./arctic/include/termios.h \
  ./arctic/include/threads.h \
  ./arctic/include/time.h \
  ./arctic/include/unistd.h \
