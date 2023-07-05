@@ -16,6 +16,7 @@ DANCY_HEADERS= \
  ./arctic/include/__dancy/ssize.h \
  ./arctic/include/__dancy/stat.h \
  ./arctic/include/__dancy/syscall.h \
+ ./arctic/include/__dancy/termios.h \
  ./arctic/include/__dancy/timedef.h \
  ./arctic/include/__dancy/timespec.h \
  ./arctic/include/__dancy/tm.h \
