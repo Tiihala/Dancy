@@ -40,6 +40,7 @@
 #include <arctic/include/__dancy/termios.h>
 #include <arctic/include/__dancy/timedef.h>
 #include <arctic/include/__dancy/timespec.h>
+#include <arctic/include/sys/ioctl.h>
 #include <arctic/include/sys/wait.h>
 #include <arctic/include/ctype.h>
 #include <arctic/include/fcntl.h>
