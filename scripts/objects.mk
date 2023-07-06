@@ -400,6 +400,10 @@
     ./arctic/libc/sys/fstat.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/fstat.c
 
+./o32/arctic/libc/sys/ioctl.o: \
+    ./arctic/libc/sys/ioctl.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/sys/ioctl.c
+
 ./o32/arctic/libc/sys/lstat.o: \
     ./arctic/libc/sys/lstat.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/lstat.c
@@ -1361,6 +1365,10 @@
 ./o64/arctic/libc/sys/fstat.o: \
     ./arctic/libc/sys/fstat.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/sys/fstat.c
+
+./o64/arctic/libc/sys/ioctl.o: \
+    ./arctic/libc/sys/ioctl.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/sys/ioctl.c
 
 ./o64/arctic/libc/sys/lstat.o: \
     ./arctic/libc/sys/lstat.c $(DANCY_DEPS)
