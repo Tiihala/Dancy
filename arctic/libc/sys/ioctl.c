@@ -90,9 +90,5 @@ static long long ioctl_arg_long_long(va_list va)
 static long long ioctl_arg_pointer(va_list va)
 {
 	void *r = va_arg(va, void *);
-
-	if ((unsigned long long)r > (unsigned long long)(LLONG_MAX))
-		r = NULL;
-
-	return (long long)((unsigned long long)r);
+	return __dancy_pointer_to_long_long(r);
 }
