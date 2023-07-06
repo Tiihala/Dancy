@@ -914,6 +914,10 @@
     ./kernel/syscall/file.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/file.c
 
+./o32/kernel/syscall/ioctl.o: \
+    ./kernel/syscall/ioctl.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/syscall/ioctl.c
+
 ./o32/kernel/syscall/kill.o: \
     ./kernel/syscall/kill.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/kill.c
@@ -1943,6 +1947,10 @@
 ./o64/kernel/syscall/file.o: \
     ./kernel/syscall/file.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/file.c
+
+./o64/kernel/syscall/ioctl.o: \
+    ./kernel/syscall/ioctl.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/syscall/ioctl.c
 
 ./o64/kernel/syscall/kill.o: \
     ./kernel/syscall/kill.c $(DANCY_DEPS)

@@ -929,6 +929,30 @@ static long long dancy_syscall_poll(va_list va)
 	return (long long)retval;
 }
 
+static long long dancy_syscall_ioctl(va_list va)
+{
+	int fd = va_arg(va, int);
+	int request = va_arg(va, int);
+	long long arg = va_arg(va, long long);
+	long long retval = 0;
+	int r;
+
+	if ((r = ioctl_internal(fd, request, arg, &retval)) != 0) {
+		if (r == DE_ARGUMENT)
+			return -EBADF;
+		if (r == DE_ACCESS)
+			return -EFAULT;
+		if (r == DE_TYPE)
+			return -ENOTTY;
+		return -EINVAL;
+	}
+
+	if (retval < 0)
+		return -EINVAL;
+
+	return retval;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -966,6 +990,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_realpath },
 	{ dancy_syscall_kill },
 	{ dancy_syscall_poll },
+	{ dancy_syscall_ioctl },
 	{ dancy_syscall_reserved }
 };
 

@@ -258,6 +258,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_poll,
 
+	/*
+	 * long long __dancy_syscall_ioctl(
+	 *         int fd,
+	 *         int request,
+	 *         long long arg);
+	 */
+	__dancy_syscall_ioctl,
+
 	__dancy_syscall_argn__
 };
 
