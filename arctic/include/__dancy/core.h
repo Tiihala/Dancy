@@ -89,6 +89,8 @@ typedef struct { void *__t; } __dancy_thrd_t;
 void __dancy_assert(const char *expression, const char *name, int line);
 int *__dancy_errno(void);
 
+long long __dancy_pointer_to_long_long(const void *pointer);
+
 #ifndef __Dancy_Header_End
 #define __Dancy_Header_End
 #endif
