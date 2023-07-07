@@ -103,6 +103,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/string/strerror.o \
  ./o32/arctic/libc/string/strncmp.o \
  ./o32/arctic/libc/string/strncpy.o \
+ ./o32/arctic/libc/string/strndup.o \
  ./o32/arctic/libc/string/strrchr.o \
  ./o32/arctic/libc/string/strstr.o \
  ./o32/arctic/libc/string/strtok.o \
@@ -242,6 +243,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/string/strerror.o \
  ./o64/arctic/libc/string/strncmp.o \
  ./o64/arctic/libc/string/strncpy.o \
+ ./o64/arctic/libc/string/strndup.o \
  ./o64/arctic/libc/string/strrchr.o \
  ./o64/arctic/libc/string/strstr.o \
  ./o64/arctic/libc/string/strtok.o \

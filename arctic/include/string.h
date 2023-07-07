@@ -37,6 +37,7 @@ int strncmp(const char *s1, const char *s2, size_t n);
 char *strncpy(char *s1, const char *s2, size_t n);
 
 char *strdup(const char *s);
+char *strndup(const char *s, size_t size);
 char *strerror(int errnum);
 char *strtok(char *s1, const char *s2);
 
