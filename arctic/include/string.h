@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -42,6 +42,7 @@ char *strtok(char *s1, const char *s2);
 
 char *strchr(const char *s, int c);
 char *strrchr(const char *s, int c);
+char *strstr(const char *s1, const char *s2);
 
 __Dancy_Header_End
 

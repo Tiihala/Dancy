@@ -404,6 +404,10 @@
     ./arctic/libc/string/strrchr.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/string/strrchr.c
 
+./o32/arctic/libc/string/strstr.o: \
+    ./arctic/libc/string/strstr.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/string/strstr.c
+
 ./o32/arctic/libc/string/strtok.o: \
     ./arctic/libc/string/strtok.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/string/strtok.c
@@ -1381,6 +1385,10 @@
 ./o64/arctic/libc/string/strrchr.o: \
     ./arctic/libc/string/strrchr.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/string/strrchr.c
+
+./o64/arctic/libc/string/strstr.o: \
+    ./arctic/libc/string/strstr.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/string/strstr.c
 
 ./o64/arctic/libc/string/strtok.o: \
     ./arctic/libc/string/strtok.c $(DANCY_DEPS)
