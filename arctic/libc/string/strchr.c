@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,35 +13,23 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * string.h
+ * libc/string/strchr.c
  *      The C Standard Library
  */
 
-#ifndef __DANCY_STRING_H
-#define __DANCY_STRING_H
+#include <string.h>
 
-#include <__dancy/core.h>
+char *strchr(const char *s, int c)
+{
+	char *r = NULL;
 
-__Dancy_Header_Begin
+	do {
+		if (*s == (char)c) {
+			r = (char *)s;
+			break;
+		}
 
-int memcmp(const void *s1, const void *s2, size_t n);
-void *memcpy(void *s1, const void *s2, size_t n);
-void *memmove(void *s1, const void *s2, size_t n);
-void *memset(void *s, int c, size_t n);
+	} while (*s++ != '\0');
 
-char *strcat(char *s1, const char *s2);
-int strcmp(const char *s1, const char *s2);
-char *strcpy(char *s1, const char *s2);
-size_t strlen(const char *s);
-int strncmp(const char *s1, const char *s2, size_t n);
-char *strncpy(char *s1, const char *s2, size_t n);
-
-char *strdup(const char *s);
-char *strerror(int errnum);
-char *strtok(char *s1, const char *s2);
-
-char *strchr(const char *s, int c);
-
-__Dancy_Header_End
-
-#endif
+	return r;
+}
