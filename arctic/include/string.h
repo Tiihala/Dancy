@@ -41,6 +41,7 @@ char *strerror(int errnum);
 char *strtok(char *s1, const char *s2);
 
 char *strchr(const char *s, int c);
+char *strrchr(const char *s, int c);
 
 __Dancy_Header_End
 
