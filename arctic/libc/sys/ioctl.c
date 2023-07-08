@@ -36,8 +36,28 @@ int ioctl(int fd, unsigned long request, ...)
 	va_list va;
 	va_start(va, request);
 
-	if (request <= (unsigned long)(INT_MAX))
+	if (request <= (unsigned long)(INT_MAX)) {
+		int arg_type = (int)(request & __DANCY_IOCTL_ARG_MASK);
+
 		r = (int)request;
+
+		switch (arg_type) {
+			case __DANCY_IOCTL_ARG_INT:
+				arg = ioctl_arg_int(va);
+				break;
+			case __DANCY_IOCTL_ARG_LONG:
+				arg = ioctl_arg_long(va);
+				break;
+			case __DANCY_IOCTL_ARG_LONG_LONG:
+				arg = ioctl_arg_long_long(va);
+				break;
+			case __DANCY_IOCTL_ARG_POINTER:
+				arg = ioctl_arg_pointer(va);
+				break;
+			default:
+				break;
+		}
+	}
 
 	va_end(va);
 
