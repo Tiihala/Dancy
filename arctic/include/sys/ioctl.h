@@ -24,11 +24,6 @@
 
 __Dancy_Header_Begin
 
-#define __DANCY_IOCTL_TEST_A    (0x7FFFFFFC)
-#define __DANCY_IOCTL_TEST_B    (0x7FFFFFFD)
-#define __DANCY_IOCTL_TEST_C    (0x7FFFFFFE)
-#define __DANCY_IOCTL_TEST_D    (0x7FFFFFFF)
-
 int ioctl(int fd, unsigned long request, ...);
 
 __Dancy_Header_End

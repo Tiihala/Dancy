@@ -39,23 +39,6 @@ int ioctl(int fd, unsigned long request, ...)
 	if (request <= (unsigned long)(INT_MAX))
 		r = (int)request;
 
-	switch (r) {
-		case __DANCY_IOCTL_TEST_A:
-			arg = ioctl_arg_int(va);
-			break;
-		case __DANCY_IOCTL_TEST_B:
-			arg = ioctl_arg_long(va);
-			break;
-		case __DANCY_IOCTL_TEST_C:
-			arg = ioctl_arg_long_long(va);
-			break;
-		case __DANCY_IOCTL_TEST_D:
-			arg = ioctl_arg_pointer(va);
-			break;
-		default:
-			break;
-	}
-
 	va_end(va);
 
 	if (r < 0)
