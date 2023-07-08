@@ -24,6 +24,16 @@
 
 __Dancy_Header_Begin
 
+#define __DANCY_IOCTL(num, arg) \
+	(0x7D000000 | (((num) & 0xFFFF) << 8) | ((arg) & 0xFF))
+
+#define __DANCY_IOCTL_ARG_NULL      (0x00)
+#define __DANCY_IOCTL_ARG_INT       (0x10)
+#define __DANCY_IOCTL_ARG_LONG      (0x20)
+#define __DANCY_IOCTL_ARG_LONG_LONG (0x40)
+#define __DANCY_IOCTL_ARG_POINTER   (0x80)
+#define __DANCY_IOCTL_ARG_MASK      (0xF0)
+
 int ioctl(int fd, unsigned long request, ...);
 
 __Dancy_Header_End
