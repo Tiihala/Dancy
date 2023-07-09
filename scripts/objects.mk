@@ -388,6 +388,10 @@
     ./arctic/libc/stdlib/getenv.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/getenv.c
 
+./o32/arctic/libc/stdlib/labs.o: \
+    ./arctic/libc/stdlib/labs.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/labs.c
+
 ./o32/arctic/libc/stdlib/qsort.o: \
     ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/qsort.c
@@ -1409,6 +1413,10 @@
 ./o64/arctic/libc/stdlib/getenv.o: \
     ./arctic/libc/stdlib/getenv.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/getenv.c
+
+./o64/arctic/libc/stdlib/labs.o: \
+    ./arctic/libc/stdlib/labs.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/labs.c
 
 ./o64/arctic/libc/stdlib/qsort.o: \
     ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
