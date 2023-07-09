@@ -20,6 +20,7 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/__dancy/timedef.h \
  ./arctic/include/__dancy/timespec.h \
  ./arctic/include/__dancy/tm.h \
+ ./arctic/include/__dancy/undef.h \
  ./arctic/include/assert.h \
  ./arctic/include/ctype.h \
  ./arctic/include/dirent.h \
@@ -99,6 +100,9 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/__dancy/tm.h \
 		::include/__dancy/tm.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/__dancy/undef.h \
+		::include/__dancy/undef.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/assert.h \
 		::include/assert.h

@@ -1,14 +1,16 @@
 # Dancy Operating System
 
 DANCY_VERSION=-DDANCY_MAJOR=$(DANCY_MAJOR) -DDANCY_MINOR=$(DANCY_MINOR)
+DANCY_UNDEF=-include./arctic/include/__dancy/undef.h
 
-DANCY_SYSTEM_CPPFLAGS=-I. -I./include -I./arctic/include $(DANCY_VERSION)
+DANCY_SYSTEM_CPPFLAGS=-I. -I./include -I./arctic/include\
+$(DANCY_UNDEF) $(DANCY_VERSION)
 
 DANCY_SYSTEM_CFLAGS=-ffreestanding -O2 -mno-80387 -mno-mmx -mno-sse -mno-sse2\
 -mno-3dnow -mno-aes -mno-avx -fno-ident
 
 DANCY_ARCTIC_CPPFLAGS=-I./arctic/include\
--D__DANCY_MAJOR=$(DANCY_MAJOR) -D__DANCY_MINOR=$(DANCY_MINOR)
+$(DANCY_UNDEF) -D__DANCY_MAJOR=$(DANCY_MAJOR) -D__DANCY_MINOR=$(DANCY_MINOR)
 
 DANCY_ARCTIC_CFLAGS=-ffreestanding -O2 -fno-ident
 
