@@ -412,6 +412,10 @@
     ./arctic/libc/stdlib/realpath.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/realpath.c
 
+./o32/arctic/libc/string/memchr.o: \
+    ./arctic/libc/string/memchr.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/string/memchr.c
+
 ./o32/arctic/libc/string/strcat.o: \
     ./arctic/libc/string/strcat.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/string/strcat.c
@@ -1449,6 +1453,10 @@
 ./o64/arctic/libc/stdlib/realpath.o: \
     ./arctic/libc/stdlib/realpath.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/realpath.c
+
+./o64/arctic/libc/string/memchr.o: \
+    ./arctic/libc/string/memchr.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/string/memchr.c
 
 ./o64/arctic/libc/string/strcat.o: \
     ./arctic/libc/string/strcat.c $(DANCY_DEPS)
