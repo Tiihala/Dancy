@@ -82,6 +82,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdio/perror.o \
  ./o32/arctic/libc/stdio/printf.o \
  ./o32/arctic/libc/stdio/putc.o \
+ ./o32/arctic/libc/stdio/putchar.o \
  ./o32/arctic/libc/stdio/puts.o \
  ./o32/arctic/libc/stdio/remove.o \
  ./o32/arctic/libc/stdio/rename.o \
@@ -229,6 +230,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdio/perror.o \
  ./o64/arctic/libc/stdio/printf.o \
  ./o64/arctic/libc/stdio/putc.o \
+ ./o64/arctic/libc/stdio/putchar.o \
  ./o64/arctic/libc/stdio/puts.o \
  ./o64/arctic/libc/stdio/remove.o \
  ./o64/arctic/libc/stdio/rename.o \
