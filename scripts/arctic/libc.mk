@@ -90,6 +90,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdio/sprintf.o \
  ./o32/arctic/libc/stdio/ungetc.o \
  ./o32/arctic/libc/stdio/vfprintf.o \
+ ./o32/arctic/libc/stdlib/abort.o \
  ./o32/arctic/libc/stdlib/alloc.o \
  ./o32/arctic/libc/stdlib/atexit.o \
  ./o32/arctic/libc/stdlib/exit.o \
@@ -231,6 +232,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdio/sprintf.o \
  ./o64/arctic/libc/stdio/ungetc.o \
  ./o64/arctic/libc/stdio/vfprintf.o \
+ ./o64/arctic/libc/stdlib/abort.o \
  ./o64/arctic/libc/stdlib/alloc.o \
  ./o64/arctic/libc/stdlib/atexit.o \
  ./o64/arctic/libc/stdlib/exit.o \

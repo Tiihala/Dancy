@@ -43,6 +43,7 @@ void __dancy_atexit_init(void);
 void __dancy_atexit_fini(void);
 int atexit(void (*func)(void));
 
+void abort(void);
 void _Exit(int status);
 void exit(int status);
 
