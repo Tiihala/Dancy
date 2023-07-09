@@ -87,6 +87,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdio/setbuf.o \
  ./o32/arctic/libc/stdio/setvbuf.o \
  ./o32/arctic/libc/stdio/snprintf.o \
+ ./o32/arctic/libc/stdio/sprintf.o \
  ./o32/arctic/libc/stdio/ungetc.o \
  ./o32/arctic/libc/stdio/vfprintf.o \
  ./o32/arctic/libc/stdlib/alloc.o \
@@ -227,6 +228,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdio/setbuf.o \
  ./o64/arctic/libc/stdio/setvbuf.o \
  ./o64/arctic/libc/stdio/snprintf.o \
+ ./o64/arctic/libc/stdio/sprintf.o \
  ./o64/arctic/libc/stdio/ungetc.o \
  ./o64/arctic/libc/stdio/vfprintf.o \
  ./o64/arctic/libc/stdlib/alloc.o \
