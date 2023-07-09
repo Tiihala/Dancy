@@ -82,8 +82,6 @@ DANCY_TARGET_SYSTEM= \
 DANCY_TARGET_IMAGES= \
  ./release/dancy.iso \
  ./release/fdd160.img \
- ./release/fdd720a.img \
- ./release/fdd720b.img \
  ./release/fdd1440.img \
  ./release/usbtiny.img \
 
