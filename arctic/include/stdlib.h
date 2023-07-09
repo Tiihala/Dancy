@@ -46,6 +46,7 @@ int atexit(void (*func)(void));
 void abort(void);
 int abs(int i);
 long int labs(long int i);
+long long int llabs(long long int i);
 
 void _Exit(int status);
 void exit(int status);
