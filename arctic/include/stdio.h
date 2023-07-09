@@ -115,6 +115,8 @@ int puts(const char *s);
 int getc(FILE *stream);
 int getchar(void);
 
+int putc(int c, FILE *stream);
+
 void clearerr(FILE *stream);
 int feof(FILE *stream);
 int ferror(FILE *stream);
