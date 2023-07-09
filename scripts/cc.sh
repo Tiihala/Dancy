@@ -17,12 +17,5 @@ then
     exit 0
 fi
 
-if
-    which x86_64-pc-msys-gcc.exe > /dev/null 2>&1
-then
-    x86_64-pc-msys-gcc.exe "$@"
-    exit 0
-fi
-
 echo "Error: a compatible compiler was not found" 1>&2
 exit 1
