@@ -64,6 +64,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdio/fgetc.o \
  ./o32/arctic/libc/stdio/fgetpos.o \
  ./o32/arctic/libc/stdio/fgets.o \
+ ./o32/arctic/libc/stdio/fileno.o \
  ./o32/arctic/libc/stdio/fopen.o \
  ./o32/arctic/libc/stdio/fprintf.o \
  ./o32/arctic/libc/stdio/fputc.o \
@@ -206,6 +207,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdio/fgetc.o \
  ./o64/arctic/libc/stdio/fgetpos.o \
  ./o64/arctic/libc/stdio/fgets.o \
+ ./o64/arctic/libc/stdio/fileno.o \
  ./o64/arctic/libc/stdio/fopen.o \
  ./o64/arctic/libc/stdio/fprintf.o \
  ./o64/arctic/libc/stdio/fputc.o \
