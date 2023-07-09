@@ -368,6 +368,10 @@
     ./arctic/libc/stdlib/abort.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/abort.c
 
+./o32/arctic/libc/stdlib/abs.o: \
+    ./arctic/libc/stdlib/abs.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/abs.c
+
 ./o32/arctic/libc/stdlib/alloc.o: \
     ./arctic/libc/stdlib/alloc.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/alloc.c
@@ -1385,6 +1389,10 @@
 ./o64/arctic/libc/stdlib/abort.o: \
     ./arctic/libc/stdlib/abort.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/abort.c
+
+./o64/arctic/libc/stdlib/abs.o: \
+    ./arctic/libc/stdlib/abs.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/abs.c
 
 ./o64/arctic/libc/stdlib/alloc.o: \
     ./arctic/libc/stdlib/alloc.c $(DANCY_DEPS)
