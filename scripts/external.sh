@@ -38,7 +38,6 @@ which nasm > /dev/null 2>&1 && ASM_AVAILABLE=1
 which yasm > /dev/null 2>&1 && ASM_AVAILABLE=1
 
 which x86_64-w64-mingw32-gcc > /dev/null 2>&1 && GCC_AVAILABLE=1
-which x86_64-pc-msys-gcc.exe > /dev/null 2>&1 && GCC_AVAILABLE=1
 
 if [ $ASM_AVAILABLE -eq 0 ]
 then
