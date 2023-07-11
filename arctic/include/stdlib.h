@@ -54,6 +54,20 @@ void exit(int status);
 char *getenv(const char *name);
 char *realpath(const char *path, char *buffer);
 
+double atof(const char *str);
+int atoi(const char *str);
+long atol(const char *str);
+long long atoll(const char *str);
+
+float strtof(const char *str, char **endptr);
+double strtod(const char *str, char **endptr);
+long double strtold(const char *str, char **endptr);
+
+long strtol(const char *str, char **endptr, int base);
+long long strtoll(const char *str, char **endptr, int base);
+unsigned long strtoul(const char *str, char **endptr, int base);
+unsigned long long strtoull(const char *str, char **endptr, int base);
+
 __Dancy_Header_End
 
 #endif
