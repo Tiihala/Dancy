@@ -152,6 +152,10 @@
     ./arctic/libc/misc/__main.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/misc/__main.c
 
+./o32/arctic/libc/misc/ull.o: \
+    ./arctic/libc/misc/ull.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/misc/ull.c
+
 ./o32/arctic/libc/poll/poll.o: \
     ./arctic/libc/poll/poll.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/poll/poll.c
@@ -411,6 +415,22 @@
 ./o32/arctic/libc/stdlib/realpath.o: \
     ./arctic/libc/stdlib/realpath.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/realpath.c
+
+./o32/arctic/libc/stdlib/strtol.o: \
+    ./arctic/libc/stdlib/strtol.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/strtol.c
+
+./o32/arctic/libc/stdlib/strtoll.o: \
+    ./arctic/libc/stdlib/strtoll.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/strtoll.c
+
+./o32/arctic/libc/stdlib/strtoul.o: \
+    ./arctic/libc/stdlib/strtoul.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/strtoul.c
+
+./o32/arctic/libc/stdlib/strtoull.o: \
+    ./arctic/libc/stdlib/strtoull.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/strtoull.c
 
 ./o32/arctic/libc/string/memchr.o: \
     ./arctic/libc/string/memchr.c $(DANCY_DEPS)
@@ -1194,6 +1214,10 @@
     ./arctic/libc/misc/__main.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/misc/__main.c
 
+./o64/arctic/libc/misc/ull.o: \
+    ./arctic/libc/misc/ull.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/misc/ull.c
+
 ./o64/arctic/libc/poll/poll.o: \
     ./arctic/libc/poll/poll.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/poll/poll.c
@@ -1453,6 +1477,22 @@
 ./o64/arctic/libc/stdlib/realpath.o: \
     ./arctic/libc/stdlib/realpath.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/realpath.c
+
+./o64/arctic/libc/stdlib/strtol.o: \
+    ./arctic/libc/stdlib/strtol.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/strtol.c
+
+./o64/arctic/libc/stdlib/strtoll.o: \
+    ./arctic/libc/stdlib/strtoll.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/strtoll.c
+
+./o64/arctic/libc/stdlib/strtoul.o: \
+    ./arctic/libc/stdlib/strtoul.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/strtoul.c
+
+./o64/arctic/libc/stdlib/strtoull.o: \
+    ./arctic/libc/stdlib/strtoull.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/strtoull.c
 
 ./o64/arctic/libc/string/memchr.o: \
     ./arctic/libc/string/memchr.c $(DANCY_DEPS)

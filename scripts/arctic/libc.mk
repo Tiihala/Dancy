@@ -38,6 +38,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/fcntl/fcntl.o \
  ./o32/arctic/libc/fcntl/open.o \
  ./o32/arctic/libc/misc/__main.o \
+ ./o32/arctic/libc/misc/ull.o \
  ./o32/arctic/libc/poll/poll.o \
  ./o32/arctic/libc/signal/kill.o \
  ./o32/arctic/libc/signal/raise.o \
@@ -103,6 +104,10 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdlib/llabs.o \
  ./o32/arctic/libc/stdlib/qsort.o \
  ./o32/arctic/libc/stdlib/realpath.o \
+ ./o32/arctic/libc/stdlib/strtol.o \
+ ./o32/arctic/libc/stdlib/strtoll.o \
+ ./o32/arctic/libc/stdlib/strtoul.o \
+ ./o32/arctic/libc/stdlib/strtoull.o \
  ./o32/arctic/libc/string/memchr.o \
  ./o32/arctic/libc/string/strcat.o \
  ./o32/arctic/libc/string/strchr.o \
@@ -187,6 +192,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/fcntl/fcntl.o \
  ./o64/arctic/libc/fcntl/open.o \
  ./o64/arctic/libc/misc/__main.o \
+ ./o64/arctic/libc/misc/ull.o \
  ./o64/arctic/libc/poll/poll.o \
  ./o64/arctic/libc/signal/kill.o \
  ./o64/arctic/libc/signal/raise.o \
@@ -252,6 +258,10 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdlib/llabs.o \
  ./o64/arctic/libc/stdlib/qsort.o \
  ./o64/arctic/libc/stdlib/realpath.o \
+ ./o64/arctic/libc/stdlib/strtol.o \
+ ./o64/arctic/libc/stdlib/strtoll.o \
+ ./o64/arctic/libc/stdlib/strtoul.o \
+ ./o64/arctic/libc/stdlib/strtoull.o \
  ./o64/arctic/libc/string/memchr.o \
  ./o64/arctic/libc/string/strcat.o \
  ./o64/arctic/libc/string/strchr.o \
