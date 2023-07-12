@@ -396,6 +396,10 @@
     ./arctic/libc/stdlib/atoi.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/atoi.c
 
+./o32/arctic/libc/stdlib/atol.o: \
+    ./arctic/libc/stdlib/atol.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/atol.c
+
 ./o32/arctic/libc/stdlib/exit.o: \
     ./arctic/libc/stdlib/exit.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/exit.c
@@ -1461,6 +1465,10 @@
 ./o64/arctic/libc/stdlib/atoi.o: \
     ./arctic/libc/stdlib/atoi.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/atoi.c
+
+./o64/arctic/libc/stdlib/atol.o: \
+    ./arctic/libc/stdlib/atol.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/atol.c
 
 ./o64/arctic/libc/stdlib/exit.o: \
     ./arctic/libc/stdlib/exit.c $(DANCY_DEPS)
