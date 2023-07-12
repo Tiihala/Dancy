@@ -376,6 +376,10 @@
     ./arctic/libc/stdio/vfprintf.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/vfprintf.c
 
+./o32/arctic/libc/stdio/vsprintf.o: \
+    ./arctic/libc/stdio/vsprintf.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/vsprintf.c
+
 ./o32/arctic/libc/stdlib/abort.o: \
     ./arctic/libc/stdlib/abort.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/abort.c
@@ -1461,6 +1465,10 @@
 ./o64/arctic/libc/stdio/vfprintf.o: \
     ./arctic/libc/stdio/vfprintf.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/vfprintf.c
+
+./o64/arctic/libc/stdio/vsprintf.o: \
+    ./arctic/libc/stdio/vsprintf.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/vsprintf.c
 
 ./o64/arctic/libc/stdlib/abort.o: \
     ./arctic/libc/stdlib/abort.c $(DANCY_DEPS)

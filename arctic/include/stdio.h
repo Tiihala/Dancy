@@ -131,6 +131,7 @@ int vfprintf(FILE *stream, const char *format, va_list arg);
 
 int sprintf(char *s, const char *format, ...);
 int snprintf(char *s, size_t n, const char *format, ...);
+int vsprintf(char *s, const char *format, va_list arg);
 int vsnprintf(char *s, size_t n, const char *format, va_list arg);
 
 int remove(const char *path);
