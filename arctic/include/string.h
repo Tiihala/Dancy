@@ -37,6 +37,7 @@ size_t strlen(const char *s);
 int strncmp(const char *s1, const char *s2, size_t n);
 char *strncpy(char *s1, const char *s2, size_t n);
 size_t strspn(const char *s1, const char *s2);
+size_t strcspn(const char *s1, const char *s2);
 
 char *strdup(const char *s);
 char *strndup(const char *s, size_t size);
