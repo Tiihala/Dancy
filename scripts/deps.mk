@@ -19,6 +19,7 @@ DANCY_HEADERS= \
  ./arctic/include/__dancy/termios.h \
  ./arctic/include/__dancy/timedef.h \
  ./arctic/include/__dancy/timespec.h \
+ ./arctic/include/__dancy/timeval.h \
  ./arctic/include/__dancy/tm.h \
  ./arctic/include/__dancy/undef.h \
  ./arctic/include/assert.h \
