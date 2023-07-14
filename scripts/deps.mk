@@ -35,6 +35,7 @@ DANCY_HEADERS= \
  ./arctic/include/string.h \
  ./arctic/include/sys/ioctl.h \
  ./arctic/include/sys/mman.h \
+ ./arctic/include/sys/select.h \
  ./arctic/include/sys/stat.h \
  ./arctic/include/sys/types.h \
  ./arctic/include/sys/wait.h \

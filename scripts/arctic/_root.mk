@@ -35,6 +35,7 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/string.h \
  ./arctic/include/sys/ioctl.h \
  ./arctic/include/sys/mman.h \
+ ./arctic/include/sys/select.h \
  ./arctic/include/sys/stat.h \
  ./arctic/include/sys/types.h \
  ./arctic/include/sys/wait.h \
@@ -146,6 +147,9 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/sys/mman.h \
 		::include/sys/mman.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/sys/select.h \
+		::include/sys/select.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/sys/stat.h \
 		::include/sys/stat.h
