@@ -42,6 +42,8 @@ struct task {
 
 	uint64_t id;
 	uint64_t id_owner;
+	uint64_t id_group;
+	uint64_t id_session;
 	struct task *owner;
 
 	int detached;

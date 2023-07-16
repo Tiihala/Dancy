@@ -91,6 +91,8 @@ static struct task *task_create_from_pool(void)
 
 		new_task->id = task_create_id();
 		new_task->id_owner = task_current()->id;
+		new_task->id_group = task_current()->id_group;
+		new_task->id_session = task_current()->id_session;
 		new_task->owner = task_current();
 	}
 
@@ -247,6 +249,8 @@ static int task_caretaker(void *arg)
 
 			t1->id = 0;
 			t1->id_owner = 0;
+			t1->id_group = 0;
+			t1->id_session = 0;
 			t1->owner = NULL;
 
 			t1->detached = 0;
@@ -352,6 +356,8 @@ int task_init(void)
 	current = memset((void *)task_current(), 0, 0x1000);
 	current->cr3 = (uint64_t)pg_kernel;
 	current->id = task_create_id();
+	current->id_group = 1;
+	current->id_session = 1;
 	current->event.func = task_null_func;
 
 	if (current->id != 1 || current->id_owner != 0)
@@ -396,6 +402,8 @@ int task_init_ap(void)
 	current->cr3 = (uint64_t)pg_kernel;
 	current->id = task_create_id();
 	current->id_owner = 1;
+	current->id_group = 1;
+	current->id_session = 1;
 	current->owner = task_head;
 	current->event.func = task_null_func;
 
@@ -522,7 +530,13 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 		spin_trylock(&new_task->active);
 
 		new_task->id = task_create_id();
+
+		spin_enter(&lock_local);
 		new_task->id_owner = current->id;
+		new_task->id_group = current->id_group;
+		new_task->id_session = current->id_session;
+		spin_leave(&lock_local);
+
 		new_task->owner = current;
 
 		task_append(new_task);
