@@ -101,37 +101,6 @@ static struct task *task_create_from_pool(void)
 	return new_task;
 }
 
-static int task_read_retval(struct task *t, uint64_t id, int *retval)
-{
-	void *lock_local = &task_lock;
-	int r;
-
-	spin_enter(&lock_local);
-
-	if (t->id != id) {
-		spin_leave(&lock_local);
-		return DE_ARGUMENT;
-	}
-
-	if (!t->stopped) {
-		spin_leave(&lock_local);
-		return DE_RETRY;
-	}
-
-	if (!spin_trylock(&t->detached)) {
-		spin_leave(&lock_local);
-		return DE_ARGUMENT;
-	}
-
-	r = t->retval;
-	spin_leave(&lock_local);
-
-	if (retval)
-		*retval = r;
-
-	return 0;
-}
-
 static int task_null_func(uint64_t *data)
 {
 	(void)data;
@@ -699,7 +668,7 @@ void task_exit(int retval)
 		char buffer[64];
 
 		while (!retval)
-			task_wait_descendant(NULL, NULL);
+			task_wait_descendant(NULL, 0, NULL);
 
 		if ((retval & 127) != 0)
 			snprintf(&buffer[0], sizeof(buffer),
@@ -852,15 +821,18 @@ static int task_wait_descendant_func(uint64_t *data)
 	return 1;
 }
 
-#define MODE_TRYWAIT 1
-
-static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
+static int task_wait_descendant_shared(uint64_t *id, uint64_t id_group,
+	int *retval, int mode_trywait)
 {
 	struct task *current = task_current();
 	int descendant_state = 0;
+	uint64_t in_id = 0;
 	uint64_t out_id = 0;
 	int out_retval = 0;
 	int de_interrupt = 0;
+
+	if (id)
+		in_id = *id;
 
 	for (;;) {
 		struct task *t = task_head;
@@ -871,13 +843,22 @@ static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 		do {
 			if (t->owner == current) {
 				void *lock_local = &task_lock;
+				int valid_candidate = 0;
 
 				spin_enter(&lock_local);
 
 				if (t->owner == current)
-					descendant_state = 1;
+					valid_candidate = 1;
 
-				if (t->owner == current && t->stopped) {
+				if (in_id && in_id != t->id)
+					valid_candidate = 0;
+
+				if (id_group && id_group != t->id_group)
+					valid_candidate = 0;
+
+				descendant_state |= valid_candidate;
+
+				if (valid_candidate && t->stopped) {
 					descendant_state = 2;
 					if (spin_trylock(&t->detached)) {
 						out_id = t->id;
@@ -900,13 +881,10 @@ static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 		if (t != NULL) {
 			uint64_t d0, d1;
 
-			if (!descendant_state)
+			if (!descendant_state || mode_trywait)
 				break;
 
-			if ((mode & MODE_TRYWAIT) != 0)
-				break;
-
-			if (current->asm_data3 != 0) {
+			if (current->asm_data3) {
 				de_interrupt = 1;
 				break;
 			}
@@ -925,6 +903,7 @@ static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 
 	if (id)
 		*id = out_id;
+
 	if (retval)
 		*retval = out_retval;
 
@@ -937,14 +916,14 @@ static int task_wait_descendant_shared(uint64_t *id, int *retval, int mode)
 	return 0;
 }
 
-int task_trywait_descendant(uint64_t *id, int *retval)
+int task_trywait_descendant(uint64_t *id, uint64_t id_group, int *retval)
 {
-	return task_wait_descendant_shared(id, retval, MODE_TRYWAIT);
+	return task_wait_descendant_shared(id, id_group, retval, 1);
 }
 
-int task_wait_descendant(uint64_t *id, int *retval)
+int task_wait_descendant(uint64_t *id, uint64_t id_group, int *retval)
 {
-	return task_wait_descendant_shared(id, retval, 0);
+	return task_wait_descendant_shared(id, id_group, retval, 0);
 }
 
 void task_yield(void)

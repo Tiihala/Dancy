@@ -114,8 +114,8 @@ int task_switch(struct task *next);
 void task_switch_disable(void);
 void task_switch_enable(void);
 
-int task_trywait_descendant(uint64_t *id, int *retval);
-int task_wait_descendant(uint64_t *id, int *retval);
+int task_trywait_descendant(uint64_t *id, uint64_t id_group, int *retval);
+int task_wait_descendant(uint64_t *id, uint64_t id_group, int *retval);
 void task_yield(void);
 
 #endif
