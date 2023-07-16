@@ -199,7 +199,7 @@ static long long dancy_syscall_spawn(va_list va)
 static long long dancy_syscall_wait(va_list va)
 {
 	int *status = va_arg(va, int *);
-	uint64_t id;
+	uint64_t id = 0, id_group = 0;
 	int r;
 
 	if (status) {
@@ -210,7 +210,7 @@ static long long dancy_syscall_wait(va_list va)
 			return -EFAULT;
 	}
 
-	if ((r = task_wait_descendant(&id, status)) != 0) {
+	if ((r = task_wait_descendant(&id, id_group, status)) != 0) {
 		if (r == DE_INTERRUPT)
 			return -EINTR;
 		return -ECHILD;
@@ -224,6 +224,7 @@ static long long dancy_syscall_waitpid(va_list va)
 	__dancy_pid_t pid = va_arg(va, __dancy_pid_t);
 	int *status = va_arg(va, int *);
 	int options = va_arg(va, int);
+	uint64_t id, id_group;
 	int r;
 
 	if (status) {
@@ -234,46 +235,39 @@ static long long dancy_syscall_waitpid(va_list va)
 			return -EFAULT;
 	}
 
-	if (pid < -1)
-		return -ECHILD;
+	if (pid < -1) {
+		id = 0;
+		id_group = (uint64_t)(-pid);
 
-	if (pid == -1 || pid == 0) {
-		uint64_t id;
+	} else if (pid == -1) {
+		id = 0;
+		id_group = 0;
 
-		if ((options & WNOHANG) != 0) {
-			if ((r = task_trywait_descendant(&id, status)) != 0) {
-				if (r == DE_RETRY)
-					return 0;
-				return -ECHILD;
-			}
-
-		} else {
-			if ((r = task_wait_descendant(&id, status)) != 0) {
-				if (r == DE_INTERRUPT)
-					return -EINTR;
-				return -ECHILD;
-			}
-		}
-
-		return (long long)id;
-	}
-
-	if ((options & WNOHANG) != 0) {
-		if ((r = task_trywait((uint64_t)pid, status)) != 0) {
-			if (r == DE_RETRY)
-				return 0;
-			return -ECHILD;
-		}
+	} else if (pid == 0) {
+		id = 0;
+		task_identify(NULL, NULL, &id_group, NULL);
 
 	} else {
-		if ((r = task_wait((uint64_t)pid, status)) != 0) {
+		id = (uint64_t)pid;
+		id_group = 0;
+	}
+
+	if ((options & WNOHANG) == 0) {
+		if ((r = task_wait_descendant(&id, id_group, status)) != 0) {
 			if (r == DE_INTERRUPT)
 				return -EINTR;
 			return -ECHILD;
 		}
+		return (long long)id;
 	}
 
-	return (long long)pid;
+	if ((r = task_trywait_descendant(&id, id_group, status)) != 0) {
+		if (r == DE_RETRY)
+			return 0;
+		return -ECHILD;
+	}
+
+	return (long long)id;
 }
 
 static long long dancy_syscall_open(va_list va)
