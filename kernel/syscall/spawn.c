@@ -270,7 +270,7 @@ int spawn_task(uint64_t *id, struct vfs_node *node,
 	release_actions(&ta);
 
 	if (ta.retval)
-		task_wait(*id, NULL);
+		task_wait_descendant(id, 0, NULL);
 
 	return ta.retval;
 }
