@@ -283,12 +283,18 @@ long long __dancy_syscall5(int arg0, ...);
 #define __dancy_syscall3e(...) __dancy_syscall3(__VA_ARGS__)
 #define __dancy_syscall4e(...) __dancy_syscall4(__VA_ARGS__)
 
+#define __dancy_syscall2p(...) __dancy_syscall2(__VA_ARGS__)
+#define __dancy_syscall3p(...) __dancy_syscall3(__VA_ARGS__)
+
 #else
 
 #define __dancy_syscall1e(...) __dancy_syscall2(__VA_ARGS__)
 #define __dancy_syscall2e(...) __dancy_syscall3(__VA_ARGS__)
 #define __dancy_syscall3e(...) __dancy_syscall4(__VA_ARGS__)
 #define __dancy_syscall4e(...) __dancy_syscall5(__VA_ARGS__)
+
+#define __dancy_syscall2p(...) __dancy_syscall4(__VA_ARGS__)
+#define __dancy_syscall3p(...) __dancy_syscall5(__VA_ARGS__)
 
 #endif
 
