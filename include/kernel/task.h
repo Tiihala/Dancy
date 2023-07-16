@@ -102,6 +102,9 @@ uint64_t task_create(int (*func)(void *), void *arg, int type);
 void task_foreach(int (*func)(struct task *, void *), void *arg);
 void task_set_cmdline(struct task *task, void *line, const char *cline);
 
+void task_identify(uint64_t *id, uint64_t *id_owner,
+	uint64_t *id_group, uint64_t *id_session);
+
 int task_check_event(struct task *task);
 int task_read_event(void);
 void task_write_event(int (*func)(uint64_t *data), uint64_t d0, uint64_t d1);

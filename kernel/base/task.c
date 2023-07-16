@@ -602,6 +602,29 @@ void task_set_cmdline(struct task *task, void *line, const char *cline)
 		free(prev);
 }
 
+void task_identify(uint64_t *id, uint64_t *id_owner,
+	uint64_t *id_group, uint64_t *id_session)
+{
+	struct task *current = task_current();
+	void *lock_local = &task_lock;
+
+	spin_enter(&lock_local);
+
+	if (id)
+		*id = current->id;
+
+	if (id_owner)
+		*id_owner = current->id_owner;
+
+	if (id_group)
+		*id_group = current->id_group;
+
+	if (id_session)
+		*id_session = current->id_session;
+
+	spin_leave(&lock_local);
+}
+
 int task_check_event(struct task *task)
 {
 	int r = 0;
