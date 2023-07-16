@@ -161,10 +161,7 @@ void kernel_start(void)
 		}
 	}
 
-	while (panic_lock == 0)
-		task_wait_descendant(NULL, NULL);
-
-	cpu_halt(0);
+	task_exit(0);
 }
 
 void kernel_start_ap(void)
