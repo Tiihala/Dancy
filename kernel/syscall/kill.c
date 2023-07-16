@@ -36,6 +36,12 @@ static int f(struct task *task, void *arg)
 		if (a->current == task || task->id == 1)
 			return 0;
 
+		if (a->pid < -1 && task->id_group != (uint64_t)(-(a->pid)))
+			return 0;
+
+		if (a->pid == 0 && task->id_group != a->current->id_group)
+			return 0;
+
 		if (sig > 0 && sig < 32) {
 			void *address = &task->asm_data3;
 			uint32_t value = (uint32_t)(sig - 1);
@@ -98,10 +104,7 @@ int kill_internal(__dancy_pid_t pid, int sig, int flags)
 	a.sig = sig;
 	a.r = DE_SEARCH;
 
-	if (pid < -1)
-		return DE_ACCESS;
-
-	if (pid == -1 || pid == 0)
+	if (pid <= 0)
 		a.r = 0;
 
 	if (allowed_signal(sig) && flags == 0) {
