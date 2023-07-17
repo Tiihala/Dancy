@@ -548,6 +548,7 @@ void task_access(void (*func)(struct task *, void *), void *arg)
 
 void task_foreach(int (*func)(struct task *, void *), void *arg)
 {
+	struct task *current = task_current();
 	struct task *t = task_head;
 
 	if ((cpu_read_flags() & CPU_INTERRUPT_FLAG) == 0)
@@ -567,12 +568,18 @@ void task_foreach(int (*func)(struct task *, void *), void *arg)
 		 * structure identifications or the linked list.
 		 */
 		do {
-			if (func(t, arg) != 0)
+			if (t != current && func(t, arg) != 0)
 				break;
 
 			t = task_read_next(t);
 
 		} while (t != task_head);
+
+		/*
+		 * The current task structure is always the last one
+		 * to be processed by the input function.
+		 */
+		func(current, arg);
 
 		spin_unlock(&task_lock);
 		task_switch_enable();
