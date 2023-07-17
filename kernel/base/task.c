@@ -536,6 +536,16 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	return id;
 }
 
+void task_access(void (*func)(struct task *, void *), void *arg)
+{
+	struct task *current = task_current();
+	void *lock_local = &task_lock;
+
+	spin_enter(&lock_local);
+	func(current, arg);
+	spin_leave(&lock_local);
+}
+
 void task_foreach(int (*func)(struct task *, void *), void *arg)
 {
 	struct task *t = task_head;
