@@ -44,6 +44,8 @@ struct __dancy_spawn_file_actions {
 #define __DANCY_SPAWN_SETSIGMASK      (0x0008)
 #define __DANCY_SPAWN_SETSCHEDPARAM   (0x0010)
 #define __DANCY_SPAWN_SETSCHEDULER    (0x0020)
+#define __DANCY_SPAWN_USEVFORK        (0x0040)
+#define __DANCY_SPAWN_SETSID          (0x0080)
 
 struct __dancy_spawn_attributes {
 	unsigned int __state;

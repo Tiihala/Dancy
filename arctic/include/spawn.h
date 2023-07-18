@@ -47,6 +47,8 @@ typedef __dancy_sigset_t sigset_t;
 #define POSIX_SPAWN_SETSIGMASK      __DANCY_SPAWN_SETSIGMASK
 #define POSIX_SPAWN_SETSCHEDPARAM   __DANCY_SPAWN_SETSCHEDPARAM
 #define POSIX_SPAWN_SETSCHEDULER    __DANCY_SPAWN_SETSCHEDULER
+#define POSIX_SPAWN_USEVFORK        __DANCY_SPAWN_USEVFORK
+#define POSIX_SPAWN_SETSID          __DANCY_SPAWN_SETSID
 
 typedef struct __dancy_spawn_file_actions
 	posix_spawn_file_actions_t;
