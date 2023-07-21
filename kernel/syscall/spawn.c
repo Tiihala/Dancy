@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,7 +29,46 @@ struct task_arg {
 	struct __dancy_spawn_file_actions *actions;
 	struct __dancy_spawn_attributes *attrp;
 	struct __dancy_spawn_attributes __attr;
+
+	int setpgroup_retval;
 };
+
+static void func_setsid(struct task *current, void *arg)
+{
+	uint64_t id = current->id;
+
+	(void)arg;
+	current->id_group = id;
+	current->id_session = id;
+}
+
+static int func_setpgroup(struct task *task, void *arg)
+{
+	struct task_arg *ta = arg;
+	struct task *current = task_current();
+	uint64_t pgroup = (uint64_t)ta->attrp->__pgroup;
+
+	if (pgroup == 0)
+		pgroup = current->id;
+
+	if (task != current) {
+		if (task->id_group == pgroup) {
+			if (task->id_session != current->id_session)
+				return (ta->setpgroup_retval = DE_ACCESS);
+		}
+		return 0;
+	}
+
+	if ((pgroup >> 63) != 0)
+		return (ta->setpgroup_retval = DE_ARGUMENT);
+
+	if (current->id_session == current->id && current->id_group != pgroup)
+		return (ta->setpgroup_retval = DE_ACCESS);
+
+	current->id_group = pgroup;
+
+	return 0;
+}
 
 static int new_task(void *arg)
 {
@@ -39,6 +78,25 @@ static int new_task(void *arg)
 
 	if (ta->attrp) {
 		int flags = ta->attrp->__flags;
+
+		if ((flags & __DANCY_SPAWN_USEVFORK) != 0)
+			flags ^= __DANCY_SPAWN_USEVFORK;
+
+		if ((flags & __DANCY_SPAWN_SETSID) != 0) {
+			flags ^= __DANCY_SPAWN_SETSID;
+			task_access(func_setsid, NULL);
+		}
+
+		if ((flags & __DANCY_SPAWN_SETPGROUP) != 0) {
+			flags ^= __DANCY_SPAWN_SETPGROUP;
+			task_foreach(func_setpgroup, arg);
+
+			if (ta->setpgroup_retval != 0) {
+				ta->retval = ta->setpgroup_retval;
+				spin_unlock(&ta->lock);
+				return 0;
+			}
+		}
 
 		if (flags != 0)
 			r = DE_ARGUMENT;
