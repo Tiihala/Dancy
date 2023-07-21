@@ -188,6 +188,8 @@ static long long dancy_syscall_spawn(va_list va)
 			return -ENOMEM;
 		if (r == DE_ARGUMENT)
 			return -EINVAL;
+		if (r == DE_ACCESS)
+			return -EPERM;
 		return -ENOEXEC;
 	}
 
