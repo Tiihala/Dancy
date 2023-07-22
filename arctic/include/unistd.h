@@ -36,6 +36,16 @@ typedef __dancy_off_t off_t;
 typedef __dancy_pid_t pid_t;
 #endif
 
+#ifndef __DANCY_TYPEDEF_UID_T
+#define __DANCY_TYPEDEF_UID_T
+typedef __dancy_uid_t uid_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_GID_T
+#define __DANCY_TYPEDEF_GID_T
+typedef __dancy_gid_t gid_t;
+#endif
+
 #undef STDIN_FILENO
 #undef STDOUT_FILENO
 #undef STDERR_FILENO
@@ -63,8 +73,14 @@ int pipe(int fd[2]);
 int ftruncate(int fd, off_t length);
 int truncate(const char *path, off_t length);
 
+pid_t getpgid(pid_t pid);
+pid_t getpgrp(void);
 pid_t getpid(void);
 pid_t getppid(void);
+pid_t getsid(pid_t pid);
+
+uid_t getuid(void);
+gid_t getgid(void);
 
 void _exit(int status);
 char *getcwd(char *buffer, size_t size);
