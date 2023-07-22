@@ -71,6 +71,12 @@ int ioctl_internal(int fd, int request, long long arg, long long *retval);
 int kill_internal(__dancy_pid_t pid, int sig, int flags);
 
 /*
+ * Declarations of misc.c
+ */
+int getpgid_internal(uint64_t id, uint64_t *id_group);
+int getsid_internal(uint64_t id, uint64_t *id_session);
+
+/*
  * Declarations of sleep.c
  */
 int sleep_internal(clockid_t id, int flags,
