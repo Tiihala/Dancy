@@ -153,6 +153,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/unistd/dup2.o \
  ./o32/arctic/libc/unistd/execve.o \
  ./o32/arctic/libc/unistd/getcwd.o \
+ ./o32/arctic/libc/unistd/getpgid.o \
  ./o32/arctic/libc/unistd/getpid.o \
  ./o32/arctic/libc/unistd/getppid.o \
  ./o32/arctic/libc/unistd/lseek.o \
@@ -314,6 +315,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/unistd/dup2.o \
  ./o64/arctic/libc/unistd/execve.o \
  ./o64/arctic/libc/unistd/getcwd.o \
+ ./o64/arctic/libc/unistd/getpgid.o \
  ./o64/arctic/libc/unistd/getpid.o \
  ./o64/arctic/libc/unistd/getppid.o \
  ./o64/arctic/libc/unistd/lseek.o \
