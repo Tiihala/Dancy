@@ -949,6 +949,24 @@ static long long dancy_syscall_ioctl(va_list va)
 	return retval;
 }
 
+static long long dancy_syscall_getpgid(va_list va)
+{
+	__dancy_pid_t pid = va_arg(va, __dancy_pid_t);
+	uint64_t id_group;
+	int r;
+
+	if (pid < 0)
+		return -EINVAL;
+
+	if ((r = getpgid_internal((uint64_t)pid, &id_group)) != 0) {
+		if (r == DE_SEARCH)
+			return -ESRCH;
+		return -EINVAL;
+	}
+
+	return (long long)id_group;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -987,6 +1005,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_kill },
 	{ dancy_syscall_poll },
 	{ dancy_syscall_ioctl },
+	{ dancy_syscall_getpgid },
 	{ dancy_syscall_reserved }
 };
 
