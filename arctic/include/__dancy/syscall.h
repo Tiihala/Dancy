@@ -272,6 +272,12 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_getpgid,
 
+	/*
+	 * long long __dancy_syscall_getsid(
+	 *         pid_t pid);
+	 */
+	__dancy_syscall_getsid,
+
 	__dancy_syscall_argn__
 };
 
