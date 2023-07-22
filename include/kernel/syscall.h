@@ -61,14 +61,14 @@ int file_realpath(const char *name, void *buffer, size_t size);
 int file_poll(struct pollfd fds[], int nfds, int timeout, int *retval);
 
 /*
- * Declarations of kill.c
- */
-int kill_internal(__dancy_pid_t pid, int sig, int flags);
-
-/*
  * Declarations of ioctl.c
  */
 int ioctl_internal(int fd, int request, long long arg, long long *retval);
+
+/*
+ * Declarations of kill.c
+ */
+int kill_internal(__dancy_pid_t pid, int sig, int flags);
 
 /*
  * Declarations of sleep.c
