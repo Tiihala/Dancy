@@ -628,6 +628,10 @@
     ./arctic/libc/unistd/getppid.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/getppid.c
 
+./o32/arctic/libc/unistd/getsid.o: \
+    ./arctic/libc/unistd/getsid.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/getsid.c
+
 ./o32/arctic/libc/unistd/lseek.o: \
     ./arctic/libc/unistd/lseek.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/lseek.c
@@ -1729,6 +1733,10 @@
 ./o64/arctic/libc/unistd/getppid.o: \
     ./arctic/libc/unistd/getppid.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/getppid.c
+
+./o64/arctic/libc/unistd/getsid.o: \
+    ./arctic/libc/unistd/getsid.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/getsid.c
 
 ./o64/arctic/libc/unistd/lseek.o: \
     ./arctic/libc/unistd/lseek.c $(DANCY_DEPS)
