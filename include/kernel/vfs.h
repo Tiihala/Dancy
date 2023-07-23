@@ -142,6 +142,11 @@ int vfs_chdir(const char *name);
 int vfs_pipe(struct vfs_node *nodes[2]);
 
 /*
+ * Declarations of pty.c
+ */
+int pty_init(void);
+
+/*
  * Declarations of root.c
  */
 int vfs_init_root(struct vfs_node **node);
