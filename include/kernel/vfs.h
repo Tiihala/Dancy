@@ -145,6 +145,7 @@ int vfs_pipe(struct vfs_node *nodes[2]);
  * Declarations of pty.c
  */
 int pty_init(void);
+int pty_create(struct vfs_node *nodes[2]);
 
 /*
  * Declarations of root.c
