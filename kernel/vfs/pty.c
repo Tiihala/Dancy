@@ -173,25 +173,22 @@ static void n_release(struct vfs_node **node)
 	*node = NULL;
 
 	if (vfs_decrement_count(n) == 0) {
-		void *lock_local = &pty_array_lock;
+		void *lock_local_1 = &pty_array_lock;
+		void *lock_local_2 = &shared_data->lock;
+		int count;
 
 		if (internal_data->type == pty_type_secondary) {
-			spin_enter(&lock_local);
+			spin_enter(&lock_local_1);
 			pty_array[shared_data->pty_i] = NULL;
-			spin_leave(&lock_local);
+			spin_leave(&lock_local_1);
 		}
 
 		memset(n, 0, sizeof(*n));
 		free(n);
-	}
 
-	{
-		void *lock_local = &shared_data->lock;
-		int count;
-
-		spin_enter(&lock_local);
+		spin_enter(&lock_local_2);
 		count = (shared_data->count -= 1);
-		spin_leave(&lock_local);
+		spin_leave(&lock_local_2);
 
 		if (count <= 0) {
 			event_delete(shared_data->buffer[0].event);
