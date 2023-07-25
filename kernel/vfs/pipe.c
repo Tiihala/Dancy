@@ -53,15 +53,16 @@ static void n_release(struct vfs_node **node)
 	if (vfs_decrement_count(n) == 0) {
 		memset(n, 0, sizeof(*n));
 		free(n);
-	}
 
-	spin_enter(&lock_local);
-	count = (shared_data->count -= 1);
-	spin_leave(&lock_local);
+		spin_enter(&lock_local);
+		count = (shared_data->count -= 1);
+		spin_leave(&lock_local);
 
-	if (count <= 0) {
-		event_delete(shared_data->event);
-		free(shared_data);
+		if (count <= 0) {
+			event_delete(shared_data->event);
+			memset(shared_data, 0, sizeof(*shared_data));
+			free(shared_data);
+		}
 	}
 }
 
