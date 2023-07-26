@@ -126,6 +126,8 @@ static int task_caretaker(void *arg)
 {
 	void *lock_local = &task_lock;
 
+	task_set_cmdline(task_current(), NULL, "[caretaker]");
+
 	while (arg == NULL) {
 		struct task *t = task_head;
 
@@ -700,8 +702,6 @@ void task_exit(int retval)
 {
 	static const char *unexpected = "task_exit: unexpected behavior";
 	struct task *current = task_current();
-
-	task_set_cmdline(current, NULL, "[exit]");
 
 	if (current->fd.state)
 		current->fd.release(current);
