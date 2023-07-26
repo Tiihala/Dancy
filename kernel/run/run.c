@@ -95,6 +95,7 @@ int run_init(void)
 	if ((r = open_file_descriptors()) != 0)
 		return r;
 
+	task_set_cmdline(task_current(), NULL, exe_name);
 	task_jump(user_ip, user_sp);
 
 	return 0;

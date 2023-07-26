@@ -137,6 +137,8 @@ static int ps2_task(void *arg)
 {
 	event_t events[2] = { ps2_event_port1, ps2_event_port2 };
 
+	task_set_cmdline(task_current(), NULL, "[ps2]");
+
 	while (!arg) {
 		int r = event_wait_array(2, &events[0], 2500);
 

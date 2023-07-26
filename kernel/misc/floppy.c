@@ -80,6 +80,8 @@ static int floppy_task(void *arg)
 {
 	void *lock_local = &drive_data_lock;
 
+	task_set_cmdline(task_current(), NULL, "[floppy]");
+
 	while (!arg) {
 		unsigned int value;
 

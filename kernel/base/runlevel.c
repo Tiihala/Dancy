@@ -197,6 +197,8 @@ static int runlevel_task(void *arg)
 {
 	uint32_t id;
 
+	task_set_cmdline(task_current(), NULL, "[runlevel]");
+
 	while (!arg) {
 		id = cpu_read32(&runlevel_id[1]);
 

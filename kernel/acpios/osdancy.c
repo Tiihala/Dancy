@@ -505,6 +505,8 @@ static int acpios_task(void *arg)
 	void *lock_local;
 	int count, i;
 
+	task_set_cmdline(task_current(), NULL, "[acpios]");
+
 	while (!arg) {
 		int execute_function = 0;
 		ACPI_OSD_EXEC_CALLBACK Function;
