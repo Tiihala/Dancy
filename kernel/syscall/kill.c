@@ -74,6 +74,8 @@ static int f(struct task *task, void *arg)
 static int allowed_signal(int sig)
 {
 	switch (sig) {
+		case 0:
+			return 1;
 		case SIGABRT:
 			return 1;
 		case SIGINT:
