@@ -357,6 +357,8 @@ int task_init(void)
 
 	kernel->scheduler.yield = task_default_yield;
 
+	task_set_cmdline(current, NULL, "/?");
+
 	return 0;
 }
 
@@ -393,6 +395,8 @@ int task_init_ap(void)
 
 	while (cpu_read32((const uint32_t *)&task_ready) == 0)
 		delay(1000000);
+
+	task_set_cmdline(current, NULL, "[cpu]");
 
 	return 0;
 }
