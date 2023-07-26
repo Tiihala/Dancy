@@ -48,6 +48,8 @@ struct pty_internal_data {
 static int pty_array_lock;
 static struct vfs_node *pty_array[PTY_ARRAY_COUNT];
 
+static int (*send_signals)(__dancy_pid_t pid, int sig, int flags);
+
 static int n_open_pts(struct vfs_node *node, const char *name,
 	struct vfs_node **new_node, int type, int mode)
 {
@@ -138,10 +140,27 @@ int pty_init(void)
 {
 	static int run_once;
 	struct vfs_node *node;
-	int r;
+	int i, r = DE_SEARCH;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
+
+	for (i = 0; i < kernel->symbol_count; i++) {
+		const char *name = kernel->symbol[i].name;
+
+		if (name[0] == '_')
+			name += 1;
+
+		if (!strcmp(name, "kill_internal")) {
+			addr_t a = (addr_t)kernel->symbol[i].value;
+			send_signals = (int (*)(__dancy_pid_t, int, int))a;
+			r = 0;
+			break;
+		}
+	}
+
+	if (r != 0 || (r = send_signals(1, 0, 0)) != 0)
+		return r;
 
 	if ((r = vfs_open("/dev/pts/", &node, 0, vfs_mode_create)) != 0)
 		return r;
