@@ -4,6 +4,7 @@
 
 ARCTIC_ROOT_FILES= \
  ./arctic/include/__dancy/core.h \
+ ./arctic/include/__dancy/ioctl.h \
  ./arctic/include/__dancy/keys.h \
  ./arctic/include/__dancy/mman.h \
  ./arctic/include/__dancy/mode.h \
@@ -55,6 +56,9 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/__dancy/core.h \
 		::include/__dancy/core.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/__dancy/ioctl.h \
+		::include/__dancy/ioctl.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/__dancy/keys.h \
 		::include/__dancy/keys.h
