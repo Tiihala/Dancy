@@ -961,3 +961,66 @@ int file_poll(struct pollfd fds[], int nfds, int timeout, int *retval)
 
 	return 0;
 }
+
+int file_openpty(int fd[2], char name[16],
+	const struct __dancy_termios *termios_p,
+	const struct __dancy_winsize *winsize_p)
+{
+	struct task *task = task_current();
+	struct file_table_entry *fte0, *fte1;
+	struct vfs_node *nodes[2];
+	int r;
+
+	fd[0] = -1;
+	fd[1] = -1;
+
+	if (name)
+		memset(&name[0], 0, 16);
+
+	{
+		if ((fte0 = alloc_file_entry()) == NULL)
+			return DE_MEMORY;
+
+		fte0->count = 1;
+		fte0->flags = O_RDWR;
+		fte0->offset = 0;
+
+		if ((fte1 = alloc_file_entry()) == NULL)
+			return file_decrement_count(fte0), DE_MEMORY;
+
+		fte1->count = 1;
+		fte1->flags = O_RDWR;
+		fte1->offset = 0;
+	}
+
+	if ((r = pty_create(nodes, name, termios_p, winsize_p)) != 0) {
+		file_decrement_count(fte0);
+		file_decrement_count(fte1);
+		return r;
+	}
+
+	fte0->node = nodes[0];
+	fte1->node = nodes[1];
+
+	{
+		if ((fd[0] = alloc_file_descriptor(task)) < 0) {
+			file_decrement_count(fte0);
+			file_decrement_count(fte1);
+			return DE_OVERFLOW;
+		}
+
+		task->fd.table[fd[0]] = (uint32_t)((addr_t)fte0);
+	}
+
+	{
+		if ((fd[1] = alloc_file_descriptor(task)) < 0) {
+			file_close(fd[0]), fd[0] = -1;
+			file_decrement_count(fte1);
+			return DE_OVERFLOW;
+		}
+
+		task->fd.table[fd[1]] = (uint32_t)((addr_t)fte1);
+	}
+
+	return 0;
+}

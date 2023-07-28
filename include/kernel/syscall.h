@@ -60,6 +60,10 @@ int file_getdents(int fd, void *buffer, size_t size, int *count, int flags);
 int file_realpath(const char *name, void *buffer, size_t size);
 int file_poll(struct pollfd fds[], int nfds, int timeout, int *retval);
 
+int file_openpty(int fd[2], char name[16],
+	const struct __dancy_termios *termios_p,
+	const struct __dancy_winsize *winsize_p);
+
 /*
  * Declarations of ioctl.c
  */
