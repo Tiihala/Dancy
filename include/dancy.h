@@ -30,6 +30,7 @@
 #include <stdint.h>
 
 #include <arctic/include/__dancy/core.h>
+#include <arctic/include/__dancy/ioctl.h>
 #include <arctic/include/__dancy/mman.h>
 #include <arctic/include/__dancy/mode.h>
 #include <arctic/include/__dancy/pollfd.h>
@@ -40,7 +41,6 @@
 #include <arctic/include/__dancy/termios.h>
 #include <arctic/include/__dancy/timedef.h>
 #include <arctic/include/__dancy/timespec.h>
-#include <arctic/include/sys/ioctl.h>
 #include <arctic/include/sys/wait.h>
 #include <arctic/include/ctype.h>
 #include <arctic/include/fcntl.h>
