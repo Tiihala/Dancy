@@ -145,7 +145,9 @@ int vfs_pipe(struct vfs_node *nodes[2]);
  * Declarations of pty.c
  */
 int pty_init(void);
-int pty_create(struct vfs_node *nodes[2]);
+int pty_create(struct vfs_node *nodes[2], char name[16],
+	const struct __dancy_termios *termios_p,
+	const struct __dancy_winsize *winsize_p);
 
 /*
  * Declarations of root.c

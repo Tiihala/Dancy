@@ -26,6 +26,9 @@ struct pty_shared_data {
 	int count;
 	int pty_i;
 
+	struct __dancy_termios termios;
+	struct __dancy_winsize winsize;
+
 	struct {
 		event_t event;
 		int start;
@@ -378,7 +381,9 @@ static struct vfs_node *alloc_node(int type,
 	return node;
 }
 
-int pty_create(struct vfs_node *nodes[2])
+int pty_create(struct vfs_node *nodes[2], char name[16],
+	const struct __dancy_termios *termios_p,
+	const struct __dancy_winsize *winsize_p)
 {
 	struct pty_shared_data *shared_data;
 	struct vfs_node *main_node, *secondary_node;
@@ -386,10 +391,19 @@ int pty_create(struct vfs_node *nodes[2])
 
 	nodes[0] = NULL, nodes[1] = NULL;
 
+	if (name)
+		memset(&name[0], 0, 16);
+
 	if ((shared_data = malloc(sizeof(*shared_data))) == NULL)
 		return DE_MEMORY;
 
 	memset(shared_data, 0, sizeof(*shared_data));
+
+	if (termios_p)
+		memcpy(&shared_data->termios, termios_p, sizeof(*termios_p));
+
+	if (winsize_p)
+		memcpy(&shared_data->winsize, winsize_p, sizeof(*winsize_p));
 
 	shared_data->buffer[0].event = event_create(event_type_manual_reset);
 	shared_data->buffer[1].event = event_create(event_type_manual_reset);
@@ -433,6 +447,9 @@ int pty_create(struct vfs_node *nodes[2])
 
 	nodes[0] = main_node;
 	nodes[1] = secondary_node;
+
+	if (name)
+		snprintf(&name[0], 16, "/dev/pts/%d", shared_data->pty_i);
 
 	return 0;
 }
