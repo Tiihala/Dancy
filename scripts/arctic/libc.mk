@@ -40,6 +40,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/misc/__main.o \
  ./o32/arctic/libc/misc/ull.o \
  ./o32/arctic/libc/poll/poll.o \
+ ./o32/arctic/libc/pty/openpty.o \
  ./o32/arctic/libc/signal/kill.o \
  ./o32/arctic/libc/signal/raise.o \
  ./o32/arctic/libc/spawn/actions.o \
@@ -204,6 +205,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/misc/__main.o \
  ./o64/arctic/libc/misc/ull.o \
  ./o64/arctic/libc/poll/poll.o \
+ ./o64/arctic/libc/pty/openpty.o \
  ./o64/arctic/libc/signal/kill.o \
  ./o64/arctic/libc/signal/raise.o \
  ./o64/arctic/libc/spawn/actions.o \
