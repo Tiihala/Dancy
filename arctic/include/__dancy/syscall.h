@@ -278,6 +278,15 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_getsid,
 
+	/*
+	 * long long __dancy_syscall_openpty(
+	 *         int fd[2],
+	 *         char *name,
+	 *         const struct termios *termios_p,
+	 *         const struct winsize *winsize_p);
+	 */
+	__dancy_syscall_openpty,
+
 	__dancy_syscall_argn__
 };
 

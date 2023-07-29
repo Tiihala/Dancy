@@ -985,6 +985,61 @@ static long long dancy_syscall_getsid(va_list va)
 	return (long long)id_session;
 }
 
+static long long dancy_syscall_openpty(va_list va)
+{
+	int *out_fd = va_arg(va, int *);
+	char *name = va_arg(va, char *);
+	const struct __dancy_termios *termios_p = va_arg(va, const void *);
+	const struct __dancy_winsize *winsize_p = va_arg(va, const void *);
+	int fd[2], r;
+
+	if (((addr_t)out_fd % (addr_t)sizeof(int)) != 0)
+		return -EFAULT;
+
+	if (pg_check_user_write(out_fd, sizeof(int) + sizeof(int)))
+		return -EFAULT;
+
+	if (termios_p != NULL) {
+		if (((addr_t)termios_p % (addr_t)sizeof(int)) != 0)
+			return -EFAULT;
+		if (pg_check_user_read(termios_p, sizeof(*termios_p)))
+			return -EFAULT;
+	}
+
+	if (winsize_p != NULL) {
+		if (((addr_t)winsize_p % (addr_t)sizeof(short)) != 0)
+			return -EFAULT;
+		if (pg_check_user_read(winsize_p, sizeof(*winsize_p)))
+			return -EFAULT;
+	}
+
+	if (name == NULL) {
+		r = file_openpty(fd, NULL, termios_p, winsize_p);
+
+	} else {
+		char buffer[16];
+
+		if (pg_check_user_write(name, sizeof(buffer)))
+			return -EFAULT;
+
+		if ((r = file_openpty(fd, buffer, termios_p, winsize_p)) == 0)
+			strcpy(name, &buffer[0]);
+	}
+
+	if (r != 0) {
+		if (r == DE_OVERFLOW)
+			return -EMFILE;
+		if (r == DE_MEMORY)
+			return -ENOMEM;
+		return -ENOENT;
+	}
+
+	out_fd[0] = fd[0];
+	out_fd[1] = fd[1];
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -1025,6 +1080,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_ioctl },
 	{ dancy_syscall_getpgid },
 	{ dancy_syscall_getsid },
+	{ dancy_syscall_openpty },
 	{ dancy_syscall_reserved }
 };
 
