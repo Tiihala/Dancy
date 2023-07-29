@@ -381,6 +381,41 @@ static struct vfs_node *alloc_node(int type,
 	return node;
 }
 
+static void set_default_termios(struct __dancy_termios *t)
+{
+	t->c_iflag |= __DANCY_TERMIOS_ICRNL;
+
+	t->c_oflag |= __DANCY_TERMIOS_ONLCR;
+	t->c_oflag |= __DANCY_TERMIOS_OPOST;
+
+	t->c_cflag |= __DANCY_TERMIOS_CS8;
+	t->c_cflag |= __DANCY_TERMIOS_CREAD;
+
+	t->c_lflag |= __DANCY_TERMIOS_ECHO;
+	t->c_lflag |= __DANCY_TERMIOS_ECHOE;
+	t->c_lflag |= __DANCY_TERMIOS_ECHOK;
+	t->c_lflag |= __DANCY_TERMIOS_ICANON;
+	t->c_lflag |= __DANCY_TERMIOS_ISIG;
+
+	t->c_cc[__DANCY_TERMIOS_VEOF  ] = 0x04;
+	t->c_cc[__DANCY_TERMIOS_VEOL  ] = 0x00;
+	t->c_cc[__DANCY_TERMIOS_VERASE] = 0x7F;
+	t->c_cc[__DANCY_TERMIOS_VINTR ] = 0x03;
+	t->c_cc[__DANCY_TERMIOS_VKILL ] = 0x15;
+	t->c_cc[__DANCY_TERMIOS_VMIN  ] = 0x01;
+	t->c_cc[__DANCY_TERMIOS_VQUIT ] = 0x1C;
+	t->c_cc[__DANCY_TERMIOS_VSTART] = 0x11;
+	t->c_cc[__DANCY_TERMIOS_VSTOP ] = 0x13;
+	t->c_cc[__DANCY_TERMIOS_VSUSP ] = 0x1A;
+	t->c_cc[__DANCY_TERMIOS_VTIME ] = 0x00;
+}
+
+static void set_default_winsize(struct __dancy_winsize *w)
+{
+	w->ws_row = 25;
+	w->ws_col = 80;
+}
+
 int pty_create(struct vfs_node *nodes[2], char name[16],
 	const struct __dancy_termios *termios_p,
 	const struct __dancy_winsize *winsize_p)
@@ -401,9 +436,13 @@ int pty_create(struct vfs_node *nodes[2], char name[16],
 
 	if (termios_p)
 		memcpy(&shared_data->termios, termios_p, sizeof(*termios_p));
+	else
+		set_default_termios(&shared_data->termios);
 
 	if (winsize_p)
 		memcpy(&shared_data->winsize, winsize_p, sizeof(*winsize_p));
+	else
+		set_default_winsize(&shared_data->winsize);
 
 	shared_data->buffer[0].event = event_create(event_type_manual_reset);
 	shared_data->buffer[1].event = event_create(event_type_manual_reset);
