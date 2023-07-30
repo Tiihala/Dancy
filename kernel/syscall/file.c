@@ -308,6 +308,11 @@ int file_read(int fd, size_t *size, void *buffer)
 			r = n->n_read(n, 0, size, buffer);
 
 			while (*size == 0) {
+				if (r == DE_EMPTY) {
+					r = 0;
+					break;
+				}
+
 				if ((f & O_NONBLOCK) != 0)
 					break;
 
