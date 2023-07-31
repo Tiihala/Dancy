@@ -19,12 +19,14 @@
 
 #include <dancy.h>
 
-#define PTY_BUFFER_SIZE 4096
+#define PTY_BUFFER_SIZE (16384)
+#define PTY_ICANON_SIZE (PTY_BUFFER_SIZE / 4)
 
 struct pty_shared_data {
 	int lock;
 	int count;
 	int pty_i;
+	int eof;
 
 	struct __dancy_termios termios;
 	struct __dancy_winsize winsize;
@@ -35,6 +37,11 @@ struct pty_shared_data {
 		int end;
 		unsigned char base[PTY_BUFFER_SIZE];
 	} buffer[2];
+
+	struct {
+		int size;
+		unsigned char base[PTY_ICANON_SIZE];
+	} icanon;
 };
 
 enum pty_type {
@@ -52,6 +59,98 @@ static int pty_array_lock;
 static struct vfs_node *pty_array[PTY_ARRAY_COUNT];
 
 static int (*send_signals)(__dancy_pid_t pid, int sig, int flags);
+
+static void lock_shared_data(struct pty_shared_data *data)
+{
+	while (!spin_trylock(&data->lock))
+		task_yield();
+}
+
+static void unlock_shared_data(struct pty_shared_data *data)
+{
+	spin_unlock(&data->lock);
+}
+
+static int buffer_state(struct pty_shared_data *data, int i)
+{
+	int start = data->buffer[i].start;
+	int end = data->buffer[i].end;
+	int size = end - start;
+
+	if (size < 0)
+		size = (PTY_BUFFER_SIZE + end) - start;
+
+	return size;
+}
+
+static int read_buffer(struct pty_shared_data *data, int i)
+{
+	int start = data->buffer[i].start;
+	int end = data->buffer[i].end;
+	int c = -1;
+
+	if (start != end) {
+		c = (int)data->buffer[i].base[start];
+		data->buffer[i].base[start] = 0;
+		data->buffer[i].start = ((start + 1) % PTY_BUFFER_SIZE);
+	} else {
+		event_reset(data->buffer[i].event);
+	}
+
+	return c;
+}
+
+static int write_buffer(struct pty_shared_data *data, int i, int c)
+{
+	int start = data->buffer[i].start;
+	int old_end = data->buffer[i].end;
+	int new_end = ((old_end + 1) % PTY_BUFFER_SIZE);
+
+	if (start == new_end)
+		return DE_RETRY;
+
+	data->buffer[i].base[old_end] = (unsigned char)c;
+	data->buffer[i].end = new_end;
+
+	if (start == old_end)
+		event_signal(data->buffer[i].event);
+
+	return 0;
+}
+
+static int write_byte_main(struct pty_shared_data *data, int c)
+{
+	write_buffer(data, 1, c);
+
+	return 0;
+}
+
+static void write_echo_main(struct pty_shared_data *data, int c)
+{
+	int icanon = ((data->termios.c_lflag & __DANCY_TERMIOS_ICANON) != 0);
+	int opost = ((data->termios.c_oflag & __DANCY_TERMIOS_OPOST) != 0);
+
+	if (c == '\n' && icanon && opost) {
+		if ((data->termios.c_oflag & __DANCY_TERMIOS_ONLCR) != 0)
+			write_buffer(data, 0, '\r');
+		write_buffer(data, 0, '\n');
+		return;
+	}
+
+	if (c >= 0 && c <= 0x1F) {
+		write_buffer(data, 0, '^');
+		write_buffer(data, 0, '@' + c);
+		return;
+	}
+
+	if (c == 0x7F) {
+		write_buffer(data, 0, '^');
+		write_buffer(data, 0, '?');
+		return;
+	}
+
+	write_buffer(data, 0, c);
+}
 
 static int n_open_pts(struct vfs_node *node, const char *name,
 	struct vfs_node **new_node, int type, int mode)
@@ -230,25 +329,123 @@ static void n_release(struct vfs_node **node)
 static int n_read_main(struct vfs_node *node,
 	uint64_t offset, size_t *size, void *buffer)
 {
-	(void)node;
-	(void)offset;
-	(void)buffer;
+	size_t requested_size = *size;
+	struct pty_internal_data *internal_data = node->internal_data;
+	struct pty_shared_data *shared_data = internal_data->shared_data;
+	int r = 0;
 
+	(void)offset;
 	*size = 0;
 
-	return DE_UNSUPPORTED;
+	lock_shared_data(shared_data);
+
+	while (*size < requested_size) {
+		int c = read_buffer(shared_data, 0);
+
+		if (c < 0)
+			break;
+
+		((unsigned char *)buffer)[*size] = (unsigned char)c;
+		*size += 1;
+	}
+
+	unlock_shared_data(shared_data);
+
+	return r;
 }
 
 static int n_write_main(struct vfs_node *node,
 	uint64_t offset, size_t *size, const void *buffer)
 {
-	(void)node;
-	(void)offset;
-	(void)buffer;
+	size_t requested_size = *size;
+	struct pty_internal_data *internal_data = node->internal_data;
+	struct pty_shared_data *shared_data = internal_data->shared_data;
+	int i, r = 0;
 
+	(void)offset;
 	*size = 0;
 
-	return DE_UNSUPPORTED;
+	lock_shared_data(shared_data);
+
+	while (*size < requested_size) {
+		__dancy_tcflag_t c_lflag = shared_data->termios.c_lflag;
+		__dancy_cc_t *c_cc = &shared_data->termios.c_cc[0];
+
+		int c = (int)(((unsigned char *)buffer)[*size]);
+		int echo = ((c_lflag & __DANCY_TERMIOS_ECHO) != 0);
+
+		shared_data->eof = 0;
+
+		if ((c_lflag & __DANCY_TERMIOS_ICANON) != 0) {
+			unsigned char *p = &shared_data->icanon.base[0];
+			int end_of_icanon = 0;
+
+			if (buffer_state(shared_data, 0) > PTY_ICANON_SIZE) {
+				r = DE_RETRY;
+				break;
+			}
+
+			if (shared_data->icanon.size < PTY_ICANON_SIZE - 1) {
+				unsigned char u = (unsigned char)c;
+				p[shared_data->icanon.size++] = u;
+			}
+
+			if (c == '\n') {
+				end_of_icanon = 1;
+
+			} else if (c && c == c_cc[__DANCY_TERMIOS_VEOF]) {
+				if (shared_data->icanon.size == 1) {
+					shared_data->icanon.size = 0;
+					shared_data->eof = 1;
+					break;
+				}
+				echo = 0;
+				end_of_icanon = 1;
+
+			} else if (c && c == c_cc[__DANCY_TERMIOS_VEOL]) {
+				end_of_icanon = 1;
+			}
+
+			if (echo)
+				write_echo_main(shared_data, c);
+
+			if (end_of_icanon) {
+				int icanon_size;
+
+				if (p[shared_data->icanon.size - 1] != c) {
+					unsigned char u = (unsigned char)c;
+					p[shared_data->icanon.size++] = u;
+				}
+
+				icanon_size = shared_data->icanon.size;
+
+				/*
+				 * The buffer sizes have been set and checked
+				 * so that everything can be written, even if
+				 * every char is converted to two chars.
+				 */
+				for (i = 0; i < icanon_size; i++) {
+					c = (int)p[i];
+					write_byte_main(shared_data, c);
+				}
+
+				shared_data->icanon.size = 0;
+			}
+
+		} else {
+			if (echo)
+				write_echo_main(shared_data, c);
+
+			if ((r = write_byte_main(shared_data, c)) != 0)
+				break;
+		}
+
+		*size += 1;
+	}
+
+	unlock_shared_data(shared_data);
+
+	return r;
 }
 
 static int n_read_secondary(struct vfs_node *node,
@@ -304,7 +501,7 @@ static int n_poll(struct vfs_node *node, int events, int *revents)
 		if (count < 0)
 			count = (PTY_BUFFER_SIZE + end) - start;
 
-		write_ok = (count < (PTY_BUFFER_SIZE / 2));
+		write_ok = (count < PTY_ICANON_SIZE);
 	}
 
 	if (read_ok && (events & POLLIN) != 0)
