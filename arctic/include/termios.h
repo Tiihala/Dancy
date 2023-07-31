@@ -47,6 +47,7 @@ typedef __dancy_tcflag_t tcflag_t;
 #define VSTOP       __DANCY_TERMIOS_VSTOP
 #define VSUSP       __DANCY_TERMIOS_VSUSP
 #define VTIME       __DANCY_TERMIOS_VTIME
+#define VWERASE     __DANCY_TERMIOS_VWERASE
 
 #define BRKINT      __DANCY_TERMIOS_BRKINT
 #define ICRNL       __DANCY_TERMIOS_ICRNL

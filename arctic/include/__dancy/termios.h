@@ -41,6 +41,7 @@ typedef unsigned int __dancy_tcflag_t;
 #define __DANCY_TERMIOS_VSTOP       (9)
 #define __DANCY_TERMIOS_VSUSP       (10)
 #define __DANCY_TERMIOS_VTIME       (5)
+#define __DANCY_TERMIOS_VWERASE     (14)
 
 #define __DANCY_TERMIOS_BRKINT      (0x0002)
 #define __DANCY_TERMIOS_ICRNL       (0x0100)
