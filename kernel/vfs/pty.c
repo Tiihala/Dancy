@@ -594,17 +594,18 @@ static void set_default_termios(struct __dancy_termios *t)
 	t->c_lflag |= __DANCY_TERMIOS_ICANON;
 	t->c_lflag |= __DANCY_TERMIOS_ISIG;
 
-	t->c_cc[__DANCY_TERMIOS_VEOF  ] = 0x04;
-	t->c_cc[__DANCY_TERMIOS_VEOL  ] = 0x00;
-	t->c_cc[__DANCY_TERMIOS_VERASE] = 0x7F;
-	t->c_cc[__DANCY_TERMIOS_VINTR ] = 0x03;
-	t->c_cc[__DANCY_TERMIOS_VKILL ] = 0x15;
-	t->c_cc[__DANCY_TERMIOS_VMIN  ] = 0x01;
-	t->c_cc[__DANCY_TERMIOS_VQUIT ] = 0x1C;
-	t->c_cc[__DANCY_TERMIOS_VSTART] = 0x11;
-	t->c_cc[__DANCY_TERMIOS_VSTOP ] = 0x13;
-	t->c_cc[__DANCY_TERMIOS_VSUSP ] = 0x1A;
-	t->c_cc[__DANCY_TERMIOS_VTIME ] = 0x00;
+	t->c_cc[__DANCY_TERMIOS_VEOF   ] = 0x04;
+	t->c_cc[__DANCY_TERMIOS_VEOL   ] = 0x00;
+	t->c_cc[__DANCY_TERMIOS_VERASE ] = 0x7F;
+	t->c_cc[__DANCY_TERMIOS_VINTR  ] = 0x03;
+	t->c_cc[__DANCY_TERMIOS_VKILL  ] = 0x15;
+	t->c_cc[__DANCY_TERMIOS_VMIN   ] = 0x01;
+	t->c_cc[__DANCY_TERMIOS_VQUIT  ] = 0x1C;
+	t->c_cc[__DANCY_TERMIOS_VSTART ] = 0x11;
+	t->c_cc[__DANCY_TERMIOS_VSTOP  ] = 0x13;
+	t->c_cc[__DANCY_TERMIOS_VSUSP  ] = 0x1A;
+	t->c_cc[__DANCY_TERMIOS_VTIME  ] = 0x00;
+	t->c_cc[__DANCY_TERMIOS_VWERASE] = 0x17;
 }
 
 static void set_default_winsize(struct __dancy_winsize *w)
