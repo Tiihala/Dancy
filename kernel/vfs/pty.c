@@ -118,9 +118,22 @@ static int write_buffer(struct pty_shared_data *data, int i, int c)
 	return 0;
 }
 
+static int write_byte_secondary(struct pty_shared_data *data, int c)
+{
+	int r;
+
+	if ((r = write_buffer(data, 0, c)) != 0)
+		return r;
+
+	return 0;
+}
+
 static int write_byte_main(struct pty_shared_data *data, int c)
 {
-	write_buffer(data, 1, c);
+	int r;
+
+	if ((r = write_buffer(data, 1, c)) != 0)
+		return r;
 
 	return 0;
 }
@@ -451,25 +464,56 @@ static int n_write_main(struct vfs_node *node,
 static int n_read_secondary(struct vfs_node *node,
 	uint64_t offset, size_t *size, void *buffer)
 {
-	(void)node;
-	(void)offset;
-	(void)buffer;
+	size_t requested_size = *size;
+	struct pty_internal_data *internal_data = node->internal_data;
+	struct pty_shared_data *shared_data = internal_data->shared_data;
+	int r = 0;
 
+	(void)offset;
 	*size = 0;
 
-	return DE_UNSUPPORTED;
+	lock_shared_data(shared_data);
+
+	while (*size < requested_size) {
+		int c = read_buffer(shared_data, 1);
+
+		if (c < 0)
+			break;
+
+		((unsigned char *)buffer)[*size] = (unsigned char)c;
+		*size += 1;
+	}
+
+	unlock_shared_data(shared_data);
+
+	return r;
 }
 
 static int n_write_secondary(struct vfs_node *node,
 	uint64_t offset, size_t *size, const void *buffer)
 {
-	(void)node;
-	(void)offset;
-	(void)buffer;
+	size_t requested_size = *size;
+	struct pty_internal_data *internal_data = node->internal_data;
+	struct pty_shared_data *shared_data = internal_data->shared_data;
+	int r = 0;
 
+	(void)offset;
 	*size = 0;
 
-	return DE_UNSUPPORTED;
+	lock_shared_data(shared_data);
+
+	while (*size < requested_size) {
+		int c = (int)(((unsigned char *)buffer)[*size]);
+
+		if ((r = write_byte_secondary(shared_data, c)) != 0)
+			break;
+
+		*size += 1;
+	}
+
+	unlock_shared_data(shared_data);
+
+	return r;
 }
 
 static int n_poll(struct vfs_node *node, int events, int *revents)
@@ -592,6 +636,7 @@ static void set_default_termios(struct __dancy_termios *t)
 	t->c_lflag |= __DANCY_TERMIOS_ECHOE;
 	t->c_lflag |= __DANCY_TERMIOS_ECHOK;
 	t->c_lflag |= __DANCY_TERMIOS_ICANON;
+	t->c_lflag |= __DANCY_TERMIOS_IEXTEN;
 	t->c_lflag |= __DANCY_TERMIOS_ISIG;
 
 	t->c_cc[__DANCY_TERMIOS_VEOF   ] = 0x04;
