@@ -120,12 +120,24 @@ static int write_buffer(struct pty_shared_data *data, int i, int c)
 
 static int write_byte_secondary(struct pty_shared_data *data, int c)
 {
-	int r;
+	__dancy_tcflag_t c_oflag = data->termios.c_oflag;
 
-	if ((r = write_buffer(data, 0, c)) != 0)
-		return r;
+	int opost = ((c_oflag & __DANCY_TERMIOS_OPOST ) != 0);
+	int onlcr = ((c_oflag & __DANCY_TERMIOS_ONLCR ) != 0);
 
-	return 0;
+	if (!opost)
+		return write_buffer(data, 0, c);
+
+	if (c == '\n' && onlcr) {
+		if (buffer_state(data, 0) >= PTY_BUFFER_SIZE - 2)
+			return DE_RETRY;
+
+		write_buffer(data, 0, '\r');
+		write_buffer(data, 0, '\n');
+		return 0;
+	}
+
+	return write_buffer(data, 0, c);
 }
 
 static int write_byte_main(struct pty_shared_data *data, int c)
@@ -140,14 +152,20 @@ static int write_byte_main(struct pty_shared_data *data, int c)
 
 static void write_echo_main(struct pty_shared_data *data, int c)
 {
-	int icanon = ((data->termios.c_lflag & __DANCY_TERMIOS_ICANON) != 0);
-	int opost = ((data->termios.c_oflag & __DANCY_TERMIOS_OPOST) != 0);
+	if (c == '\n') {
+		__dancy_tcflag_t c_lflag = data->termios.c_lflag;
+		__dancy_tcflag_t c_oflag = data->termios.c_oflag;
 
-	if (c == '\n' && icanon && opost) {
-		if ((data->termios.c_oflag & __DANCY_TERMIOS_ONLCR) != 0)
-			write_buffer(data, 0, '\r');
-		write_buffer(data, 0, '\n');
-		return;
+		int icanon = ((c_lflag & __DANCY_TERMIOS_ICANON) != 0);
+		int opost = ((c_oflag & __DANCY_TERMIOS_OPOST ) != 0);
+		int onlcr = ((c_oflag & __DANCY_TERMIOS_ONLCR ) != 0);
+
+		if (icanon) {
+			if (opost && onlcr)
+				write_buffer(data, 0, '\r');
+			write_buffer(data, 0, '\n');
+			return;
+		}
 	}
 
 	if (c >= 0 && c <= 0x1F) {
@@ -163,6 +181,47 @@ static void write_echo_main(struct pty_shared_data *data, int c)
 	}
 
 	write_buffer(data, 0, c);
+}
+
+static void write_erase_main(struct pty_shared_data *data, int c, int word)
+{
+	__dancy_tcflag_t c_lflag = data->termios.c_lflag;
+
+	int echo = ((c_lflag & __DANCY_TERMIOS_ECHO) != 0);
+	int echoe = ((c_lflag & __DANCY_TERMIOS_ECHOE) != 0);
+
+	while (data->icanon.size > 0) {
+		data->icanon.size -= 1;
+
+		if (echo) {
+			if (echoe) {
+				write_buffer(data, 0, '\x08');
+				write_buffer(data, 0, '\x20');
+				write_buffer(data, 0, '\x08');
+			} else {
+				if (c >= 0 && c <= 0x1F) {
+					write_buffer(data, 0, '^');
+					write_buffer(data, 0, '@' + c);
+				} else if (c == 0x7F) {
+					write_buffer(data, 0, '^');
+					write_buffer(data, 0, '?');
+				} else {
+					write_buffer(data, 0, c);
+				}
+			}
+		}
+
+		if (!word)
+			break;
+
+		if (!echoe)
+			echo = 0;
+
+		if (data->icanon.base[data->icanon.size] == 0x09)
+			break;
+		if (data->icanon.base[data->icanon.size] == 0x20)
+			break;
+	}
 }
 
 static int n_open_pts(struct vfs_node *node, const char *name,
@@ -393,7 +452,10 @@ static int n_write_main(struct vfs_node *node,
 			unsigned char *p = &shared_data->icanon.base[0];
 			int end_of_icanon = 0;
 
-			if (buffer_state(shared_data, 0) > PTY_ICANON_SIZE) {
+			/*
+			 * Check the _secondary_ buffer state.
+			 */
+			if (buffer_state(shared_data, 1) > PTY_ICANON_SIZE) {
 				r = DE_RETRY;
 				break;
 			}
@@ -414,6 +476,16 @@ static int n_write_main(struct vfs_node *node,
 				}
 				echo = 0;
 				end_of_icanon = 1;
+
+			} else if (c && c == c_cc[__DANCY_TERMIOS_VERASE]) {
+				shared_data->icanon.size -= 1;
+				write_erase_main(shared_data, c, 0);
+				echo = 0;
+
+			} else if (c && c == c_cc[__DANCY_TERMIOS_VWERASE]) {
+				shared_data->icanon.size -= 1;
+				write_erase_main(shared_data, c, 1);
+				echo = 0;
 
 			} else if (c && c == c_cc[__DANCY_TERMIOS_VEOL]) {
 				end_of_icanon = 1;
@@ -468,16 +540,23 @@ static int n_read_secondary(struct vfs_node *node,
 	struct pty_internal_data *internal_data = node->internal_data;
 	struct pty_shared_data *shared_data = internal_data->shared_data;
 	int r = 0;
+	int icanon, veof;
 
 	(void)offset;
 	*size = 0;
 
 	lock_shared_data(shared_data);
 
+	icanon = (shared_data->termios.c_lflag & __DANCY_TERMIOS_ICANON) != 0;
+	veof = (int)shared_data->termios.c_cc[__DANCY_TERMIOS_VEOF];
+
 	while (*size < requested_size) {
 		int c = read_buffer(shared_data, 1);
 
 		if (c < 0)
+			break;
+
+		if (c && c == veof && icanon)
 			break;
 
 		((unsigned char *)buffer)[*size] = (unsigned char)c;
