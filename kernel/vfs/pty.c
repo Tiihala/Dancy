@@ -570,7 +570,7 @@ static int n_read_secondary(struct vfs_node *node,
 
 		if (c < 0) {
 			if (shared_data->eof)
-				r = DE_EMPTY;
+				shared_data->eof = 0, r = DE_EMPTY;
 			break;
 		}
 
