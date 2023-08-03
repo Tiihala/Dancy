@@ -620,19 +620,18 @@ static int n_poll(struct vfs_node *node, int events, int *revents)
 {
 	struct pty_internal_data *internal_data = node->internal_data;
 	struct pty_shared_data *shared_data = internal_data->shared_data;
-	void *lock_local = &shared_data->lock;
 
 	int read_ok, write_ok, r = 0;
 	int start[2], end[2];
 
-	spin_enter(&lock_local);
+	lock_shared_data(shared_data);
 
 	start[0] = shared_data->buffer[0].start;
 	start[1] = shared_data->buffer[1].start;
 	end[0] = shared_data->buffer[0].end;
 	end[1] = shared_data->buffer[1].end;
 
-	spin_leave(&lock_local);
+	unlock_shared_data(shared_data);
 
 	if (internal_data->type == pty_type_main) {
 		int count = end[1] - start[1];
