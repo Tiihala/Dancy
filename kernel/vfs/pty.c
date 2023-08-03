@@ -440,6 +440,7 @@ static int n_write_main(struct vfs_node *node,
 	lock_shared_data(shared_data);
 
 	while (*size < requested_size) {
+		__dancy_tcflag_t c_iflag = shared_data->termios.c_iflag;
 		__dancy_tcflag_t c_lflag = shared_data->termios.c_lflag;
 		__dancy_cc_t *c_cc = &shared_data->termios.c_cc[0];
 
@@ -447,6 +448,19 @@ static int n_write_main(struct vfs_node *node,
 		int echo = ((c_lflag & __DANCY_TERMIOS_ECHO) != 0);
 
 		shared_data->eof = 0;
+
+		if (c == '\n') {
+			if ((c_iflag & __DANCY_TERMIOS_INLCR) != 0)
+				c = '\r';
+
+		} else if (c == '\r') {
+			if ((c_iflag & __DANCY_TERMIOS_IGNCR) != 0) {
+				*size += 1;
+				continue;
+			}
+			if ((c_iflag & __DANCY_TERMIOS_ICRNL) != 0)
+				c = '\n';
+		}
 
 		if ((c_lflag & __DANCY_TERMIOS_ICANON) != 0) {
 			unsigned char *p = &shared_data->icanon.base[0];
@@ -472,6 +486,7 @@ static int n_write_main(struct vfs_node *node,
 				if (shared_data->icanon.size == 1) {
 					shared_data->icanon.size = 0;
 					shared_data->eof = 1;
+					*size += 1;
 					break;
 				}
 				echo = 0;
@@ -553,14 +568,20 @@ static int n_read_secondary(struct vfs_node *node,
 	while (*size < requested_size) {
 		int c = read_buffer(shared_data, 1);
 
-		if (c < 0)
+		if (c < 0) {
+			if (shared_data->eof)
+				r = DE_EMPTY;
 			break;
+		}
 
 		if (c && c == veof && icanon)
 			break;
 
 		((unsigned char *)buffer)[*size] = (unsigned char)c;
 		*size += 1;
+
+		if (c == '\n')
+			break;
 	}
 
 	unlock_shared_data(shared_data);
