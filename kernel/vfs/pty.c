@@ -623,28 +623,33 @@ static int n_poll(struct vfs_node *node, int events, int *revents)
 	void *lock_local = &shared_data->lock;
 
 	int read_ok, write_ok, r = 0;
-	int start, end;
+	int start[2], end[2];
 
 	spin_enter(&lock_local);
 
-	if (internal_data->type == pty_type_main) {
-		start = shared_data->buffer[0].start;
-		end = shared_data->buffer[0].end;
-	} else {
-		start = shared_data->buffer[1].start;
-		end = shared_data->buffer[1].end;
-	}
+	start[0] = shared_data->buffer[0].start;
+	start[1] = shared_data->buffer[1].start;
+	end[0] = shared_data->buffer[0].end;
+	end[1] = shared_data->buffer[1].end;
 
 	spin_leave(&lock_local);
 
-	read_ok = (start != end);
-
-	{
-		int count = end - start;
+	if (internal_data->type == pty_type_main) {
+		int count = end[1] - start[1];
 
 		if (count < 0)
-			count = (PTY_BUFFER_SIZE + end) - start;
+			count = (PTY_BUFFER_SIZE + end[1]) - start[1];
 
+		read_ok = (start[0] != end[0]);
+		write_ok = (count < PTY_ICANON_SIZE);
+
+	} else {
+		int count = end[0] - start[0];
+
+		if (count < 0)
+			count = (PTY_BUFFER_SIZE + end[0]) - start[0];
+
+		read_ok = (start[1] != end[1]);
 		write_ok = (count < PTY_ICANON_SIZE);
 	}
 
