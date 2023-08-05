@@ -967,6 +967,33 @@ int file_poll(struct pollfd fds[], int nfds, int timeout, int *retval)
 	return 0;
 }
 
+int file_ioctl(int fd, int request, long long arg)
+{
+	struct task *task = task_current();
+	int r;
+
+	if (fd >= 0 && fd < (int)task->fd.state) {
+		struct file_table_entry *fte;
+		struct vfs_node *n;
+		uint32_t t;
+
+		if ((t = task->fd.table[fd]) != 0) {
+			fte = (void *)((addr_t)(t & table_mask));
+
+			lock_fte(fte);
+
+			n = fte->node;
+			r = n->n_ioctl(n, request, arg);
+
+			unlock_fte(fte);
+
+			return r;
+		}
+	}
+
+	return DE_ARGUMENT;
+}
+
 int file_openpty(int fd[2], char name[16],
 	const struct __dancy_termios *termios_p,
 	const struct __dancy_winsize *winsize_p)
