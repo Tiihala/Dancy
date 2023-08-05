@@ -671,9 +671,74 @@ static int n_poll(struct vfs_node *node, int events, int *revents)
 static int n_ioctl(struct vfs_node *node,
 	int request, long long arg)
 {
-	(void)node;
-	(void)request;
-	(void)arg;
+	struct pty_internal_data *internal_data = node->internal_data;
+	struct pty_shared_data *shared_data = internal_data->shared_data;
+
+	if (request == __DANCY_IOCTL_TCGETS) {
+		void *d = (void *)((addr_t)arg);
+		const struct __dancy_termios *s = &shared_data->termios;
+		size_t size = sizeof(*s);
+
+		lock_shared_data(shared_data);
+		memcpy(d, s, size);
+		unlock_shared_data(shared_data);
+
+		return 0;
+	}
+
+	/*
+	 * All TCSET* requests behave the same way on this system.
+	 */
+	if (request == __DANCY_IOCTL_TCSETSW)
+		request = __DANCY_IOCTL_TCSETS;
+	if (request == __DANCY_IOCTL_TCSETSF)
+		request = __DANCY_IOCTL_TCSETS;
+
+	if (request == __DANCY_IOCTL_TCSETS) {
+		void *d = &shared_data->termios;
+		const struct __dancy_termios *s = (const void *)((addr_t)arg);
+		size_t size = sizeof(*s);
+
+		lock_shared_data(shared_data);
+		if ((s->c_lflag & __DANCY_TERMIOS_ICANON) == 0) {
+			int i, icanon_size = shared_data->icanon.size;
+			unsigned char *p = &shared_data->icanon.base[0];
+
+			for (i = 0; i < icanon_size; i++) {
+				int c = (int)p[i];
+				write_byte_main(shared_data, c);
+			}
+			shared_data->icanon.size = 0;
+		}
+		memcpy(d, s, size);
+		unlock_shared_data(shared_data);
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_TIOCGWINSZ) {
+		void *d = (void *)((addr_t)arg);
+		const struct __dancy_winsize *s = &shared_data->winsize;
+		size_t size = sizeof(*s);
+
+		lock_shared_data(shared_data);
+		memcpy(d, s, size);
+		unlock_shared_data(shared_data);
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_TIOCSWINSZ) {
+		void *d = &shared_data->winsize;
+		const struct __dancy_winsize *s = (const void *)((addr_t)arg);
+		size_t size = sizeof(*s);
+
+		lock_shared_data(shared_data);
+		memcpy(d, s, size);
+		unlock_shared_data(shared_data);
+
+		return 0;
+	}
 
 	return DE_UNSUPPORTED;
 }
