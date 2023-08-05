@@ -19,12 +19,71 @@
 
 #include <dancy.h>
 
+static int check_pointer(size_t alignment, size_t size, int rw, long long arg)
+{
+	addr_t addr;
+
+	if (arg <= 0)
+		return DE_ACCESS;
+#ifdef DANCY_32
+	if (arg > 0xFFFFFFFF)
+		return DE_ACCESS;
+#endif
+	addr = (addr_t)arg;
+
+	if ((addr % (addr_t)alignment) != 0)
+		return DE_ACCESS;
+
+	if (rw) {
+		if (pg_check_user_write((void *)addr, size))
+			return DE_ACCESS;
+	} else {
+		if (pg_check_user_read((const void *)addr, size))
+			return DE_ACCESS;
+	}
+
+	return 0;
+}
+
 int ioctl_internal(int fd, int request, long long arg, long long *retval)
 {
-	(void)fd;
-	(void)request;
-	(void)arg;
-	(void)retval;
+	size_t alignment = sizeof(int);
+	size_t size = 0;
+	int rw = 0, r = 0;
 
-	return DE_UNSUPPORTED;
+	*retval = 0;
+
+	switch (request) {
+		case __DANCY_IOCTL_TCGETS:
+			size = sizeof(struct __dancy_termios), rw = 1;
+			break;
+		case __DANCY_IOCTL_TCSETS:
+			size = sizeof(struct __dancy_termios);
+			break;
+		case __DANCY_IOCTL_TCSETSW:
+			size = sizeof(struct __dancy_termios);
+			break;
+		case __DANCY_IOCTL_TCSETSF:
+			size = sizeof(struct __dancy_termios);
+			break;
+		case __DANCY_IOCTL_TIOCGWINSZ:
+			alignment = sizeof(short);
+			size = sizeof(struct __dancy_winsize), rw = 1;
+			break;
+		case __DANCY_IOCTL_TIOCSWINSZ:
+			alignment = sizeof(short);
+			size = sizeof(struct __dancy_winsize);
+			break;
+		default:
+			r = DE_UNSUPPORTED;
+			break;
+	}
+
+	if (size != 0)
+		r = check_pointer(alignment, size, rw, arg);
+
+	if (r == 0)
+		r = file_ioctl(fd, request, arg);
+
+	return r;
 }
