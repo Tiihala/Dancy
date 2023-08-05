@@ -84,6 +84,7 @@ gid_t getgid(void);
 
 void _exit(int status);
 char *getcwd(char *buffer, size_t size);
+int isatty(int fd);
 
 extern char **environ;
 
