@@ -32,6 +32,14 @@ struct winsize {
 	unsigned short ws_ypixel;
 };
 
+#define TCGETS                  __DANCY_IOCTL_TCGETS
+#define TCSETS                  __DANCY_IOCTL_TCSETS
+#define TCSETSW                 __DANCY_IOCTL_TCSETSW
+#define TCSETSF                 __DANCY_IOCTL_TCSETSF
+
+#define TIOCGWINSZ              __DANCY_IOCTL_TIOCGWINSZ
+#define TIOCSWINSZ              __DANCY_IOCTL_TIOCSWINSZ
+
 int ioctl(int fd, unsigned long request, ...);
 
 __Dancy_Header_End
