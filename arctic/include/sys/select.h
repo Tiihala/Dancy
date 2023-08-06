@@ -35,9 +35,9 @@ typedef __dancy_sigset_t sigset_t;
 
 struct __dancy_fd_set {
 	union {
-		unsigned long __align;
-		unsigned char __set[FD_SETSIZE / 8];
-	} __u;
+		unsigned long _align;
+		unsigned char _set[FD_SETSIZE / 8];
+	} _u;
 };
 
 typedef struct __dancy_fd_set fd_set;
