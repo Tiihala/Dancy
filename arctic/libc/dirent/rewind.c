@@ -23,11 +23,11 @@
 
 void rewinddir(DIR *dirp)
 {
-	int fd = dirp->__fd;
+	int fd = dirp->_fd;
 	off_t offset = 0;
 	int whence = SEEK_SET;
 
 	(void)__dancy_syscall3e(__dancy_syscall_lseek, fd, offset, whence);
 
-	dirp->__state = 0;
+	dirp->_state = 0;
 }

@@ -22,7 +22,7 @@
 
 int dirfd(DIR *dirp)
 {
-	int r = dirp->__fd;
+	int r = dirp->_fd;
 
 	if (r < 0 || r >= __DANCY_OPEN_MAX)
 		return (errno = EINVAL), -1;

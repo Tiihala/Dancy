@@ -35,9 +35,9 @@ struct dirent {
 };
 
 typedef struct {
-	int __state;
-	int __fd;
-	void *__data;
+	int _state;
+	int _fd;
+	void *_data;
 } DIR;
 
 DIR *opendir(const char *name);

@@ -37,10 +37,10 @@ static DIR *internal_opendir(int fd)
 	if ((d = calloc(1, sizeof(*d))) == NULL)
 		return NULL;
 
-	d->__state = 0;
-	d->__fd = fd;
+	d->_state = 0;
+	d->_fd = fd;
 
-	if ((d->__data = calloc(1, sizeof(struct internal_data))) == NULL)
+	if ((d->_data = calloc(1, sizeof(struct internal_data))) == NULL)
 		return free(d), NULL;
 
 	return d;
@@ -66,36 +66,36 @@ DIR *fdopendir(int fd)
 
 int closedir(DIR *dirp)
 {
-	if (dirp->__state < 0)
+	if (dirp->_state < 0)
 		return (errno = EBADF), -1;
 
-	dirp->__state = -1;
-	dirp->__fd = -1;
+	dirp->_state = -1;
+	dirp->_fd = -1;
 
-	free(dirp->__data);
-	dirp->__data = NULL;
+	free(dirp->_data);
+	dirp->_data = NULL;
 
 	return free(dirp), 0;
 }
 
 struct dirent *readdir(DIR *dirp)
 {
-	struct internal_data *data = dirp->__data;
-	int fd = dirp->__fd;
+	struct internal_data *data = dirp->_data;
+	int fd = dirp->_fd;
 	int r;
 
 	while (fd >= 0) {
-		if (dirp->__state > 0) {
-			int i = dirp->__state - 1;
+		if (dirp->_state > 0) {
+			int i = dirp->_state - 1;
 			const char *src = data->buffer[i];
 
 			if (src != NULL) {
 				strncpy(&data->entry.d_name[0], src, 255);
-				dirp->__state += 1;
+				dirp->_state += 1;
 				return &data->entry;
 			}
 
-			dirp->__state = 0;
+			dirp->_state = 0;
 		}
 
 		r = (int)__dancy_syscall5(__dancy_syscall_getdents,
@@ -112,7 +112,7 @@ struct dirent *readdir(DIR *dirp)
 		if (r < 0)
 			return (errno = -r), NULL;
 
-		dirp->__state = 1;
+		dirp->_state = 1;
 	}
 
 	return (errno = EBADF), NULL;
