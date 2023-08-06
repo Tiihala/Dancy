@@ -21,14 +21,14 @@
 
 static int not_implemented = 1;
 
-#define null_mxt (mtx == NULL || mtx->__m == NULL)
+#define null_mxt (mtx == NULL || mtx->_m == NULL)
 
 void mtx_destroy(mtx_t *mtx)
 {
 	if (null_mxt)
 		return;
 
-	mtx->__m = NULL;
+	mtx->_m = NULL;
 }
 
 int mtx_init(mtx_t *mtx, int type)
@@ -36,7 +36,7 @@ int mtx_init(mtx_t *mtx, int type)
 	if (mtx == NULL || type != mtx_plain)
 		return thrd_error;
 
-	mtx->__m = &not_implemented;
+	mtx->_m = &not_implemented;
 
 	return thrd_success;
 }
