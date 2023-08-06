@@ -24,7 +24,7 @@ int fsetpos(FILE *stream, const fpos_t *pos)
 {
 	int saved_errno = errno;
 
-	if (fseeko(stream, pos->__position, SEEK_SET) != 0)
+	if (fseeko(stream, pos->_position, SEEK_SET) != 0)
 		return -1;
 
 	errno = saved_errno;

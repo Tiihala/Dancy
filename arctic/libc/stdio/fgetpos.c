@@ -26,11 +26,11 @@ int fgetpos(FILE *stream, fpos_t *pos)
 	off_t position = ftello(stream);
 
 	if (position < 0) {
-		pos->__position = 0;
+		pos->_position = 0;
 		return -1;
 	}
 
-	pos->__position = position;
+	pos->_position = position;
 	errno = saved_errno;
 
 	return 0;

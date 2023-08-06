@@ -25,54 +25,54 @@
 
 static int internal_fgetc(FILE *stream)
 {
-	int buffer_mode = stream->__state & 0xFF;
+	int buffer_mode = stream->_state & 0xFF;
 
-	if (stream->__mode == O_WRONLY) {
-		stream->__error = 1;
+	if (stream->_mode == O_WRONLY) {
+		stream->_error = 1;
 		return (errno = EBADF), EOF;
 	}
 
-	if (stream->__buffer_start != 0 || stream->__buffer_end != 0) {
-		if ((stream->__state & __DANCY_FILE_WRITTEN_BYTES) != 0) {
-			stream->__error = 1;
+	if (stream->_buffer_start != 0 || stream->_buffer_end != 0) {
+		if ((stream->_state & __DANCY_FILE_WRITTEN_BYTES) != 0) {
+			stream->_error = 1;
 			return (errno = EBADF), EOF;
 		}
 	}
 
-	if (stream->__ungetc) {
-		int c = (int)(stream->__ungetc & 0xFF);
-		stream->__ungetc = 0;
+	if (stream->_ungetc) {
+		int c = (int)(stream->_ungetc & 0xFF);
+		stream->_ungetc = 0;
 		return c;
 	}
 
 	if (buffer_mode == _IOFBF || buffer_mode == _IOLBF) {
-		if (stream->__buffer_start >= stream->__buffer_end) {
-			size_t size = stream->__buffer_size;
+		if (stream->_buffer_start >= stream->_buffer_end) {
+			size_t size = stream->_buffer_size;
 			ssize_t w;
 
 			if (size == 0) {
-				stream->__error = 1;
+				stream->_error = 1;
 				return (errno = EBADF), EOF;
 			}
 
-			w = read(stream->__fd, stream->__buffer, size);
+			w = read(stream->_fd, stream->_buffer, size);
 
 			if (w < 0) {
-				stream->__error = 1;
+				stream->_error = 1;
 				return EOF;
 			}
 
 			if (w == 0) {
-				stream->__eof = 1;
+				stream->_eof = 1;
 				return EOF;
 			}
 
-			stream->__state &= ~__DANCY_FILE_WRITTEN_BYTES;
-			stream->__buffer_start = 0;
-			stream->__buffer_end = (int)w;
+			stream->_state &= ~__DANCY_FILE_WRITTEN_BYTES;
+			stream->_buffer_start = 0;
+			stream->_buffer_end = (int)w;
 		}
 
-		return (int)stream->__buffer[stream->__buffer_start++];
+		return (int)stream->_buffer[stream->_buffer_start++];
 	}
 
 	if (buffer_mode == _IONBF) {
@@ -80,22 +80,22 @@ static int internal_fgetc(FILE *stream)
 		unsigned char buffer[1];
 		ssize_t w;
 
-		w = read(stream->__fd, &buffer, size);
+		w = read(stream->_fd, &buffer, size);
 
 		if (w < 0) {
-			stream->__error = 1;
+			stream->_error = 1;
 			return EOF;
 		}
 
 		if (w == 0) {
-			stream->__eof = 1;
+			stream->_eof = 1;
 			return EOF;
 		}
 
 		return (int)buffer[0];
 	}
 
-	stream->__error = 1;
+	stream->_error = 1;
 	return (errno = EBADF), EOF;
 }
 
@@ -103,13 +103,13 @@ int fgetc(FILE *stream)
 {
 	int r;
 
-	if (mtx_lock(&stream->__mtx) != thrd_success) {
-		stream->__error = 1;
+	if (mtx_lock(&stream->_mtx) != thrd_success) {
+		stream->_error = 1;
 		return (errno = EBADF), EOF;
 	}
 
 	r = internal_fgetc(stream);
-	mtx_unlock(&stream->__mtx);
+	mtx_unlock(&stream->_mtx);
 
 	return r;
 }

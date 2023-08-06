@@ -25,19 +25,19 @@
 
 static off_t my_ftello(FILE *stream)
 {
-	off_t offset = lseek(stream->__fd, 0, SEEK_CUR);
+	off_t offset = lseek(stream->_fd, 0, SEEK_CUR);
 
 	if (offset < 0)
 		return -1;
 
 	{
-		int count = (stream->__buffer_end - stream->__buffer_start);
-		int extra = (stream->__ungetc != 0) ? 1 : 0;
+		int count = (stream->_buffer_end - stream->_buffer_start);
+		int extra = (stream->_ungetc != 0) ? 1 : 0;
 
 		if (count < 0)
 			return (errno = EBADF), -1;
 
-		if ((stream->__state & __DANCY_FILE_WRITTEN_BYTES) != 0) {
+		if ((stream->_state & __DANCY_FILE_WRITTEN_BYTES) != 0) {
 			off_t limit = (off_t)(LLONG_MAX);
 
 			if (offset > (limit - (off_t)count))
@@ -60,11 +60,11 @@ off_t ftello(FILE *stream)
 {
 	off_t r;
 
-	if (mtx_lock(&stream->__mtx) != thrd_success)
+	if (mtx_lock(&stream->_mtx) != thrd_success)
 		return (errno = EBADF), -1;
 
 	r = my_ftello(stream);
-	mtx_unlock(&stream->__mtx);
+	mtx_unlock(&stream->_mtx);
 
 	return r;
 }

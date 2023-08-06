@@ -25,35 +25,35 @@
 
 static int internal_fputc(int c, FILE *stream)
 {
-	int buffer_mode = stream->__state & 0xFF;
+	int buffer_mode = stream->_state & 0xFF;
 
-	if (stream->__mode == O_RDONLY) {
-		stream->__error = 1;
+	if (stream->_mode == O_RDONLY) {
+		stream->_error = 1;
 		return (errno = EBADF), EOF;
 	}
 
-	if (stream->__buffer_start != 0 || stream->__buffer_end != 0) {
-		if ((stream->__state & __DANCY_FILE_WRITTEN_BYTES) == 0) {
-			stream->__error = 1;
+	if (stream->_buffer_start != 0 || stream->_buffer_end != 0) {
+		if ((stream->_state & __DANCY_FILE_WRITTEN_BYTES) == 0) {
+			stream->_error = 1;
 			return (errno = EBADF), EOF;
 		}
 	}
 
 	if (buffer_mode == _IOFBF || buffer_mode == _IOLBF) {
-		if (stream->__buffer_end >= (int)stream->__buffer_size) {
-			stream->__error = 1;
+		if (stream->_buffer_end >= (int)stream->_buffer_size) {
+			stream->_error = 1;
 			return (errno = EBADF), EOF;
 		}
 
-		stream->__buffer[stream->__buffer_end++] = (unsigned char)c;
-		stream->__state |= __DANCY_FILE_WRITTEN_BYTES;
+		stream->_buffer[stream->_buffer_end++] = (unsigned char)c;
+		stream->_state |= __DANCY_FILE_WRITTEN_BYTES;
 
 		if (buffer_mode == _IOLBF && c == 0x0A) {
 			if ( __dancy_internal_fflush(stream))
 				return EOF;
 		}
 
-		if (stream->__buffer_end >= (int)stream->__buffer_size) {
+		if (stream->_buffer_end >= (int)stream->_buffer_size) {
 			if ( __dancy_internal_fflush(stream))
 				return EOF;
 		}
@@ -67,22 +67,22 @@ static int internal_fputc(int c, FILE *stream)
 		ssize_t w;
 
 		buffer[0] = (unsigned char)c;
-		w = write(stream->__fd, &buffer, size);
+		w = write(stream->_fd, &buffer, size);
 
 		if (w < 0) {
-			stream->__error = 1;
+			stream->_error = 1;
 			return EOF;
 		}
 
 		if (w == 0) {
-			stream->__error = 1;
+			stream->_error = 1;
 			return (errno = EIO), EOF;
 		}
 
 		return c;
 	}
 
-	stream->__error = 1;
+	stream->_error = 1;
 	return (errno = EBADF), EOF;
 }
 
@@ -90,13 +90,13 @@ int fputc(int c, FILE *stream)
 {
 	int r;
 
-	if (mtx_lock(&stream->__mtx) != thrd_success) {
-		stream->__error = 1;
+	if (mtx_lock(&stream->_mtx) != thrd_success) {
+		stream->_error = 1;
 		return (errno = EBADF), EOF;
 	}
 
 	r = internal_fputc(c, stream);
-	mtx_unlock(&stream->__mtx);
+	mtx_unlock(&stream->_mtx);
 
 	return r;
 }

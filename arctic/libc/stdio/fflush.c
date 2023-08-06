@@ -25,9 +25,9 @@ int fflush(FILE *stream)
 	int i, r = 0;
 
 	if (stream != NULL) {
-		if (mtx_lock(&stream->__mtx) == thrd_success) {
+		if (mtx_lock(&stream->_mtx) == thrd_success) {
 			r = __dancy_internal_fflush(stream);
-			mtx_unlock(&stream->__mtx);
+			mtx_unlock(&stream->_mtx);
 		}
 		return r;
 	}
@@ -36,9 +36,9 @@ int fflush(FILE *stream)
 		if ((stream = __dancy_io_array[i]) == NULL)
 			continue;
 
-		if (mtx_lock(&stream->__mtx) == thrd_success) {
+		if (mtx_lock(&stream->_mtx) == thrd_success) {
 			r = __dancy_internal_fflush(stream);
-			mtx_unlock(&stream->__mtx);
+			mtx_unlock(&stream->_mtx);
 		}
 	}
 

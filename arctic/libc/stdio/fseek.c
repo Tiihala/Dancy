@@ -28,14 +28,14 @@ static int reposition(FILE *stream, long offset, int whence)
 	if ( __dancy_internal_fflush(stream))
 		return -1;
 
-	if (lseek(stream->__fd, (off_t)offset, whence) < 0)
+	if (lseek(stream->_fd, (off_t)offset, whence) < 0)
 		return -1;
 
-	stream->__eof = 0;
-	stream->__ungetc = 0;
-	stream->__state &= ~__DANCY_FILE_WRITTEN_BYTES;
-	stream->__buffer_start = 0;
-	stream->__buffer_end = 0;
+	stream->_eof = 0;
+	stream->_ungetc = 0;
+	stream->_state &= ~__DANCY_FILE_WRITTEN_BYTES;
+	stream->_buffer_start = 0;
+	stream->_buffer_end = 0;
 
 	return 0;
 }
@@ -50,8 +50,8 @@ static int my_fseek(FILE *stream, long offset, int whence)
 	}
 
 	if (whence == SEEK_CUR) {
-		int count = (stream->__buffer_end - stream->__buffer_start);
-		int extra = (stream->__ungetc != 0) ? 1 : 0;
+		int count = (stream->_buffer_end - stream->_buffer_start);
+		int extra = (stream->_ungetc != 0) ? 1 : 0;
 		long sub;
 
 		if (count < 0)
@@ -75,11 +75,11 @@ int fseek(FILE *stream, long offset, int whence)
 {
 	int r;
 
-	if (mtx_lock(&stream->__mtx) != thrd_success)
+	if (mtx_lock(&stream->_mtx) != thrd_success)
 		return (errno = EBADF), -1;
 
 	r = my_fseek(stream, offset, whence);
-	mtx_unlock(&stream->__mtx);
+	mtx_unlock(&stream->_mtx);
 
 	return r;
 }

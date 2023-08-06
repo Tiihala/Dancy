@@ -25,63 +25,63 @@
 
 static size_t my_read(unsigned char *buffer, size_t size, FILE *stream)
 {
-	int buffer_mode = stream->__state & 0xFF;
+	int buffer_mode = stream->_state & 0xFF;
 	size_t ret_size = 0;
 
-	if (stream->__mode == O_WRONLY) {
-		stream->__error = 1;
+	if (stream->_mode == O_WRONLY) {
+		stream->_error = 1;
 		return (errno = EBADF), ret_size;
 	}
 
-	if (stream->__buffer_start != 0 || stream->__buffer_end != 0) {
-		if ((stream->__state & __DANCY_FILE_WRITTEN_BYTES) != 0) {
-			stream->__error = 1;
+	if (stream->_buffer_start != 0 || stream->_buffer_end != 0) {
+		if ((stream->_state & __DANCY_FILE_WRITTEN_BYTES) != 0) {
+			stream->_error = 1;
 			return (errno = EBADF), ret_size;
 		}
 	}
 
 	while (buffer_mode == _IOFBF || buffer_mode == _IOLBF) {
-		if (stream->__buffer_start >= stream->__buffer_end) {
-			int fd = stream->__fd;
-			size_t buffer_size = stream->__buffer_size;
+		if (stream->_buffer_start >= stream->_buffer_end) {
+			int fd = stream->_fd;
+			size_t buffer_size = stream->_buffer_size;
 			ssize_t w;
 
 			if (buffer_size== 0) {
-				stream->__error = 1;
+				stream->_error = 1;
 				return (errno = EBADF), ret_size;
 			}
 
-			w = read(fd, stream->__buffer, buffer_size);
+			w = read(fd, stream->_buffer, buffer_size);
 
 			if (w < 0) {
-				stream->__error = 1;
+				stream->_error = 1;
 				return ret_size;
 			}
 
 			if (w == 0) {
-				stream->__eof = 1;
+				stream->_eof = 1;
 				return ret_size;
 			}
 
-			stream->__state &= ~__DANCY_FILE_WRITTEN_BYTES;
-			stream->__buffer_start = 0;
-			stream->__buffer_end = (int)w;
+			stream->_state &= ~__DANCY_FILE_WRITTEN_BYTES;
+			stream->_buffer_start = 0;
+			stream->_buffer_end = (int)w;
 		}
 
-		if (stream->__ungetc && ret_size < size) {
+		if (stream->_ungetc && ret_size < size) {
 			unsigned char *p = &buffer[ret_size++];
 
-			*p = (unsigned char)((int)(stream->__ungetc & 0xFF));
-			stream->__ungetc = 0;
+			*p = (unsigned char)((int)(stream->_ungetc & 0xFF));
+			stream->_ungetc = 0;
 		}
 
 		while (ret_size < size) {
 			unsigned char *p = &buffer[ret_size++];
 			unsigned char c;
 
-			*p = (c = stream->__buffer[stream->__buffer_start++]);
+			*p = (c = stream->_buffer[stream->_buffer_start++]);
 
-			if (stream->__buffer_start >= stream->__buffer_end)
+			if (stream->_buffer_start >= stream->_buffer_end)
 				break;
 		}
 
@@ -92,38 +92,38 @@ static size_t my_read(unsigned char *buffer, size_t size, FILE *stream)
 	if (buffer_mode == _IONBF) {
 		ssize_t w;
 
-		if (stream->__ungetc && ret_size < size) {
+		if (stream->_ungetc && ret_size < size) {
 			unsigned char *p = &buffer[ret_size++];
 
-			*p = (unsigned char)((int)(stream->__ungetc & 0xFF));
-			stream->__ungetc = 0;
+			*p = (unsigned char)((int)(stream->_ungetc & 0xFF));
+			stream->_ungetc = 0;
 
 			if (--size == 0)
 				return ret_size;
 			buffer += 1;
 		}
 
-		w = read(stream->__fd, buffer, size);
+		w = read(stream->_fd, buffer, size);
 
 		if (w > 0 && (size_t)w < size) {
 			ret_size += (size_t)w;
 			buffer += w;
 			size -= (size_t)w;
 
-			w = read(stream->__fd, buffer, size);
+			w = read(stream->_fd, buffer, size);
 		}
 
 		if (w < 0)
-			stream->__error = 1;
+			stream->_error = 1;
 		else if (w == 0)
-			stream->__eof = 1;
+			stream->_eof = 1;
 		else
 			ret_size += (size_t)w;
 
 		return ret_size;
 	}
 
-	stream->__error = 1;
+	stream->_error = 1;
 	return (errno = EBADF), ret_size;
 }
 
@@ -138,13 +138,13 @@ size_t fread(void *buffer, size_t size, size_t nmemb, FILE *stream)
 	if ((total_size / nmemb) != size)
 		total_size = __DANCY_SIZE_MAX;
 
-	if (mtx_lock(&stream->__mtx) != thrd_success) {
-		stream->__error = 1;
+	if (mtx_lock(&stream->_mtx) != thrd_success) {
+		stream->_error = 1;
 		return (errno = EBADF), 0;
 	}
 
 	r = my_read(buffer, total_size, stream);
-	mtx_unlock(&stream->__mtx);
+	mtx_unlock(&stream->_mtx);
 
 	return (r / size);
 }

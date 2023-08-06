@@ -41,25 +41,25 @@ static FILE *my_reopen(const char *path,
 	if (path == NULL)
 		return (errno = ENOSYS), NULL;
 
-	fd = stream->__fd;
-	stream->__fd = -1;
+	fd = stream->_fd;
+	stream->_fd = -1;
 
 	(void)close(fd);
 
-	stream->__error = 0;
-	stream->__eof = 0;
-	stream->__ungetc = 0;
-	stream->__mode = 0;
+	stream->_error = 0;
+	stream->_eof = 0;
+	stream->_ungetc = 0;
+	stream->_mode = 0;
 
-	stream->__state &= ~__DANCY_FILE_WRITTEN_BYTES;
-	stream->__buffer_start = 0;
-	stream->__buffer_end = 0;
+	stream->_state &= ~__DANCY_FILE_WRITTEN_BYTES;
+	stream->_buffer_start = 0;
+	stream->_buffer_end = 0;
 
 	if ((fd = open(path, o_flags, o_mode)) < 0)
 		return NULL;
 
-	stream->__fd = fd;
-	stream->__mode = (unsigned int)(o_flags & O_ACCMODE);
+	stream->_fd = fd;
+	stream->_mode = (unsigned int)(o_flags & O_ACCMODE);
 
 	return stream;
 }
@@ -116,13 +116,13 @@ FILE *freopen(const char *path, const char *mode, FILE *stream)
 		}
 	}
 
-	if (mtx_lock(&stream->__mtx) != thrd_success) {
-		stream->__error = 1;
+	if (mtx_lock(&stream->_mtx) != thrd_success) {
+		stream->_error = 1;
 		return (errno = EBADF), NULL;
 	}
 
 	r = my_reopen(path, o_flags, o_mode, stream);
-	mtx_unlock(&stream->__mtx);
+	mtx_unlock(&stream->_mtx);
 
 	return r;
 }

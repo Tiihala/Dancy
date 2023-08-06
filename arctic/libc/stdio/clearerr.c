@@ -21,6 +21,6 @@
 
 void clearerr(FILE *stream)
 {
-	stream->__error = 0;
-	stream->__eof = 0;
+	stream->_error = 0;
+	stream->_eof = 0;
 }

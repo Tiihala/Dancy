@@ -25,13 +25,13 @@ int ungetc(int c, FILE *stream)
 {
 	int r = EOF;
 
-	if (mtx_lock(&stream->__mtx) != thrd_success)
+	if (mtx_lock(&stream->_mtx) != thrd_success)
 		return (errno = EBADF), r;
 
-	if (!stream->__ungetc)
-		stream->__ungetc = ((r = (c & 255)) | 256);
+	if (!stream->_ungetc)
+		stream->_ungetc = ((r = (c & 255)) | 256);
 
-	mtx_unlock(&stream->__mtx);
+	mtx_unlock(&stream->_mtx);
 
 	return r;
 }

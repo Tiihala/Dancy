@@ -26,42 +26,42 @@
 
 static int my_fputs(const char *s, FILE *stream)
 {
-	int buffer_mode = stream->__state & 0xFF;
+	int buffer_mode = stream->_state & 0xFF;
 	size_t size = strlen(s);
 
-	if (stream->__mode == O_RDONLY) {
-		stream->__error = 1;
+	if (stream->_mode == O_RDONLY) {
+		stream->_error = 1;
 		return (errno = EBADF), EOF;
 	}
 
-	if (stream->__buffer_start != 0 || stream->__buffer_end != 0) {
-		if ((stream->__state & __DANCY_FILE_WRITTEN_BYTES) == 0) {
-			stream->__error = 1;
+	if (stream->_buffer_start != 0 || stream->_buffer_end != 0) {
+		if ((stream->_state & __DANCY_FILE_WRITTEN_BYTES) == 0) {
+			stream->_error = 1;
 			return (errno = EBADF), EOF;
 		}
 	}
 
 	if (buffer_mode == _IOFBF || buffer_mode == _IOLBF) {
-		int buffer_size = (int)stream->__buffer_size;
-		unsigned char *p = stream->__buffer;
+		int buffer_size = (int)stream->_buffer_size;
+		unsigned char *p = stream->_buffer;
 		size_t put_size = 0;
 		char c;
 
 		while (put_size < size) {
-			if (stream->__buffer_end >= buffer_size) {
+			if (stream->_buffer_end >= buffer_size) {
 				if ( __dancy_internal_fflush(stream)) {
-					stream->__error = 1;
+					stream->_error = 1;
 					return EOF;
 				}
 			}
 
 			c = s[put_size++];
-			p[stream->__buffer_end++] = (unsigned char)c;
-			stream->__state |= __DANCY_FILE_WRITTEN_BYTES;
+			p[stream->_buffer_end++] = (unsigned char)c;
+			stream->_state |= __DANCY_FILE_WRITTEN_BYTES;
 
 			if (buffer_mode == _IOLBF && c == 0x0A) {
 				if ( __dancy_internal_fflush(stream)) {
-					stream->__error = 1;
+					stream->_error = 1;
 					return EOF;
 				}
 			}
@@ -74,17 +74,17 @@ static int my_fputs(const char *s, FILE *stream)
 		ssize_t w = 0;
 
 		if (size > 0)
-			w = write(stream->__fd, s, size);
+			w = write(stream->_fd, s, size);
 
 		if (w < 0 || (size_t)w < size) {
-			stream->__error = 1;
+			stream->_error = 1;
 			return EOF;
 		}
 
 		return 0;
 	}
 
-	stream->__error = 1;
+	stream->_error = 1;
 	return (errno = EBADF), EOF;
 }
 
@@ -92,13 +92,13 @@ int fputs(const char *s, FILE *stream)
 {
 	int r;
 
-	if (mtx_lock(&stream->__mtx) != thrd_success) {
-		stream->__error = 1;
+	if (mtx_lock(&stream->_mtx) != thrd_success) {
+		stream->_error = 1;
 		return (errno = EBADF), EOF;
 	}
 
 	r = my_fputs(s, stream);
-	mtx_unlock(&stream->__mtx);
+	mtx_unlock(&stream->_mtx);
 
 	return r;
 }

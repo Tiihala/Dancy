@@ -28,29 +28,29 @@ int fclose(FILE *stream)
 	int r = 0;
 
 	if ((mtx_lock(&__dancy_io_array_mtx)) == thrd_success) {
-		if (__dancy_io_array[stream->__i] == NULL)
+		if (__dancy_io_array[stream->_i] == NULL)
 			return mtx_unlock(&__dancy_io_array_mtx), 0;
 
-		__dancy_io_array[stream->__i] = NULL;
+		__dancy_io_array[stream->_i] = NULL;
 		mtx_unlock(&__dancy_io_array_mtx);
 	}
 
-	if (mtx_lock(&stream->__mtx) == thrd_success) {
-		unsigned int state = stream->__state;
+	if (mtx_lock(&stream->_mtx) == thrd_success) {
+		unsigned int state = stream->_state;
 
 		r = __dancy_internal_fflush(stream);
 
-		if (close(stream->__fd) == -1)
+		if (close(stream->_fd) == -1)
 			r = EOF;
 
 		if ((state & __DANCY_FILE_STATIC_BUFFER) == 0)
-			free(stream->__buffer), stream->__buffer = NULL;
+			free(stream->_buffer), stream->_buffer = NULL;
 
-		mtx_unlock(&stream->__mtx);
-		mtx_destroy(&stream->__mtx);
+		mtx_unlock(&stream->_mtx);
+		mtx_destroy(&stream->_mtx);
 
 		memset(stream, 0, sizeof(FILE));
-		stream->__fd = -1;
+		stream->_fd = -1;
 
 		if ((state & __DANCY_FILE_MALLOC_STRUCT) != 0)
 			free(stream);

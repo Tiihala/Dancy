@@ -48,38 +48,38 @@ void __dancy_stdio_init(void)
 	/*
 	 * Default stream: stdin
 	 */
-	default_streams[0].__fd = 0;
-	default_streams[0].__i = 0;
-	default_streams[0].__mode = O_RDONLY;
-	default_streams[0].__state = _IOLBF;
-	default_streams[0].__state |= __DANCY_FILE_STATIC_BUFFER;
+	default_streams[0]._fd = 0;
+	default_streams[0]._i = 0;
+	default_streams[0]._mode = O_RDONLY;
+	default_streams[0]._state = _IOLBF;
+	default_streams[0]._state |= __DANCY_FILE_STATIC_BUFFER;
 
-	mtx_init(&default_streams[0].__mtx, mtx_plain);
-	default_streams[0].__buffer = &buffer_stdin[0];
-	default_streams[0].__buffer_size = sizeof(buffer_stdin);
+	mtx_init(&default_streams[0]._mtx, mtx_plain);
+	default_streams[0]._buffer = &buffer_stdin[0];
+	default_streams[0]._buffer_size = sizeof(buffer_stdin);
 
 	/*
 	 * Default stream: stdout
 	 */
-	default_streams[1].__fd = 1;
-	default_streams[1].__i = 1;
-	default_streams[1].__mode = O_WRONLY;
-	default_streams[1].__state = _IOLBF;
-	default_streams[1].__state |= __DANCY_FILE_STATIC_BUFFER;
+	default_streams[1]._fd = 1;
+	default_streams[1]._i = 1;
+	default_streams[1]._mode = O_WRONLY;
+	default_streams[1]._state = _IOLBF;
+	default_streams[1]._state |= __DANCY_FILE_STATIC_BUFFER;
 
-	mtx_init(&default_streams[1].__mtx, mtx_plain);
-	default_streams[1].__buffer = &buffer_stdout[0];
-	default_streams[1].__buffer_size = sizeof(buffer_stdout);
+	mtx_init(&default_streams[1]._mtx, mtx_plain);
+	default_streams[1]._buffer = &buffer_stdout[0];
+	default_streams[1]._buffer_size = sizeof(buffer_stdout);
 
 	/*
 	 * Default stream: stderr
 	 */
-	default_streams[2].__fd = 2;
-	default_streams[2].__i = 2;
-	default_streams[2].__mode = O_WRONLY;
-	default_streams[2].__state = _IONBF;
+	default_streams[2]._fd = 2;
+	default_streams[2]._i = 2;
+	default_streams[2]._mode = O_WRONLY;
+	default_streams[2]._state = _IONBF;
 
-	mtx_init(&default_streams[2].__mtx, mtx_plain);
+	mtx_init(&default_streams[2]._mtx, mtx_plain);
 
 	/*
 	 * Set the default I/O array streams.
@@ -113,35 +113,35 @@ int __dancy_internal_fflush(FILE *stream)
 	int retry_count = INTERNAL_FFLUSH_RETRY_COUNT;
 	int r = 0;
 
-	if ((stream->__state & __DANCY_FILE_WRITTEN_BYTES) == 0)
+	if ((stream->_state & __DANCY_FILE_WRITTEN_BYTES) == 0)
 		return 0;
 
-	while (stream->__buffer_start < stream->__buffer_end) {
-		int start = stream->__buffer_start;
+	while (stream->_buffer_start < stream->_buffer_end) {
+		int start = stream->_buffer_start;
 
-		const void *buffer = &stream->__buffer[start];
-		size_t size = (size_t)stream->__buffer_end - (size_t)start;
-		ssize_t w = write(stream->__fd, buffer, size);
+		const void *buffer = &stream->_buffer[start];
+		size_t size = (size_t)stream->_buffer_end - (size_t)start;
+		ssize_t w = write(stream->_fd, buffer, size);
 
 		if (w < 0 && (--retry_count) <= 0) {
-			stream->__error = 1;
+			stream->_error = 1;
 			return EOF;
 		}
 
 		if (w == 0 && (--retry_count) <= 0) {
-			stream->__error = 1;
+			stream->_error = 1;
 			return (errno = EIO), EOF;
 		}
 
 		if (w > 0)
 			retry_count = INTERNAL_FFLUSH_RETRY_COUNT;
 
-		stream->__buffer_start = start + (int)w;
+		stream->_buffer_start = start + (int)w;
 	}
 
-	stream->__state &= ~__DANCY_FILE_WRITTEN_BYTES;
-	stream->__buffer_start = 0;
-	stream->__buffer_end = 0;
+	stream->_state &= ~__DANCY_FILE_WRITTEN_BYTES;
+	stream->_buffer_start = 0;
+	stream->_buffer_end = 0;
 
 	return r;
 }

@@ -34,7 +34,7 @@ typedef __dancy_off_t off_t;
 #endif
 
 struct __dancy_fpos_t {
-	__dancy_off_t __position;
+	__dancy_off_t _position;
 };
 
 #define __DANCY_FILE_STATIC_BUFFER (1u << 16)
@@ -42,23 +42,23 @@ struct __dancy_fpos_t {
 #define __DANCY_FILE_MALLOC_STRUCT (1u << 18)
 
 struct __dancy_FILE {
-	int __zero;
-	int __fd;
+	int _zero;
+	int _fd;
 
-	int __i;
-	int __error;
-	int __eof;
-	int __ungetc;
+	int _i;
+	int _error;
+	int _eof;
+	int _ungetc;
 
-	unsigned int __mode;
-	unsigned int __state;
+	unsigned int _mode;
+	unsigned int _state;
 
-	__dancy_mtx_t __mtx;
+	__dancy_mtx_t _mtx;
 
-	int __buffer_start;
-	int __buffer_end;
-	unsigned char *__buffer;
-	size_t __buffer_size;
+	int _buffer_start;
+	int _buffer_end;
+	unsigned char *_buffer;
+	size_t _buffer_size;
 };
 
 typedef struct __dancy_fpos_t fpos_t;

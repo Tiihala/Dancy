@@ -25,13 +25,13 @@ int fileno(FILE *stream)
 {
 	int fd;
 
-	if (mtx_lock(&stream->__mtx) != thrd_success) {
-		stream->__error = 1;
+	if (mtx_lock(&stream->_mtx) != thrd_success) {
+		stream->_error = 1;
 		return (errno = EBADF), -1;
 	}
 
-	fd = stream->__fd;
-	mtx_unlock(&stream->__mtx);
+	fd = stream->_fd;
+	mtx_unlock(&stream->_mtx);
 
 	return fd;
 }

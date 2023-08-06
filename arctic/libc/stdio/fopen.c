@@ -85,43 +85,43 @@ FILE *fopen(const char *path, const char *mode)
 
 	memset(r, 0, sizeof(FILE));
 
-	if (mtx_init(&r->__mtx, mtx_plain) != thrd_success)
+	if (mtx_init(&r->_mtx, mtx_plain) != thrd_success)
 		return free(r), close(fd), (errno = ENOMEM), NULL;
 
-	if ((r->__buffer = malloc(BUFSIZ)) == NULL) {
-		mtx_destroy(&r->__mtx);
+	if ((r->_buffer = malloc(BUFSIZ)) == NULL) {
+		mtx_destroy(&r->_mtx);
 		return free(r), close(fd), (errno = ENOMEM), NULL;
 	}
 
-	memset(r->__buffer, 0, BUFSIZ);
+	memset(r->_buffer, 0, BUFSIZ);
 
-	r->__fd = fd;
-	r->__i = -1;
+	r->_fd = fd;
+	r->_i = -1;
 
-	r->__mode = (unsigned int)(o_flags & O_ACCMODE);
-	r->__state = _IOLBF;
-	r->__state |= __DANCY_FILE_MALLOC_STRUCT;
+	r->_mode = (unsigned int)(o_flags & O_ACCMODE);
+	r->_state = _IOLBF;
+	r->_state |= __DANCY_FILE_MALLOC_STRUCT;
 
-	r->__buffer_size = BUFSIZ;
+	r->_buffer_size = BUFSIZ;
 
 	if (mtx_lock(&__dancy_io_array_mtx) != thrd_success) {
-		free(r->__buffer);
-		mtx_destroy(&r->__mtx);
+		free(r->_buffer);
+		mtx_destroy(&r->_mtx);
 		return free(r), close(fd), (errno = EMFILE), NULL;
 	}
 
 	for (i = 0; i < FOPEN_MAX; i++) {
 		if (__dancy_io_array[i] == NULL) {
-			r->__i = i, __dancy_io_array[i] = r;
+			r->_i = i, __dancy_io_array[i] = r;
 			break;
 		}
 	}
 
 	mtx_unlock(&__dancy_io_array_mtx);
 
-	if (r->__i < 0) {
-		free(r->__buffer);
-		mtx_destroy(&r->__mtx);
+	if (r->_i < 0) {
+		free(r->_buffer);
+		mtx_destroy(&r->_mtx);
 		return free(r), close(fd), (errno = EMFILE), NULL;
 	}
 

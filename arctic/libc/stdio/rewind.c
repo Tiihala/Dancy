@@ -21,6 +21,6 @@
 
 void rewind(FILE *stream)
 {
-	stream->__error = 0;
+	stream->_error = 0;
 	fseek(stream, 0L, SEEK_SET);
 }
