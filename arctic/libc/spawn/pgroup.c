@@ -22,7 +22,7 @@
 
 int posix_spawnattr_getpgroup(const posix_spawnattr_t *attrp, pid_t *pgroup)
 {
-	return (*pgroup = (pid_t)attrp->__pgroup), 0;
+	return (*pgroup = (pid_t)attrp->_pgroup), 0;
 }
 
 int posix_spawnattr_setpgroup(posix_spawnattr_t *attrp, pid_t pgroup)
@@ -30,5 +30,5 @@ int posix_spawnattr_setpgroup(posix_spawnattr_t *attrp, pid_t pgroup)
 	if (pgroup < 0)
 		return (errno = EINVAL), EINVAL;
 
-	return (attrp->__pgroup = (unsigned long long)pgroup), 0;
+	return (attrp->_pgroup = (unsigned long long)pgroup), 0;
 }

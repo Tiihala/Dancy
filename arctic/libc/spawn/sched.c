@@ -24,7 +24,7 @@ int posix_spawnattr_getschedparam(
 	const posix_spawnattr_t *attrp, struct sched_param *param)
 {
 	memset(param, 0, sizeof(*param));
-	param->sched_priority = attrp->__sched[0];
+	param->sched_priority = attrp->_sched[0];
 
 	return 0;
 }
@@ -32,5 +32,5 @@ int posix_spawnattr_getschedparam(
 int posix_spawnattr_setschedparam(
 	posix_spawnattr_t *attrp, const struct sched_param *param)
 {
-	return (attrp->__sched[0] = param->sched_priority), 0;
+	return (attrp->_sched[0] = param->sched_priority), 0;
 }

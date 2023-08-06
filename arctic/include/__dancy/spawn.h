@@ -29,13 +29,13 @@ __Dancy_Header_Begin
 #define __DANCY_SPAWN_ADD_OPEN  (3)
 
 struct __dancy_spawn_file_actions {
-	unsigned int __state;
-	unsigned int __count;
+	unsigned int _state;
+	unsigned int _count;
 	struct {
-		int __type;
-		int __args[3];
-		const void *__path;
-	} __actions[128];
+		int _type;
+		int _args[3];
+		const void *_path;
+	} _actions[128];
 };
 
 #define __DANCY_SPAWN_RESETIDS        (0x0001)
@@ -48,13 +48,13 @@ struct __dancy_spawn_file_actions {
 #define __DANCY_SPAWN_SETSID          (0x0080)
 
 struct __dancy_spawn_attributes {
-	unsigned int __state;
-	int __flags;
-	unsigned long long __pgroup;
-	unsigned long long __sigdef;
-	unsigned long long __sigmask;
-	int __sched[2];
-	int __other[2];
+	unsigned int _state;
+	int _flags;
+	unsigned long long _pgroup;
+	unsigned long long _sigdef;
+	unsigned long long _sigmask;
+	int _sched[2];
+	int _other[2];
 };
 
 struct __dancy_spawn_options {

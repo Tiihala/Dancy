@@ -22,11 +22,11 @@
 int posix_spawnattr_getsigmask(
 	const posix_spawnattr_t *attrp, sigset_t *sigmask)
 {
-	return (*sigmask = (sigset_t)attrp->__sigmask), 0;
+	return (*sigmask = (sigset_t)attrp->_sigmask), 0;
 }
 
 int posix_spawnattr_setsigmask(
 	posix_spawnattr_t *attrp, const sigset_t *sigmask)
 {
-	return (attrp->__sigmask = (unsigned long long)(*sigmask)), 0;
+	return (attrp->_sigmask = (unsigned long long)(*sigmask)), 0;
 }

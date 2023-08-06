@@ -24,22 +24,22 @@ int posix_spawn_file_actions_addopen(
 	posix_spawn_file_actions_t *actions, int fd,
 	const char *path, int flags, mode_t mode)
 {
-	size_t m = sizeof(actions->__actions) / sizeof(actions->__actions[0]);
+	size_t m = sizeof(actions->_actions) / sizeof(actions->_actions[0]);
 	unsigned int i;
 
 	if (fd < 0 || fd >= __DANCY_OPEN_MAX)
 		return (errno = EBADF), EBADF;
 
-	if (actions->__count >= (unsigned int)m)
+	if (actions->_count >= (unsigned int)m)
 		return (errno = ENOMEM), ENOMEM;
 
-	i = actions->__count++;
+	i = actions->_count++;
 
-	actions->__actions[i].__type = __DANCY_SPAWN_ADD_OPEN;
-	actions->__actions[i].__args[0] = fd;
-	actions->__actions[i].__args[1] = flags;
-	actions->__actions[i].__args[2] = (int)mode;
-	actions->__actions[i].__path = path;
+	actions->_actions[i]._type = __DANCY_SPAWN_ADD_OPEN;
+	actions->_actions[i]._args[0] = fd;
+	actions->_actions[i]._args[1] = flags;
+	actions->_actions[i]._args[2] = (int)mode;
+	actions->_actions[i]._path = path;
 
 	return 0;
 }

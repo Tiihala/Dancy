@@ -28,7 +28,7 @@ struct task_arg {
 
 	struct __dancy_spawn_file_actions *actions;
 	struct __dancy_spawn_attributes *attrp;
-	struct __dancy_spawn_attributes __attr;
+	struct __dancy_spawn_attributes _attr;
 
 	int setpgroup_retval;
 };
@@ -46,7 +46,7 @@ static int func_setpgroup(struct task *task, void *arg)
 {
 	struct task_arg *ta = arg;
 	struct task *current = task_current();
-	uint64_t pgroup = (uint64_t)ta->attrp->__pgroup;
+	uint64_t pgroup = (uint64_t)ta->attrp->_pgroup;
 
 	if (pgroup == 0)
 		pgroup = current->id;
@@ -77,7 +77,7 @@ static int new_task(void *arg)
 	int i, r = 0;
 
 	if (ta->attrp) {
-		int flags = ta->attrp->__flags;
+		int flags = ta->attrp->_flags;
 
 		if ((flags & __DANCY_SPAWN_USEVFORK) != 0)
 			flags ^= __DANCY_SPAWN_USEVFORK;
@@ -103,20 +103,20 @@ static int new_task(void *arg)
 	}
 
 	if (ta->actions) {
-		int count = (int)ta->actions->__count;
+		int count = (int)ta->actions->_count;
 
 		for (i = 0; r == 0 && i < count; i++) {
-			int type = ta->actions->__actions[i].__type;
+			int type = ta->actions->_actions[i]._type;
 			int flags, mode, fd[3];
 			const void *p;
 
 			if (type == __DANCY_SPAWN_ADD_CLOSE) {
-				fd[0] = ta->actions->__actions[i].__args[0];
+				fd[0] = ta->actions->_actions[i]._args[0];
 				r = file_close(fd[0]);
 
 			} else if (type == __DANCY_SPAWN_ADD_DUP2) {
-				fd[0] = ta->actions->__actions[i].__args[0];
-				fd[1] = ta->actions->__actions[i].__args[1];
+				fd[0] = ta->actions->_actions[i]._args[0];
+				fd[1] = ta->actions->_actions[i]._args[1];
 
 				if (fd[0] == fd[1]) {
 					int cmd = F_GETFD;
@@ -130,10 +130,10 @@ static int new_task(void *arg)
 					r = DE_ARGUMENT;
 
 			} else if (type == __DANCY_SPAWN_ADD_OPEN) {
-				fd[1] = ta->actions->__actions[i].__args[0];
-				flags = ta->actions->__actions[i].__args[1];
-				mode = ta->actions->__actions[i].__args[2];
-				p = ta->actions->__actions[i].__path;
+				fd[1] = ta->actions->_actions[i]._args[0];
+				flags = ta->actions->_actions[i]._args[1];
+				mode = ta->actions->_actions[i]._args[2];
+				p = ta->actions->_actions[i]._path;
 
 				r = file_open(&fd[0], p, flags, (mode_t)mode);
 
@@ -229,35 +229,35 @@ static int handle_options(struct task_arg *ta,
 		src = options->actions;
 
 		memset(dst, 0, size);
-		dst->__state = src->__state;
-		dst->__count = src->__count;
+		dst->_state = src->_state;
+		dst->_count = src->_count;
 
 		{
-			int t1 = (int)sizeof(dst->__actions);
-			int t2 = (int)sizeof(*dst->__actions);
+			int t1 = (int)sizeof(dst->_actions);
+			int t2 = (int)sizeof(*dst->_actions);
 
-			if (dst->__count >= (unsigned int)(t1 / t2)) {
-				dst->__state = 0, dst->__count = 0;
+			if (dst->_count >= (unsigned int)(t1 / t2)) {
+				dst->_state = 0, dst->_count = 0;
 				return DE_ARGUMENT;
 			}
 		}
 
-		for (i = 0; i < dst->__count; i++) {
-			const char *path = src->__actions[i].__path;
+		for (i = 0; i < dst->_count; i++) {
+			const char *path = src->_actions[i]._path;
 			const char *dup_path = NULL;
 			int value;
 
-			value = src->__actions[i].__type;
-			dst->__actions[i].__type = value;
+			value = src->_actions[i]._type;
+			dst->_actions[i]._type = value;
 
-			value = src->__actions[i].__args[0];
-			dst->__actions[i].__args[0] = value;
+			value = src->_actions[i]._args[0];
+			dst->_actions[i]._args[0] = value;
 
-			value = src->__actions[i].__args[1];
-			dst->__actions[i].__args[1] = value;
+			value = src->_actions[i]._args[1];
+			dst->_actions[i]._args[1] = value;
 
-			value = src->__actions[i].__args[2];
-			dst->__actions[i].__args[2] = value;
+			value = src->_actions[i]._args[2];
+			dst->_actions[i]._args[2] = value;
 
 			if (path) {
 				if (pg_check_user_string(path, &value))
@@ -267,7 +267,7 @@ static int handle_options(struct task_arg *ta,
 					return DE_MEMORY;
 			}
 
-			dst->__actions[i].__path = dup_path;
+			dst->_actions[i]._path = dup_path;
 		}
 	}
 
@@ -277,7 +277,7 @@ static int handle_options(struct task_arg *ta,
 		if (pg_check_user_read(options->attrp, size))
 			return DE_ARGUMENT;
 
-		ta->attrp = &ta->__attr;
+		ta->attrp = &ta->_attr;
 		memcpy(ta->attrp, options->attrp, size);
 	}
 
@@ -291,9 +291,9 @@ static void release_actions(struct task_arg *ta)
 	if (!ta->actions)
 		return;
 
-	for (i = 0; i < ta->actions->__count; i++) {
-		if (ta->actions->__actions[i].__path)
-			free((void *)(ta->actions->__actions[i].__path));
+	for (i = 0; i < ta->actions->_count; i++) {
+		if (ta->actions->_actions[i]._path)
+			free((void *)(ta->actions->_actions[i]._path));
 	}
 
 	memset(ta->actions, 0, sizeof(*ta->actions));

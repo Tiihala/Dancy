@@ -23,22 +23,22 @@
 int posix_spawn_file_actions_addclose(
 	posix_spawn_file_actions_t *actions, int fd)
 {
-	size_t m = sizeof(actions->__actions) / sizeof(actions->__actions[0]);
+	size_t m = sizeof(actions->_actions) / sizeof(actions->_actions[0]);
 	unsigned int i;
 
 	if (fd < 0 || fd >= __DANCY_OPEN_MAX)
 		return (errno = EBADF), EBADF;
 
-	if (actions->__count >= (unsigned int)m)
+	if (actions->_count >= (unsigned int)m)
 		return (errno = ENOMEM), ENOMEM;
 
-	i = actions->__count++;
+	i = actions->_count++;
 
-	actions->__actions[i].__type = __DANCY_SPAWN_ADD_CLOSE;
-	actions->__actions[i].__args[0] = fd;
-	actions->__actions[i].__args[1] = 0;
-	actions->__actions[i].__args[2] = 0;
-	actions->__actions[i].__path = NULL;
+	actions->_actions[i]._type = __DANCY_SPAWN_ADD_CLOSE;
+	actions->_actions[i]._args[0] = fd;
+	actions->_actions[i]._args[1] = 0;
+	actions->_actions[i]._args[2] = 0;
+	actions->_actions[i]._path = NULL;
 
 	return 0;
 }
