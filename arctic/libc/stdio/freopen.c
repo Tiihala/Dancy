@@ -55,11 +55,6 @@ static FILE *my_reopen(const char *path,
 	stream->__buffer_start = 0;
 	stream->__buffer_end = 0;
 
-	if ((stream->__state & __DANCY_FILE_STATIC_NAME) == 0)
-		free(stream->__name);
-
-	stream->__name = NULL;
-
 	if ((fd = open(path, o_flags, o_mode)) < 0)
 		return NULL;
 

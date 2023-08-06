@@ -103,10 +103,9 @@ FILE *fopen(const char *path, const char *mode)
 	r->__state |= __DANCY_FILE_MALLOC_STRUCT;
 
 	r->__buffer_size = BUFSIZ;
-	r->__name = NULL;
 
 	if (mtx_lock(&__dancy_io_array_mtx) != thrd_success) {
-		free(r->__name), free(r->__buffer);
+		free(r->__buffer);
 		mtx_destroy(&r->__mtx);
 		return free(r), close(fd), (errno = EMFILE), NULL;
 	}
@@ -121,7 +120,7 @@ FILE *fopen(const char *path, const char *mode)
 	mtx_unlock(&__dancy_io_array_mtx);
 
 	if (r->__i < 0) {
-		free(r->__name), free(r->__buffer);
+		free(r->__buffer);
 		mtx_destroy(&r->__mtx);
 		return free(r), close(fd), (errno = EMFILE), NULL;
 	}

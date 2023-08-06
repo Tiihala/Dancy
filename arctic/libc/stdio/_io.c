@@ -35,10 +35,6 @@ FILE *stdin;
 FILE *stdout;
 FILE *stderr;
 
-static char name_stdin[] = "stdin";
-static char name_stdout[] = "stdout";
-static char name_stderr[] = "stderr";
-
 static unsigned char buffer_stdin[128];
 static unsigned char buffer_stdout[128];
 
@@ -57,12 +53,10 @@ void __dancy_stdio_init(void)
 	default_streams[0].__mode = O_RDONLY;
 	default_streams[0].__state = _IOLBF;
 	default_streams[0].__state |= __DANCY_FILE_STATIC_BUFFER;
-	default_streams[0].__state |= __DANCY_FILE_STATIC_NAME;
 
 	mtx_init(&default_streams[0].__mtx, mtx_plain);
 	default_streams[0].__buffer = &buffer_stdin[0];
 	default_streams[0].__buffer_size = sizeof(buffer_stdin);
-	default_streams[0].__name = &name_stdin[0];
 
 	/*
 	 * Default stream: stdout
@@ -72,12 +66,10 @@ void __dancy_stdio_init(void)
 	default_streams[1].__mode = O_WRONLY;
 	default_streams[1].__state = _IOLBF;
 	default_streams[1].__state |= __DANCY_FILE_STATIC_BUFFER;
-	default_streams[1].__state |= __DANCY_FILE_STATIC_NAME;
 
 	mtx_init(&default_streams[1].__mtx, mtx_plain);
 	default_streams[1].__buffer = &buffer_stdout[0];
 	default_streams[1].__buffer_size = sizeof(buffer_stdout);
-	default_streams[1].__name = &name_stdout[0];
 
 	/*
 	 * Default stream: stderr
@@ -86,10 +78,8 @@ void __dancy_stdio_init(void)
 	default_streams[2].__i = 2;
 	default_streams[2].__mode = O_WRONLY;
 	default_streams[2].__state = _IONBF;
-	default_streams[2].__state |= __DANCY_FILE_STATIC_NAME;
 
 	mtx_init(&default_streams[2].__mtx, mtx_plain);
-	default_streams[2].__name = &name_stderr[0];
 
 	/*
 	 * Set the default I/O array streams.
