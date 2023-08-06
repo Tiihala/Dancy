@@ -62,7 +62,7 @@ struct vfs_node {
 	void *internal_data;
 	event_t *internal_event;
 
-	void (*__release)(struct vfs_node **node);
+	void (*_release)(struct vfs_node **node);
 	void (*n_release)(struct vfs_node **node);
 
 	int (*n_open)(struct vfs_node *node, const char *name,

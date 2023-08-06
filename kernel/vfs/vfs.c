@@ -42,7 +42,7 @@ int vfs_init(void)
 	vfs_lock_tree();
 
 	root_node->mount_state = 1;
-	root_node->__release = n_release_panic;
+	root_node->_release = n_release_panic;
 	root_node->n_release = n_release;
 
 	vfs_unlock_tree();
@@ -187,7 +187,7 @@ static void n_release(struct vfs_node **node)
 
 	if (n->tree_state == 0 && n->tree[2] == NULL) {
 		remove_leaf_node(n);
-		n->__release(&n);
+		n->_release(&n);
 	}
 
 	while (owner != root_node) {
@@ -203,7 +203,7 @@ static void n_release(struct vfs_node **node)
 		owner = owner->tree[0];
 
 		remove_leaf_node(unused_node);
-		unused_node->__release(&unused_node);
+		unused_node->_release(&unused_node);
 	}
 
 	vfs_unlock_tree();
@@ -305,7 +305,7 @@ int vfs_mount(const char *name, struct vfs_node *node)
 	node->tree_state = 0;
 	node->mount_state = 1;
 
-	node->__release = n_release_panic;
+	node->_release = n_release_panic;
 	node->n_release = n_release;
 
 	if (node->type == vfs_type_directory)
@@ -408,7 +408,7 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 				break;
 		}
 
-		new_node->__release = new_node->n_release;
+		new_node->_release = new_node->n_release;
 		new_node->n_release = n_release;
 		strcpy(&new_node->name[0], n);
 
@@ -438,7 +438,7 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 		owner = owner->tree[0];
 
 		remove_leaf_node(unused_node);
-		unused_node->__release(&unused_node);
+		unused_node->_release(&unused_node);
 	}
 
 	vfs_unlock_tree();
@@ -553,7 +553,7 @@ int vfs_remove(const char *name, int dir)
 		if ((r = owner->n_open(owner, n, &new_node, 0, 0)) != 0)
 			break;
 
-		new_node->__release = new_node->n_release;
+		new_node->_release = new_node->n_release;
 		new_node->n_release = n_release;
 		strcpy(&new_node->name[0], n);
 
@@ -574,7 +574,7 @@ int vfs_remove(const char *name, int dir)
 		owner = owner->tree[0];
 
 		remove_leaf_node(unused_node);
-		unused_node->__release(&unused_node);
+		unused_node->_release(&unused_node);
 	}
 
 	vfs_unlock_tree();
