@@ -30,12 +30,12 @@ void *mmap(void *address, size_t size,
 
 	memset(&options, 0, sizeof(options));
 
-	options.__address = address;
-	options.__size = size;
-	options.__prot = prot;
-	options.__flags = flags;
-	options.__fd = fd;
-	options.__offset = offset;
+	options._address = address;
+	options._size = size;
+	options._prot = prot;
+	options._flags = flags;
+	options._fd = fd;
+	options._offset = offset;
 
 	r = __dancy_syscall3(__dancy_syscall_mmap, address, size, &options);
 

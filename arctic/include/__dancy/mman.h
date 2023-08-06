@@ -41,13 +41,13 @@ __Dancy_Header_Begin
 #define __DANCY_MS_SYNC         (0x0004)
 
 struct __dancy_mmap_options {
-	void *__address;
-	size_t __size;
-	int __state;
-	int __prot;
-	int __flags;
-	int __fd;
-	long long __offset;
+	void *_address;
+	size_t _size;
+	int _state;
+	int _prot;
+	int _flags;
+	int _fd;
+	long long _offset;
 };
 
 __Dancy_Header_End

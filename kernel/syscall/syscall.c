@@ -742,16 +742,16 @@ static long long dancy_syscall_mmap(va_list va)
 	if (pg_check_user_read(options, sizeof(*options)))
 		return -EFAULT;
 
-	if (address != options->__address)
+	if (address != options->_address)
 		return -EINVAL;
 
-	if (size == 0 || size != options->__size)
+	if (size == 0 || size != options->_size)
 		return -EINVAL;
 
-	if (options->__prot < 0 || options->__flags < 0)
+	if (options->_prot < 0 || options->_flags < 0)
 		return -EINVAL;
 
-	prot = (unsigned int)options->__prot;
+	prot = (unsigned int)options->_prot;
 	prot &= (~((unsigned int)__DANCY_PROT_READ));
 	prot &= (~((unsigned int)__DANCY_PROT_WRITE));
 	prot &= (~((unsigned int)__DANCY_PROT_EXEC));
@@ -759,7 +759,7 @@ static long long dancy_syscall_mmap(va_list va)
 	if (prot != 0)
 		return -EINVAL;
 
-	flags = (unsigned int)options->__flags;
+	flags = (unsigned int)options->_flags;
 	flags ^= ((unsigned int)__DANCY_MAP_ANONYMOUS);
 	flags ^= ((unsigned int)__DANCY_MAP_PRIVATE);
 	flags ^= ((unsigned int)__DANCY_MAP_FIXED);
