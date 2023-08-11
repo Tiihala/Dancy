@@ -191,10 +191,16 @@ static void write_erase_main(struct pty_shared_data *data, int c, int word)
 	int echoe = ((c_lflag & __DANCY_TERMIOS_ECHOE) != 0);
 
 	while (data->icanon.size > 0) {
-		data->icanon.size -= 1;
+		int ic = (int)data->icanon.base[--data->icanon.size];
+		int caret_notation = ((ic >= 0 && ic <= 0x1F) || ic == 0x7F);
 
 		if (echo) {
 			if (echoe) {
+				if (caret_notation) {
+					write_buffer(data, 0, '\x08');
+					write_buffer(data, 0, '\x20');
+					write_buffer(data, 0, '\x08');
+				}
 				write_buffer(data, 0, '\x08');
 				write_buffer(data, 0, '\x20');
 				write_buffer(data, 0, '\x08');
