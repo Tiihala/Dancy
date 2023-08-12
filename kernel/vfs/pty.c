@@ -186,17 +186,24 @@ static void write_echo_main(struct pty_shared_data *data, int c)
 static void write_erase_main(struct pty_shared_data *data, int c, int word)
 {
 	__dancy_tcflag_t c_lflag = data->termios.c_lflag;
+	int word_state = 0;
 
 	int echo = ((c_lflag & __DANCY_TERMIOS_ECHO) != 0);
 	int echoe = ((c_lflag & __DANCY_TERMIOS_ECHOE) != 0);
+	int echok = ((c_lflag & __DANCY_TERMIOS_ECHOK) != 0);
 
 	while (data->icanon.size > 0) {
 		int ic = (int)data->icanon.base[--data->icanon.size];
-		int caret_notation = ((ic >= 0 && ic <= 0x1F) || ic == 0x7F);
+
+		while ((ic & 0xC0) == 0x80 && data->icanon.size > 0)
+			ic = (int)data->icanon.base[--data->icanon.size];
+
+		if (ic != 0x09 && ic != 0x20)
+			word_state = 1;
 
 		if (echo) {
-			if (echoe) {
-				if (caret_notation) {
+			if (echoe || echok) {
+				if ((ic >= 0 && ic <= 0x1F) || ic == 0x7F) {
 					write_buffer(data, 0, '\x08');
 					write_buffer(data, 0, '\x20');
 					write_buffer(data, 0, '\x08');
@@ -223,10 +230,12 @@ static void write_erase_main(struct pty_shared_data *data, int c, int word)
 		if (!echoe)
 			echo = 0;
 
-		if (data->icanon.base[data->icanon.size] == 0x09)
-			break;
-		if (data->icanon.base[data->icanon.size] == 0x20)
-			break;
+		if (word > 0 && data->icanon.size > 0 && word_state > 0) {
+			if (data->icanon.base[data->icanon.size - 1] == 0x09)
+				break;
+			if (data->icanon.base[data->icanon.size - 1] == 0x20)
+				break;
+		}
 	}
 }
 
@@ -500,6 +509,11 @@ static int n_write_main(struct vfs_node *node,
 			} else if (c && c == c_cc[__DANCY_TERMIOS_VERASE]) {
 				shared_data->icanon.size -= 1;
 				write_erase_main(shared_data, c, 0);
+				echo = 0;
+
+			} else if (c && c == c_cc[__DANCY_TERMIOS_VKILL]) {
+				shared_data->icanon.size -= 1;
+				write_erase_main(shared_data, c, -1);
 				echo = 0;
 
 			} else if (c && c == c_cc[__DANCY_TERMIOS_VWERASE]) {
