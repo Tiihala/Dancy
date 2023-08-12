@@ -130,6 +130,7 @@ static int n_poll(struct vfs_node *node, int events, int *revents)
 
 int ps2_mse_init(void)
 {
+	static int create_device_node_once;
 	int response[2];
 
 	mse_ready = 0;
@@ -187,7 +188,7 @@ int ps2_mse_init(void)
 	/*
 	 * Create the device node.
 	 */
-	{
+	if (spin_trylock(&create_device_node_once)) {
 		const char *name = "/dev/dancy-mouse";
 		struct vfs_node *node;
 
