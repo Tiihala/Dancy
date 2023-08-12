@@ -192,6 +192,8 @@ static void write_erase_main(struct pty_shared_data *data, int c, int word)
 	int echoe = ((c_lflag & __DANCY_TERMIOS_ECHOE) != 0);
 	int echok = ((c_lflag & __DANCY_TERMIOS_ECHOK) != 0);
 
+	int erase_character = (echoe && word >= 0) || (echok && word < 0);
+
 	while (data->icanon.size > 0) {
 		int ic = (int)data->icanon.base[--data->icanon.size];
 
@@ -202,7 +204,7 @@ static void write_erase_main(struct pty_shared_data *data, int c, int word)
 			word_state = 1;
 
 		if (echo) {
-			if (echoe || echok) {
+			if (erase_character) {
 				if ((ic >= 0 && ic <= 0x1F) || ic == 0x7F) {
 					write_buffer(data, 0, '\x08');
 					write_buffer(data, 0, '\x20');
@@ -227,7 +229,7 @@ static void write_erase_main(struct pty_shared_data *data, int c, int word)
 		if (!word)
 			break;
 
-		if (!echoe)
+		if (!erase_character)
 			echo = 0;
 
 		if (word > 0 && data->icanon.size > 0 && word_state > 0) {
