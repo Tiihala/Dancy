@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,12 +28,21 @@ static int response_reset = 0;
 static int response_type[2] = { 0, 0 };
 
 static const int data_none = -1;
-static int data_led_state = 0x00;
+static int data_led_state[2] = { 0x02, 0x02 };
 static int data_scan_code = 0x02;
 static int data_typematic = 0x00;
 
 static struct vfs_node *kbd_pipe_nodes[2];
 static struct vfs_node kbd_node;
+
+static int keymod_lctrl = 0;
+static int keymod_lshift = 0;
+static int keymod_lalt = 0;
+static int keymod_lgui = 0;
+static int keymod_rctrl = 0;
+static int keymod_rshift = 0;
+static int keymod_ralt = 0;
+static int keymod_rgui = 0;
 
 static int send_command(int command, int data, int count, int *response)
 {
@@ -136,6 +145,8 @@ static int n_poll(struct vfs_node *node, int events, int *revents)
 
 int ps2_kbd_init(void)
 {
+	static int create_device_node_once;
+
 	/*
 	 * Reset the keyboard device.
 	 */
@@ -162,7 +173,7 @@ int ps2_kbd_init(void)
 	/*
 	 * Set keyboard LEDs.
 	 */
-	if (send_command(0xED, data_led_state, 0, NULL))
+	if (send_command(0xED, data_led_state[0], 0, NULL))
 		return 1;
 
 	/*
@@ -179,7 +190,7 @@ int ps2_kbd_init(void)
 	/*
 	 * Create the device node.
 	 */
-	{
+	if (spin_trylock(&create_device_node_once)) {
 		const char *name = "/dev/dancy-keyboard";
 		struct vfs_node *node;
 
@@ -308,6 +319,69 @@ static void process_keycode(int keycode, int release)
 
 	if (release)
 		data |= DANCY_KEYTYP_RELEASE;
+
+	switch (keycode) {
+		case DANCY_KEY_LCTRL:
+			keymod_lctrl = !release;
+			break;
+		case DANCY_KEY_LSHIFT:
+			keymod_lshift = !release;
+			break;
+		case DANCY_KEY_LALT:
+			keymod_lalt = !release;
+			break;
+		case DANCY_KEY_LGUI:
+			keymod_lgui = !release;
+			break;
+		case DANCY_KEY_RCTRL:
+			keymod_rctrl = !release;
+			break;
+		case DANCY_KEY_RSHIFT:
+			keymod_rshift = !release;
+			break;
+		case DANCY_KEY_RALT:
+			keymod_ralt = !release;
+			break;
+		case DANCY_KEY_RGUI:
+			keymod_rgui = !release;
+			break;
+		case DANCY_KEY_NUMLOCK:
+			data_led_state[1] ^= ((!release) << 1);
+			break;
+		case DANCY_KEY_CAPSLOCK:
+			data_led_state[1] ^= ((!release) << 2);
+			break;
+		case DANCY_KEY_SCROLLLOCK:
+			data_led_state[1] ^= ((!release) << 0);
+			break;
+		default:
+			break;
+	}
+
+	if (keymod_lctrl)
+		data |= DANCY_KEYMOD_LCTRL;
+	if (keymod_lshift)
+		data |= DANCY_KEYMOD_LSHIFT;
+	if (keymod_lalt)
+		data |= DANCY_KEYMOD_LALT;
+	if (keymod_lgui)
+		data |= DANCY_KEYMOD_LGUI;
+
+	if (keymod_rctrl)
+		data |= DANCY_KEYMOD_RCTRL;
+	if (keymod_rshift)
+		data |= DANCY_KEYMOD_RSHIFT;
+	if (keymod_ralt)
+		data |= DANCY_KEYMOD_RALT;
+	if (keymod_rgui)
+		data |= DANCY_KEYMOD_RGUI;
+
+	if ((data_led_state[1] & (1 << 1)) != 0)
+		data |= DANCY_KEYMOD_NUMLOCK;
+	if ((data_led_state[1] & (1 << 2)) != 0)
+		data |= DANCY_KEYMOD_CAPSLOCK;
+	if ((data_led_state[1] & (1 << 0)) != 0)
+		data |= DANCY_KEYMOD_SCROLLLOCK;
 
 	for (;;) {
 		size_t size = sizeof(int);
@@ -438,6 +512,11 @@ void ps2_kbd_handler(void)
 
 		if (keycode != 0)
 			process_keycode(keycode, release);
+	}
+
+	if (data_led_state[0] != data_led_state[1]) {
+		data_led_state[0] = data_led_state[1];
+		send_command(0xED, data_led_state[0], 0, NULL);
 	}
 }
 
