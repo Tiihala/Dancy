@@ -157,6 +157,29 @@ enum __dancy_key {
 #define __DANCY_KEYMOD_CAPSLOCK     (0x02000000)
 #define __DANCY_KEYMOD_SCROLLLOCK   (0x04000000)
 
+#define __DANCY_KEYMAP_NORMAL       (0x00000000)
+#define __DANCY_KEYMAP_SHIFT        (0x00000001)
+#define __DANCY_KEYMAP_CTRL         (0x00000002)
+#define __DANCY_KEYMAP_ALTGR        (0x00000004)
+#define __DANCY_KEYMAP_ALT          (0x00000008)
+
+#define __DANCY_KEYBIT_CAPS         (0x00200000)
+#define __DANCY_KEYBIT_NPAD         (0x00400000)
+#define __DANCY_KEYBIT_DEAD         (0x00800000)
+
+struct __dancy_keymap {
+	int map[16][128];
+	int diacritic[64][3];
+
+	const char *name;
+	const char *description;
+};
+
+extern const struct __dancy_keymap *const __dancy_keymaps[];
+
+void __dancy_keymap_write(int fd, int key,
+	const struct __dancy_keymap *map, int *state);
+
 __Dancy_Header_End
 
 #endif
