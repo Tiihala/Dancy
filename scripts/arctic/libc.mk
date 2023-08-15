@@ -37,6 +37,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/errno/errno.o \
  ./o32/arctic/libc/fcntl/fcntl.o \
  ./o32/arctic/libc/fcntl/open.o \
+ ./o32/arctic/libc/keymap/_write.o \
  ./o32/arctic/libc/misc/__main.o \
  ./o32/arctic/libc/misc/ull.o \
  ./o32/arctic/libc/poll/poll.o \
@@ -206,6 +207,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/errno/errno.o \
  ./o64/arctic/libc/fcntl/fcntl.o \
  ./o64/arctic/libc/fcntl/open.o \
+ ./o64/arctic/libc/keymap/_write.o \
  ./o64/arctic/libc/misc/__main.o \
  ./o64/arctic/libc/misc/ull.o \
  ./o64/arctic/libc/poll/poll.o \
