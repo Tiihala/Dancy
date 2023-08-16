@@ -19,6 +19,9 @@
 
 #include <__dancy/keys.h>
 
+extern const struct __dancy_keymap __dancy_keymap_fi;
+
 const struct __dancy_keymap *const __dancy_keymaps[] = {
+	&__dancy_keymap_fi,
 	NULL
 };
