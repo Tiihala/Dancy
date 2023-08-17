@@ -985,10 +985,56 @@ static size_t ttf_build_glyf(size_t offset)
 	size_t total_size = 0;
 	unsigned long i, j;
 
+	long xmin = LONG_MAX, ymin = LONG_MAX, xmax = 0, ymax = 0;
+	long y_mul = 1, y_div = 1;
+
 	for (i = 0; i < ttf_loca_points; i++) {
-		long xmin = LONG_MAX, ymin = LONG_MAX, xmax = 0, ymax = 0;
+		if (ttf_read_glyf(0, i)) {
+			fputs("Error: could not read glyf data\n", stderr);
+			return 0;
+		}
+
+		for (j = 0; j < ttf_glyf_points; j++) {
+			long x = ttf_glyf_array[j].x;
+			long y = ttf_glyf_array[j].y;
+
+			x *= (long)ttf_em_mul;
+			x /= (long)ttf_em_div;
+
+			y *= (long)ttf_em_mul;
+			y /= (long)ttf_em_div;
+
+			if (xmin > x)
+				xmin = x;
+			if (xmax < x)
+				xmax = x;
+			if (ymin > y)
+				ymin = y;
+			if (ymax < y)
+				ymax = y;
+		}
+	}
+
+	if (ttf_verbose) {
+		printf("xmin: %ld\nxmax: %ld\n", xmin, xmax);
+		printf("ymin: %ld\nymax: %ld\n\n", ymin, ymax);
+	}
+
+	if (ymin < ymin_limit) {
+		y_mul = (-ymin_limit);
+		y_div = (-ymin);
+	}
+
+	if (ymax > ymax_limit) {
+		y_mul = ymax_limit;
+		y_div = ymax;
+	}
+
+	for (i = 0; i < ttf_loca_points; i++) {
 		unsigned long val, contours = 0;
 		size_t size = 0;
+
+		xmin = LONG_MAX, ymin = LONG_MAX, xmax = 0, ymax = 0;
 
 		if (ttf_read_glyf(0, i)) {
 			fputs("Error: could not read glyf data\n", stderr);
@@ -1008,6 +1054,9 @@ static size_t ttf_build_glyf(size_t offset)
 			y *= (long)ttf_em_mul;
 			y /= (long)ttf_em_div;
 
+			y *= y_mul;
+			y /= y_div;
+
 			ttf_glyf_array[j].x = x;
 			ttf_glyf_array[j].y = y;
 
@@ -1015,10 +1064,6 @@ static size_t ttf_build_glyf(size_t offset)
 				xmin = x;
 			if (xmax < x)
 				xmax = x;
-			if (ymin > y)
-				ymin = y;
-			if (ymax < y)
-				ymax = y;
 		}
 
 		/*
@@ -1032,33 +1077,6 @@ static size_t ttf_build_glyf(size_t offset)
 				x *= (xmax + (-xmin));
 				x /= (xmax + (-xmin) + (-xmin));
 				ttf_glyf_array[j].x = x;
-			}
-		}
-
-		/*
-		 * Scale the y-axis if needed.
-		 */
-		{
-			long y_mul = 1, y_div = 1;
-
-			if (ymin < ymin_limit) {
-				y_mul = (-ymin_limit);
-				y_div = (-ymin);
-			}
-
-			if (ymax > ymax_limit) {
-				y_mul = ymax_limit;
-				y_div = ymax;
-			}
-
-			if (y_mul != 1) {
-				for (j = 0; j < ttf_glyf_points; j++) {
-					long y = ttf_glyf_array[j].y;
-
-					y *= y_mul;
-					y /= y_div;
-					ttf_glyf_array[j].y = y;
-				}
 			}
 		}
 
@@ -1255,9 +1273,11 @@ static size_t ttf_build_glyf(size_t offset)
 	 */
 	for (i = 0; i < ttf_hmtx_points; i++) {
 		unsigned long width = ttf_hmtx_array[i].width;
-		long xmin = ttf_hmtx_array[i].xmin;
-		long xmax = ttf_hmtx_array[i].xmax;
-		long xlen = xmax - xmin;
+		long xlen;
+
+		xmin = ttf_hmtx_array[i].xmin;
+		xmax = ttf_hmtx_array[i].xmax;
+		xlen = xmax - xmin;
 
 		if (xlen < 0 || xmin < 0 || xmax > (long)ttf_head_em) {
 			fputs("Error: hmtx table inconsistency\n", stderr);
