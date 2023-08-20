@@ -180,6 +180,11 @@ static int ttf_cmap_qsort(const void *a, const void *b)
 {
 	const struct cmap *cmap_a = a, *cmap_b = b;
 
+	if (cmap_a->point == 0xFFFFul)
+		return 1;
+	if (cmap_b->point == 0xFFFFul)
+		return -1;
+
 	if (cmap_a->point > cmap_b->point)
 		return 1;
 	if (cmap_a->point < cmap_b->point)
@@ -418,6 +423,12 @@ static int ttf_read_cmap(void)
 
 	qsort(ttf_cmap_array, ttf_cmap_points,
 		sizeof(struct cmap), ttf_cmap_qsort);
+
+	while (ttf_cmap_points != 0) {
+		if (ttf_cmap_array[ttf_cmap_points - 1].point != 0xFFFFul)
+			break;
+		ttf_cmap_points -= 1;
+	}
 
 	return 0;
 }
