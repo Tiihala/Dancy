@@ -174,7 +174,7 @@ void table_init(void)
 		if (width < 8 || width > (unsigned)glyph_em)
 			panic("Glyph: unexpected glyph width");
 
-		kernel->glyph_count = 2;
+		kernel->glyph_count = 4;
 		kernel->glyph_width = (int)width;
 		kernel->glyph_height = (int)width * 2;
 
@@ -228,6 +228,64 @@ void table_init(void)
 		data = kernel->glyph[1].data;
 
 		for (i = 0; i < (size_t)kernel->glyph[1].unicode_count; i++) {
+			unsigned char *ptr = &ttf_bitmap[0];
+			int x, y;
+
+			if (ttf_render(ttf_kernel, code_point++, &width))
+				panic("Glyph: rendering error");
+
+			data += (extra_height * kernel->glyph_width);
+
+			for (y = 0; y < glyph_em; y++) {
+				for (x = 0; x < kernel->glyph_width; x++)
+					*data++ = ptr[x];
+				ptr += glyph_em;
+			}
+		}
+
+		/*
+		 * Unicode range from 0x20AC to 0x20AC.
+		 */
+		kernel->glyph[2].unicode_count = 1;
+		kernel->glyph[2].unicode = 0x20AC;
+
+		size = (size_t)kernel->glyph[2].unicode_count;
+		size *= (size_t)(kernel->glyph_width * kernel->glyph_height);
+		kernel->glyph[2].data = table_alloc(size);
+
+		code_point = (unsigned)kernel->glyph[2].unicode;
+		data = kernel->glyph[2].data;
+
+		for (i = 0; i < (size_t)kernel->glyph[2].unicode_count; i++) {
+			unsigned char *ptr = &ttf_bitmap[0];
+			int x, y;
+
+			if (ttf_render(ttf_kernel, code_point++, &width))
+				panic("Glyph: rendering error");
+
+			data += (extra_height * kernel->glyph_width);
+
+			for (y = 0; y < glyph_em; y++) {
+				for (x = 0; x < kernel->glyph_width; x++)
+					*data++ = ptr[x];
+				ptr += glyph_em;
+			}
+		}
+
+		/*
+		 * Unicode range from 0x2122 to 0x2122.
+		 */
+		kernel->glyph[3].unicode_count = 1;
+		kernel->glyph[3].unicode = 0x2122;
+
+		size = (size_t)kernel->glyph[3].unicode_count;
+		size *= (size_t)(kernel->glyph_width * kernel->glyph_height);
+		kernel->glyph[3].data = table_alloc(size);
+
+		code_point = (unsigned)kernel->glyph[3].unicode;
+		data = kernel->glyph[3].data;
+
+		for (i = 0; i < (size_t)kernel->glyph[3].unicode_count; i++) {
 			unsigned char *ptr = &ttf_bitmap[0];
 			int x, y;
 
