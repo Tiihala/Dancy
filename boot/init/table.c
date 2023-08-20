@@ -176,10 +176,11 @@ void table_init(void)
 
 		kernel->glyph_count = 4;
 		kernel->glyph_width = (int)width;
-		kernel->glyph_height = (int)width * 2;
+		kernel->glyph_height = glyph_em;
 
-		extra_height = kernel->glyph_height - glyph_em;
-		if (extra_height < 0)
+		extra_height = 0;
+
+		if (kernel->glyph_height < kernel->glyph_width)
 			panic("Glyph: unexpected glyph height");
 
 		size = (size_t)kernel->glyph_count * sizeof(kernel->glyph[0]);
