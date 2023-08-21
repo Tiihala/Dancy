@@ -688,6 +688,16 @@
     ./arctic/libc/unistd/write.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/write.c
 
+./o32/arctic/programs/cat/main.o: \
+    ./arctic/programs/cat/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_CAT_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/cat/main.c
+
+./o32/arctic/programs/cat/operate.o: \
+    ./arctic/programs/cat/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_CAT_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/cat/operate.c
+
 ./o32/arctic/programs/init/main.o: \
     ./arctic/programs/init/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_INIT_HEADERS)
@@ -1839,6 +1849,16 @@
 ./o64/arctic/libc/unistd/write.o: \
     ./arctic/libc/unistd/write.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/write.c
+
+./o64/arctic/programs/cat/main.o: \
+    ./arctic/programs/cat/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_CAT_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/cat/main.c
+
+./o64/arctic/programs/cat/operate.o: \
+    ./arctic/programs/cat/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_CAT_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/cat/operate.c
 
 ./o64/arctic/programs/init/main.o: \
     ./arctic/programs/init/main.c $(DANCY_DEPS) \
