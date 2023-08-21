@@ -698,6 +698,16 @@
     $(ARCTIC_PROGRAMS_INIT_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/init/operate.c
 
+./o32/arctic/programs/terminal/main.o: \
+    ./arctic/programs/terminal/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_TERMINAL_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/terminal/main.c
+
+./o32/arctic/programs/terminal/operate.o: \
+    ./arctic/programs/terminal/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_TERMINAL_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/terminal/operate.c
+
 ./o32/boot/init/a32/gdt.o: \
     ./boot/init/a32/gdt.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./boot/init/a32/gdt.asm
@@ -1839,6 +1849,16 @@
     ./arctic/programs/init/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_INIT_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/init/operate.c
+
+./o64/arctic/programs/terminal/main.o: \
+    ./arctic/programs/terminal/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_TERMINAL_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/terminal/main.c
+
+./o64/arctic/programs/terminal/operate.o: \
+    ./arctic/programs/terminal/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_TERMINAL_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/terminal/operate.c
 
 ./o64/boot/init/a64/gdt.o: \
     ./boot/init/a64/gdt.asm $(DANCY_DEPS)
