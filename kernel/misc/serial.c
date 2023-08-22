@@ -262,11 +262,6 @@ static int n_read(struct vfs_node *node,
 	size_t requested_size = *size;
 
 	(void)offset;
-
-	if ((*size = serial_receive(*port, buffer, requested_size)) != 0)
-		return 0;
-
-	event_wait(serial_event[*port - 1], 2000);
 	*size = serial_receive(*port, buffer, requested_size);
 
 	return 0;
