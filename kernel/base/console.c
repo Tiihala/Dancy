@@ -277,6 +277,10 @@ int con_init(void)
 
 	con_build_lookup_table();
 	con_init_variables();
+
+	kernel->con_columns = con_columns;
+	kernel->con_rows = con_rows;
+
 	cpu_write32((uint32_t *)&con_ready, 1);
 
 	return 0;

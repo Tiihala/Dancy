@@ -159,6 +159,12 @@ struct kernel_table {
 	size_t fb_standard_size;
 
 	/*
+	 * Kernel console dimensions.
+	 */
+	int con_columns;
+	int con_rows;
+
+	/*
 	 * Kernel console bitmap glyphs.
 	 */
 	int glyph_count;
