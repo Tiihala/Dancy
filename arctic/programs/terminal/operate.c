@@ -46,7 +46,52 @@ static void handle_input(unsigned char *buffer, size_t size)
 
 static void handle_key(int key)
 {
+	const char *command = NULL;
 	static int state;
+
+	if ((key & __DANCY_KEYTYP_RELEASE) != 0)
+		return;
+
+	switch (key & 0xFF) {
+		case __DANCY_KEY_ESCAPE:
+			command = "\033";
+			break;
+		case __DANCY_KEY_UPARROW:
+			command = "\033[A";
+			break;
+		case __DANCY_KEY_DOWNARROW:
+			command = "\033[B";
+			break;
+		case __DANCY_KEY_RIGHTARROW:
+			command = "\033[C";
+			break;
+		case __DANCY_KEY_LEFTARROW:
+			command = "\033[D";
+			break;
+		case __DANCY_KEY_HOME:
+			command = "\033[H";
+			break;
+		case __DANCY_KEY_INSERT:
+			command = "\033[2~";
+			break;
+		case __DANCY_KEY_DELETE:
+			command = "\033[3~";
+			break;
+		case __DANCY_KEY_END:
+			command = "\033[F";
+			break;
+		case __DANCY_KEY_PAGEUP:
+			command = "\033[5~";
+			break;
+		case __DANCY_KEY_PAGEDOWN:
+			command = "\033[6~";
+			break;
+	}
+
+	if (command != NULL) {
+		write(fd_amaster, command, strlen(command));
+		return;
+	}
 
 	__dancy_keymap_write(fd_amaster, key, keymap, &state);
 }
