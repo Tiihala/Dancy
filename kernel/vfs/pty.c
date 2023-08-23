@@ -845,8 +845,8 @@ static void set_default_termios(struct __dancy_termios *t)
 
 static void set_default_winsize(struct __dancy_winsize *w)
 {
-	w->ws_row = 25;
-	w->ws_col = 80;
+	w->ws_row = (unsigned short)kernel->con_rows;
+	w->ws_col = (unsigned short)kernel->con_columns;
 }
 
 int pty_create(struct vfs_node *nodes[2], char name[16],
