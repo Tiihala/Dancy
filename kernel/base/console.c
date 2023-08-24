@@ -530,7 +530,6 @@ static void con_handle_escape(void)
 				break;
 			case 1:
 				con_attribute |= con_intensity_bit;
-				con_attribute &= 0xFEFFFFFF;
 				break;
 			case 4:
 				con_attribute |= con_underline_bit;
@@ -540,7 +539,6 @@ static void con_handle_escape(void)
 				break;
 			case 22:
 				con_attribute &= (~con_intensity_bit);
-				con_attribute |= 0x01000000;
 				break;
 			case 24:
 				con_attribute &= (~con_underline_bit);
@@ -586,8 +584,6 @@ static void con_handle_escape(void)
 			 * Set the foreground color.
 			 */
 			if (fg_color >= 0) {
-				if ((con_attribute & con_intensity_bit) != 0)
-					fg_color |= 8;
 				fg_color = 15 - (fg_color & 15);
 				con_attribute &= 0xFF0FFFFF;
 				con_attribute |= (uint32_t)(fg_color << 20);
