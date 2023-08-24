@@ -304,6 +304,9 @@ static void con_render(void)
 			continue;
 		}
 
+		if ((c & con_intensity_bit) != 0)
+			c &= 0xFF7FFFFF;
+
 		if ((c & con_reversed_bit) == 0) {
 			table_i = (int)((c >> 12) & 0xFF00);
 		} else {
