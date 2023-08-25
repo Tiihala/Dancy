@@ -176,7 +176,7 @@ static void con_init_variables(void)
 {
 	int i;
 
-	con_attribute = 0;
+	con_attribute = 0x00800000;
 	con_escape_size = 0;
 
 	con_column = 0;
@@ -529,7 +529,7 @@ static void con_handle_escape(void)
 
 			switch (parameter) {
 			case 0:
-				con_attribute = 0;
+				con_attribute = 0x00800000;
 				break;
 			case 1:
 				con_attribute |= con_intensity_bit;
@@ -550,7 +550,7 @@ static void con_handle_escape(void)
 				con_attribute &= (~con_reversed_bit);
 				break;
 			case 39:
-				fg_color = 15;
+				fg_color = 7;
 				break;
 			case 49:
 				bg_color = 0;
