@@ -56,6 +56,42 @@ static void handle_key(int key)
 		case __DANCY_KEY_ESCAPE:
 			command = "\033";
 			break;
+		case __DANCY_KEY_F1:
+			command = "\033[[A";
+			break;
+		case __DANCY_KEY_F2:
+			command = "\033[[B";
+			break;
+		case __DANCY_KEY_F3:
+			command = "\033[[C";
+			break;
+		case __DANCY_KEY_F4:
+			command = "\033[[D";
+			break;
+		case __DANCY_KEY_F5:
+			command = "\033[[E";
+			break;
+		case __DANCY_KEY_F6:
+			command = "\033[17~";
+			break;
+		case __DANCY_KEY_F7:
+			command = "\033[18~";
+			break;
+		case __DANCY_KEY_F8:
+			command = "\033[19~";
+			break;
+		case __DANCY_KEY_F9:
+			command = "\033[20~";
+			break;
+		case __DANCY_KEY_F10:
+			command = "\033[21~";
+			break;
+		case __DANCY_KEY_F11:
+			command = "\033[23~";
+			break;
+		case __DANCY_KEY_F12:
+			command = "\033[24~";
+			break;
 		case __DANCY_KEY_UPARROW:
 			command = "\033[A";
 			break;
@@ -86,6 +122,41 @@ static void handle_key(int key)
 		case __DANCY_KEY_PAGEDOWN:
 			command = "\033[6~";
 			break;
+	}
+
+	if (command == NULL && (key & __DANCY_KEYMOD_NUMLOCK) == 0) {
+		switch (key & 0xFF) {
+			case __DANCY_KEY_PAD1:
+				command = "\033[F";
+				break;
+			case __DANCY_KEY_PAD2:
+				command = "\033[B";
+				break;
+			case __DANCY_KEY_PAD3:
+				command = "\033[6~";
+				break;
+			case __DANCY_KEY_PAD4:
+				command = "\033[D";
+				break;
+			case __DANCY_KEY_PAD6:
+				command = "\033[C";
+				break;
+			case __DANCY_KEY_PAD7:
+				command = "\033[H";
+				break;
+			case __DANCY_KEY_PAD8:
+				command = "\033[A";
+				break;
+			case __DANCY_KEY_PAD9:
+				command = "\033[5~";
+				break;
+			case __DANCY_KEY_PAD0:
+				command = "\033[2~";
+				break;
+			case __DANCY_KEY_PADDELETE:
+				command = "\033[3~";
+				break;
+		}
 	}
 
 	if (command != NULL) {
