@@ -596,6 +596,10 @@
     ./arctic/libc/termios/setattr.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/termios/setattr.c
 
+./o32/arctic/libc/termios/setspeed.o: \
+    ./arctic/libc/termios/setspeed.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/termios/setspeed.c
+
 ./o32/arctic/libc/threads/mtx.o: \
     ./arctic/libc/threads/mtx.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/threads/mtx.c
@@ -1761,6 +1765,10 @@
 ./o64/arctic/libc/termios/setattr.o: \
     ./arctic/libc/termios/setattr.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/termios/setattr.c
+
+./o64/arctic/libc/termios/setspeed.o: \
+    ./arctic/libc/termios/setspeed.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/termios/setspeed.c
 
 ./o64/arctic/libc/threads/mtx.o: \
     ./arctic/libc/threads/mtx.c $(DANCY_DEPS)

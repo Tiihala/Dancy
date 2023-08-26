@@ -149,6 +149,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/termios/getattr.o \
  ./o32/arctic/libc/termios/getspeed.o \
  ./o32/arctic/libc/termios/setattr.o \
+ ./o32/arctic/libc/termios/setspeed.o \
  ./o32/arctic/libc/threads/mtx.o \
  ./o32/arctic/libc/time/gettime.o \
  ./o32/arctic/libc/time/settime.o \
@@ -322,6 +323,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/termios/getattr.o \
  ./o64/arctic/libc/termios/getspeed.o \
  ./o64/arctic/libc/termios/setattr.o \
+ ./o64/arctic/libc/termios/setspeed.o \
  ./o64/arctic/libc/threads/mtx.o \
  ./o64/arctic/libc/time/gettime.o \
  ./o64/arctic/libc/time/settime.o \
