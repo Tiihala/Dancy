@@ -819,6 +819,7 @@ static void set_default_termios(struct __dancy_termios *t)
 	t->c_oflag |= __DANCY_TERMIOS_ONLCR;
 	t->c_oflag |= __DANCY_TERMIOS_OPOST;
 
+	t->c_cflag |= __DANCY_TERMIOS_B38400;
 	t->c_cflag |= __DANCY_TERMIOS_CS8;
 	t->c_cflag |= __DANCY_TERMIOS_CREAD;
 
