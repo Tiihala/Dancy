@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -36,6 +36,10 @@ static int port_com4 = 0x02E8;
 static struct {
 	int port;
 	int baud;
+
+	struct __dancy_termios termios;
+	struct __dancy_winsize winsize;
+
 	int start;
 	int end;
 	uint8_t base[COM_BUFFER_SIZE];
@@ -243,6 +247,33 @@ static void port_init(int port_com, int baud)
 	cpu_out8((uint16_t)(port_com + 1), 0x01);
 }
 
+static void set_default_termios(struct __dancy_termios *t)
+{
+	t->c_cflag |= __DANCY_TERMIOS_B2400;
+	t->c_cflag |= __DANCY_TERMIOS_CS8;
+	t->c_cflag |= __DANCY_TERMIOS_CREAD;
+	t->c_cflag |= __DANCY_TERMIOS_CLOCAL;
+
+	t->c_cc[__DANCY_TERMIOS_VEOF   ] = 0x04;
+	t->c_cc[__DANCY_TERMIOS_VEOL   ] = 0x00;
+	t->c_cc[__DANCY_TERMIOS_VERASE ] = 0x7F;
+	t->c_cc[__DANCY_TERMIOS_VINTR  ] = 0x03;
+	t->c_cc[__DANCY_TERMIOS_VKILL  ] = 0x15;
+	t->c_cc[__DANCY_TERMIOS_VMIN   ] = 0x01;
+	t->c_cc[__DANCY_TERMIOS_VQUIT  ] = 0x1C;
+	t->c_cc[__DANCY_TERMIOS_VSTART ] = 0x11;
+	t->c_cc[__DANCY_TERMIOS_VSTOP  ] = 0x13;
+	t->c_cc[__DANCY_TERMIOS_VSUSP  ] = 0x1A;
+	t->c_cc[__DANCY_TERMIOS_VTIME  ] = 0x00;
+	t->c_cc[__DANCY_TERMIOS_VWERASE] = 0x17;
+}
+
+static void set_default_winsize(struct __dancy_winsize *w)
+{
+	w->ws_row = (unsigned short)kernel->con_rows;
+	w->ws_col = (unsigned short)kernel->con_columns;
+}
+
 static void n_release(struct vfs_node **node)
 {
 	struct vfs_node *n = *node;
@@ -313,6 +344,122 @@ static int n_poll(struct vfs_node *node, int events, int *revents)
 	return 0;
 }
 
+static int n_ioctl(struct vfs_node *node,
+	int request, long long arg)
+{
+	void *lock_local = &serial_lock;
+	const int *port = node->internal_data;
+	int i = (*port) - 1;
+
+	if (request == __DANCY_IOCTL_TCGETS) {
+		void *d = (void *)((addr_t)arg);
+		const struct __dancy_termios *s = &com_buffer[i].termios;
+		size_t size = sizeof(*s);
+
+		spin_enter(&lock_local);
+		memcpy(d, s, size);
+		spin_leave(&lock_local);
+
+		return 0;
+	}
+
+	/*
+	 * All TCSET* requests behave the same way on this system.
+	 */
+	if (request == __DANCY_IOCTL_TCSETSW)
+		request = __DANCY_IOCTL_TCSETS;
+	if (request == __DANCY_IOCTL_TCSETSF)
+		request = __DANCY_IOCTL_TCSETS;
+
+	/*
+	 * Only the baud rate can be changed.
+	 */
+	if (request == __DANCY_IOCTL_TCSETS) {
+		struct __dancy_termios *d = &com_buffer[i].termios;
+		const struct __dancy_termios *s = (const void *)((addr_t)arg);
+		int speed = (int)(s->c_cflag & 0x100F);
+		int baud = -1;
+
+		switch (speed) {
+			case __DANCY_TERMIOS_B300:
+				baud = 300;
+				break;
+			case __DANCY_TERMIOS_B600:
+				baud = 600;
+				break;
+			case __DANCY_TERMIOS_B1200:
+				baud = 1200;
+				break;
+			case __DANCY_TERMIOS_B2400:
+				baud = 2400;
+				break;
+			case __DANCY_TERMIOS_B4800:
+				baud = 4800;
+				break;
+			case __DANCY_TERMIOS_B9600:
+				baud = 9600;
+				break;
+			case __DANCY_TERMIOS_B19200:
+				baud = 19200;
+				break;
+			case __DANCY_TERMIOS_B38400:
+				baud = 38400;
+				break;
+			case __DANCY_TERMIOS_B57600:
+				baud = 57600;
+				break;
+			case __DANCY_TERMIOS_B115200:
+				baud = 115200;
+				break;
+		}
+
+		if (baud < 0)
+			return DE_UNSUPPORTED;
+
+		if (serial_set_baud(*port, baud))
+			return DE_UNSUPPORTED;
+
+		spin_enter(&lock_local);
+
+		{
+			__dancy_tcflag_t m = 0x100F;
+
+			d->c_cflag &= (~m);
+			d->c_cflag |= ((__dancy_tcflag_t)speed);
+		}
+
+		spin_leave(&lock_local);
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_TIOCGWINSZ) {
+		void *d = (void *)((addr_t)arg);
+		const struct __dancy_winsize *s = &com_buffer[i].winsize;
+		size_t size = sizeof(*s);
+
+		spin_enter(&lock_local);
+		memcpy(d, s, size);
+		spin_leave(&lock_local);
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_TIOCSWINSZ) {
+		void *d = &com_buffer[i].winsize;
+		const struct __dancy_winsize *s = (const void *)((addr_t)arg);
+		size_t size = sizeof(*s);
+
+		spin_enter(&lock_local);
+		memcpy(d, s, size);
+		spin_leave(&lock_local);
+
+		return 0;
+	}
+
+	return DE_UNSUPPORTED;
+}
+
 static int mount_serial_port(int port)
 {
 	struct vfs_node *dev_node, *node;
@@ -333,6 +480,7 @@ static int mount_serial_port(int port)
 	dev_node->n_read  = n_read;
 	dev_node->n_write = n_write;
 	dev_node->n_poll  = n_poll;
+	dev_node->n_ioctl = n_ioctl;
 
 	snprintf(&name[0], sizeof(name), "/dev/ttyS%d", port - 1);
 
@@ -361,6 +509,16 @@ int serial_init(void)
 	com_buffer[1].port = 2;
 	com_buffer[2].port = 3;
 	com_buffer[3].port = 4;
+
+	set_default_termios(&com_buffer[0].termios);
+	set_default_termios(&com_buffer[1].termios);
+	set_default_termios(&com_buffer[2].termios);
+	set_default_termios(&com_buffer[3].termios);
+
+	set_default_winsize(&com_buffer[0].winsize);
+	set_default_winsize(&com_buffer[1].winsize);
+	set_default_winsize(&com_buffer[2].winsize);
+	set_default_winsize(&com_buffer[3].winsize);
 
 	if (port_check(port_com1))
 		port_com1 = 0;
