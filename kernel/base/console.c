@@ -187,7 +187,7 @@ static void con_init_variables(void)
 
 	con_utf8_state = 0;
 	con_wrap_delay = 0;
-	con_cursor_visible = 0;
+	con_cursor_visible = 1;
 
 	for (i = 0; i < con_columns; i++)
 		con_tabs_array[i] = (uint8_t)(((i % 8) == 0) ? 1 : 0);
