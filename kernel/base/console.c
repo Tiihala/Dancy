@@ -1149,9 +1149,14 @@ static void con_write_locked(const unsigned char *data, int size)
 	}
 
 	while (i < size) {
-		int c = utf8_decode(&con_utf8_state, data[i++]);
+		int c = (int)data[i++];
 		int normal = 0;
 		int offset;
+
+		if (c == '\0')
+			continue;
+
+		c = utf8_decode(&con_utf8_state, (unsigned char)c);
 
 		if (c == UTF8_WAITING_NEXT)
 			continue;
