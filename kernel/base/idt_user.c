@@ -111,7 +111,7 @@ int idt_user_exception(int num, void *stack)
 	 * Page-Fault Exception
 	 */
 	if (num == 14) {
-		const cpu_native_t stack_min = 0x7FC00000;
+		const cpu_native_t stack_min = 0x78000000;
 		const cpu_native_t stack_max = 0x7FFFFFFF;
 
 		cpu_native_t code = p[-1];
