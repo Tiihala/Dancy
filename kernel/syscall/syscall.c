@@ -1040,6 +1040,20 @@ static long long dancy_syscall_openpty(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_memusage(va_list va)
+{
+	int flags = va_arg(va, int);
+	uint64_t r = task_current()->pg_user_memory;
+
+	if (flags != 0)
+		return -EINVAL;
+
+	if ((unsigned long long)r > (unsigned long long)(LLONG_MAX))
+		r = (uint64_t)(LLONG_MAX);
+
+	return (long long)r;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -1081,6 +1095,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_getpgid },
 	{ dancy_syscall_getsid },
 	{ dancy_syscall_openpty },
+	{ dancy_syscall_memusage },
 	{ dancy_syscall_reserved }
 };
 

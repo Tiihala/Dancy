@@ -287,6 +287,12 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_openpty,
 
+	/*
+	 * long long __dancy_syscall_memusage(
+	 *         int flags);
+	 */
+	__dancy_syscall_memusage,
+
 	__dancy_syscall_argn__
 };
 
