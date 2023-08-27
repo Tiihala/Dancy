@@ -59,12 +59,14 @@ static void *pg_create_cr3(void)
 
 static void pg_free_pte(uint32_t *pte)
 {
+	struct task *current = task_current();
 	int i;
 
 	for (i = 0; i < 1024; i++) {
 		if ((pte[i] & 0x01) == 0)
 			continue;
 		mm_free_page((phys_addr_t)pte[i]);
+		current->pg_user_memory -= 0x1000;
 	}
 }
 
@@ -288,12 +290,14 @@ static void *pg_create_cr3(void)
 
 static void pg_free_pte(uint64_t *pte)
 {
+	struct task *current = task_current();
 	int i;
 
 	for (i = 0; i < 512; i++) {
 		if ((pte[i] & 0x01) == 0)
 			continue;
 		mm_free_page((phys_addr_t)pte[i]);
+		current->pg_user_memory -= 0x1000;
 	}
 }
 
@@ -1091,6 +1095,8 @@ void *pg_map_user(addr_t vaddr, size_t size)
 			vaddr = 0;
 			break;
 		}
+
+		task_current()->pg_user_memory += 0x1000;
 	}
 
 	pg_leave_kernel();
@@ -1206,6 +1212,8 @@ static int pg_check_user(cpu_native_t cr3, addr_t vaddr, size_t size, int rw)
 				mm_free_page(addr);
 				return DE_ADDRESS;
 			}
+
+			task_current()->pg_user_memory += 0x1000;
 
 			p = pg_get_entry(cr3, (const void *)a);
 
