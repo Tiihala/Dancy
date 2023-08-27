@@ -1189,8 +1189,29 @@ static int pg_check_user(cpu_native_t cr3, addr_t vaddr, size_t size, int rw)
 	do {
 		unsigned int *p = pg_get_entry(cr3, (const void *)a);
 
-		if (p == NULL || (*p & 1u) == 0)
-			return DE_ADDRESS;
+		if (p == NULL || (*p & 1u) == 0) {
+			const addr_t stack_min = 0x7FC00000;
+			const addr_t stack_max = 0x7FFFFFFF;
+			phys_addr_t addr;
+
+			if (a < stack_min || a > stack_max)
+				return DE_ADDRESS;
+
+			if ((addr = mm_alloc_page()) == 0)
+				return DE_ADDRESS;
+
+			memset((void *)addr, 0, 0x1000);
+
+			if (pg_map_virtual(cr3, a, addr)) {
+				mm_free_page(addr);
+				return DE_ADDRESS;
+			}
+
+			p = pg_get_entry(cr3, (const void *)a);
+
+			if (p == NULL || (*p & 1u) == 0)
+				return DE_ADDRESS;
+		}
 
 		if ((*p & 4u) == 0)
 			return DE_ACCESS;
