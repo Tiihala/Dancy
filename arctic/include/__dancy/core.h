@@ -88,6 +88,8 @@ typedef struct { void *_t; } __dancy_thrd_t;
 
 void __dancy_assert(const char *expression, const char *name, int line);
 int *__dancy_errno(void);
+
+size_t __dancy_memusage(int flags);
 int __dancy_ull(const char *str, char **end, int base, unsigned long long *r);
 
 long long __dancy_pointer_to_long_long(const void *pointer);
