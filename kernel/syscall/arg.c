@@ -165,8 +165,8 @@ int arg_copy(void *arg_state, addr_t *user_sp)
 	ah->size = 0;
 
 	{
-		addr_t map_base = (addr_t)(base - 0x8000);
-		size_t map_size = (size_t)(size + 0x8000);
+		addr_t map_base = (addr_t)(base - 0x2000);
+		size_t map_size = (size_t)(size + 0x2000);
 
 		if (!pg_map_user(map_base, map_size))
 			return DE_MEMORY;
