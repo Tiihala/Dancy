@@ -133,9 +133,10 @@ int __dancy_internal_fflush(FILE *stream)
 			return (errno = EIO), EOF;
 		}
 
-		if (w > 0)
-			retry_count = INTERNAL_FFLUSH_RETRY_COUNT;
+		if (w <= 0)
+			continue;
 
+		retry_count = INTERNAL_FFLUSH_RETRY_COUNT;
 		stream->_buffer_start = start + (int)w;
 	}
 
