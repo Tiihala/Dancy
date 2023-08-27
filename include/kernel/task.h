@@ -67,6 +67,7 @@ struct task {
 	uint32_t pg_cr3;
 	uint32_t pg_alt_cr3;
 	uint32_t pg_state;
+	cpu_native_t pg_user_memory;
 
 	struct {
 		int lock;
