@@ -1104,6 +1104,53 @@ void *pg_map_user(addr_t vaddr, size_t size)
 	return (void *)vaddr;
 }
 
+int pg_unmap_user(addr_t vaddr, size_t size)
+{
+	const addr_t page_mask = 0x0FFF;
+	addr_t vaddr_beg, vaddr_end;
+	phys_addr_t addr;
+
+	struct task *current = task_current();
+	cpu_native_t cr3 = cpu_read_cr3();
+
+	if ((cr3 & pg_cr3_mask) == pg_kernel)
+		return DE_ARGUMENT;
+
+	if (cr3 != (cpu_native_t)current->cr3)
+		return DE_ARGUMENT;
+
+	if (size == 0 || vaddr < 0x10000000)
+		return DE_ARGUMENT;
+
+	if ((vaddr > (SIZE_MAX - size) + 1))
+		return DE_ARGUMENT;
+
+	vaddr_beg = vaddr & (~page_mask);
+	vaddr_end = ((addr_t)(vaddr + size) + page_mask) & (~page_mask);
+
+	pg_enter_kernel();
+
+	while ((vaddr_end - vaddr_beg) != 0) {
+		cpu_native_t *e = pg_get_entry(cr3, (const void *)vaddr_end);
+
+		vaddr_end -= 0x1000;
+
+		if (e == NULL || (*e & 0x05) != 0x05)
+			continue;
+
+		addr = (phys_addr_t)(*e & (~page_mask));
+		*e = (cpu_native_t)(0);
+
+		mm_free_page(addr);
+
+		task_current()->pg_user_memory -= 0x1000;
+	}
+
+	pg_leave_kernel();
+
+	return 0;
+}
+
 uint64_t pg_read_memory(phys_addr_t addr, size_t size)
 {
 	void *lock_local = &pg_rw_lock;

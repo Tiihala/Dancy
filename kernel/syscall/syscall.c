@@ -784,6 +784,9 @@ static long long dancy_syscall_munmap(va_list va)
 	if ((addr_t)address < 0x80000000 || size == 0)
 		return -EINVAL;
 
+	if (pg_unmap_user((addr_t)address, size))
+		return -EINVAL;
+
 	return 0;
 }
 
