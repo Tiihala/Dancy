@@ -203,6 +203,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 		uint32_t old_page = ptr[offset] & 0xFFFFF000;
 		ptr[offset] = page | page_bits;
 		mm_free_page((phys_addr_t)old_page);
+		task_current()->pg_user_memory -= 0x1000;
 	}
 
 	return 0;
@@ -573,6 +574,7 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 		uint64_t old_page = ptr[offset] & 0xFFFFFFFFFFFFF000ull;
 		ptr[offset] = page | page_bits;
 		mm_free_page((phys_addr_t)old_page);
+		task_current()->pg_user_memory -= 0x1000;
 	}
 
 	return 0;
@@ -1088,15 +1090,15 @@ void *pg_map_user(addr_t vaddr, size_t size)
 		}
 
 		memset((void *)addr, 0, 0x1000);
+		current->pg_user_memory += 0x1000;
 		vaddr_end -= 0x1000;
 
 		if (pg_map_virtual(cr3, vaddr_end, addr)) {
 			mm_free_page(addr);
+			current->pg_user_memory -= 0x1000;
 			vaddr = 0;
 			break;
 		}
-
-		task_current()->pg_user_memory += 0x1000;
 	}
 
 	pg_leave_kernel();
@@ -1142,8 +1144,7 @@ int pg_unmap_user(addr_t vaddr, size_t size)
 		*e = (cpu_native_t)(0);
 
 		mm_free_page(addr);
-
-		task_current()->pg_user_memory -= 0x1000;
+		current->pg_user_memory -= 0x1000;
 	}
 
 	pg_leave_kernel();
@@ -1254,13 +1255,13 @@ static int pg_check_user(cpu_native_t cr3, addr_t vaddr, size_t size, int rw)
 				return DE_ADDRESS;
 
 			memset((void *)addr, 0, 0x1000);
+			task_current()->pg_user_memory += 0x1000;
 
 			if (pg_map_virtual(cr3, a, addr)) {
 				mm_free_page(addr);
+				task_current()->pg_user_memory -= 0x1000;
 				return DE_ADDRESS;
 			}
-
-			task_current()->pg_user_memory += 0x1000;
 
 			p = pg_get_entry(cr3, (const void *)a);
 
