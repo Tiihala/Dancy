@@ -958,7 +958,7 @@ int file_poll(struct pollfd fds[], int nfds, int timeout, int *retval)
 		if (detect_interrupt(0))
 			return (*retval = 0), DE_INTERRUPT;
 
-		task_yield();
+		cpu_halt(1);
 
 	} while (timeout < 0 || timer_read() < end);
 
