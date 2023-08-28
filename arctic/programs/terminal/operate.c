@@ -171,6 +171,7 @@ int operate(struct options *opt)
 {
 	const char *exe_path = opt->operands[0];
 	struct termios termios;
+	char pty_name[128];
 	int r = 0;
 	pid_t pid;
 
@@ -188,7 +189,7 @@ int operate(struct options *opt)
 
 	select_keymap();
 
-	if (openpty(&fd_amaster, &fd_aslave, NULL, NULL, NULL)) {
+	if (openpty(&fd_amaster, &fd_aslave, &pty_name[0], NULL, NULL)) {
 		perror("openpty");
 		close(fd_keyboard);
 		return EXIT_FAILURE;
@@ -198,15 +199,20 @@ int operate(struct options *opt)
 		tcsetattr(fd_amaster, TCSANOW, &termios);
 
 	if (exe_path) {
+		const char *p = &pty_name[0];
 		posix_spawn_file_actions_t actions;
 		posix_spawnattr_t attr;
 
 		posix_spawn_file_actions_init(&actions);
 		posix_spawnattr_init(&attr);
 
-		posix_spawn_file_actions_adddup2(&actions, fd_aslave, 0);
-		posix_spawn_file_actions_adddup2(&actions, fd_aslave, 1);
-		posix_spawn_file_actions_adddup2(&actions, fd_aslave, 2);
+		posix_spawn_file_actions_addclose(&actions, fd_keyboard);
+		posix_spawn_file_actions_addclose(&actions, fd_amaster);
+		posix_spawn_file_actions_addclose(&actions, fd_aslave);
+
+		posix_spawn_file_actions_addopen(&actions, 0, p, O_RDONLY, 0);
+		posix_spawn_file_actions_addopen(&actions, 1, p, O_WRONLY, 0);
+		posix_spawn_file_actions_addopen(&actions, 2, p, O_WRONLY, 0);
 
 		posix_spawnattr_setflags(&attr, POSIX_SPAWN_SETSID);
 
