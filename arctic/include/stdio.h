@@ -91,6 +91,9 @@ void __dancy_stdio_init(void);
 void __dancy_stdio_fini(void);
 int __dancy_internal_fflush(FILE *stream);
 
+int __dancy_scanf(int (*get)(void *), int (*unget)(int, void *), void *stream,
+	const char *format, va_list arg);
+
 FILE *fopen(const char *path, const char *mode);
 FILE *freopen(const char *path, const char *mode, FILE *stream);
 
