@@ -168,10 +168,6 @@
     ./arctic/libc/misc/memusage.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/misc/memusage.c
 
-./o32/arctic/libc/misc/ull.o: \
-    ./arctic/libc/misc/ull.c $(DANCY_DEPS)
-	$(ARCTIC_O32)$@ ./arctic/libc/misc/ull.c
-
 ./o32/arctic/libc/poll/poll.o: \
     ./arctic/libc/poll/poll.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/poll/poll.c
@@ -399,6 +395,10 @@
 ./o32/arctic/libc/stdio/vsprintf.o: \
     ./arctic/libc/stdio/vsprintf.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/vsprintf.c
+
+./o32/arctic/libc/stdlib/_ull.o: \
+    ./arctic/libc/stdlib/_ull.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/_ull.c
 
 ./o32/arctic/libc/stdlib/abort.o: \
     ./arctic/libc/stdlib/abort.c $(DANCY_DEPS)
@@ -1342,10 +1342,6 @@
     ./arctic/libc/misc/memusage.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/misc/memusage.c
 
-./o64/arctic/libc/misc/ull.o: \
-    ./arctic/libc/misc/ull.c $(DANCY_DEPS)
-	$(ARCTIC_O64)$@ ./arctic/libc/misc/ull.c
-
 ./o64/arctic/libc/poll/poll.o: \
     ./arctic/libc/poll/poll.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/poll/poll.c
@@ -1573,6 +1569,10 @@
 ./o64/arctic/libc/stdio/vsprintf.o: \
     ./arctic/libc/stdio/vsprintf.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/vsprintf.c
+
+./o64/arctic/libc/stdlib/_ull.o: \
+    ./arctic/libc/stdlib/_ull.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/_ull.c
 
 ./o64/arctic/libc/stdlib/abort.o: \
     ./arctic/libc/stdlib/abort.c $(DANCY_DEPS)

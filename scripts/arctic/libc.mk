@@ -42,7 +42,6 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/keymap/fi.o \
  ./o32/arctic/libc/misc/__main.o \
  ./o32/arctic/libc/misc/memusage.o \
- ./o32/arctic/libc/misc/ull.o \
  ./o32/arctic/libc/poll/poll.o \
  ./o32/arctic/libc/pty/openpty.o \
  ./o32/arctic/libc/signal/kill.o \
@@ -100,6 +99,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdio/ungetc.o \
  ./o32/arctic/libc/stdio/vfprintf.o \
  ./o32/arctic/libc/stdio/vsprintf.o \
+ ./o32/arctic/libc/stdlib/_ull.o \
  ./o32/arctic/libc/stdlib/abort.o \
  ./o32/arctic/libc/stdlib/abs.o \
  ./o32/arctic/libc/stdlib/alloc.o \
@@ -217,7 +217,6 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/keymap/fi.o \
  ./o64/arctic/libc/misc/__main.o \
  ./o64/arctic/libc/misc/memusage.o \
- ./o64/arctic/libc/misc/ull.o \
  ./o64/arctic/libc/poll/poll.o \
  ./o64/arctic/libc/pty/openpty.o \
  ./o64/arctic/libc/signal/kill.o \
@@ -275,6 +274,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdio/ungetc.o \
  ./o64/arctic/libc/stdio/vfprintf.o \
  ./o64/arctic/libc/stdio/vsprintf.o \
+ ./o64/arctic/libc/stdlib/_ull.o \
  ./o64/arctic/libc/stdlib/abort.o \
  ./o64/arctic/libc/stdlib/abs.o \
  ./o64/arctic/libc/stdlib/alloc.o \
