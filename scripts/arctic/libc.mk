@@ -93,6 +93,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdio/remove.o \
  ./o32/arctic/libc/stdio/rename.o \
  ./o32/arctic/libc/stdio/rewind.o \
+ ./o32/arctic/libc/stdio/scanf.o \
  ./o32/arctic/libc/stdio/setbuf.o \
  ./o32/arctic/libc/stdio/setvbuf.o \
  ./o32/arctic/libc/stdio/snprintf.o \
@@ -269,6 +270,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdio/remove.o \
  ./o64/arctic/libc/stdio/rename.o \
  ./o64/arctic/libc/stdio/rewind.o \
+ ./o64/arctic/libc/stdio/scanf.o \
  ./o64/arctic/libc/stdio/setbuf.o \
  ./o64/arctic/libc/stdio/setvbuf.o \
  ./o64/arctic/libc/stdio/snprintf.o \

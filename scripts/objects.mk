@@ -372,6 +372,10 @@
     ./arctic/libc/stdio/rewind.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/rewind.c
 
+./o32/arctic/libc/stdio/scanf.o: \
+    ./arctic/libc/stdio/scanf.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/scanf.c
+
 ./o32/arctic/libc/stdio/setbuf.o: \
     ./arctic/libc/stdio/setbuf.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/setbuf.c
@@ -1549,6 +1553,10 @@
 ./o64/arctic/libc/stdio/rewind.o: \
     ./arctic/libc/stdio/rewind.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/rewind.c
+
+./o64/arctic/libc/stdio/scanf.o: \
+    ./arctic/libc/stdio/scanf.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/scanf.c
 
 ./o64/arctic/libc/stdio/setbuf.o: \
     ./arctic/libc/stdio/setbuf.c $(DANCY_DEPS)

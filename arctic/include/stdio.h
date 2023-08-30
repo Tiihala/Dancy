@@ -150,6 +150,8 @@ int fsetpos(FILE *stream, const fpos_t *pos);
 void rewind(FILE *stream);
 int ungetc(int c, FILE *stream);
 
+int scanf(const char *format, ...);
+
 __Dancy_Header_End
 
 #endif
