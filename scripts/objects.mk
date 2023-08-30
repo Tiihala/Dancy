@@ -392,6 +392,10 @@
     ./arctic/libc/stdio/sprintf.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/sprintf.c
 
+./o32/arctic/libc/stdio/sscanf.o: \
+    ./arctic/libc/stdio/sscanf.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/sscanf.c
+
 ./o32/arctic/libc/stdio/ungetc.o: \
     ./arctic/libc/stdio/ungetc.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/ungetc.c
@@ -1573,6 +1577,10 @@
 ./o64/arctic/libc/stdio/sprintf.o: \
     ./arctic/libc/stdio/sprintf.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/sprintf.c
+
+./o64/arctic/libc/stdio/sscanf.o: \
+    ./arctic/libc/stdio/sscanf.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/sscanf.c
 
 ./o64/arctic/libc/stdio/ungetc.o: \
     ./arctic/libc/stdio/ungetc.c $(DANCY_DEPS)
