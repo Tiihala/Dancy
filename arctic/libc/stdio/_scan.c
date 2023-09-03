@@ -88,12 +88,13 @@ static int get_format(const char *format, size_t *offset)
 	return (space) ? ' ' : EOF;
 }
 
-static void get_number(struct scan_stream *scan,
+static int get_number(struct scan_stream *scan,
 	char buffer[32], size_t field_width, int base)
 {
 	int c_min[3] = { '0', '0', '0' };
 	int c_max[3] = { '9', '9', '9' };
 	size_t width = 0;
+	int r = 0;
 	int i, j, c;
 
 	buffer[0] = '\0';
@@ -105,10 +106,10 @@ static void get_number(struct scan_stream *scan,
 		int status = 0;
 
 		if (width >= field_width)
-			return;
+			return r;
 
 		if ((c = call_get(scan)) == EOF)
-			return;
+			return r;
 
 		width += 1;
 
@@ -135,11 +136,11 @@ static void get_number(struct scan_stream *scan,
 					c_max[2] = '7';
 
 					if (width >= field_width)
-						return;
+						return r;
 
 					c = call_get(scan);
 					if (c == EOF)
-						return;
+						return r;
 
 					width += 1;
 
@@ -153,11 +154,11 @@ static void get_number(struct scan_stream *scan,
 						c_max[2] = 'F';
 
 						if (width >= field_width)
-							return;
+							return r;
 
 						c = call_get(scan);
 						if (c == EOF)
-							return;
+							return r;
 
 						width += 1;
 					}
@@ -192,14 +193,17 @@ static void get_number(struct scan_stream *scan,
 
 		if (status == 0) {
 			call_unget(c, scan);
-			return;
+			return r;
 		}
 
 		if (i < 28) {
 			buffer[i + 0] = (char)c;
 			buffer[i + 1] = '\0';
+			r += 1;
 		}
 	}
+
+	return r;
 }
 
 static void write_signed(int length, void *p, long long value)
@@ -380,7 +384,8 @@ int __dancy_scanf(int (*get)(void *), int (*unget)(int, void *), void *stream,
 			long long value;
 			char buffer[32];
 
-			get_number(scan, buffer, field_width, 10);
+			if (!get_number(scan, buffer, field_width, 10))
+				return r;
 			value = strtoll(&buffer[0], NULL, 10);
 
 			if (!assignment_suppressing) {
@@ -393,7 +398,8 @@ int __dancy_scanf(int (*get)(void *), int (*unget)(int, void *), void *stream,
 			long long value;
 			char buffer[32];
 
-			get_number(scan, buffer, field_width, 0);
+			if (!get_number(scan, buffer, field_width, 0))
+				return r;
 			value = strtoll(&buffer[0], NULL, 0);
 
 			if (!assignment_suppressing) {
@@ -406,7 +412,8 @@ int __dancy_scanf(int (*get)(void *), int (*unget)(int, void *), void *stream,
 			long long value;
 			char buffer[32];
 
-			get_number(scan, buffer, field_width, 8);
+			if (!get_number(scan, buffer, field_width, 8))
+				return r;
 			value = strtoll(&buffer[0], NULL, 8);
 
 			if (!assignment_suppressing) {
@@ -419,7 +426,8 @@ int __dancy_scanf(int (*get)(void *), int (*unget)(int, void *), void *stream,
 			unsigned long long value;
 			char buffer[32];
 
-			get_number(scan, buffer, field_width, 10);
+			if (!get_number(scan, buffer, field_width, 10))
+				return r;
 			value = strtoull(&buffer[0], NULL, 10);
 
 			if (!assignment_suppressing) {
@@ -432,7 +440,8 @@ int __dancy_scanf(int (*get)(void *), int (*unget)(int, void *), void *stream,
 			unsigned long long value;
 			char buffer[32];
 
-			get_number(scan, buffer, field_width, 16);
+			if (!get_number(scan, buffer, field_width, 16))
+				return r;
 			value = strtoull(&buffer[0], NULL, 16);
 
 			if (!assignment_suppressing) {
@@ -457,7 +466,7 @@ int __dancy_scanf(int (*get)(void *), int (*unget)(int, void *), void *stream,
 					break;
 			}
 
-			for (;;) {
+			while (c != EOF) {
 				if (field_width && width >= field_width)
 					break;
 
@@ -483,9 +492,9 @@ int __dancy_scanf(int (*get)(void *), int (*unget)(int, void *), void *stream,
 
 		} else {
 			/*
-			 * An unsupported conversion specifier.
+			 * An unknown conversion specifier.
 			 */
-			const char *e = "__dancy_scan: unsupported specifier";
+			const char *e = "__dancy_scanf: unknown specifier";
 			fprintf(stderr, "%s \"%c\"\n", e, fc);
 			exit(EXIT_FAILURE);
 		}
