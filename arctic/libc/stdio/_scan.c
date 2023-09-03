@@ -135,6 +135,10 @@ static int get_number(struct scan_stream *scan,
 					c_max[1] = '7';
 					c_max[2] = '7';
 
+					buffer[i + 0] = (char)c;
+					buffer[i + 1] = '\0';
+					i += 1, r += 1;
+
 					if (width >= field_width)
 						return r;
 
@@ -152,6 +156,10 @@ static int get_number(struct scan_stream *scan,
 						c_max[0] = '9',
 						c_max[1] = 'f';
 						c_max[2] = 'F';
+
+						buffer[i + 0] = (char)c;
+						buffer[i + 1] = '\0';
+						i += 1, r += 1;
 
 						if (width >= field_width)
 							return r;
