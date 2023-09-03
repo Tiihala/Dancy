@@ -151,6 +151,7 @@ void rewind(FILE *stream);
 int ungetc(int c, FILE *stream);
 
 int scanf(const char *format, ...);
+int fscanf(FILE *stream, const char *format, ...);
 int sscanf(const char *s, const char *format, ...);
 
 __Dancy_Header_End

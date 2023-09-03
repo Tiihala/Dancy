@@ -308,6 +308,10 @@
     ./arctic/libc/stdio/freopen.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/freopen.c
 
+./o32/arctic/libc/stdio/fscanf.o: \
+    ./arctic/libc/stdio/fscanf.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fscanf.c
+
 ./o32/arctic/libc/stdio/fseek.o: \
     ./arctic/libc/stdio/fseek.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fseek.c
@@ -1493,6 +1497,10 @@
 ./o64/arctic/libc/stdio/freopen.o: \
     ./arctic/libc/stdio/freopen.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/freopen.c
+
+./o64/arctic/libc/stdio/fscanf.o: \
+    ./arctic/libc/stdio/fscanf.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/fscanf.c
 
 ./o64/arctic/libc/stdio/fseek.o: \
     ./arctic/libc/stdio/fseek.c $(DANCY_DEPS)

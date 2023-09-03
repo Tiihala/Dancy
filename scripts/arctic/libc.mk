@@ -77,6 +77,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdio/fputs.o \
  ./o32/arctic/libc/stdio/fread.o \
  ./o32/arctic/libc/stdio/freopen.o \
+ ./o32/arctic/libc/stdio/fscanf.o \
  ./o32/arctic/libc/stdio/fseek.o \
  ./o32/arctic/libc/stdio/fseeko.o \
  ./o32/arctic/libc/stdio/fsetpos.o \
@@ -255,6 +256,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdio/fputs.o \
  ./o64/arctic/libc/stdio/fread.o \
  ./o64/arctic/libc/stdio/freopen.o \
+ ./o64/arctic/libc/stdio/fscanf.o \
  ./o64/arctic/libc/stdio/fseek.o \
  ./o64/arctic/libc/stdio/fseeko.o \
  ./o64/arctic/libc/stdio/fsetpos.o \
