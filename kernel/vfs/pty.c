@@ -910,6 +910,22 @@ int pty_create(struct vfs_node *nodes[2], char name[16],
 			r = DE_FULL;
 	}
 
+	if (r == 0) {
+		struct vfs_node *new_node = NULL;
+		char new_name[16];
+
+		snprintf(&new_name[0], 16, "/dev/pts/%d", shared_data->pty_i);
+
+		if (vfs_open(&new_name[0], &new_node, 0, 0) != 0)
+			kernel->panic("pty_create: unexpected open error");
+
+		if (new_node != secondary_node)
+			kernel->panic("pty_create: unexpected node pointer");
+
+		if (vfs_decrement_count(secondary_node) < 1)
+			kernel->panic("pty_create: unexpected node count");
+	}
+
 	if (r != 0) {
 		free(main_node), free(secondary_node);
 		event_delete(shared_data->buffer[0].event);
