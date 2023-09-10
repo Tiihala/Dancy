@@ -32,6 +32,8 @@ __Dancy_Header_Begin
 typedef __dancy_pid_t pid_t;
 #endif
 
+void __dancy_time(time_t timer, struct tm *result);
+
 time_t time(time_t *tloc);
 
 clock_t clock(void);

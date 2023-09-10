@@ -632,6 +632,10 @@
     ./arctic/libc/threads/mtx.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/threads/mtx.c
 
+./o32/arctic/libc/time/_time.o: \
+    ./arctic/libc/time/_time.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/time/_time.c
+
 ./o32/arctic/libc/time/clock.o: \
     ./arctic/libc/time/clock.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/time/clock.c
@@ -1833,6 +1837,10 @@
 ./o64/arctic/libc/threads/mtx.o: \
     ./arctic/libc/threads/mtx.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/threads/mtx.c
+
+./o64/arctic/libc/time/_time.o: \
+    ./arctic/libc/time/_time.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/time/_time.c
 
 ./o64/arctic/libc/time/clock.o: \
     ./arctic/libc/time/clock.c $(DANCY_DEPS)
