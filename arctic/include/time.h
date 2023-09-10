@@ -47,6 +47,7 @@ int clock_nanosleep(clockid_t id, int flags,
 	const struct timespec *request, struct timespec *remain);
 
 struct tm *gmtime(const time_t *timer);
+struct tm *localtime(const time_t *timer);
 
 __Dancy_Header_End
 
