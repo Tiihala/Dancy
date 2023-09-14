@@ -163,6 +163,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/time/gettime.o \
  ./o32/arctic/libc/time/gmtime.o \
  ./o32/arctic/libc/time/local.o \
+ ./o32/arctic/libc/time/mktime.o \
  ./o32/arctic/libc/time/settime.o \
  ./o32/arctic/libc/time/sleep.o \
  ./o32/arctic/libc/time/time.o \
@@ -348,6 +349,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/time/gettime.o \
  ./o64/arctic/libc/time/gmtime.o \
  ./o64/arctic/libc/time/local.o \
+ ./o64/arctic/libc/time/mktime.o \
  ./o64/arctic/libc/time/settime.o \
  ./o64/arctic/libc/time/sleep.o \
  ./o64/arctic/libc/time/time.o \

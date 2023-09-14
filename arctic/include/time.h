@@ -35,6 +35,7 @@ typedef __dancy_pid_t pid_t;
 void __dancy_time(time_t timer, struct tm *result);
 
 time_t time(time_t *tloc);
+time_t mktime(struct tm *timeptr);
 
 clock_t clock(void);
 int clock_getcpuclockid(pid_t pid, clockid_t *id);
