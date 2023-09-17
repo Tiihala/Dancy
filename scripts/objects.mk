@@ -664,6 +664,10 @@
     ./arctic/libc/time/sleep.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/time/sleep.c
 
+./o32/arctic/libc/time/strftime.o: \
+    ./arctic/libc/time/strftime.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/time/strftime.c
+
 ./o32/arctic/libc/time/time.o: \
     ./arctic/libc/time/time.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/time/time.c
@@ -1881,6 +1885,10 @@
 ./o64/arctic/libc/time/sleep.o: \
     ./arctic/libc/time/sleep.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/time/sleep.c
+
+./o64/arctic/libc/time/strftime.o: \
+    ./arctic/libc/time/strftime.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/time/strftime.c
 
 ./o64/arctic/libc/time/time.o: \
     ./arctic/libc/time/time.c $(DANCY_DEPS)
