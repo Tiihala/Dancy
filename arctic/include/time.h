@@ -54,6 +54,7 @@ struct tm *gmtime(const time_t *timer);
 struct tm *localtime(const time_t *timer);
 
 char *asctime(const struct tm *timeptr);
+char *ctime(const time_t *timer);
 
 __Dancy_Header_End
 
