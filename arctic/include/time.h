@@ -55,6 +55,7 @@ struct tm *localtime(const time_t *timer);
 
 char *asctime(const struct tm *timeptr);
 char *ctime(const time_t *timer);
+double difftime(time_t time1, time_t time0);
 
 __Dancy_Header_End
 
