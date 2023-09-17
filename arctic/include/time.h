@@ -53,6 +53,8 @@ size_t strftime(char *s, size_t size,
 struct tm *gmtime(const time_t *timer);
 struct tm *localtime(const time_t *timer);
 
+char *asctime(const struct tm *timeptr);
+
 __Dancy_Header_End
 
 #endif
