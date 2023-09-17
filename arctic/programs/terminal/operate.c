@@ -53,6 +53,9 @@ static void handle_key(int key)
 		return;
 
 	switch (key & 0xFF) {
+		case __DANCY_KEY_ENTER:
+			command = "\r";
+			break;
 		case __DANCY_KEY_ESCAPE:
 			command = "\033";
 			break;
