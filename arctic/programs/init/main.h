@@ -22,6 +22,7 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <spawn.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>

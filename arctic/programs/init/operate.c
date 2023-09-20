@@ -31,5 +31,12 @@ int operate(struct options *opt)
 		return EXIT_FAILURE;
 	}
 
+	{
+		const char *a[] = { "/bin/terminal", "/bin/dsh", NULL };
+		pid_t pid;
+
+		posix_spawn(&pid, a[0], NULL, NULL, (char **)a, NULL);
+	}
+
 	return 0;
 }
