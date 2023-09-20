@@ -30,20 +30,6 @@ static void select_keymap(void)
 	keymap = __dancy_keymaps[0];
 }
 
-static void handle_input(unsigned char *buffer, size_t size)
-{
-	size_t i;
-
-	for (i = 0; i < size; i++) {
-		int c = (int)buffer[i];
-
-		if (c == '\0')
-			continue;
-
-		write(STDOUT_FILENO, &buffer[i], 1);
-	}
-}
-
 static void handle_key(int key)
 {
 	const char *command = NULL;
@@ -270,7 +256,7 @@ int operate(struct options *opt)
 
 			if (size > 0) {
 				buffer[size++] = 0x00;
-				handle_input(&buffer[0], (size_t)size);
+				write(1, &buffer[0], (size_t)size);
 			}
 		}
 	}
