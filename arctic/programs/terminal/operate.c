@@ -241,11 +241,17 @@ int operate(struct options *opt)
 		}
 
 		if ((fds[0].revents & POLLIN) != 0) {
-			int key;
-			size_t size = sizeof(key);
+			int buffer[128];
+			ssize_t size = (ssize_t)sizeof(buffer);
 
-			if (read(fd_keyboard, &key, size) == (ssize_t)size)
-				handle_key(key);
+			size = read(fd_keyboard, &buffer[0], (size_t)size);
+
+			if (size > 0) {
+				int i, count = (int)size / (int)sizeof(int);
+
+				for (i = 0; i < count; i++)
+					handle_key(buffer[i]);
+			}
 		}
 
 		if ((fds[1].revents & POLLIN) != 0) {
