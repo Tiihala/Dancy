@@ -126,6 +126,7 @@ static int task_caretaker(void *arg)
 {
 	void *lock_local = &task_lock;
 
+	task_current()->sched.priority = sched_priority_low;
 	task_set_cmdline(task_current(), NULL, "[caretaker]");
 
 	while (arg == NULL) {
