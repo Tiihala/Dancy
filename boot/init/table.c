@@ -174,7 +174,7 @@ void table_init(void)
 		if (width < 8 || width > (unsigned)glyph_em)
 			panic("Glyph: unexpected glyph width");
 
-		kernel->glyph_count = 4;
+		kernel->glyph_count = 5;
 		kernel->glyph_width = (int)width;
 		kernel->glyph_height = glyph_em;
 
@@ -287,6 +287,35 @@ void table_init(void)
 		data = kernel->glyph[3].data;
 
 		for (i = 0; i < (size_t)kernel->glyph[3].unicode_count; i++) {
+			unsigned char *ptr = &ttf_bitmap[0];
+			int x, y;
+
+			if (ttf_render(ttf_kernel, code_point++, &width))
+				panic("Glyph: rendering error");
+
+			data += (extra_height * kernel->glyph_width);
+
+			for (y = 0; y < glyph_em; y++) {
+				for (x = 0; x < kernel->glyph_width; x++)
+					*data++ = ptr[x];
+				ptr += glyph_em;
+			}
+		}
+
+		/*
+		 * Unicode range from 0x2500 to 0x257F.
+		 */
+		kernel->glyph[4].unicode_count = 128;
+		kernel->glyph[4].unicode = 0x2500;
+
+		size = (size_t)kernel->glyph[4].unicode_count;
+		size *= (size_t)(kernel->glyph_width * kernel->glyph_height);
+		kernel->glyph[4].data = table_alloc(size);
+
+		code_point = (unsigned)kernel->glyph[4].unicode;
+		data = kernel->glyph[4].data;
+
+		for (i = 0; i < (size_t)kernel->glyph[4].unicode_count; i++) {
 			unsigned char *ptr = &ttf_bitmap[0];
 			int x, y;
 
