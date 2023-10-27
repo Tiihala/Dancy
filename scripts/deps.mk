@@ -28,6 +28,7 @@ DANCY_HEADERS= \
  ./arctic/include/dirent.h \
  ./arctic/include/errno.h \
  ./arctic/include/fcntl.h \
+ ./arctic/include/locale.h \
  ./arctic/include/poll.h \
  ./arctic/include/pty.h \
  ./arctic/include/signal.h \

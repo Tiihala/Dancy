@@ -28,6 +28,7 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/dirent.h \
  ./arctic/include/errno.h \
  ./arctic/include/fcntl.h \
+ ./arctic/include/locale.h \
  ./arctic/include/poll.h \
  ./arctic/include/pty.h \
  ./arctic/include/signal.h \
@@ -128,6 +129,9 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/fcntl.h \
 		::include/fcntl.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/locale.h \
+		::include/locale.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/poll.h \
 		::include/poll.h
