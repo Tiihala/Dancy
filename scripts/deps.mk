@@ -24,18 +24,24 @@ DANCY_HEADERS= \
  ./arctic/include/__dancy/tm.h \
  ./arctic/include/__dancy/undef.h \
  ./arctic/include/assert.h \
+ ./arctic/include/complex.h \
  ./arctic/include/ctype.h \
  ./arctic/include/dirent.h \
  ./arctic/include/errno.h \
  ./arctic/include/fcntl.h \
+ ./arctic/include/fenv.h \
+ ./arctic/include/inttypes.h \
  ./arctic/include/locale.h \
+ ./arctic/include/math.h \
  ./arctic/include/poll.h \
  ./arctic/include/pty.h \
+ ./arctic/include/setjmp.h \
  ./arctic/include/signal.h \
  ./arctic/include/spawn.h \
  ./arctic/include/stdio.h \
  ./arctic/include/stdlib.h \
  ./arctic/include/string.h \
+ ./arctic/include/strings.h \
  ./arctic/include/sys/ioctl.h \
  ./arctic/include/sys/mman.h \
  ./arctic/include/sys/select.h \
@@ -43,9 +49,12 @@ DANCY_HEADERS= \
  ./arctic/include/sys/types.h \
  ./arctic/include/sys/wait.h \
  ./arctic/include/termios.h \
+ ./arctic/include/tgmath.h \
  ./arctic/include/threads.h \
  ./arctic/include/time.h \
  ./arctic/include/unistd.h \
+ ./arctic/include/wchar.h \
+ ./arctic/include/wctype.h \
  ./include/boot/init.h \
  ./include/boot/loader.h \
  ./include/boot/uefi.h \

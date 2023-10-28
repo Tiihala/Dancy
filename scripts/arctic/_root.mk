@@ -24,18 +24,24 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/__dancy/tm.h \
  ./arctic/include/__dancy/undef.h \
  ./arctic/include/assert.h \
+ ./arctic/include/complex.h \
  ./arctic/include/ctype.h \
  ./arctic/include/dirent.h \
  ./arctic/include/errno.h \
  ./arctic/include/fcntl.h \
+ ./arctic/include/fenv.h \
+ ./arctic/include/inttypes.h \
  ./arctic/include/locale.h \
+ ./arctic/include/math.h \
  ./arctic/include/poll.h \
  ./arctic/include/pty.h \
+ ./arctic/include/setjmp.h \
  ./arctic/include/signal.h \
  ./arctic/include/spawn.h \
  ./arctic/include/stdio.h \
  ./arctic/include/stdlib.h \
  ./arctic/include/string.h \
+ ./arctic/include/strings.h \
  ./arctic/include/sys/ioctl.h \
  ./arctic/include/sys/mman.h \
  ./arctic/include/sys/select.h \
@@ -43,9 +49,12 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/sys/types.h \
  ./arctic/include/sys/wait.h \
  ./arctic/include/termios.h \
+ ./arctic/include/tgmath.h \
  ./arctic/include/threads.h \
  ./arctic/include/time.h \
  ./arctic/include/unistd.h \
+ ./arctic/include/wchar.h \
+ ./arctic/include/wctype.h \
  ./share/fonts/dcysan.ttf \
  ./share/fonts/dcysanb.ttf \
  ./share/fonts/dcysanm.ttf \
@@ -118,6 +127,9 @@ ARCTIC_ROOT_FILES= \
 		./arctic/include/assert.h \
 		::include/assert.h
 	$(DY_MCOPY) -i $@ \
+		./arctic/include/complex.h \
+		::include/complex.h
+	$(DY_MCOPY) -i $@ \
 		./arctic/include/ctype.h \
 		::include/ctype.h
 	$(DY_MCOPY) -i $@ \
@@ -130,14 +142,26 @@ ARCTIC_ROOT_FILES= \
 		./arctic/include/fcntl.h \
 		::include/fcntl.h
 	$(DY_MCOPY) -i $@ \
+		./arctic/include/fenv.h \
+		::include/fenv.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/inttypes.h \
+		::include/inttypes.h
+	$(DY_MCOPY) -i $@ \
 		./arctic/include/locale.h \
 		::include/locale.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/math.h \
+		::include/math.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/poll.h \
 		::include/poll.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/pty.h \
 		::include/pty.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/setjmp.h \
+		::include/setjmp.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/signal.h \
 		::include/signal.h
@@ -153,6 +177,9 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/string.h \
 		::include/string.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/strings.h \
+		::include/strings.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/sys/ioctl.h \
 		::include/sys/ioctl.h
@@ -175,6 +202,9 @@ ARCTIC_ROOT_FILES= \
 		./arctic/include/termios.h \
 		::include/termios.h
 	$(DY_MCOPY) -i $@ \
+		./arctic/include/tgmath.h \
+		::include/tgmath.h
+	$(DY_MCOPY) -i $@ \
 		./arctic/include/threads.h \
 		::include/threads.h
 	$(DY_MCOPY) -i $@ \
@@ -183,6 +213,12 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/unistd.h \
 		::include/unistd.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/wchar.h \
+		::include/wchar.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/wctype.h \
+		::include/wctype.h
 	$(DY_MCOPY) -i $@ \
 		./share/fonts/dcysan.ttf \
 		::share/fonts/dcysan.ttf
