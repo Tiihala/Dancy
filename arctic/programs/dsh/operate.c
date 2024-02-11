@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,48 +23,7 @@ static int state = 1;
 
 static void welcome(void)
 {
-	const char m[] = "\tWelcome to the Dancy Operating System!\n\n";
-	write(1, &m[0], sizeof(m));
-}
-
-static int demonstration(void)
-{
-	static unsigned char buffer[0x20000];
-	ssize_t size[2];
-
-	size[0] = read(0, &buffer[0], sizeof(buffer));
-	size[1] = 0;
-
-	if (size[0] < 0)
-		return perror("read"), EXIT_FAILURE;
-
-	while (size[0] > 0) {
-		int c = (int)buffer[size[0] - 1];
-
-		if (c != '\r' && c != '\n')
-			break;
-
-		buffer[(size[0] -= 1)] = 0;
-	}
-
-	if (size[0] > 0 && size[0] < (ssize_t)sizeof(buffer)) {
-		buffer[size[0]] = '\n';
-		size[0] += 1;
-	}
-
-	while (size[0] > size[1]) {
-		size_t s = (size_t)(size[0] - size[1]);
-		ssize_t w;
-
-		w = (errno = EIO, write(1, &buffer[size[1]], s));
-
-		if (w <= 0)
-			return perror("write"), EXIT_FAILURE;
-
-		size[1] += w;
-	}
-
-	return 0;
+	fputs("\tWelcome to the Dancy Operating System!\n\n", stdout);
 }
 
 int operate(struct options *opt)
@@ -76,12 +35,15 @@ int operate(struct options *opt)
 		return EXIT_FAILURE;
 	}
 
+	setbuf(stdin, NULL);
+	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
+
 	welcome();
 
 	while (state != 0) {
-		char buffer[256];
+		char buffer[2048];
 		char cwd[256];
-		ssize_t w;
 
 		r = snprintf(&buffer[0], sizeof(buffer),
 			"\033[1;32m[%s]$\033[0m ",
@@ -90,12 +52,12 @@ int operate(struct options *opt)
 		if (r <= 0)
 			return EXIT_FAILURE;
 
-		w = (errno = EIO, write(1, &buffer[0], (size_t)r));
+		fputs(&buffer[0], stdout);
 
-		if (w <= 0)
-			return perror("write"), EXIT_FAILURE;
+		if (dsh_get_input(&buffer[0], sizeof(buffer)))
+			return EXIT_FAILURE;
 
-		demonstration();
+		fprintf(stdout, "\n%s", &buffer[0]);
 	}
 
 	return 0;

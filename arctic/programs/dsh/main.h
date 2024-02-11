@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -37,6 +37,11 @@ struct options {
 };
 
 int operate(struct options *opt);
+
+int dsh_get_input(char *buffer, size_t size);
+
+int dsh_save_termios(void);
+void dsh_restore_termios(void);
 
 #else
 #error "MAIN_CMDNAME"
