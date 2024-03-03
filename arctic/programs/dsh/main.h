@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -38,7 +39,7 @@ struct options {
 
 int operate(struct options *opt);
 
-int dsh_get_input(char *buffer, size_t size);
+char *dsh_get_input(const char *prompt, size_t offset);
 
 int dsh_save_termios(void);
 void dsh_restore_termios(void);

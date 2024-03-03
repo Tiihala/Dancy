@@ -19,20 +19,47 @@
 
 #include "main.h"
 
-int dsh_get_input(char *buffer, size_t size)
+static int ws_col = 80;
+static int ws_row = 25;
+
+static void get_winsize(void)
 {
+	struct winsize ws = { 0, 0, 0, 0 };
+	const unsigned int max = 0x7FFF;
+
+	ioctl(1, TIOCGWINSZ, &ws);
+
+	if (ws.ws_col == 0 || ws.ws_col > max)
+		return;
+
+	if (ws.ws_row == 0 || ws.ws_row > max)
+		return;
+
+	ws_col = ws.ws_col;
+	ws_row = ws.ws_row;
+}
+
+char *dsh_get_input(const char *prompt, size_t offset)
+{
+	const size_t size = 0x2000;
+	char *buffer = malloc(size);
+
+	size_t column = offset;
 	size_t i = 0;
 
-	if (size < 2)
-		return EXIT_FAILURE;
+	int utf8_state = 0;
+	unsigned char u[8];
 
-	buffer[0] = '\0';
+	if (!buffer)
+		return NULL;
+
+	fputs(prompt, stdout);
 
 	dsh_save_termios();
+	get_winsize();
 
 	while (i < size - 2) {
 		int c = getchar();
-		char b[4];
 
 		if (c == EOF || c == '\r' || c == '\n' || (char)c == '\0')
 			break;
@@ -42,9 +69,8 @@ int dsh_get_input(char *buffer, size_t size)
 				c = (int)buffer[--i];
 				buffer[i] = '\0';
 
-				if (c >= 0 && c <= 0x1F)
-					fputs("\x08\x20\x08", stdout);
 				fputs("\x08\x20\x08", stdout);
+				column -= 1;
 
 				while (i > 0 && (c & 0xC0) == 0x80) {
 					c = (int)buffer[--i];
@@ -54,22 +80,31 @@ int dsh_get_input(char *buffer, size_t size)
 			continue;
 		}
 
+		if (column + 2 > (size_t)ws_col)
+			continue;
+
 		buffer[i++] = (char)c;
+		u[utf8_state++] = (unsigned char)c;
+
+		if ((u[0] & 0xE0) == 0xC0 && utf8_state < 2)
+			continue;
+		if ((u[0] & 0xF0) == 0xE0 && utf8_state < 3)
+			continue;
+		if ((u[0] & 0xF8) == 0xF0 && utf8_state < 4)
+			continue;
+
+		u[utf8_state] = 0;
+		utf8_state = 0;
 
 		if (c >= 0 && c <= 0x1F)
-			snprintf(&b[0], sizeof(b), "^%c", '@' + c);
-		else
-			b[0] = (char)c, b[1] = '\0';
+			u[0] = 0xEF, u[1] = 0xB7, u[2] = 0xBF, u[3] = 0x00;
 
-		fputs(&b[0], stdout);
+		fputs((const char *)&u[0], stdout);
+		column += 1;
 	}
 
+	buffer[i] = '\0';
 	dsh_restore_termios();
 
-	if (buffer[0] != '\0') {
-		buffer[i + 0] = '\n';
-		buffer[i + 1] = '\0';
-	}
-
-	return 0;
+	return buffer;
 }

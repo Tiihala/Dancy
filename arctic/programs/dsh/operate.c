@@ -42,22 +42,35 @@ int operate(struct options *opt)
 	welcome();
 
 	while (state != 0) {
-		char buffer[2048];
+		char *buffer;
+		char prompt[2048];
 		char cwd[256];
+		const size_t cwdmax = 32;
+		size_t offset;
 
-		r = snprintf(&buffer[0], sizeof(buffer),
-			"\033[1;32m[%s]$\033[0m ",
-			getcwd(&cwd[0], sizeof(cwd)));
+		if ((errno = 0, getcwd(&cwd[0], sizeof(cwd))) == NULL)
+			return perror("getcwd"), EXIT_FAILURE;
+
+		if ((offset = strlen(&cwd[0])) > cwdmax)
+			offset = cwdmax, strcpy(&cwd[offset - 3], "...");
+
+		offset += 4;
+
+		r = snprintf(&prompt[0], sizeof(prompt),
+			"\033[1;32m[%s]$\033[0m ", &cwd[0]);
 
 		if (r <= 0)
 			return EXIT_FAILURE;
 
-		fputs(&buffer[0], stdout);
+		if ((buffer = dsh_get_input(&prompt[0], offset)) == NULL)
+			break;
 
-		if (dsh_get_input(&buffer[0], sizeof(buffer)))
-			return EXIT_FAILURE;
+		if (buffer[0] != '\0')
+			fprintf(stdout, "\n%s\n", &buffer[0]);
+		else
+			fputs("\n", stdout);
 
-		fprintf(stdout, "\n%s", &buffer[0]);
+		free(buffer);
 	}
 
 	return 0;
