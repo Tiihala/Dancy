@@ -63,7 +63,11 @@ static void fd_clone_func(struct task *task, struct task *new_task)
 	new_task->fd.clone = fd_clone_func;
 
 	if (task->fd.wd_node) {
+		vfs_lock_tree();
+		((struct vfs_node *)task->fd.wd_node)->tree_state += 1;
 		vfs_increment_count(task->fd.wd_node);
+		vfs_unlock_tree();
+
 		new_task->fd.wd_node = task->fd.wd_node;
 
 		vfs_clone_path(task, new_task);
