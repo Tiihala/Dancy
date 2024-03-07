@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022, 2023 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -130,6 +130,41 @@ static struct vfs_node *find_node(struct vfs_node *owner, const char *name)
 	return NULL;
 }
 
+static void set_n_release(struct vfs_node *node)
+{
+	void *lock_local = &node->lock;
+
+	if (node->n_release == n_release)
+		return;
+
+	spin_enter(&lock_local);
+
+	if (node->n_release != n_release) {
+		node->_release = node->n_release;
+		node->n_release = n_release;
+	}
+
+	spin_leave(&lock_local);
+}
+
+static void set_tree_state(struct vfs_node *node)
+{
+	void *lock_local = &node->lock;
+
+	if (node->tree_state > 0)
+		return;
+
+	if (node->n_release != n_release)
+		kernel->panic(unexpected_tree_error);
+
+	spin_enter(&lock_local);
+
+	if (node->tree_state == 0)
+		node->tree_state = 1;
+
+	spin_leave(&lock_local);
+}
+
 int vfs_increment_count(struct vfs_node *node)
 {
 	void *lock_local = &node->lock;
@@ -139,7 +174,11 @@ int vfs_increment_count(struct vfs_node *node)
 
 	if (node->count >= 0 && node->count < INT_MAX)
 		node->count += 1;
+
 	r = node->count;
+
+	if (node->tree_state > 0 && node->tree_state < UINT_MAX)
+		node->tree_state += 1;
 
 	spin_leave(&lock_local);
 
@@ -157,7 +196,11 @@ int vfs_decrement_count(struct vfs_node *node)
 		node->count -= 1;
 	if (node->count < -1)
 		node->count = -1;
+
 	r = node->count;
+
+	if (node->tree_state > 0)
+		node->tree_state -= 1;
 
 	spin_leave(&lock_local);
 
@@ -172,11 +215,7 @@ static void n_release(struct vfs_node **node)
 	*node = NULL;
 
 	vfs_lock_tree();
-
-	if (n->tree_state > 0) {
-		n->tree_state -= 1;
-		vfs_decrement_count(n);
-	}
+	vfs_decrement_count(n);
 
 	if (n->mount_state != 0) {
 		vfs_unlock_tree();
@@ -345,8 +384,8 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 
 		vfs_lock_tree();
 
-		root_node->tree_state += 1;
 		vfs_increment_count(root_node);
+		set_tree_state(root_node);
 
 		vfs_unlock_tree();
 
@@ -376,8 +415,8 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 					break;
 				}
 
-				new_node->tree_state += 1;
 				vfs_increment_count(new_node);
+				set_tree_state(new_node);
 
 				*node = new_node;
 				break;
@@ -408,15 +447,14 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 				break;
 		}
 
-		new_node->_release = new_node->n_release;
-		new_node->n_release = n_release;
+		set_n_release(new_node);
 		strcpy(&new_node->name[0], n);
 
 		add_node(owner, new_node);
 
 		if (last_component) {
-			new_node->tree_state += 1;
 			vfs_increment_count(new_node);
+			set_tree_state(new_node);
 
 			*node = new_node;
 			break;
@@ -553,8 +591,7 @@ int vfs_remove(const char *name, int dir)
 		if ((r = owner->n_open(owner, n, &new_node, 0, 0)) != 0)
 			break;
 
-		new_node->_release = new_node->n_release;
-		new_node->n_release = n_release;
+		set_n_release(new_node);
 		strcpy(&new_node->name[0], n);
 
 		add_node(owner, new_node);
