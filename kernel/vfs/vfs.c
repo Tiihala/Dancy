@@ -147,6 +147,23 @@ static void set_n_release(struct vfs_node *node)
 	spin_leave(&lock_local);
 }
 
+static void unset_n_release(struct vfs_node *node)
+{
+	void *lock_local = &node->lock;
+
+	if (node->n_release != n_release)
+		return;
+
+	spin_enter(&lock_local);
+
+	if (node->n_release == n_release) {
+		node->n_release = node->_release;
+		node->_release = n_release_panic;
+	}
+
+	spin_leave(&lock_local);
+}
+
 static void set_tree_state(struct vfs_node *node)
 {
 	void *lock_local = &node->lock;
@@ -226,7 +243,8 @@ static void n_release(struct vfs_node **node)
 
 	if (n->tree_state == 0 && n->tree[2] == NULL) {
 		remove_leaf_node(n);
-		n->_release(&n);
+		unset_n_release(n);
+		n->n_release(&n);
 	}
 
 	while (owner != root_node) {
@@ -242,7 +260,8 @@ static void n_release(struct vfs_node **node)
 		owner = owner->tree[0];
 
 		remove_leaf_node(unused_node);
-		unused_node->_release(&unused_node);
+		unset_n_release(unused_node);
+		unused_node->n_release(&unused_node);
 	}
 
 	vfs_unlock_tree();
@@ -476,7 +495,8 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 		owner = owner->tree[0];
 
 		remove_leaf_node(unused_node);
-		unused_node->_release(&unused_node);
+		unset_n_release(unused_node);
+		unused_node->n_release(&unused_node);
 	}
 
 	vfs_unlock_tree();
@@ -611,7 +631,8 @@ int vfs_remove(const char *name, int dir)
 		owner = owner->tree[0];
 
 		remove_leaf_node(unused_node);
-		unused_node->_release(&unused_node);
+		unset_n_release(unused_node);
+		unused_node->n_release(&unused_node);
 	}
 
 	vfs_unlock_tree();
