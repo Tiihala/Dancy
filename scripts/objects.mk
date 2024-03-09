@@ -778,6 +778,11 @@
     $(ARCTIC_PROGRAMS_CAT_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/cat/operate.c
 
+./o32/arctic/programs/dsh/argv.o: \
+    ./arctic/programs/dsh/argv.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_DSH_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/dsh/argv.c
+
 ./o32/arctic/programs/dsh/line.o: \
     ./arctic/programs/dsh/line.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_DSH_HEADERS)
@@ -2039,6 +2044,11 @@
     ./arctic/programs/cat/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_CAT_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/cat/operate.c
+
+./o64/arctic/programs/dsh/argv.o: \
+    ./arctic/programs/dsh/argv.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_DSH_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/dsh/argv.c
 
 ./o64/arctic/programs/dsh/line.o: \
     ./arctic/programs/dsh/line.c $(DANCY_DEPS) \

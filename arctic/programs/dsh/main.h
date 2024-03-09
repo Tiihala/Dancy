@@ -40,6 +40,7 @@ struct options {
 
 int operate(struct options *opt);
 
+char **dsh_create_argv(char *buffer);
 char *dsh_get_input(const char *prompt, size_t offset);
 
 int dsh_save_termios(void);

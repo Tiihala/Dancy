@@ -8,6 +8,7 @@ ARCTIC_PROGRAMS_CAT_OBJECTS_32= \
  ./o32/arctic/libc.a \
 
 ARCTIC_PROGRAMS_DSH_OBJECTS_32= \
+ ./o32/arctic/programs/dsh/argv.o \
  ./o32/arctic/programs/dsh/line.o \
  ./o32/arctic/programs/dsh/main.o \
  ./o32/arctic/programs/dsh/operate.o \
@@ -30,6 +31,7 @@ ARCTIC_PROGRAMS_CAT_OBJECTS_64= \
  ./o64/arctic/libc.a \
 
 ARCTIC_PROGRAMS_DSH_OBJECTS_64= \
+ ./o64/arctic/programs/dsh/argv.o \
  ./o64/arctic/programs/dsh/line.o \
  ./o64/arctic/programs/dsh/main.o \
  ./o64/arctic/programs/dsh/operate.o \
