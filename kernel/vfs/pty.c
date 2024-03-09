@@ -463,7 +463,10 @@ static int n_write_main(struct vfs_node *node,
 		int c = (int)(((unsigned char *)buffer)[*size]);
 		int echo = ((c_lflag & __DANCY_TERMIOS_ECHO) != 0);
 
-		shared_data->eof = 0;
+		if (shared_data->eof) {
+			r = (*size == 0) ? DE_RETRY : 0;
+			break;
+		}
 
 		if (c == '\n') {
 			if ((c_iflag & __DANCY_TERMIOS_INLCR) != 0)
