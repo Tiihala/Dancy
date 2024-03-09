@@ -27,33 +27,6 @@ static void welcome(void)
 	fputs("\tWelcome to the Dancy Operating System!\n\n", stdout);
 }
 
-static char **create_argv(char *buffer)
-{
-	size_t size = (strlen(buffer) * sizeof(char *)) + sizeof(char *);
-	char **new_argv = malloc(size);
-	size_t i = 0, j = 0;
-
-	if (!new_argv)
-		return NULL;
-
-	while (buffer[i] != '\0') {
-		while (buffer[i] == ' ')
-			buffer[i++] = '\0';
-
-		if (buffer[i] == '\0')
-			break;
-
-		new_argv[j++] = &buffer[i];
-
-		while (buffer[i] != '\0' && buffer[i] != ' ')
-			i += 1;
-	}
-
-	new_argv[j] = NULL;
-
-	return new_argv;
-}
-
 static int dsh_chdir(char **argv)
 {
 	const char *path = argv[1] ? argv[1] : "";
@@ -116,13 +89,13 @@ static int dsh_echo(char **argv)
 	return 0;
 }
 
-static void dsh_execute_spawn(char **argv)
+static void dsh_execute_spawn(const char *path, char **argv)
 {
 	extern char **environ;
 	pid_t pid, wpid;
 	int r;
 
-	r = posix_spawn(&pid, argv[0], NULL, NULL, argv, environ);
+	r = posix_spawn(&pid, path, NULL, NULL, argv, environ);
 
 	if (r == ENOENT) {
 		fputs("dsh: command not found...\n", stderr);
@@ -157,22 +130,22 @@ static void dsh_execute_spawn(char **argv)
 
 static void dsh_execute(char **argv)
 {
+	const char *path = argv[0];
 	char cmd[512];
 
 	exit_code = 1;
 
-	if (argv[0][0] != '.' && argv[0][0] != '/') {
-		if (strlen(argv[0]) > 255) {
+	if (path[0] != '.' && path[0] != '/') {
+		if (strlen(path) > 255) {
 			fputs("dsh: command not found...\n", stderr);
 			return;
 		}
 		strcpy(&cmd[0], "/bin/");
-		strcat(&cmd[0], argv[0]);
-		argv[0] = &cmd[0];
+		strcat(&cmd[0], path);
+		path = &cmd[0];
 	}
 
-	dsh_execute_spawn(argv);
-	argv[0] = NULL;
+	dsh_execute_spawn(path, argv);
 }
 
 int operate(struct options *opt)
@@ -221,7 +194,7 @@ int operate(struct options *opt)
 		if ((buffer = dsh_get_input(&prompt[0], offset)) == NULL)
 			break;
 
-		if ((new_argv = create_argv(buffer)) == NULL) {
+		if ((new_argv = dsh_create_argv(buffer)) == NULL) {
 			free(buffer);
 			break;
 		}
