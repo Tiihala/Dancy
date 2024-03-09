@@ -567,6 +567,9 @@ static int n_write_main(struct vfs_node *node,
 		*size += 1;
 	}
 
+	if (*size != 0)
+		event_signal(shared_data->buffer[1].event);
+
 	unlock_shared_data(shared_data);
 
 	return r;
@@ -634,6 +637,9 @@ static int n_write_secondary(struct vfs_node *node,
 
 		*size += 1;
 	}
+
+	if (*size != 0)
+		event_signal(shared_data->buffer[0].event);
 
 	unlock_shared_data(shared_data);
 
