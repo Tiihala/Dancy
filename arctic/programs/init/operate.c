@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,6 +21,8 @@
 
 int operate(struct options *opt)
 {
+	int r;
+
 	if (opt->operands[0] != NULL) {
 		opt->error = "operands are not allowed";
 		return EXIT_FAILURE;
@@ -31,11 +33,25 @@ int operate(struct options *opt)
 		return EXIT_FAILURE;
 	}
 
-	{
+	for (;;) {
 		const char *a[] = { "/bin/terminal", "/bin/dsh", NULL };
-		pid_t pid;
+		pid_t new_pid = -1;
+		int status = -1;
 
-		posix_spawn(&pid, a[0], NULL, NULL, (char **)a, NULL);
+		r = posix_spawn(&new_pid, a[0], NULL, NULL, (char **)a, NULL);
+
+		if (r != 0 || new_pid < 0)
+			break;
+
+		for (;;) {
+			pid_t pid = waitpid(-1, &status, 0);
+
+			if (pid == new_pid)
+				break;
+		}
+
+		printf("\033cinit: \'%s\' exited with return code %d\n"
+			"init: restarting the Dancy Shell\n\n", a[0], status);
 	}
 
 	return 0;
