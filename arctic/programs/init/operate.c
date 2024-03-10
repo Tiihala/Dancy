@@ -19,6 +19,19 @@
 
 #include "main.h"
 
+static int check_status(const char *path, int status)
+{
+	const char *begin = "\n\n\033[97m", *end = "\033[0m\n\n";
+
+	const char *s0 = "restarting the Dancy Shell";
+	const char *s1 = "please restart the computer";
+
+	fprintf(stderr, "%sinit: \'%s\' exited with code %d\ninit: %s%s\n",
+		begin, path, status, (status == 0) ? s0 : s1, end);
+
+	return status;
+}
+
 int operate(struct options *opt)
 {
 	int r;
@@ -34,11 +47,12 @@ int operate(struct options *opt)
 	}
 
 	for (;;) {
-		const char *a[] = { "/bin/terminal", "/bin/dsh", NULL };
+		const char *path = "/bin/terminal";
+		const char *a[] = { path, "/bin/dsh", NULL };
 		pid_t new_pid = -1;
 		int status = -1;
 
-		r = posix_spawn(&new_pid, a[0], NULL, NULL, (char **)a, NULL);
+		r = posix_spawn(&new_pid, path, NULL, NULL, (char **)a, NULL);
 
 		if (r != 0 || new_pid < 0)
 			break;
@@ -50,8 +64,8 @@ int operate(struct options *opt)
 				break;
 		}
 
-		printf("\033cinit: \'%s\' exited with return code %d\n"
-			"init: restarting the Dancy Shell\n\n", a[0], status);
+		if (check_status(path, status))
+			break;
 	}
 
 	return 0;
