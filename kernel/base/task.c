@@ -934,7 +934,7 @@ static int task_wait_descendant_shared(uint64_t *id, uint64_t id_group,
 				break;
 			}
 
-			d0 = (uint64_t)((addr_t)t);
+			d0 = (uint64_t)((addr_t)current);
 			d1 = (uint64_t)timer_ticks;
 			task_write_event(task_wait_descendant_func, d0, d1);
 
