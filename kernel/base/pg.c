@@ -1133,9 +1133,9 @@ int pg_unmap_user(addr_t vaddr, size_t size)
 	pg_enter_kernel();
 
 	while ((vaddr_end - vaddr_beg) != 0) {
-		cpu_native_t *e = pg_get_entry(cr3, (const void *)vaddr_end);
+		cpu_native_t *e = pg_get_entry(cr3, (const void *)vaddr_beg);
 
-		vaddr_end -= 0x1000;
+		vaddr_beg += 0x1000;
 
 		if (e == NULL || (*e & 0x05) != 0x05)
 			continue;
