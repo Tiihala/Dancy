@@ -150,7 +150,7 @@ static void *internal_aligned_alloc(size_t alignment, size_t size)
 	if (addr < alloc_state[1]) {
 		const size_t m = 0x0FFF;
 		size_t aligned_addr = addr & (~m);
-		size_t aligned_size = (size + m) & (~m);
+		size_t aligned_size = alloc_state[1] - aligned_addr;
 
 		if (internal_map_pages((void *)aligned_addr, aligned_size))
 			return NULL;
