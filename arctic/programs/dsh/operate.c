@@ -108,10 +108,10 @@ static void dsh_execute_spawn(const char *path, char **argv)
 	}
 
 	for (;;) {
-		errno = 0;
-		exit_code = 0;
+		int status = 0;
 
-		wpid = waitpid(pid, &exit_code, 0);
+		errno = 0;
+		wpid = waitpid(pid, &status, 0);
 
 		if (wpid == -1) {
 			perror("waitpid");
@@ -119,11 +119,17 @@ static void dsh_execute_spawn(const char *path, char **argv)
 			break;
 		}
 
-		if (wpid == pid) {
-			if (WIFEXITED(exit_code))
-				break;
-			if (WIFSIGNALED(exit_code))
-				break;
+		if (wpid != pid)
+			continue;
+
+		if (WIFEXITED(status)) {
+			exit_code = WEXITSTATUS(status);
+			break;
+		}
+
+		if (WIFSIGNALED(status)) {
+			exit_code = 128 + WTERMSIG(status);
+			break;
 		}
 	}
 }
