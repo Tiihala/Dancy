@@ -40,6 +40,9 @@ struct winsize {
 #define TIOCGWINSZ              __DANCY_IOCTL_TIOCGWINSZ
 #define TIOCSWINSZ              __DANCY_IOCTL_TIOCSWINSZ
 
+#define TIOCGPGRP               __DANCY_IOCTL_TIOCGPGRP
+#define TIOCSPGRP               __DANCY_IOCTL_TIOCSPGRP
+
 int ioctl(int fd, unsigned long request, ...);
 
 __Dancy_Header_End

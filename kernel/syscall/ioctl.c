@@ -74,6 +74,14 @@ int ioctl_internal(int fd, int request, long long arg, long long *retval)
 			alignment = sizeof(short);
 			size = sizeof(struct __dancy_winsize);
 			break;
+		case __DANCY_IOCTL_TIOCGPGRP:
+			alignment = sizeof(size_t);
+			size = sizeof(__dancy_pid_t), rw = 1;
+			break;
+		case __DANCY_IOCTL_TIOCSPGRP:
+			alignment = sizeof(size_t);
+			size = sizeof(__dancy_pid_t);
+			break;
 		default:
 			r = DE_UNSUPPORTED;
 			break;
