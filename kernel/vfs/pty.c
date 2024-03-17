@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,6 +27,8 @@ struct pty_shared_data {
 	int count;
 	int pty_i;
 	int eof;
+
+	__dancy_pid_t group;
 
 	struct __dancy_termios termios;
 	struct __dancy_winsize winsize;
@@ -766,6 +768,26 @@ static int n_ioctl(struct vfs_node *node,
 
 		lock_shared_data(shared_data);
 		memcpy(d, s, size);
+		unlock_shared_data(shared_data);
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_TIOCGPGRP) {
+		__dancy_pid_t *d = (void *)((addr_t)arg);
+
+		lock_shared_data(shared_data);
+		*d = shared_data->group;
+		unlock_shared_data(shared_data);
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_TIOCSPGRP) {
+		const __dancy_pid_t *s = (const void *)((addr_t)arg);
+
+		lock_shared_data(shared_data);
+		shared_data->group = *s;
 		unlock_shared_data(shared_data);
 
 		return 0;
