@@ -82,6 +82,9 @@ pid_t getsid(pid_t pid);
 uid_t getuid(void);
 gid_t getgid(void);
 
+pid_t tcgetpgrp(int fd);
+int tcsetpgrp(int fd, pid_t pgrp);
+
 void _exit(int status);
 char *getcwd(char *buffer, size_t size);
 int isatty(int fd);

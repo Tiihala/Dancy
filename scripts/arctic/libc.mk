@@ -190,6 +190,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/unistd/pipe.o \
  ./o32/arctic/libc/unistd/read.o \
  ./o32/arctic/libc/unistd/rmdir.o \
+ ./o32/arctic/libc/unistd/tcpgrp.o \
  ./o32/arctic/libc/unistd/unlink.o \
  ./o32/arctic/libc/unistd/write.o \
  ./o32/common/a32/dark.o \
@@ -382,6 +383,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/unistd/pipe.o \
  ./o64/arctic/libc/unistd/read.o \
  ./o64/arctic/libc/unistd/rmdir.o \
+ ./o64/arctic/libc/unistd/tcpgrp.o \
  ./o64/arctic/libc/unistd/unlink.o \
  ./o64/arctic/libc/unistd/write.o \
  ./o64/common/a64/dark.o \
