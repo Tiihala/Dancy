@@ -42,6 +42,9 @@ static int f(struct task *task, void *arg)
 		if (a->pid == 0 && task->id_group != a->current->id_group)
 			return 0;
 
+		if (task->cmd.line == NULL || task->cmd.line[0] != '/')
+			return 0;
+
 		if (sig > 0 && sig < 32) {
 			void *address = &task->asm_data3;
 			uint32_t value = (uint32_t)(sig - 1);
