@@ -22,7 +22,6 @@
 static struct options *ls_opt;
 static int ls_exit_failure;
 static int ls_print_state;
-static int ls_unicode_mode;
 static int ls_tty_width;
 
 #define LS_PATH_BUFFER 4096
@@ -31,6 +30,7 @@ struct ls_record {
 	char path[LS_PATH_BUFFER];
 	struct stat status;
 	int state;
+	int unicode;
 };
 
 static char *ls_strerror(int errnum)
@@ -72,11 +72,11 @@ static void read_record(const char *p1, const char *p2, struct ls_record *out)
 		return;
 	}
 
-	for (i = 0; ls_unicode_mode == 0 && path[i] != '\0'; i++) {
+	for (i = 0; out->unicode == 0 && path[i] != '\0'; i++) {
 		int c = (int)((unsigned char)path[i]);
 
 		if (c <= 0x20 || c >= 0x7F)
-			ls_unicode_mode = 1;
+			out->unicode = 1;
 	}
 }
 
@@ -142,6 +142,7 @@ static void build_table_width(size_t count, struct ls_record *records,
 
 static void ls_print(size_t count, struct ls_record *records)
 {
+	int unicode_mode = 0;
 	size_t table[2] = { 0 };
 	size_t width[LS_WIDTH_COUNT] = { 0 };
 	size_t i, j;
@@ -151,7 +152,16 @@ static void ls_print(size_t count, struct ls_record *records)
 
 	ls_print_state = 1;
 
-	if (ls_unicode_mode || ls_tty_width < 16) {
+	for (i = 0; i < count; i++) {
+		struct ls_record *r = &records[i];
+
+		if (r->unicode) {
+			unicode_mode = 1;
+			break;
+		}
+	}
+
+	if (unicode_mode || ls_tty_width < 16) {
 		for (i = 0; i < count; i++) {
 			struct ls_record *r = &records[i];
 			const char *name = &r->path[0];
@@ -360,10 +370,8 @@ static void ls(size_t count, struct ls_record *records, int recursion)
 			if (p2[0] == '\0')
 				continue;
 
-			if (p2[0] == '.' && !ls_opt->list_all) {
-				if (!strcmp(p2, ".") || !strcmp(p2, ".."))
-					continue;
-			}
+			if (p2[0] == '.' && !ls_opt->list_all)
+				continue;
 
 			read_record(p1, p2, &new_records[new_count++]);
 		}
