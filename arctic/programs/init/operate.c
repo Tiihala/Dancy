@@ -25,11 +25,18 @@ static int check_status(const char *path, int status)
 
 	const char *s0 = "restarting the Dancy Shell";
 	const char *s1 = "please restart the computer";
+	int exit_code = 0;
+
+	if (WIFEXITED(status))
+		exit_code = WEXITSTATUS(status);
+
+	if (WIFSIGNALED(status))
+		exit_code = 128 + WTERMSIG(status);
 
 	fprintf(stderr, "%sinit: \'%s\' exited with code %d\ninit: %s%s\n",
-		begin, path, status, (status == 0) ? s0 : s1, end);
+		begin, path, exit_code, (exit_code < 128) ? s0 : s1, end);
 
-	return status;
+	return !(exit_code < 128);
 }
 
 int operate(struct options *opt)
