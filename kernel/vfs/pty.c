@@ -352,7 +352,7 @@ int pty_init(void)
 		}
 	}
 
-	if (r != 0 || (r = send_signals(1, 0, 0)) != 0)
+	if (r != 0 || ((r = send_signals(1, 0, 0)) != 0 && r != DE_ACCESS))
 		return r;
 
 	if ((r = vfs_open("/dev/pts/", &node, 0, vfs_mode_create)) != 0)
