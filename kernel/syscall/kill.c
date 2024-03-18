@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,20 +29,29 @@ struct f_arg {
 static int f(struct task *task, void *arg)
 {
 	struct f_arg *a = arg;
+	int allowed = 1;
+
+	{
+		if (task->id == 1)
+			allowed = 0;
+
+		else if (task->id_session == 1 && a->current->id_session != 1)
+			allowed = 0;
+
+		else if (task->cmd.line == NULL || task->cmd.line[0] != '/')
+			allowed = 0;
+	}
 
 	if (a->r != DE_SEARCH) {
 		int sig = a->sig;
 
-		if (a->current == task || task->id == 1)
+		if (!allowed)
 			return 0;
 
 		if (a->pid < -1 && task->id_group != (uint64_t)(-(a->pid)))
 			return 0;
 
 		if (a->pid == 0 && task->id_group != a->current->id_group)
-			return 0;
-
-		if (task->cmd.line == NULL || task->cmd.line[0] != '/')
 			return 0;
 
 		if (sig > 0 && sig < 32) {
@@ -58,7 +67,7 @@ static int f(struct task *task, void *arg)
 	if ((uint64_t)a->pid == task->id) {
 		int sig = a->sig;
 
-		if (task->cmd.line == NULL || task->cmd.line[0] != '/')
+		if (!allowed)
 			return (a->r = DE_ACCESS), 1;
 
 		if (sig > 0 && sig < 32) {
