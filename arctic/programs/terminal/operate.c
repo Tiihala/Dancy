@@ -235,7 +235,7 @@ int operate(struct options *opt)
 		}
 
 		if (r == 0) {
-			if (waitpid(pid, &r, WNOHANG) == pid)
+			if (waitpid(pid, NULL, WNOHANG) == pid)
 				break;
 			continue;
 		}
