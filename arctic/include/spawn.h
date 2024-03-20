@@ -79,6 +79,9 @@ int posix_spawn_file_actions_addopen(
 	posix_spawn_file_actions_t *actions, int fd,
 	const char *path, int flags, mode_t mode);
 
+int posix_spawn_file_actions_addtcsetpgrp_np(
+	posix_spawn_file_actions_t *actions, int fd);
+
 int posix_spawnattr_init(posix_spawnattr_t *attrp);
 int posix_spawnattr_destroy(posix_spawnattr_t *attrp);
 

@@ -27,6 +27,7 @@ __Dancy_Header_Begin
 #define __DANCY_SPAWN_ADD_CLOSE (1)
 #define __DANCY_SPAWN_ADD_DUP2  (2)
 #define __DANCY_SPAWN_ADD_OPEN  (3)
+#define __DANCY_SPAWN_ADD_TCSET (4)
 
 struct __dancy_spawn_file_actions {
 	unsigned int _state;
