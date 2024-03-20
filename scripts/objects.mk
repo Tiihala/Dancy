@@ -244,6 +244,10 @@
     ./arctic/libc/spawn/spawnp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/spawn/spawnp.c
 
+./o32/arctic/libc/spawn/tcset.o: \
+    ./arctic/libc/spawn/tcset.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/spawn/tcset.c
+
 ./o32/arctic/libc/start.o: \
     ./arctic/libc/start.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/start.c
@@ -1524,6 +1528,10 @@
 ./o64/arctic/libc/spawn/spawnp.o: \
     ./arctic/libc/spawn/spawnp.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/spawn/spawnp.c
+
+./o64/arctic/libc/spawn/tcset.o: \
+    ./arctic/libc/spawn/tcset.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/spawn/tcset.c
 
 ./o64/arctic/libc/start.o: \
     ./arctic/libc/start.c $(DANCY_DEPS)
