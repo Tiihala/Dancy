@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023 Antti Tiihala
+ * Copyright (c) 2022, 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -146,6 +146,23 @@ static int new_task(void *arg)
 					r = DE_ARGUMENT;
 
 				(void)file_close(fd[0]);
+
+			} else if (type == __DANCY_SPAWN_ADD_TCSET) {
+				int request = __DANCY_IOCTL_TIOCSPGRP;
+				__dancy_pid_t *g;
+				long long a;
+
+				if ((g = malloc(sizeof(*g))) == NULL) {
+					r = DE_MEMORY;
+					continue;
+				}
+
+				fd[0] = ta->actions->_actions[i]._args[0];
+				*g = (__dancy_pid_t)task_current()->id_group;
+				a = (long long)((addr_t)g);
+
+				r = file_ioctl(fd[0], request, a);
+				free(g);
 
 			} else {
 				r = DE_ARGUMENT;
