@@ -701,6 +701,19 @@ static int n_poll(struct vfs_node *node, int events, int *revents)
 	return 0;
 }
 
+static int func_tiocspgrp(struct task *task, void *arg)
+{
+	__dancy_pid_t *group = arg;
+
+	if ((__dancy_pid_t)task->id_group != group[0])
+		return 0;
+
+	if (task->id_session != task_current()->id_session)
+		return 0;
+
+	return (group[1] = 0), 1;
+}
+
 static int n_ioctl(struct vfs_node *node,
 	int request, long long arg)
 {
@@ -775,9 +788,14 @@ static int n_ioctl(struct vfs_node *node,
 
 	if (request == __DANCY_IOCTL_TIOCGPGRP) {
 		__dancy_pid_t *d = (void *)((addr_t)arg);
+		__dancy_pid_t group;
 
 		lock_shared_data(shared_data);
-		*d = shared_data->group;
+		if ((group = shared_data->group) <= 0) {
+			const uint64_t u = 0;
+			group = (__dancy_pid_t)((u - 1) >> 1);
+		}
+		*d = group;
 		unlock_shared_data(shared_data);
 
 		return 0;
@@ -785,9 +803,15 @@ static int n_ioctl(struct vfs_node *node,
 
 	if (request == __DANCY_IOCTL_TIOCSPGRP) {
 		const __dancy_pid_t *s = (const void *)((addr_t)arg);
+		__dancy_pid_t group[2] = { *s, -1 };
+
+		task_foreach(func_tiocspgrp, &group[0]);
+
+		if (group[1] < 0)
+			return DE_ACCESS;
 
 		lock_shared_data(shared_data);
-		shared_data->group = *s;
+		shared_data->group = group[0];
 		unlock_shared_data(shared_data);
 
 		return 0;
