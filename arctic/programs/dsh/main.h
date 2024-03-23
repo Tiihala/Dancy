@@ -50,6 +50,7 @@ extern int dsh_exit_code;
 extern int dsh_operate_state;
 
 int operate(struct options *opt);
+void dsh_execute(char **argv);
 
 char **dsh_create_argv(char *buffer);
 char *dsh_get_input(const char *prompt, size_t offset);
