@@ -483,6 +483,30 @@ static int n_write_main(struct vfs_node *node,
 				c = '\n';
 		}
 
+		if ((c_lflag & __DANCY_TERMIOS_ISIG) != 0) {
+			int sig = 0;
+
+			if (c && c == c_cc[__DANCY_TERMIOS_VINTR])
+				sig = SIGINT;
+			if (c && c == c_cc[__DANCY_TERMIOS_VQUIT])
+				sig = SIGQUIT;
+
+			if (sig) {
+				__dancy_pid_t group = shared_data->group;
+
+				if (echo)
+					write_echo_main(shared_data, c);
+
+				if (group > 1)
+					send_signals(-group, sig, 0);
+
+				shared_data->icanon.size = 0;
+
+				*size += 1;
+				continue;
+			}
+		}
+
 		if ((c_lflag & __DANCY_TERMIOS_ICANON) != 0) {
 			unsigned char *p = &shared_data->icanon.base[0];
 			int end_of_icanon = 0;
