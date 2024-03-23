@@ -1,0 +1,114 @@
+/*
+ * Copyright (c) 2024 Antti Tiihala
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * dsh/builtin.c
+ *      The Dancy Shell
+ */
+
+#include "main.h"
+
+static int cmd_chdir(int argc, char *argv[])
+{
+	const char *path = (argc > 1) ? argv[1] : "";
+
+	if (path[0] == '\0')
+		return 1;
+
+	if ((errno = 0, chdir(path)) == -1) {
+		const char *enoent = "no such file or directory";
+		const char *enotdir = "not a directory";
+
+		if (errno == ENOENT)
+			fprintf(stderr, "chdir: %s\n", enoent);
+		else if (errno == ENOTDIR)
+			fprintf(stderr, "chdir: %s\n", enotdir);
+		else
+			perror("chdir");
+
+		return 1;
+	}
+
+	return 0;
+}
+
+static int cmd_clear(int argc, char *argv[])
+{
+	(void)argc;
+	(void)argv;
+
+	fputs("\033c", stdout);
+
+	return 0;
+}
+
+static int cmd_echo(int argc, char *argv[])
+{
+	int i;
+
+	for (i = 1; i < argc; i++) {
+		const char *a = argv[i];
+
+		if (a[0] == '\0')
+			continue;
+
+		if (i > 1)
+			fputs(" ", stdout);
+
+		if (!strcmp(a, "$?")) {
+			fprintf(stdout, "%d", dsh_exit_code);
+			continue;
+		}
+
+		if (!strcmp(a, "$$")) {
+			fprintf(stdout, "%lld", (long long)getpid());
+			continue;
+		}
+
+		fputs(a, stdout);
+	}
+
+	fputs("\n", stdout);
+
+	return 0;
+}
+
+static int cmd_exit(int argc, char *argv[])
+{
+	(void)argc;
+	(void)argv;
+
+	dsh_operate_state = 0;
+
+	return 0;
+}
+
+static int cmd_default(int argc, char *argv[])
+{
+	(void)argc;
+	(void)argv;
+
+	return 0;
+}
+
+struct dsh_builtin dsh_builtin_array[] = {
+	{ cmd_chdir, "cd" },
+	{ cmd_chdir, "chdir" },
+	{ cmd_clear, "clear" },
+	{ cmd_clear, "cls" },
+	{ cmd_clear, "reset" },
+	{ cmd_echo, "echo" },
+	{ cmd_exit, "exit" },
+	{ cmd_default, NULL }
+};

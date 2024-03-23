@@ -19,74 +19,12 @@
 
 #include "main.h"
 
-static int state = 1;
-static int exit_code = 0;
+int dsh_exit_code = 0;
+int dsh_operate_state = 1;
 
 static void welcome(void)
 {
 	fputs("\tWelcome to the Dancy Operating System!\n\n", stdout);
-}
-
-static int dsh_chdir(char **argv)
-{
-	const char *path = argv[1] ? argv[1] : "";
-
-	if (path[0] == '\0')
-		return 1;
-
-	if ((errno = 0, chdir(path)) == -1) {
-		const char *enoent = "no such file or directory";
-		const char *enotdir = "not a directory";
-
-		if (errno == ENOENT)
-			fprintf(stderr, "chdir: %s\n", enoent);
-		else if (errno == ENOTDIR)
-			fprintf(stderr, "chdir: %s\n", enotdir);
-		else
-			perror("chdir");
-
-		return 1;
-	}
-
-	return 0;
-}
-
-static int dsh_clear(void)
-{
-	fputs("\033c", stdout);
-
-	return 0;
-}
-
-static int dsh_echo(char **argv)
-{
-	size_t i;
-
-	for (i = 1; argv[i] != NULL; i++) {
-		const char *a = argv[i];
-
-		if (a[0] == '\0')
-			continue;
-
-		if (i > 1)
-			fputs(" ", stdout);
-
-		if (!strcmp(a, "$?")) {
-			fprintf(stdout, "%d", exit_code);
-			continue;
-		}
-
-		if (!strcmp(a, "$$")) {
-			fprintf(stdout, "%lld", (long long)getpid());
-			continue;
-		}
-
-		fputs(a, stdout);
-	}
-
-	fputs("\n", stdout);
-
-	return 0;
 }
 
 static int dsh_valid_command(const char *arg)
@@ -150,12 +88,12 @@ static void dsh_execute_spawn(const char *path, char **argv)
 			continue;
 
 		if (WIFEXITED(status)) {
-			exit_code = WEXITSTATUS(status);
+			dsh_exit_code = WEXITSTATUS(status);
 			break;
 		}
 
 		if (WIFSIGNALED(status)) {
-			exit_code = 128 + WTERMSIG(status);
+			dsh_exit_code = 128 + WTERMSIG(status);
 			break;
 		}
 	}
@@ -169,7 +107,7 @@ static void dsh_execute(char **argv)
 	char cmd[512];
 	size_t i;
 
-	exit_code = 1;
+	dsh_exit_code = 1;
 
 	for (i = 0; path[i] != '\0'; i++) {
 		char c = path[i];
@@ -192,7 +130,7 @@ static void dsh_execute(char **argv)
 
 	dsh_execute_spawn(path, argv);
 
-	if (exit_code >= 128)
+	if (dsh_exit_code >= 128)
 		fputs("\n", stderr);
 }
 
@@ -221,7 +159,7 @@ static void create_safe_cwd(void *out, const void *in)
 
 int operate(struct options *opt)
 {
-	int r;
+	int i, r;
 
 	if (opt->operands[0] != NULL) {
 		opt->error = "operands are not allowed";
@@ -237,7 +175,7 @@ int operate(struct options *opt)
 
 	welcome();
 
-	while (state != 0) {
+	while (dsh_operate_state != 0) {
 		char *buffer, **new_argv;
 		char prompt[2048];
 		char cwd[2048], raw_cwd[256];
@@ -278,29 +216,26 @@ int operate(struct options *opt)
 		fprintf(stdout, "\n");
 
 		if (new_argv[0] != NULL && new_argv[0][0] != '\0') {
-			if (!dsh_valid_command(new_argv[0]))
-				dsh_execute(new_argv);
+			int argc = 1;
 
-			else if (!strcmp(new_argv[0], "exit"))
-				state = 0;
+			while (new_argv[argc] != NULL)
+				argc += 1;
 
-			else if (!strcmp(new_argv[0], "cd"))
-				exit_code = dsh_chdir(new_argv);
+			for (i = 0; /* void */; i++) {
+				const char *name = dsh_builtin_array[i].name;
+				int (*cmd)(int argc, char *argv[]);
 
-			else if (!strcmp(new_argv[0], "chdir"))
-				exit_code = dsh_chdir(new_argv);
+				if (name == NULL) {
+					dsh_execute(new_argv);
+					break;
+				}
 
-			else if (!strcmp(new_argv[0], "clear"))
-				exit_code = dsh_clear();
-
-			else if (!strcmp(new_argv[0], "cls"))
-				exit_code = dsh_clear();
-
-			else if (!strcmp(new_argv[0], "echo"))
-				exit_code = dsh_echo(new_argv);
-
-			else
-				dsh_execute(new_argv);
+				if (!strcmp(name, new_argv[0])) {
+					cmd = dsh_builtin_array[i].execute;
+					dsh_exit_code = cmd(argc, new_argv);
+					break;
+				}
+			}
 		}
 
 		free(new_argv);

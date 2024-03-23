@@ -39,6 +39,16 @@ struct options {
 	const char *error;
 };
 
+struct dsh_builtin {
+	int (*execute)(int argc, char *argv[]);
+	const char *name;
+};
+
+extern struct dsh_builtin dsh_builtin_array[];
+
+extern int dsh_exit_code;
+extern int dsh_operate_state;
+
 int operate(struct options *opt);
 
 char **dsh_create_argv(char *buffer);
