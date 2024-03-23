@@ -89,21 +89,54 @@ static int dsh_echo(char **argv)
 	return 0;
 }
 
+static int dsh_valid_command(const char *arg)
+{
+	if (arg[0] == '\0' || arg[0] == '/')
+		return 0;
+
+	if (arg[0] == '.') {
+		size_t i = 1;
+
+		while (arg[i] == '.')
+			i += 1;
+
+		if (arg[i] == '/')
+			return 0;
+	}
+
+	return 1;
+}
+
 static void dsh_execute_spawn(const char *path, char **argv)
 {
 	extern char **environ;
+	pid_t tc_pgrp = tcgetpgrp(STDIN_FILENO);
 	pid_t pid, wpid;
 	int r;
 
-	r = posix_spawn(&pid, path, NULL, NULL, argv, environ);
+	posix_spawn_file_actions_t actions;
+	posix_spawnattr_t attr;
 
-	if (r == ENOENT) {
-		fputs("dsh: command not found...\n", stderr);
-		return;
-	}
+	posix_spawn_file_actions_init(&actions);
+	posix_spawn_file_actions_addtcsetpgrp_np(&actions, STDIN_FILENO);
+
+	posix_spawnattr_init(&attr);
+	posix_spawnattr_setflags(&attr, POSIX_SPAWN_SETPGROUP);
+	posix_spawnattr_setpgroup(&attr, 0);
+
+	r = posix_spawn(&pid, path, &actions, &attr, argv, environ);
 
 	if (r != 0) {
-		fprintf(stderr, "dsh: %s\n", strerror(r));
+		const char *e;
+
+		tcsetpgrp(STDIN_FILENO, tc_pgrp);
+
+		if (r == ENOENT && dsh_valid_command(argv[0]))
+			e = "command not found...";
+		else
+			e = strerror(r);
+
+		fprintf(stderr, "dsh: %s: %s\n", argv[0], e);
 		return;
 	}
 
@@ -112,12 +145,6 @@ static void dsh_execute_spawn(const char *path, char **argv)
 
 		errno = 0;
 		wpid = waitpid(pid, &status, 0);
-
-		if (wpid == -1) {
-			perror("waitpid");
-			exit_code = 1;
-			break;
-		}
 
 		if (wpid != pid)
 			continue;
@@ -132,18 +159,30 @@ static void dsh_execute_spawn(const char *path, char **argv)
 			break;
 		}
 	}
+
+	tcsetpgrp(STDIN_FILENO, tc_pgrp);
 }
 
 static void dsh_execute(char **argv)
 {
 	const char *path = argv[0];
 	char cmd[512];
+	size_t i;
 
 	exit_code = 1;
 
-	if (path[0] != '.' && path[0] != '/') {
+	for (i = 0; path[i] != '\0'; i++) {
+		char c = path[i];
+
+		if ((c >= 0x01 && c <= 0x1F) || c == 0x7F) {
+			fputs("dsh: unexpected characters...\n", stderr);
+			return;
+		}
+	}
+
+	if (dsh_valid_command(path)) {
 		if (strlen(path) > 255) {
-			fputs("dsh: command not found...\n", stderr);
+			fputs("dsh: command name overflow...\n", stderr);
 			return;
 		}
 		strcpy(&cmd[0], "/bin/");
@@ -152,6 +191,32 @@ static void dsh_execute(char **argv)
 	}
 
 	dsh_execute_spawn(path, argv);
+
+	if (exit_code >= 128)
+		fputs("\n", stderr);
+}
+
+static void create_safe_cwd(void *out, const void *in)
+{
+	unsigned char *o = out;
+	const unsigned char *i = in;
+
+	for (;;) {
+		unsigned int c = *i++;
+		char b[8];
+
+		*o++ = (unsigned char)c;
+
+		if (c == 0)
+			break;
+
+		if (c <= 0x20 || c >= 0x7F) {
+			if (snprintf(&b[0], sizeof(b), "\\x%02X", c) != 4)
+				memcpy(&b[0], "\\x00", 4);
+
+			memcpy(&o[-1], &b[0], 4), o += 3;
+		}
+	}
 }
 
 int operate(struct options *opt)
@@ -167,17 +232,22 @@ int operate(struct options *opt)
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
 
+	signal(SIGTTIN, SIG_IGN);
+	signal(SIGTTOU, SIG_IGN);
+
 	welcome();
 
 	while (state != 0) {
 		char *buffer, **new_argv;
 		char prompt[2048];
-		char cwd[256];
+		char cwd[2048], raw_cwd[256];
 		const size_t cwdmax = 32;
 		size_t offset;
 
-		if ((errno = 0, getcwd(&cwd[0], sizeof(cwd))) == NULL)
+		if ((errno = 0, getcwd(&raw_cwd[0], sizeof(raw_cwd))) == NULL)
 			return perror("getcwd"), EXIT_FAILURE;
+
+		create_safe_cwd(&cwd[0], &raw_cwd[0]);
 
 		if ((offset = strlen(&cwd[0])) > cwdmax) {
 			offset = offset - cwdmax + 3;
@@ -185,11 +255,11 @@ int operate(struct options *opt)
 			offset = cwdmax;
 
 			r = snprintf(&prompt[0], sizeof(prompt),
-				"\033[1;32m[\033[1;90m..."
+				"\r\033[2K\033[1;32m[\033[1;90m..."
 				"\033[1;32m%s]$\033[0m ", &cwd[0]);
 		} else {
 			r = snprintf(&prompt[0], sizeof(prompt),
-				"\033[1;32m[%s]$\033[0m ", &cwd[0]);
+				"\r\033[2K\033[1;32m[%s]$\033[0m ", &cwd[0]);
 		}
 
 		offset += 4;
@@ -207,19 +277,28 @@ int operate(struct options *opt)
 
 		fprintf(stdout, "\n");
 
-		if (new_argv[0] != NULL) {
-			if (!strcmp(new_argv[0], "exit"))
+		if (new_argv[0] != NULL && new_argv[0][0] != '\0') {
+			if (!dsh_valid_command(new_argv[0]))
+				dsh_execute(new_argv);
+
+			else if (!strcmp(new_argv[0], "exit"))
 				state = 0;
+
 			else if (!strcmp(new_argv[0], "cd"))
 				exit_code = dsh_chdir(new_argv);
+
 			else if (!strcmp(new_argv[0], "chdir"))
 				exit_code = dsh_chdir(new_argv);
+
 			else if (!strcmp(new_argv[0], "clear"))
 				exit_code = dsh_clear();
+
 			else if (!strcmp(new_argv[0], "cls"))
 				exit_code = dsh_clear();
+
 			else if (!strcmp(new_argv[0], "echo"))
 				exit_code = dsh_echo(new_argv);
+
 			else
 				dsh_execute(new_argv);
 		}
