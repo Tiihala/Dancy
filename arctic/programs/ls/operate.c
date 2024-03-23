@@ -406,7 +406,7 @@ static int ls_0_qsort(const void *p1, const void *p2)
 		return -1;
 
 	if (r1_dir)
-		return r2_dir ? 0 : 1;
+		return r2_dir ? ls_qsort(r1, r2) : 1;
 
 	if (r2_dir)
 		return -1;
