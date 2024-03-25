@@ -52,8 +52,8 @@ extern int dsh_operate_state;
 int operate(struct options *opt);
 void dsh_execute(char **argv);
 
-char **dsh_create_argv(char *buffer);
 char *dsh_get_input(const char *prompt, size_t offset);
+void dsh_parse_input(const char *input);
 
 int dsh_save_termios(void);
 void dsh_restore_termios(void);

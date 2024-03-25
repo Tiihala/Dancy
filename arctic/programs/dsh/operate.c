@@ -52,7 +52,7 @@ static void create_safe_cwd(void *out, const void *in)
 
 int operate(struct options *opt)
 {
-	int i, r;
+	int r;
 
 	if (opt->operands[0] != NULL) {
 		opt->error = "operands are not allowed";
@@ -69,11 +69,11 @@ int operate(struct options *opt)
 	welcome();
 
 	while (dsh_operate_state != 0) {
-		char *buffer, **new_argv;
 		char prompt[2048];
 		char cwd[2048], raw_cwd[256];
 		const size_t cwdmax = 32;
 		size_t offset;
+		char *buffer;
 
 		if ((errno = 0, getcwd(&raw_cwd[0], sizeof(raw_cwd))) == NULL)
 			return perror("getcwd"), EXIT_FAILURE;
@@ -101,37 +101,9 @@ int operate(struct options *opt)
 		if ((buffer = dsh_get_input(&prompt[0], offset)) == NULL)
 			break;
 
-		if ((new_argv = dsh_create_argv(buffer)) == NULL) {
-			free(buffer);
-			break;
-		}
-
 		fprintf(stdout, "\n");
 
-		if (new_argv[0] != NULL && new_argv[0][0] != '\0') {
-			int argc = 1;
-
-			while (new_argv[argc] != NULL)
-				argc += 1;
-
-			for (i = 0; /* void */; i++) {
-				const char *name = dsh_builtin_array[i].name;
-				int (*cmd)(int argc, char *argv[]);
-
-				if (name == NULL) {
-					dsh_execute(new_argv);
-					break;
-				}
-
-				if (!strcmp(name, new_argv[0])) {
-					cmd = dsh_builtin_array[i].execute;
-					dsh_exit_code = cmd(argc, new_argv);
-					break;
-				}
-			}
-		}
-
-		free(new_argv);
+		dsh_parse_input(buffer);
 		free(buffer);
 	}
 
