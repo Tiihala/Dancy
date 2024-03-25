@@ -132,6 +132,7 @@ static int read_token(struct state *state)
 
 		if (c == '"' || c == '\'') {
 			quote_mode = (int)c;
+			empty_allowed = 1;
 			continue;
 		}
 
