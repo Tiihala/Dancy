@@ -89,8 +89,20 @@ static int read_token(struct state *state)
 				continue;
 			}
 
-			if (c == '\\' && input[new_i] == '"')
-				c = '"', new_i += 1;
+			if (c == '\\') {
+				char next_c = input[new_i];
+
+				if (next_c == '\n') {
+					new_i += 1;
+					continue;
+
+				} else if (next_c == '"' || next_c == '$') {
+					c = next_c, new_i += 1;
+
+				} else if (next_c == '\\' || next_c == '`') {
+					c = next_c, new_i += 1;
+				}
+			}
 
 			*b++ = c, *b = '\0';
 			continue;
@@ -107,24 +119,10 @@ static int read_token(struct state *state)
 		}
 
 		if (c == '\\') {
-			const char *m = "unexpected escape character";
-
 			c = input[new_i++];
 
-			switch (c) {
-			case '\t':
-				break;
-			case ' ':
-				break;
-			case '"':
-				break;
-			case '\'':
-				break;
-			case '\\':
-				break;
-			default:
-				return parsing_error(m);
-			}
+			if (c == '\n')
+				continue;
 
 			*b++ = c, *b = '\0';
 			continue;
@@ -156,7 +154,7 @@ static int read_token(struct state *state)
 
 	state->token.type = token_type_arg;
 
-	if (size + 1 < FIXED_DATA_SIZE) {
+	if (size < FIXED_DATA_SIZE) {
 		strcpy(state->token.data, &_b[0]);
 	} else {
 		state->token.data = strdup(&_b[0]);
