@@ -351,14 +351,14 @@ void apic_start_timer(void)
 	 * The counter should not have reached zero (divide by 16) in
 	 * 10 milliseconds, but it definitely should have changed.
 	 */
-	if (initial_count == 0 || initial_count == max_count)
+	if (initial_count < 10 || initial_count == max_count)
 		panic("APIC Timer: calibration failed");
 
 	/*
-	 * Start the periodic timer, approximately 100 Hz.
+	 * Start the periodic timer, approximately 1000 Hz.
 	 */
 	prepare_timer(1);
-	start_timer(initial_count);
+	start_timer(initial_count / 10);
 }
 
 int apic_wait_delivery(void)
