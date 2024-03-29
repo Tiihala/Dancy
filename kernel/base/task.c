@@ -633,9 +633,16 @@ void task_identify(uint64_t *id, uint64_t *id_owner,
 
 int task_check_event(struct task *task)
 {
+	struct task *current = task_current();
 	int r = 0;
 
-	if (!task || task->active)
+	if (!task || task == current) {
+		if (current->event.func != task_null_func)
+			r = current->event.func(&current->event.data[0]);
+		return r;
+	}
+
+	if (task->active)
 		return 1;
 
 	if (task->event.func != task_null_func) {
