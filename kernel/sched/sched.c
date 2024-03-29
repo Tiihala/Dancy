@@ -44,14 +44,15 @@ static void yield(void)
 	static uint32_t count;
 
 	struct task *current = task_current(), *next, *start;
+	int current_priority = current->sched.priority;
+	int current_runnable = !task_check_event(NULL);
 	int search_task = 1;
 
 	if (!spin_trylock(&current->sched.lock))
 		return;
 
 	/*
-	 * Make sure that all tasks will get a chance to run,
-	 * including the low priority tasks.
+	 * Make sure that all tasks will get a chance to run.
 	 */
 	if ((cpu_add32(&count, 1) & 0x1F) == 0) {
 		struct task *next_starved = NULL;
@@ -83,6 +84,7 @@ static void yield(void)
 		struct task *next_kernel = NULL;
 		struct task *next_high   = NULL;
 		struct task *next_normal = NULL;
+		struct task *next_low    = NULL;
 
 		next = start = current;
 
@@ -138,10 +140,25 @@ static void yield(void)
 						next_normal = next;
 				}
 			}
+
+			if (next_normal)
+				continue;
+
+			if (priority == sched_priority_low) {
+				if (!task_check_event(next)) {
+					if (!next_low)
+						next_low = next;
+					if (next_low->sched.state < state)
+						next_low = next;
+				}
+			}
 		}
 
 		search_task += 1;
 
+		/*
+		 * Case: sched_priority_kernel
+		 */
 		if (next_kernel) {
 			next_kernel->sched.state = 0;
 
@@ -154,6 +171,14 @@ static void yield(void)
 			continue;
 		}
 
+		if (current_runnable) {
+			if (current_priority == sched_priority_kernel)
+				break;
+		}
+
+		/*
+		 * Case: sched_priority_high
+		 */
 		if (next_high) {
 			next_high->sched.state = 0;
 
@@ -166,6 +191,14 @@ static void yield(void)
 			continue;
 		}
 
+		if (current_runnable) {
+			if (current_priority == sched_priority_high)
+				break;
+		}
+
+		/*
+		 * Case: sched_priority_normal
+		 */
 		if (next_normal) {
 			next_normal->sched.state = 0;
 
@@ -177,9 +210,35 @@ static void yield(void)
 			search_task += 1;
 			continue;
 		}
+
+		if (current_runnable) {
+			if (current_priority == sched_priority_normal)
+				break;
+		}
+
+		/*
+		 * Case: sched_priority_low
+		 */
+		if (next_low) {
+			next_low->sched.state = 0;
+
+			if (!task_switch(next_low)) {
+				spin_unlock(&current->sched.lock);
+				return;
+			}
+
+			search_task += 1;
+			continue;
+		}
+
+		if (current_runnable) {
+			if (current_priority == sched_priority_low)
+				break;
+		}
 	}
 
-	spin_unlock(&current->sched.lock);
+	if (!current_runnable)
+		task_idle();
 
-	task_idle();
+	spin_unlock(&current->sched.lock);
 }
