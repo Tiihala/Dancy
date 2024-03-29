@@ -80,6 +80,9 @@ static void yield(void)
 		}
 	}
 
+	/*
+	 * The loop for finding the next task. There are four priority levels.
+	 */
 	while ((search_task & 1) != 0 && search_task < 8) {
 		struct task *next_kernel = NULL;
 		struct task *next_high   = NULL;
@@ -237,6 +240,10 @@ static void yield(void)
 		}
 	}
 
+	/*
+	 * No other runnable tasks were found. Call the idle function if
+	 * this current task can't be run either.
+	 */
 	if (!current_runnable)
 		task_idle();
 
