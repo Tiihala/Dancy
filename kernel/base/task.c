@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022, 2023 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -679,6 +679,12 @@ void task_write_event(int (*func)(uint64_t *data), uint64_t d0, uint64_t d1)
 	current->event.func = func;
 
 	cpu_ints(r);
+}
+
+void task_idle(void)
+{
+	if ((cpu_read_flags() & CPU_INTERRUPT_FLAG) != 0)
+		cpu_halt(1);
 }
 
 void task_exit(int retval)

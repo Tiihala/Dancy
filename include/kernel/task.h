@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022, 2023 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -111,6 +111,7 @@ int task_check_event(struct task *task);
 int task_read_event(void);
 void task_write_event(int (*func)(uint64_t *data), uint64_t d0, uint64_t d1);
 
+void task_idle(void);
 void task_exit(int retval);
 void task_jump(addr_t user_ip, addr_t user_sp);
 void task_sleep(uint64_t milliseconds);
