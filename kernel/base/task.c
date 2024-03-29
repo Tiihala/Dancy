@@ -107,21 +107,6 @@ static int task_null_func(uint64_t *data)
 	return 0;
 }
 
-static void task_default_yield(void)
-{
-	struct task *current = task_current();
-	struct task *next = task_read_next(current);
-
-	while (task_switch(next)) {
-		if (next == current) {
-			if ((cpu_read_flags() & CPU_INTERRUPT_FLAG) != 0)
-				cpu_halt(2);
-			break;
-		}
-		next = !next ? task_read_next(current) : task_read_next(next);
-	}
-}
-
 static int task_caretaker(void *arg)
 {
 	void *lock_local = &task_lock;
@@ -357,9 +342,6 @@ int task_init(void)
 	kernel->scheduler.task_head = task_head;
 
 	cpu_write32((uint32_t *)&task_ready, 1);
-
-	kernel->scheduler.yield = task_default_yield;
-
 	task_set_cmdline(current, NULL, "/?");
 
 	return 0;
