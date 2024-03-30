@@ -111,7 +111,7 @@ static int n_read(struct vfs_node *node,
 
 		if (*size == 0 && shared_data->count != 2) {
 			spin_leave(&lock_local);
-			return DE_UNINITIALIZED;
+			return DE_EMPTY;
 		}
 
 		spin_leave(&lock_local);
