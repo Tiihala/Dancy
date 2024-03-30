@@ -485,6 +485,7 @@ void idt_handler(int num, void *stack)
 	 */
 	if (num >= 0x20 && num <= 0x2F) {
 		irq_handler_pic(num - 0x20);
+		event_yield();
 		return;
 	}
 
@@ -493,6 +494,15 @@ void idt_handler(int num, void *stack)
 	 */
 	if (num >= 0x40 && num <= 0x4F) {
 		irq_handler_apic(num - 0x40);
+		event_yield();
+		return;
+	}
+
+	/*
+	 * Event yield interrupt, which wakes up halted processors.
+	 */
+	if (num == 0x5F) {
+		apic_eoi();
 		return;
 	}
 

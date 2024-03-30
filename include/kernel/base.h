@@ -67,6 +67,8 @@ void event_signal(event_t event);
 int event_wait(event_t event, uint16_t milliseconds);
 int event_wait_array(int count, event_t *events, uint16_t milliseconds);
 
+void event_yield(void);
+
 /*
  * Declarations of fb.c
  */

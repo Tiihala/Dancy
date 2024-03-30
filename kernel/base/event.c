@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,12 +24,15 @@ struct event_instance {
 	int lock;
 	int manual_reset;
 	int signaled;
+	cpu_native_t task;
 };
 
 #define EVENT_READY (0x00657665)
 
 #define null_event (event == NULL)
 #define this_event ((struct event_instance *)(event))
+
+static cpu_native_t yield_task = 0;
 
 event_t event_create(int type)
 {
@@ -76,6 +79,7 @@ void event_reset(event_t event)
 
 void event_signal(event_t event)
 {
+	cpu_native_t task = 0;
 	void *lock_local;
 
 	if (null_event || this_event->ready != EVENT_READY)
@@ -84,7 +88,11 @@ void event_signal(event_t event)
 	lock_local = &this_event->lock;
 
 	spin_enter(&lock_local);
+
 	this_event->signaled = 1;
+	task = cpu_xchg(&this_event->task, task);
+	cpu_xchg(&yield_task, task);
+
 	spin_leave(&lock_local);
 }
 
@@ -123,6 +131,7 @@ static int event_wait_array_func(uint64_t *data)
 
 int event_wait_array(int count, event_t *events, uint16_t milliseconds)
 {
+	cpu_native_t task = (cpu_native_t)task_current();
 	struct event_wait_array_data data;
 	int i, r = -1;
 
@@ -156,6 +165,7 @@ int event_wait_array(int count, event_t *events, uint16_t milliseconds)
 				r = (int)i;
 			}
 
+			cpu_xchg(&this_event->task, task);
 			spin_leave(&lock_local);
 		}
 
@@ -177,4 +187,40 @@ int event_wait_array(int count, event_t *events, uint16_t milliseconds)
 	}
 
 	return r;
+}
+
+void event_yield(void)
+{
+	cpu_native_t task = 0;
+
+	if ((task = cpu_xchg(&yield_task, task)) != 0) {
+		int i;
+
+		if ((struct task *)task == task_current())
+			return;
+
+		if (!task_switch((struct task *)task))
+			return;
+
+		if (!kernel->smp_ap_count)
+			return;
+
+		for (i = -1; i < kernel->smp_ap_count; i++) {
+			const uint32_t event_vector = 0x5F;
+			uint32_t id, icr_low, icr_high;
+
+			if (i < 0)
+				id = kernel->apic_bsp_id;
+			else
+				id = kernel->smp_ap_id[i];
+
+			if (id > 0xFE)
+				continue;
+
+			icr_low = 0x00004000 | event_vector;
+			icr_high = id << 24;
+
+			apic_send(icr_low, icr_high);
+		}
+	}
 }
