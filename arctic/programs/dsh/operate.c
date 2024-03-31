@@ -21,6 +21,7 @@
 
 int dsh_exit_code = 0;
 int dsh_operate_state = 1;
+int dsh_interactive = 1;
 
 static void welcome(void)
 {
@@ -54,10 +55,20 @@ int operate(struct options *opt)
 {
 	int r;
 
-	if (opt->operands[0] != NULL) {
-		opt->error = "operands are not allowed";
-		return EXIT_FAILURE;
+	if (opt->operands[0] != NULL && opt->command_string == NULL) {
+		FILE *stream = (errno = 0, fopen(opt->operands[0], "rb"));
+
+		if (stream == NULL) {
+			fprintf(stderr, "dsh: %s: %s\n",
+				opt->operands[0], strerror(errno));
+			return EXIT_FAILURE;
+		}
+
+		opt->input_stream = stream;
 	}
+
+	if (opt->command_string != NULL || opt->input_stream != NULL)
+		dsh_interactive = 0;
 
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
@@ -66,7 +77,8 @@ int operate(struct options *opt)
 	signal(SIGTTIN, SIG_IGN);
 	signal(SIGTTOU, SIG_IGN);
 
-	welcome();
+	if (dsh_interactive)
+		welcome();
 
 	while (dsh_operate_state != 0) {
 		char prompt[2048];
@@ -75,8 +87,8 @@ int operate(struct options *opt)
 		size_t offset;
 		char *buffer;
 
-		if ((errno = 0, getcwd(&raw_cwd[0], sizeof(raw_cwd))) == NULL)
-			return perror("getcwd"), EXIT_FAILURE;
+		if (getcwd(&raw_cwd[0], sizeof(raw_cwd)) == NULL)
+			raw_cwd[0] = '\0';
 
 		create_safe_cwd(&cwd[0], &raw_cwd[0]);
 
@@ -95,17 +107,26 @@ int operate(struct options *opt)
 
 		offset += 4;
 
-		if (r <= 0)
-			return EXIT_FAILURE;
+		if (r <= 0) {
+			dsh_exit_code = EXIT_FAILURE;
+			break;
+		}
 
-		if ((buffer = dsh_get_input(&prompt[0], offset)) == NULL)
+		if ((buffer = dsh_get_input(opt, &prompt[0], offset)) == NULL)
 			break;
 
-		fprintf(stdout, "\n");
+		if (dsh_interactive)
+			fprintf(stdout, "\n");
 
 		dsh_parse_input(buffer);
 		free(buffer);
 	}
+
+	if (opt->input_stream != NULL)
+		fclose(opt->input_stream);
+
+	if (dsh_exit_code != 0)
+		exit(dsh_exit_code);
 
 	return 0;
 }

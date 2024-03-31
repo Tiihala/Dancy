@@ -67,6 +67,8 @@ static void execute_spawn(const char *path, char **argv)
 			e = strerror(r);
 
 		fprintf(stderr, "dsh: %s: %s\n", argv[0], e);
+		if (!dsh_interactive)
+			dsh_operate_state = 0;
 		return;
 	}
 
@@ -106,6 +108,8 @@ void dsh_execute(char **argv)
 
 		if ((c >= 0x01 && c <= 0x1F) || c == 0x7F) {
 			fputs("dsh: unexpected characters...\n", stderr);
+			if (!dsh_interactive)
+				dsh_operate_state = 0;
 			return;
 		}
 	}
@@ -113,6 +117,8 @@ void dsh_execute(char **argv)
 	if (valid_command(path)) {
 		if (strlen(path) > 255) {
 			fputs("dsh: command name overflow...\n", stderr);
+			if (!dsh_interactive)
+				dsh_operate_state = 0;
 			return;
 		}
 		strcpy(&cmd[0], "/bin/");

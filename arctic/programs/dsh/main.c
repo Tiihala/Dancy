@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,6 +21,11 @@
 
 static const char *help_str =
 	"Usage: " MAIN_CMDNAME
+	" [command-file [argument...]]\n"
+	"       " MAIN_CMDNAME
+	" [-c command-string [argument...]]\n"
+	"\nOptions:\n"
+	"  -c            read input from command-string\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --version, -V version information\n"
@@ -61,8 +66,14 @@ int main(int argc, char *argv[])
 	while (argv_i && *++argv_i) {
 		const char *arg = *argv_i;
 
-		if (arg[0] != '-' || arg[1] == '\0')
-			continue;
+		/*
+		 * In this program, the first operand
+		 * prevents interpreting other options.
+		 */
+		if (arg[0] != '-' || opts.command_string) {
+			argv_i = &argv[argc];
+			break;
+		}
 
 		*argv_i = NULL;
 
@@ -84,6 +95,9 @@ int main(int argc, char *argv[])
 			switch (*++arg) {
 			case '\0':
 				arg = NULL;
+				break;
+			case 'c':
+				optional_arg = &opts.command_string;
 				break;
 			case 'h':
 				help(NULL);

@@ -56,6 +56,8 @@ static void release_malloc(struct token *token)
 static int parsing_error(const char *message)
 {
 	fprintf(stderr, "dsh: parsing error: %s\n", message);
+	if (!dsh_interactive)
+		dsh_operate_state = 0;
 	return 1;
 }
 

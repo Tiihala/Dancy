@@ -37,6 +37,12 @@
 struct options {
 	char **operands;
 	const char *error;
+
+	const char *command_string;
+	size_t command_string_i;
+
+	FILE *input_stream;
+	int input_stream_eof;
 };
 
 struct dsh_builtin {
@@ -48,11 +54,12 @@ extern struct dsh_builtin dsh_builtin_array[];
 
 extern int dsh_exit_code;
 extern int dsh_operate_state;
+extern int dsh_interactive;
 
 int operate(struct options *opt);
 void dsh_execute(char **argv);
 
-char *dsh_get_input(const char *prompt, size_t offset);
+char *dsh_get_input(struct options *opt, const char *prompt, size_t offset);
 void dsh_parse_input(const char *input);
 
 int dsh_save_termios(void);

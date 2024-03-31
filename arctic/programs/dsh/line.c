@@ -39,30 +39,118 @@ static void get_winsize(void)
 	ws_row = ws.ws_row;
 }
 
-char *dsh_get_input(const char *prompt, size_t offset)
+static char *get_from_command_string(struct options *opt)
 {
-	const size_t size = 0x2000;
-	char *buffer = malloc(size);
+	size_t i = 0;
+	size_t size = strlen(&opt->command_string[opt->command_string_i]) + 1;
+	char *buffer;
 
+	if (size == 1)
+		return NULL;
+
+	if ((buffer = malloc(size)) == NULL) {
+		fputs("dsh: out of memory\n", stderr);
+		return NULL;
+	}
+
+	for (;;) {
+		char c = opt->command_string[opt->command_string_i];
+
+		if (c == '\0')
+			break;
+
+		opt->command_string_i += 1;
+
+		if (c == '\n')
+			break;
+
+		if (c == '\r')
+			continue;
+
+		buffer[i++] = c;
+	}
+
+	buffer[i] = '\0';
+
+	return buffer;
+}
+
+static char *get_from_file(struct options *opt)
+{
+	size_t i = 0;
+	size_t size = 0x2000;
+	char *buffer;
+
+	if (opt->input_stream_eof)
+		return NULL;
+
+	if ((buffer = malloc(size)) == NULL) {
+		fputs("dsh: out of memory\n", stderr);
+		return NULL;
+	}
+
+	for (;;) {
+		int c = fgetc(opt->input_stream);
+
+		if (c == EOF) {
+			opt->input_stream_eof = 1;
+			break;
+		}
+
+		if (c == '\n' || (char)c == '\0')
+			break;
+
+		if (c == '\r')
+			continue;
+
+		if (i + 2 > size) {
+			fputs("dsh: line length error", stderr);
+			return free(buffer), NULL;
+		}
+
+		buffer[i++] = (char)c;
+	}
+
+	buffer[i] = '\0';
+
+	return buffer;
+}
+
+char *dsh_get_input(struct options *opt, const char *prompt, size_t offset)
+{
 	size_t column = offset;
 	size_t i = 0;
 
 	int utf8_state = 0;
 	unsigned char u[8];
 
-	if (!buffer)
+	const size_t size = 0x2000;
+	char *buffer;
+
+	if (opt->command_string != NULL)
+		return get_from_command_string(opt);
+
+	if (opt->input_stream != NULL)
+		return get_from_file(opt);
+
+	if ((buffer = malloc(size)) == NULL) {
+		fputs("dsh: out of memory\n", stderr);
 		return NULL;
+	}
 
 	fputs(prompt, stdout);
 
 	dsh_save_termios();
 	get_winsize();
 
-	while (i < size - 2) {
+	for (;;) {
 		int c = getchar();
 
-		if (c == EOF || c == '\r' || c == '\n' || (char)c == '\0')
+		if (c == EOF || c == '\n' || (char)c == '\0')
 			break;
+
+		if (c == '\r')
+			continue;
 
 		if (c == 0x7F) {
 			if (i > 0) {
@@ -82,6 +170,12 @@ char *dsh_get_input(const char *prompt, size_t offset)
 
 		if (column + 2 > (size_t)ws_col)
 			continue;
+
+		if (i + 2 > size) {
+			fputs("dsh: line length error", stderr);
+			dsh_restore_termios();
+			return free(buffer), NULL;
+		}
 
 		buffer[i++] = (char)c;
 		u[utf8_state++] = (unsigned char)c;
