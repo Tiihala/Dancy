@@ -27,6 +27,11 @@ ARCTIC_PROGRAMS_LS_OBJECTS_32= \
  ./o32/arctic/programs/ls/operate.o \
  ./o32/arctic/libc.a \
 
+ARCTIC_PROGRAMS_SLEEP_OBJECTS_32= \
+ ./o32/arctic/programs/sleep/main.o \
+ ./o32/arctic/programs/sleep/operate.o \
+ ./o32/arctic/libc.a \
+
 ARCTIC_PROGRAMS_TERMINAL_OBJECTS_32= \
  ./o32/arctic/programs/terminal/main.o \
  ./o32/arctic/programs/terminal/operate.o \
@@ -57,6 +62,11 @@ ARCTIC_PROGRAMS_LS_OBJECTS_64= \
  ./o64/arctic/programs/ls/operate.o \
  ./o64/arctic/libc.a \
 
+ARCTIC_PROGRAMS_SLEEP_OBJECTS_64= \
+ ./o64/arctic/programs/sleep/main.o \
+ ./o64/arctic/programs/sleep/operate.o \
+ ./o64/arctic/libc.a \
+
 ARCTIC_PROGRAMS_TERMINAL_OBJECTS_64= \
  ./o64/arctic/programs/terminal/main.o \
  ./o64/arctic/programs/terminal/operate.o \
@@ -76,6 +86,9 @@ ARCTIC_PROGRAMS_INIT_HEADERS= \
 ARCTIC_PROGRAMS_LS_HEADERS= \
  ./arctic/programs/ls/main.h \
 
+ARCTIC_PROGRAMS_SLEEP_HEADERS= \
+ ./arctic/programs/sleep/main.h \
+
 ARCTIC_PROGRAMS_TERMINAL_HEADERS= \
  ./arctic/programs/terminal/main.h \
 
@@ -93,6 +106,9 @@ ARCTIC_PROGRAMS_TERMINAL_HEADERS= \
 ./arctic/bin32/ls: $(ARCTIC_PROGRAMS_LS_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LS_OBJECTS_32)
 
+./arctic/bin32/sleep: $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_32)
+
 ./arctic/bin32/terminal: $(ARCTIC_PROGRAMS_TERMINAL_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_TERMINAL_OBJECTS_32)
 
@@ -107,6 +123,9 @@ ARCTIC_PROGRAMS_TERMINAL_HEADERS= \
 
 ./arctic/bin64/ls: $(ARCTIC_PROGRAMS_LS_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LS_OBJECTS_64)
+
+./arctic/bin64/sleep: $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_64)
 
 ./arctic/bin64/terminal: $(ARCTIC_PROGRAMS_TERMINAL_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_TERMINAL_OBJECTS_64)

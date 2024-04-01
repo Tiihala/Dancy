@@ -845,6 +845,16 @@
     $(ARCTIC_PROGRAMS_LS_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/ls/operate.c
 
+./o32/arctic/programs/sleep/main.o: \
+    ./arctic/programs/sleep/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_SLEEP_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/sleep/main.c
+
+./o32/arctic/programs/sleep/operate.o: \
+    ./arctic/programs/sleep/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_SLEEP_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/sleep/operate.c
+
 ./o32/arctic/programs/terminal/main.o: \
     ./arctic/programs/terminal/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_TERMINAL_HEADERS)
@@ -2143,6 +2153,16 @@
     ./arctic/programs/ls/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_LS_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/ls/operate.c
+
+./o64/arctic/programs/sleep/main.o: \
+    ./arctic/programs/sleep/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_SLEEP_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/sleep/main.c
+
+./o64/arctic/programs/sleep/operate.o: \
+    ./arctic/programs/sleep/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_SLEEP_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/sleep/operate.c
 
 ./o64/arctic/programs/terminal/main.o: \
     ./arctic/programs/terminal/main.c $(DANCY_DEPS) \
