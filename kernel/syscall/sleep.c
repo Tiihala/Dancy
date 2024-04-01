@@ -26,7 +26,7 @@ static int f(uint64_t *data)
 	if (t > data[0])
 		return 0;
 
-	return ((t - data[1]) < 2000);
+	return ((t - data[1]) < 100);
 }
 
 static int s(uint64_t start_ms, uint64_t request_ms, struct timespec *remain)
