@@ -40,19 +40,19 @@ static long long dancy_syscall_time(va_list va)
 
 	if (id == CLOCK_REALTIME) {
 		uint64_t ms64 = (uint64_t)epoch_read_ms();
-		uint32_t ms32 = (uint32_t)ms64;
+		volatile uint64_t *ms64_p = &ms64;
 
-		r = (long long)(ms64 / 1000);
+		r = (long long)(*ms64_p / 1000);
 		t.tv_sec = (time_t)r;
-		t.tv_nsec = (long)(ms32 % 1000) * 1000000L;
+		t.tv_nsec = (long)(*ms64_p % 1000) * 1000000L;
 
 	} else if (id == CLOCK_MONOTONIC) {
 		uint64_t ms64 = timer_read();
-		uint32_t ms32 = (uint32_t)ms64;
+		volatile uint64_t *ms64_p = &ms64;
 
-		r = (long long)(ms64 / 1000);
+		r = (long long)(*ms64_p / 1000);
 		t.tv_sec = (time_t)r;
-		t.tv_nsec = (long)(ms32 % 1000) * 1000000L;
+		t.tv_nsec = (long)(*ms64_p % 1000) * 1000000L;
 	}
 
 	if (r >= 0 && tp != NULL) {
