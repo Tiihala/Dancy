@@ -34,6 +34,7 @@ section .text
         global ___moddi3
         global ___udivdi3
         global ___umoddi3
+        global ___udivmoddi4
 
 align 16
 __alldiv:
@@ -318,4 +319,27 @@ ___umoddi3:
         push dword [esp+16]             ; push "a" (high dword)
         push dword [esp+16]             ; push "a" (low dword)
         call __aullrem                  ; (stack cleaned by callee)
+        ret
+
+align 16
+___udivmoddi4:
+        push edi                        ; save register edi
+        push dword [esp+20]             ; push "b" (high dword)
+        push dword [esp+20]             ; push "b" (low dword)
+        push dword [esp+20]             ; push "a" (high dword)
+        push dword [esp+20]             ; push "a" (low dword)
+        call __aullrem                  ; (stack cleaned by callee)
+
+        mov edi, [esp+24]               ; edi = "c" (pointer)
+        test edi, edi                   ; test NULL
+        jz short .L1
+        mov [edi+0], eax                ; write remainder (low dword)
+        mov [edi+4], edx                ; write remainder (high dword)
+
+.L1:    push dword [esp+20]             ; push "b" (high dword)
+        push dword [esp+20]             ; push "b" (low dword)
+        push dword [esp+20]             ; push "a" (high dword)
+        push dword [esp+20]             ; push "a" (low dword)
+        call __aulldiv                  ; (stack cleaned by callee)
+        pop edi                         ; restore register edi
         ret
