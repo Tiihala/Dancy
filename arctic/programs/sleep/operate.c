@@ -124,12 +124,8 @@ int operate(struct options *opt)
 		total_ms += (unsigned long long)ms;
 	}
 
-	{
-		volatile unsigned long long *p = &total_ms;
-
-		tv_sec_ll = (long long)(*p / 1000ULL);
-		tv_nsec = (long)(*p % 1000ULL) * 1000L * 1000L;
-	}
+	tv_sec_ll = (long long)(total_ms / 1000ULL);
+	tv_nsec = (long)(total_ms % 1000ULL) * 1000L * 1000L;
 
 	if (tv_sec_ll > 0x7FFFFFFF) {
 		fputs(MAIN_CMDNAME ": interval range error\n", stderr);
