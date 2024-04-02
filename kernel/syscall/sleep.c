@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -53,12 +53,11 @@ static int s(uint64_t start_ms, uint64_t request_ms, struct timespec *remain)
 
 	if (r == DE_INTERRUPT && remain != NULL) {
 		uint64_t ms64 = d0 - d1;
-		volatile uint64_t *ms64_p = &ms64;
 
 		memset(remain, 0, sizeof(*remain));
 
-		remain->tv_sec = (time_t)(*ms64_p / 1000);
-		remain->tv_nsec = (long)(*ms64_p % 1000) * 1000000L;
+		remain->tv_sec = (time_t)(ms64 / 1000);
+		remain->tv_nsec = (long)(ms64 % 1000) * 1000000L;
 	}
 
 	return r;
@@ -94,7 +93,6 @@ int sleep_internal(clockid_t id, int flags,
 
 	while ((flags & TIMER_ABSTIME) != 0) {
 		uint64_t ms64 = 0;
-		volatile uint64_t *ms64_p = &ms64;
 		struct timespec t;
 		time_t d;
 
@@ -105,8 +103,8 @@ int sleep_internal(clockid_t id, int flags,
 
 		memset(&t, 0, sizeof(t));
 
-		t.tv_sec = (time_t)(*ms64_p / 1000);
-		t.tv_nsec = (long)(*ms64_p % 1000) * 1000000L;
+		t.tv_sec = (time_t)(ms64 / 1000);
+		t.tv_nsec = (long)(ms64 % 1000) * 1000000L;
 
 		if (request->tv_sec < t.tv_sec)
 			break;
