@@ -65,6 +65,29 @@ void dsh_parse_input(const char *input);
 int dsh_save_termios(void);
 void dsh_restore_termios(void);
 
+enum token_type {
+	token_type_null,
+	token_type_arg,
+	token_type_op,
+	token_max_type
+};
+
+#define TOKEN_DATA_SIZE 8
+
+struct token {
+	char *data;
+	char _data[TOKEN_DATA_SIZE];
+	int type;
+	long value;
+
+	const char *_input;
+	size_t _i;
+};
+
+void dsh_token_init(struct token *token, const char *input);
+void dsh_token_reset(struct token *token);
+int dsh_token_read(struct token *token);
+
 #else
 #error "MAIN_CMDNAME"
 #endif
