@@ -49,11 +49,15 @@ static DIR *internal_opendir(int fd)
 DIR *opendir(const char *name)
 {
 	int fd = open(name, O_RDONLY | O_DIRECTORY);
+	DIR *d;
 
 	if (fd == -1)
 		return NULL;
 
-	return internal_opendir(fd);
+	if ((d = internal_opendir(fd)) == NULL)
+		close(fd);
+
+	return d;
 }
 
 DIR *fdopendir(int fd)
@@ -69,6 +73,7 @@ int closedir(DIR *dirp)
 	if (dirp->_state < 0)
 		return (errno = EBADF), -1;
 
+	close(dirp->_fd);
 	dirp->_state = -1;
 	dirp->_fd = -1;
 
