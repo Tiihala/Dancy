@@ -99,7 +99,8 @@ static void runlevel_shutdown(void)
 	}
 
 	task_switch_disable();
-	con_panic("It is safe to shut down the computer.");
+	con_panic("\033[?25l\033[33m\n"
+		"\033[4CIt is safe to turn off\n\033[8Cthis computer.\n");
 
 	cpu_halt(0);
 }
@@ -188,8 +189,6 @@ static void runlevel_reset(void)
 	 * to triple fault the CPU.
 	 */
 	cpu_ints(1);
-
-	con_panic("It is safe to reset the computer.");
 	cpu_halt(0);
 }
 
