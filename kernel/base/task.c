@@ -39,15 +39,23 @@ static struct task *task_pool_head;
 static int task_struct_count;
 static int task_struct_limit;
 
-static void task_append(struct task *new_task)
+static void *task_append(struct task *new_task)
 {
 	void *lock_local = &task_lock;
+	void *r = new_task;
+
+	spin_enter(&lock_local);
 
 	task_write_next(new_task, task_head);
 
-	spin_enter(&lock_local);
-	task_tail = task_write_next(task_tail, new_task);
+	if (!kernel->rebooting)
+		task_tail = task_write_next(task_tail, new_task);
+	else
+		r = NULL;
+
 	spin_leave(&lock_local);
+
+	return r;
 }
 
 static uint64_t task_create_id(void)
@@ -77,7 +85,7 @@ static struct task *task_create_from_pool(void)
 
 	spin_enter(&lock_local);
 
-	if (task_pool_head) {
+	if (task_pool_head && !kernel->rebooting) {
 		new_task = task_pool_head;
 
 		task_pool_count -= 1;
@@ -441,18 +449,20 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 
 	if (!new_task) {
 		void *lock_local = &task_lock;
-		int task_overflow = 0;
+		int task_allowed = 0;
 
 		spin_enter(&lock_local);
 
-		if (task_struct_count < task_struct_limit)
-			task_struct_count += 1;
-		else
-			task_overflow = 1;
+		if (!kernel->rebooting) {
+			if (task_struct_count < task_struct_limit) {
+				task_struct_count += 1;
+				task_allowed = 1;
+			}
+		}
 
 		spin_leave(&lock_local);
 
-		if (task_overflow)
+		if (!task_allowed)
 			return id;
 #ifdef DANCY_32
 		new_task = (struct task *)mm_alloc_pages(mm_kernel, 1);
@@ -497,7 +507,15 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 
 		new_task->owner = current;
 
-		task_append(new_task);
+		if (!task_append(new_task)) {
+			/*
+			 * Losing the newly allocated task structure is
+			 * acceptable here. It can happen only if the
+			 * kernel->rebooting flag is set while running
+			 * this task_create function.
+			 */
+			return id;
+		}
 	}
 
 	id = new_task->id;
@@ -606,6 +624,15 @@ void task_set_cmdline(struct task *task, void *line, const char *cline)
 
 	if (prev != NULL)
 		free(prev);
+}
+
+void task_prepare_rebooting(void)
+{
+	void *lock_local = &task_lock;
+
+	spin_enter(&lock_local);
+	kernel->rebooting = 1;
+	spin_leave(&lock_local);
 }
 
 void task_identify(uint64_t *id, uint64_t *id_owner,
