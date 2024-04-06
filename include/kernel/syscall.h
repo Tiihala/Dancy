@@ -82,6 +82,11 @@ int getpgid_internal(uint64_t id, uint64_t *id_group);
 int getsid_internal(uint64_t id, uint64_t *id_session);
 
 /*
+ * Declarations of reboot.c
+ */
+int reboot_internal(int request, long long arg);
+
+/*
  * Declarations of sleep.c
  */
 int sleep_internal(clockid_t id, int flags,
