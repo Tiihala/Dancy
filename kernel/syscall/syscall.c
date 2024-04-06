@@ -1055,6 +1055,23 @@ static long long dancy_syscall_memusage(va_list va)
 	return (long long)r;
 }
 
+static long long dancy_syscall_reboot(va_list va)
+{
+	int request = va_arg(va, int);
+	long long arg = va_arg(va, long long);
+	int r;
+
+	if ((r = reboot_internal(request, arg)) != 0) {
+		if (r == DE_ACCESS)
+			return -EPERM;
+		return -EINVAL;
+	}
+
+	kernel->panic("__dancy_syscall_reboot: unexpected behavior");
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -1097,6 +1114,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_getsid },
 	{ dancy_syscall_openpty },
 	{ dancy_syscall_memusage },
+	{ dancy_syscall_reboot },
 	{ dancy_syscall_reserved }
 };
 
