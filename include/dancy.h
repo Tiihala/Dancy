@@ -34,6 +34,7 @@
 #include <arctic/include/__dancy/mman.h>
 #include <arctic/include/__dancy/mode.h>
 #include <arctic/include/__dancy/pollfd.h>
+#include <arctic/include/__dancy/reboot.h>
 #include <arctic/include/__dancy/signum.h>
 #include <arctic/include/__dancy/spawn.h>
 #include <arctic/include/__dancy/stat.h>
