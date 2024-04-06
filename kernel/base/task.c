@@ -729,17 +729,21 @@ void task_exit(int retval)
 	if (current->fd.state)
 		current->fd.release(current);
 
+	if (current->sig.state)
+		current->sig.send(current);
+
 	pg_delete();
 
 	if (current->id == 1) {
+		int sig = (retval & 127);
 		char buffer[64];
 
-		while (!retval)
+		while (!retval || sig == SIGKILL || sig == SIGTERM)
 			task_wait_descendant(NULL, 0, NULL);
 
-		if ((retval & 127) != 0)
+		if (sig)
 			snprintf(&buffer[0], sizeof(buffer),
-				"TASK ID 1, SIGNAL %d", retval & 127);
+				"TASK ID 1, SIGNAL %d", sig);
 		else
 			snprintf(&buffer[0], sizeof(buffer),
 				"TASK ID 1, ERROR %d", (retval >> 8) & 255);
