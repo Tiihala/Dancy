@@ -88,6 +88,12 @@ struct task {
 		uint32_t *table;
 		uint32_t _table[TASK_FD_STATIC_COUNT];
 	} fd;
+
+	struct {
+		uint32_t state;
+		void (*send)(struct task *task);
+		uint32_t mask;
+	} sig;
 };
 
 struct task *task_read_next(const struct task *task);
