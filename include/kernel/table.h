@@ -222,6 +222,11 @@ struct kernel_table {
 	unsigned long long (*epoch_read)(void);
 	unsigned long long (*epoch_read_ms)(void);
 	void (*epoch_sync)(void);
+
+	/*
+	 * A flag, which is set if the system is going down.
+	 */
+	int rebooting;
 };
 
 #endif
