@@ -850,6 +850,16 @@
     $(ARCTIC_PROGRAMS_LS_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/ls/operate.c
 
+./o32/arctic/programs/reboot/main.o: \
+    ./arctic/programs/reboot/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_REBOOT_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/reboot/main.c
+
+./o32/arctic/programs/reboot/operate.o: \
+    ./arctic/programs/reboot/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_REBOOT_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/reboot/operate.c
+
 ./o32/arctic/programs/sleep/main.o: \
     ./arctic/programs/sleep/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_SLEEP_HEADERS)
@@ -2167,6 +2177,16 @@
     ./arctic/programs/ls/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_LS_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/ls/operate.c
+
+./o64/arctic/programs/reboot/main.o: \
+    ./arctic/programs/reboot/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_REBOOT_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/reboot/main.c
+
+./o64/arctic/programs/reboot/operate.o: \
+    ./arctic/programs/reboot/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_REBOOT_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/reboot/operate.c
 
 ./o64/arctic/programs/sleep/main.o: \
     ./arctic/programs/sleep/main.c $(DANCY_DEPS) \

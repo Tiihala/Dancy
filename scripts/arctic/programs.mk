@@ -28,6 +28,11 @@ ARCTIC_PROGRAMS_LS_OBJECTS_32= \
  ./o32/arctic/programs/ls/operate.o \
  ./o32/arctic/libc.a \
 
+ARCTIC_PROGRAMS_REBOOT_OBJECTS_32= \
+ ./o32/arctic/programs/reboot/main.o \
+ ./o32/arctic/programs/reboot/operate.o \
+ ./o32/arctic/libc.a \
+
 ARCTIC_PROGRAMS_SLEEP_OBJECTS_32= \
  ./o32/arctic/programs/sleep/main.o \
  ./o32/arctic/programs/sleep/operate.o \
@@ -64,6 +69,11 @@ ARCTIC_PROGRAMS_LS_OBJECTS_64= \
  ./o64/arctic/programs/ls/operate.o \
  ./o64/arctic/libc.a \
 
+ARCTIC_PROGRAMS_REBOOT_OBJECTS_64= \
+ ./o64/arctic/programs/reboot/main.o \
+ ./o64/arctic/programs/reboot/operate.o \
+ ./o64/arctic/libc.a \
+
 ARCTIC_PROGRAMS_SLEEP_OBJECTS_64= \
  ./o64/arctic/programs/sleep/main.o \
  ./o64/arctic/programs/sleep/operate.o \
@@ -88,6 +98,9 @@ ARCTIC_PROGRAMS_INIT_HEADERS= \
 ARCTIC_PROGRAMS_LS_HEADERS= \
  ./arctic/programs/ls/main.h \
 
+ARCTIC_PROGRAMS_REBOOT_HEADERS= \
+ ./arctic/programs/reboot/main.h \
+
 ARCTIC_PROGRAMS_SLEEP_HEADERS= \
  ./arctic/programs/sleep/main.h \
 
@@ -108,6 +121,9 @@ ARCTIC_PROGRAMS_TERMINAL_HEADERS= \
 ./arctic/bin32/ls: $(ARCTIC_PROGRAMS_LS_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LS_OBJECTS_32)
 
+./arctic/bin32/reboot: $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_32)
+
 ./arctic/bin32/sleep: $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_32)
 
@@ -125,6 +141,9 @@ ARCTIC_PROGRAMS_TERMINAL_HEADERS= \
 
 ./arctic/bin64/ls: $(ARCTIC_PROGRAMS_LS_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LS_OBJECTS_64)
+
+./arctic/bin64/reboot: $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_64)
 
 ./arctic/bin64/sleep: $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_64)
