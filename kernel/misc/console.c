@@ -37,6 +37,9 @@ static int n_write(struct vfs_node *node,
 	(void)node;
 	(void)offset;
 
+	if (kernel->rebooting)
+		return 0;
+
 	return con_write(buffer, *size), 0;
 }
 
