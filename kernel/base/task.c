@@ -733,6 +733,7 @@ void task_exit(int retval)
 		current->sig.send(current);
 
 	pg_delete();
+	task_set_cmdline(current, NULL, "[exit]");
 
 	if (current->id == 1) {
 		int sig = (retval & 127);
