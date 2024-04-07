@@ -517,62 +517,9 @@ static int create_window(const char *name, int x1, int y1, int x2, int y2)
 	return 0;
 }
 
-int gui_create_window(const char *name, int x1, int y1, int x2, int y2)
-{
-	int r;
-
-	spin_lock(&gui_lock);
-
-	r = create_window(name, x1, y1, x2, y2);
-	spin_unlock(&gui_lock);
-
-	return r;
-}
-
-int gui_delete_window(void)
-{
-	struct gui_window *win;
-	unsigned x, y;
-
-	spin_lock(&gui_lock);
-
-	if (!gui_window_stack)
-		return spin_unlock(&gui_lock), 1;
-
-	win = gui_window_stack;
-
-	for (y = 0; y < win->win_height; y++) {
-		unsigned char *src = win->win_behind + (y * win->win_width);
-		unsigned char *dst = win->win_buffer + (y * vi.width);
-
-		for (x = 0; x < win->win_width; x++)
-			dst[x] = src[x];
-	}
-
-	gui_window_stack = gui_window_stack->prev;
-
-	free(win->win_behind);
-	free(win);
-
-	spin_unlock(&gui_lock);
-
-	return 0;
-}
-
 int gui_detach(void)
 {
 	uint32_t *fb_standard = (uint32_t *)kernel->fb_standard_addr;
-	int i;
-
-	if (back_buffer) {
-		for (i = 0; /* void */; i++) {
-			if (gui_delete_window())
-				break;
-			if (i == 16)
-				return 1;
-		}
-		blit();
-	}
 
 	if (fb_standard)
 		memset(fb_standard, 0, kernel->fb_standard_size);
