@@ -182,7 +182,6 @@ int gui_init(void);
 int gui_create_window(const char *name, int x1, int y1, int x2, int y2);
 int gui_delete_window(void);
 int gui_detach(void);
-int gui_draw(unsigned char *png, size_t size, int x1, int y1, int x2, int y2);
 
 void gui_print(const char *format, ...);
 void gui_print_alert(const char *message);
