@@ -147,7 +147,7 @@ void video_clear(int mode)
 
 		for (i = 0; i < v; i++) {
 			for (j = 0; j < h; j++)
-				fb[j] = 0x00101010;
+				fb[j] = 0x00404040;
 			fb += stride;
 		}
 	}
