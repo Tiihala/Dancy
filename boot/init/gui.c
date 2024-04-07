@@ -639,6 +639,9 @@ void gui_print(const char *format, ...)
 	vsnprintf(buf, sizeof(buf), format, va);
 	va_end(va);
 
+	if (!back_buffer)
+		return;
+
 	spin_lock(&gui_lock);
 
 	if (!gui_window_stack) {
