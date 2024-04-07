@@ -225,23 +225,6 @@ void init(void)
 	}
 
 	/*
-	 * Draw the background picture.
-	 */
-	if (vi.width != 0) {
-		const char *png_name = "share/pictures/init.png";
-		unsigned char *png_data;
-		size_t png_size;
-
-		int x1 = 0, y1 = 0;
-		int x2 = (int)(vi.width - 1), y2 = (int)(vi.height - 1);
-
-		if (!db_read(png_name, &png_data, &png_size)) {
-			gui_draw(png_data, png_size, x1, y1, x2, y2);
-			free(png_data);
-		}
-	}
-
-	/*
 	 * Use gui_print instead of the loader provided service.
 	 */
 	b_print = gui_print;

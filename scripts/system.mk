@@ -9,7 +9,6 @@ DANCY_DB_000_FILES= \
  ./share/fonts/dcysan.ttf \
  ./share/fonts/dcysanb.ttf \
  ./share/fonts/dcysanm.ttf \
- ./share/pictures/init.png \
 
 DANCY_DB_100_FILES= \
  ./o32/lib.at \
