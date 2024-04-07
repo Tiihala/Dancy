@@ -156,7 +156,7 @@ void table_init(void)
 		if (vi->width >= 1920 && vi->height >= 1080)
 			glyph_em = 28;
 		else if (vi->width >= 1280 && vi->height >= 1024)
-			glyph_em = 24;
+			glyph_em = 22;
 		else if (vi->width >= 1024 && vi->height >= 768)
 			glyph_em = 20;
 
