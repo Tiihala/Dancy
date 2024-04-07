@@ -143,7 +143,7 @@ void table_init(void)
 	/*
 	 * Write the kernel console bitmap glyphs (monospace).
 	 */
-	{
+	if (gui_video_info != NULL) {
 		const struct b_video_info *vi = gui_video_info;
 		static unsigned char ttf_bitmap[1024];
 		extern void *ttf_array[3];
