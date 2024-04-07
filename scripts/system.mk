@@ -45,7 +45,7 @@ DANCY_DB_400_FILES= \
 ##############################################################################
 
 ./system/CONFIG.AT: ./bin/dy-conf$(DANCY_EXE)
-	$(DY_CONF) -o$@
+	$(DY_CONF) -o$@ 1280x1024x32
 
 ./system/DB_000.AT: ./bin/dy-zip$(DANCY_EXE) $(DANCY_DB_000_FILES)
 	$(DY_ZIP) -o$@ $(DANCY_DB_000_FILES)
