@@ -864,7 +864,7 @@ static struct vfs_node *alloc_node(int type,
 		vfs_init_node(node, size);
 
 		node->count = 1;
-		node->type = vfs_type_buffer;
+		node->type = vfs_type_character;
 
 		node->internal_data = (void *)a;
 
