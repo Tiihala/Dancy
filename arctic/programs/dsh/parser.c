@@ -22,6 +22,8 @@
 struct command {
 	char **argv;
 	size_t state[2];
+	char op[TOKEN_DATA_SIZE];
+	long value;
 };
 
 static void command_init(struct command *command)
@@ -85,57 +87,103 @@ static char *append_arg(struct command *command, const char *arg)
 	return r;
 }
 
-static int parse_input(struct token *token)
+static void parse_commands(struct command *commands, int commands_count)
 {
-	struct command command;
-	int i, argc = 0;
+	struct command *command = &commands[0];
+	int i, argc;
 
-	command_init(&command);
+	if (commands_count > 1) {
+		parsing_error("operators are not supported");
+		fputs("dsh: parsing state:", stderr);
 
-	for (;;) {
-		if (dsh_token_read(token))
-			return command_release(&command), 1;
+		for (i = 0; i < commands_count; i++) {
+			command = &commands[i];
+			if (command->argv != NULL)
+				fprintf(stderr, "\033[94m arg");
+			else
+				fprintf(stderr, "\033[95m %s", command->op);
 
-		if (token->type == token_type_null)
-			break;
-
-		if (token->type == token_type_arg) {
-			if (!append_arg(&command, token->data))
-				return command_release(&command), 1;
-			argc += 1;
-			continue;
 		}
-
-		if (token->type != token_type_op)
-			return command_release(&command), 1;
-
-		command_release(&command);
-
-		if (token->data[0] == '<' || token->data[0] == '>') {
-			fprintf(stderr, "DEBUG: [%ld]%s\n",
-				token->value, token->data);
-		}
-
-		return parsing_error(token->data);
+		fputs("\033[0m\n", stderr);
+		return;
 	}
+
+	argc = (int)command->state[0];
 
 	for (i = 0; argc > 0; i++) {
 		const char *name = dsh_builtin_array[i].name;
 		int (*cmd)(int, char **);
 
 		if (name == NULL) {
-			dsh_execute(command.argv);
+			dsh_execute(command->argv);
 			break;
 		}
 
-		if (!strcmp(name, command.argv[0])) {
+		if (!strcmp(name, command->argv[0])) {
 			cmd = dsh_builtin_array[i].execute;
-			dsh_exit_code = cmd(argc, command.argv);
+			dsh_exit_code = cmd(argc, command->argv);
 			break;
 		}
 	}
+}
 
-	return command_release(&command), 0;
+static void parse_input(struct token *token)
+{
+	struct command commands[128];
+	int commands_count = 0;
+	int commands_limit = (int)(sizeof(commands) / sizeof(commands[0]));
+	int state = 0;
+
+	for (;;) {
+		struct command *command = &commands[commands_count];
+
+		if (dsh_token_read(token)) {
+			state = -1;
+			break;
+		}
+
+		if (token->type == token_type_null) {
+			if (state == 1) {
+				commands_count += 1;
+				state = 0;
+			}
+			break;
+		}
+
+		if (token->type == token_type_arg) {
+			if (state == 0) {
+				command_init(command);
+				state = 1;
+			}
+			if (!append_arg(command, token->data)) {
+				parsing_error("out of memory"), state = -1;
+				break;
+			}
+			continue;
+		}
+
+		if (token->type == token_type_op) {
+			if (commands_count + 2 >= commands_limit) {
+				parsing_error("input overflow"), state = -1;
+				break;
+			}
+			if (state == 1) {
+				command = &commands[++commands_count];
+				state = 0;
+			}
+			command_init(command);
+			strcpy(&command->op[0], &token->_data[0]);
+			command->value = token->value;
+			commands_count += 1;
+			continue;
+		}
+	}
+
+	if (!(state < 0) && commands_count > 0)
+		parse_commands(&commands[0], commands_count);
+
+	while (commands_count > 0)
+		command_release(&commands[--commands_count]);
 }
 
 void dsh_parse_input(const char *input)
