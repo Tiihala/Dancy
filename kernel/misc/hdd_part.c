@@ -133,6 +133,7 @@ static struct vfs_node *alloc_node(void)
 		vfs_init_node(node, size);
 
 		node->count = 1;
+		node->type = vfs_type_block;
 		node->internal_data = (void *)a;
 		node->n_release = n_release;
 
