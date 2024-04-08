@@ -24,6 +24,7 @@ static const char *help_str =
 	" [-r] [file...]\n"
 	"\nOptions:\n"
 	"  -a            list all entries\n"
+	"  -l            long format\n"
 	"  -r            reverse order\n"
 	"  -R            list recursively\n"
 	"\nGeneral:\n"
@@ -95,6 +96,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'a':
 				opts.list_all = 1;
+				break;
+			case 'l':
+				opts.long_format = 1;
 				break;
 			case 'r':
 				opts.reverse_order = 1;

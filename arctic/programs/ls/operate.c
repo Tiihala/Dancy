@@ -234,6 +234,98 @@ static void ls_print(size_t count, struct ls_record *records)
 	}
 }
 
+static void ls_print_long(size_t count, struct ls_record *records)
+{
+	off_t max_st_size = 0;
+	int wid_st_size = 1;
+	size_t i;
+
+	for (i = 0; i < count; i++) {
+		struct ls_record *r = &records[i];
+		off_t st_size = r->status.st_size;
+
+		if (st_size > 0x7FFFFFFFFFFFFFFFLL) {
+			fputs("ls: st_size overflow\n", stderr);
+			ls_exit_failure = 2;
+			return;
+		}
+
+		if (max_st_size < st_size)
+			max_st_size = st_size;
+	}
+
+	if (max_st_size > 0) {
+		char buffer[32];
+		int r = snprintf(&buffer[0], sizeof(buffer),
+			"%lld", (long long)max_st_size);
+		if (r > 0)
+			wid_st_size = r;
+	}
+
+	for (i = 0; i < count; i++) {
+		struct ls_record *r = &records[i];
+		const char *name = &r->path[0];
+		mode_t st_mode = r->status.st_mode;
+
+		if (r->state > 1)
+			name = strrchr(name, '/') + 1;
+
+		if (S_ISREG(st_mode))
+			printf("-");
+		else if (S_ISBLK(st_mode))
+			printf("b");
+		else if (S_ISCHR(st_mode))
+			printf("c");
+		else if (S_ISDIR(st_mode))
+			printf("d");
+		else if (S_ISLNK(st_mode))
+			printf("l");
+		else
+			printf("?");
+
+		printf(((st_mode & S_IRUSR) != 0) ? "r" : "-");
+		printf(((st_mode & S_IWUSR) != 0) ? "w" : "-");
+		printf(((st_mode & S_IXUSR) != 0) ? "x" : "-");
+
+		printf(((st_mode & S_IRGRP) != 0) ? "r" : "-");
+		printf(((st_mode & S_IWGRP) != 0) ? "w" : "-");
+		printf(((st_mode & S_IXGRP) != 0) ? "x" : "-");
+
+		printf(((st_mode & S_IROTH) != 0) ? "r" : "-");
+		printf(((st_mode & S_IWOTH) != 0) ? "w" : "-");
+		printf(((st_mode & S_IXOTH) != 0) ? "x" : "-");
+
+		printf("  %*lld ", wid_st_size, (long long)r->status.st_size);
+
+		{
+			time_t tv_sec = r->status.st_mtim.tv_sec;
+			struct tm *t = localtime(&tv_sec);
+			char b[32];
+
+			if (strftime(&b[0], sizeof(b), "%b %e %Y %H:%M", t))
+				printf(" %s", &b[0]);
+		}
+
+		if (ls_tty_width >= 16) {
+			const char *c = "\033[0m";
+
+			if (S_ISDIR(st_mode))
+				c = "\033[94m";
+			else if (S_ISCHR(st_mode))
+				c = "\033[95m";
+			else if (S_ISBLK(st_mode))
+				c = "\033[33m";
+			else if (!S_ISREG(st_mode))
+				c = "\033[96m";
+
+			printf(" %s%s\033[0m\n", c, name);
+			continue;
+		}
+
+		printf(" %s\n", name);
+	}
+}
+
 static int ls_qsort(const void *p1, const void *p2)
 {
 	const struct ls_record *r1 = p1;
@@ -278,7 +370,10 @@ static void ls(size_t count, struct ls_record *records, int recursion)
 		}
 	}
 
-	ls_print(print_count, records);
+	if (ls_opt->long_format)
+		ls_print_long(print_count, records);
+	else
+		ls_print(print_count, records);
 
 	if (!ls_opt->recursive && recursion > 0)
 		return;

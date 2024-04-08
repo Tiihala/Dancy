@@ -30,12 +30,14 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
 
 struct options {
 	char **operands;
 	const char *error;
 	int list_all;
+	int long_format;
 	int reverse_order;
 	int recursive;
 };
