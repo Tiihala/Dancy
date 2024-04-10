@@ -29,24 +29,6 @@ static int token_error(const char *message)
 	return -1;
 }
 
-static int is_special_character(char c)
-{
-	switch (c) {
-		case '&':
-			return 1;
-		case ';':
-			return 1;
-		case '<':
-			return 1;
-		case '>':
-			return 1;
-		case '|':
-			return 1;
-	}
-
-	return 0;
-}
-
 void dsh_token_init(struct token *token, const char *input)
 {
 	memset(token, 0, sizeof(*token));
@@ -144,8 +126,7 @@ int dsh_token_read(struct token *token)
 		if (strchr(" \t\n\v\f\r", c))
 			break;
 
-		if (is_special_character(c)) {
-			char message[64];
+		if (strchr("&;<>|", c)) {
 			long value = -1;
 
 			size = (int)(b - &_b[0]);
@@ -184,17 +165,13 @@ int dsh_token_read(struct token *token)
 					new_i += 1;
 				}
 				token->type = token_type_op;
-
-				if (!is_special_character(input[new_i]))
-					return (token->_i = new_i), 0;
+				return (token->_i = new_i), 0;
 			}
 
 			if (c == ';') {
 				strcpy(token->data, ";");
 				token->type = token_type_op;
-
-				if (!is_special_character(input[new_i]))
-					return (token->_i = new_i), 0;
+				return (token->_i = new_i), 0;
 			}
 
 			if (c == '<') {
@@ -202,12 +179,16 @@ int dsh_token_read(struct token *token)
 				if (input[new_i] == '<') {
 					strcpy(token->data, "<<");
 					new_i += 1;
+				} else if (input[new_i] == '&') {
+					strcpy(token->data, "<&");
+					new_i += 1;
+				} else if (input[new_i] == '>') {
+					strcpy(token->data, "<>");
+					new_i += 1;
 				}
 				token->type = token_type_op;
 				token->value = value;
-
-				if (!is_special_character(input[new_i]))
-					return (token->_i = new_i), 0;
+				return (token->_i = new_i), 0;
 			}
 
 			if (c == '>') {
@@ -215,12 +196,13 @@ int dsh_token_read(struct token *token)
 				if (input[new_i] == '>') {
 					strcpy(token->data, ">>");
 					new_i += 1;
+				} else if (input[new_i] == '&') {
+					strcpy(token->data, ">&");
+					new_i += 1;
 				}
 				token->type = token_type_op;
 				token->value = value;
-
-				if (!is_special_character(input[new_i]))
-					return (token->_i = new_i), 0;
+				return (token->_i = new_i), 0;
 			}
 
 			if (c == '|') {
@@ -230,15 +212,8 @@ int dsh_token_read(struct token *token)
 					new_i += 1;
 				}
 				token->type = token_type_op;
-
-				if (!is_special_character(input[new_i]))
-					return (token->_i = new_i), 0;
+				return (token->_i = new_i), 0;
 			}
-
-			snprintf(&message[0], sizeof(message),
-				"unrecognized token starting from \'%c\'", c);
-
-			return token_error(&message[0]);
 		}
 
 		*b++ = c, *b = '\0';
