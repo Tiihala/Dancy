@@ -655,26 +655,25 @@ static long long dancy_syscall_stat(va_list va)
 	memset(buffer, 0, sizeof(*buffer));
 
 	if (node->type == vfs_type_regular)
-		buffer->st_mode = __DANCY_S_IFREG;
+		buffer->st_mode = 0x1FF | __DANCY_S_IFREG;
 
 	else if (node->type == vfs_type_buffer)
-		buffer->st_mode = __DANCY_S_IFIFO;
+		buffer->st_mode = 0x1B6 | __DANCY_S_IFIFO;
 
 	else if (node->type == vfs_type_directory)
-		buffer->st_mode = __DANCY_S_IFDIR;
+		buffer->st_mode = 0x1FF | __DANCY_S_IFDIR;
 
 	else if (node->type == vfs_type_character)
-		buffer->st_mode = __DANCY_S_IFCHR;
+		buffer->st_mode = 0x1B6 | __DANCY_S_IFCHR;
 
 	else if (node->type == vfs_type_block)
-		buffer->st_mode = __DANCY_S_IFBLK;
+		buffer->st_mode = 0x1B6 | __DANCY_S_IFBLK;
 
 	else if (node->type == vfs_type_socket)
-		buffer->st_mode = __DANCY_S_IFSOCK;
+		buffer->st_mode = 0x1B6 | __DANCY_S_IFSOCK;
 
 	node->n_release(&node);
 
-	buffer->st_mode |= 0x1FF;
 	buffer->st_nlink = 1;
 	buffer->st_size = (off_t)vstat.size;
 
