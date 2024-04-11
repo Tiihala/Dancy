@@ -215,6 +215,9 @@ int operate(struct options *opt)
 			perror("posix_spawn");
 			exe_path = NULL;
 		}
+
+		posix_spawn_file_actions_destroy(&actions);
+		posix_spawnattr_destroy(&attr);
 	}
 
 	while (exe_path) {

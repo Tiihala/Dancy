@@ -56,6 +56,9 @@ static void execute_spawn(const char *path, char **argv)
 
 	r = posix_spawn(&pid, path, &actions, &attr, argv, environ);
 
+	posix_spawn_file_actions_destroy(&actions);
+	posix_spawnattr_destroy(&attr);
+
 	if (r != 0) {
 		const char *e;
 
