@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,6 +18,7 @@
  */
 
 #include <spawn.h>
+#include <stdlib.h>
 #include <string.h>
 
 int posix_spawn_file_actions_init(posix_spawn_file_actions_t *actions)
@@ -29,6 +30,17 @@ int posix_spawn_file_actions_init(posix_spawn_file_actions_t *actions)
 
 int posix_spawn_file_actions_destroy(posix_spawn_file_actions_t *actions)
 {
+	size_t m = sizeof(actions->_actions) / sizeof(actions->_actions[0]);
+	unsigned int i;
+
+	if (actions->_count <= (unsigned int)m) {
+		for (i = 0; i < actions->_count; i++) {
+			void *path = (void *)actions->_actions[i]._path;
+			if (path != NULL)
+				free(path);
+		}
+	}
+
 	memset(actions, 0xFF, sizeof(*actions));
 
 	return 0;
