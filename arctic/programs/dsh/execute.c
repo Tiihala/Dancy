@@ -37,51 +37,43 @@ static int valid_command(const char *arg)
 	return 1;
 }
 
-static void execute_spawn(const char *path, char **argv)
+static void execute_spawn(struct dsh_execute_state *state, const char *path)
 {
 	extern char **environ;
-	pid_t tc_pgrp = tcgetpgrp(STDIN_FILENO);
-	pid_t pid, wpid;
 	int r;
 
-	posix_spawn_file_actions_t actions;
-	posix_spawnattr_t attr;
-
-	posix_spawn_file_actions_init(&actions);
-	posix_spawn_file_actions_addtcsetpgrp_np(&actions, STDIN_FILENO);
-
-	posix_spawnattr_init(&attr);
-	posix_spawnattr_setflags(&attr, POSIX_SPAWN_SETPGROUP);
-	posix_spawnattr_setpgroup(&attr, 0);
-
-	r = posix_spawn(&pid, path, &actions, &attr, argv, environ);
-
-	posix_spawn_file_actions_destroy(&actions);
-	posix_spawnattr_destroy(&attr);
+	r = posix_spawn(&state->pid, path,
+		&state->actions, &state->attr, state->argv, environ);
 
 	if (r != 0) {
 		const char *e;
 
-		tcsetpgrp(STDIN_FILENO, tc_pgrp);
-
-		if (r == ENOENT && valid_command(argv[0]))
+		if (r == ENOENT && valid_command(state->argv[0]))
 			e = "command not found...";
 		else
 			e = strerror(r);
 
-		fprintf(stderr, "dsh: %s: %s\n", argv[0], e);
+		if (r == ENOEXEC)
+			dsh_exit_code = 126;
+
+		state->pid = 0;
+
+		fprintf(stderr, "dsh: %s: %s\n", state->argv[0], e);
 		if (!dsh_interactive)
 			dsh_operate_state = 0;
 		return;
 	}
 
+	if (state->no_wait) {
+		dsh_exit_code = 0;
+		return;
+	}
+
 	for (;;) {
 		int status = 0;
+		pid_t wpid = waitpid(state->pid, &status, 0);
 
-		errno = 0;
-		wpid = waitpid(pid, &status, 0);
-
-		if (wpid != pid)
+		if (wpid != state->pid)
 			continue;
 
 		if (WIFEXITED(status)) {
@@ -94,17 +86,19 @@ static void execute_spawn(const char *path, char **argv)
 			break;
 		}
 	}
-
-	tcsetpgrp(STDIN_FILENO, tc_pgrp);
 }
 
-void dsh_execute(char **argv)
+void dsh_execute(struct dsh_execute_state *state)
 {
-	const char *path = argv[0];
+	const char *path = state->argv[0];
+	pid_t tc_pgrp;
 	char cmd[512];
 	size_t i;
 
-	dsh_exit_code = 1;
+	dsh_exit_code = 127;
+
+	while (waitpid(-1, NULL, WNOHANG) > 0)
+		/* void */;
 
 	for (i = 0; path[i] != '\0'; i++) {
 		char c = path[i];
@@ -129,7 +123,9 @@ void dsh_execute(char **argv)
 		path = &cmd[0];
 	}
 
-	execute_spawn(path, argv);
+	tc_pgrp = tcgetpgrp(0);
+	execute_spawn(state, path);
+	tcsetpgrp(0, tc_pgrp);
 
 	if (dsh_exit_code >= 128)
 		fputs("\n", stderr);

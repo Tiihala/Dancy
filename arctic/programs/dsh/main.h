@@ -57,7 +57,16 @@ extern int dsh_operate_state;
 extern int dsh_interactive;
 
 int operate(struct options *opt);
-void dsh_execute(char **argv);
+
+struct dsh_execute_state {
+	pid_t pid;
+	char **argv;
+	posix_spawn_file_actions_t actions;
+	posix_spawnattr_t attr;
+	int no_wait;
+};
+
+void dsh_execute(struct dsh_execute_state *state);
 
 char *dsh_get_input(struct options *opt, const char *prompt, size_t offset);
 void dsh_parse_input(const char *input);

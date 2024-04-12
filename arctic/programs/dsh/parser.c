@@ -89,10 +89,14 @@ static char *append_arg(struct command *command, const char *arg)
 
 static void parse_commands(struct command *commands, int commands_count)
 {
+	struct dsh_execute_state state;
 	struct command *command = &commands[0];
-	int i, argc;
+	int i;
 
-	if (commands_count > 1) {
+	memset(&state, 0, sizeof(state));
+	state.argv = command->argv;
+
+	if (commands->argv == NULL || commands_count > 1) {
 		parsing_error("operators are not supported");
 		fputs("dsh: parsing state:", stderr);
 
@@ -108,23 +112,32 @@ static void parse_commands(struct command *commands, int commands_count)
 		return;
 	}
 
-	argc = (int)command->state[0];
+	for (i = 0; dsh_builtin_array[i].name != NULL; i++) {
+		int (*builtin_cmd)(int, char **);
 
-	for (i = 0; argc > 0; i++) {
-		const char *name = dsh_builtin_array[i].name;
-		int (*cmd)(int, char **);
+		if (!strcmp(dsh_builtin_array[i].name, state.argv[0])) {
+			int argc = 0;
 
-		if (name == NULL) {
-			dsh_execute(command->argv);
-			break;
-		}
+			while (state.argv[argc] != NULL)
+				argc += 1;
 
-		if (!strcmp(name, command->argv[0])) {
-			cmd = dsh_builtin_array[i].execute;
-			dsh_exit_code = cmd(argc, command->argv);
-			break;
+			builtin_cmd = dsh_builtin_array[i].execute;
+			dsh_exit_code = builtin_cmd(argc, state.argv);
+			return;
 		}
 	}
+
+	posix_spawn_file_actions_init(&state.actions);
+	posix_spawn_file_actions_addtcsetpgrp_np(&state.actions, 0);
+
+	posix_spawnattr_init(&state.attr);
+	posix_spawnattr_setflags(&state.attr, POSIX_SPAWN_SETPGROUP);
+	posix_spawnattr_setpgroup(&state.attr, 0);
+
+	dsh_execute(&state);
+
+	posix_spawn_file_actions_destroy(&state.actions);
+	posix_spawnattr_destroy(&state.attr);
 }
 
 static void parse_input(struct token *token)
