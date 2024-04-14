@@ -42,6 +42,16 @@ static void func_setsid(struct task *current, void *arg)
 	current->id_session = id;
 }
 
+static void func_setsigmask(struct task *current, void *arg)
+{
+	uint32_t mask = *((uint32_t *)arg);
+
+	mask &= ~(((uint32_t)1) << (SIGKILL - 1));
+	mask &= ~(((uint32_t)1) << (SIGTERM - 1));
+
+	current->sig.mask = mask;
+}
+
 static int func_setpgroup(struct task *task, void *arg)
 {
 	struct task_arg *ta = arg;
@@ -96,6 +106,14 @@ static int new_task(void *arg)
 				spin_unlock(&ta->lock);
 				return 0;
 			}
+		}
+
+		if ((flags & __DANCY_SPAWN_SETSIGDEF) != 0)
+			flags ^= __DANCY_SPAWN_SETSIGDEF;
+
+		if ((flags & __DANCY_SPAWN_SETSIGMASK) != 0) {
+			flags ^= __DANCY_SPAWN_SETSIGMASK;
+			task_access(func_setsigmask, &ta->attrp->_sigmask);
 		}
 
 		if (flags != 0)
