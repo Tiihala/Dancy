@@ -173,7 +173,7 @@ static int detect_interrupt(int r)
 	if (r != 0 && r != DE_RETRY)
 		return r;
 
-	if (task_current()->asm_data3 != 0)
+	if (task_signaled(task_current()))
 		return DE_INTERRUPT;
 
 	return 0;

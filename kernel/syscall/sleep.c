@@ -39,7 +39,7 @@ static int s(uint64_t start_ms, uint64_t request_ms, struct timespec *remain)
 		d0 = (uint64_t)(ULLONG_MAX);
 
 	while (d0 > (d1 = timer_read())) {
-		if (task_current()->asm_data3 != 0) {
+		if (task_signaled(task_current())) {
 			r = DE_INTERRUPT;
 			break;
 		}
@@ -115,7 +115,7 @@ int sleep_internal(clockid_t id, int flags,
 			start_ms = timer_read();
 			request_ms = (uint64_t)((d > 1) ? 1000 : 10);
 
-			if (task_current()->asm_data3 != 0)
+			if (task_signaled(task_current()))
 				return DE_INTERRUPT;
 
 			s(start_ms, request_ms, NULL);
