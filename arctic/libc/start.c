@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023 Antti Tiihala
+ * Copyright (c) 2022, 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,6 +29,7 @@ void __dancy_libc_start(int argc, char *argv[])
 	extern int main(int argc, char *argv[]);
 	int retval;
 
+	__dancy_free = __dancy_free_default;
 	__dancy_stdio_init();
 	__dancy_atexit_init();
 
@@ -38,4 +39,11 @@ void __dancy_libc_start(int argc, char *argv[])
 	__dancy_stdio_fini();
 
 	__dancy_syscall1(__dancy_syscall_exit, retval);
+}
+
+void (*__dancy_free)(void *pointer);
+
+void __dancy_free_default(void *pointer)
+{
+	(void)pointer;
 }

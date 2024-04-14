@@ -44,7 +44,7 @@ int fclose(FILE *stream)
 			r = EOF;
 
 		if ((state & __DANCY_FILE_STATIC_BUFFER) == 0)
-			free(stream->_buffer), stream->_buffer = NULL;
+			__dancy_free(stream->_buffer), stream->_buffer = NULL;
 
 		mtx_unlock(&stream->_mtx);
 		mtx_destroy(&stream->_mtx);
@@ -53,7 +53,7 @@ int fclose(FILE *stream)
 		stream->_fd = -1;
 
 		if ((state & __DANCY_FILE_MALLOC_STRUCT) != 0)
-			free(stream);
+			__dancy_free(stream);
 	}
 
 	return r;

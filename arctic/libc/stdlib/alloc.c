@@ -60,6 +60,8 @@ static void internal_alloc_init(void)
 	if (!__dancy_spin_trylock(&run_once))
 		return;
 
+	__dancy_free = free;
+
 	addr = 0x10;
 	alloc_zero = (void *)addr;
 
