@@ -48,14 +48,14 @@ static void command_release(struct command *command)
 	command_init(command);
 }
 
-static int parsing_error(const char *message)
+static void parsing_error(const char *message)
 {
 	fprintf(stderr, "dsh: parsing error: %s\n", message);
 
 	if (!dsh_interactive)
 		dsh_operate_state = 0;
 
-	return -1;
+	dsh_exit_code = 2;
 }
 
 static char *append_arg(struct command *command, const char *arg)
@@ -87,21 +87,26 @@ static char *append_arg(struct command *command, const char *arg)
 	return r;
 }
 
-static void parse_commands(struct command *commands, int commands_count)
+static int parse_pipeline(struct command *commands, int count, int no_wait)
 {
 	struct dsh_execute_state state;
-	struct command *command = &commands[0];
 	int i;
 
 	memset(&state, 0, sizeof(state));
-	state.argv = command->argv;
+	state.argv = commands->argv;
+	state.no_wait = no_wait;
 
-	if (commands->argv == NULL || commands_count > 1) {
-		parsing_error("operators are not supported");
+	if (state.no_wait) {
+		fputs("dsh: warning: operator '&' is synchronous\n", stderr);
+		state.no_wait = 0;
+	}
+
+	if (state.argv == NULL || count > 1) {
+		parsing_error("redirections and pipes are not supported");
 		fputs("dsh: parsing state:", stderr);
 
-		for (i = 0; i < commands_count; i++) {
-			command = &commands[i];
+		for (i = 0; i < count; i++) {
+			struct command *command = &commands[i];
 			if (command->argv != NULL)
 				fprintf(stderr, "\033[94m arg");
 			else
@@ -109,7 +114,7 @@ static void parse_commands(struct command *commands, int commands_count)
 
 		}
 		fputs("\033[0m\n", stderr);
-		return;
+		return -1;
 	}
 
 	for (i = 0; dsh_builtin_array[i].name != NULL; i++) {
@@ -123,7 +128,7 @@ static void parse_commands(struct command *commands, int commands_count)
 
 			builtin_cmd = dsh_builtin_array[i].execute;
 			dsh_exit_code = builtin_cmd(argc, state.argv);
-			return;
+			return 0;
 		}
 	}
 
@@ -138,6 +143,69 @@ static void parse_commands(struct command *commands, int commands_count)
 
 	posix_spawn_file_actions_destroy(&state.actions);
 	posix_spawnattr_destroy(&state.attr);
+
+	return 0;
+}
+
+static int parse_list(struct command *commands, int count)
+{
+	const char *prev_op = NULL;
+	struct command *p1, *p2;
+	int i;
+
+	p1 = p2 = commands;
+
+	for (i = 0; i < count; i++) {
+		const char *op = &p2->op[0];
+		int accept_op = 0;
+		int no_wait = 0;
+
+		if (!strcmp(op, "\\n"))
+			accept_op = 1;
+		else if (!strcmp(op, "&"))
+			accept_op = 1, no_wait = 1;
+		else if (!strcmp(op, "&&"))
+			accept_op = 1;
+		else if (!strcmp(op, ";"))
+			accept_op = 1;
+		else if (!strcmp(op, "||"))
+			accept_op = 1;
+
+		if (!accept_op) {
+			p2 += 1;
+			continue;
+		}
+
+		if ((int)(p2 - p1) == 0) {
+			if (!strcmp(prev_op, "&") || !strcmp(prev_op, ";")) {
+				if (!strcmp(op, "\\n"))
+					return 0;
+			}
+			parsing_error(op);
+			return -1;
+		}
+
+		if (prev_op) {
+			if (!strcmp(prev_op, "&&") && dsh_exit_code != 0) {
+				prev_op = op, p1 = ++p2;
+				continue;
+			}
+			if (!strcmp(prev_op, "||") && dsh_exit_code == 0) {
+				prev_op = op, p1 = ++p2;
+				continue;
+			}
+		}
+
+		if (parse_pipeline(p1, (int)(p2 - p1), no_wait))
+			return -1;
+
+		if (no_wait)
+			dsh_exit_code = 0;
+
+		prev_op = op, p1 = ++p2;
+	}
+
+	return 0;
 }
 
 static void parse_input(struct token *token)
@@ -150,6 +218,11 @@ static void parse_input(struct token *token)
 	for (;;) {
 		struct command *command = &commands[commands_count];
 
+		if (commands_count + 2 >= commands_limit) {
+			parsing_error("input overflow"), state = -1;
+			break;
+		}
+
 		if (dsh_token_read(token)) {
 			state = -1;
 			break;
@@ -157,9 +230,12 @@ static void parse_input(struct token *token)
 
 		if (token->type == token_type_null) {
 			if (state == 1) {
-				commands_count += 1;
+				command = &commands[++commands_count];
 				state = 0;
 			}
+			command_init(command);
+			strcpy(&command->op[0], "\\n");
+			commands_count += 1;
 			break;
 		}
 
@@ -176,10 +252,6 @@ static void parse_input(struct token *token)
 		}
 
 		if (token->type == token_type_op) {
-			if (commands_count + 2 >= commands_limit) {
-				parsing_error("input overflow"), state = -1;
-				break;
-			}
 			if (state == 1) {
 				command = &commands[++commands_count];
 				state = 0;
@@ -192,8 +264,8 @@ static void parse_input(struct token *token)
 		}
 	}
 
-	if (!(state < 0) && commands_count > 0)
-		parse_commands(&commands[0], commands_count);
+	if (!(state < 0) && commands_count > 1)
+		parse_list(&commands[0], commands_count);
 
 	while (commands_count > 0)
 		command_release(&commands[--commands_count]);
