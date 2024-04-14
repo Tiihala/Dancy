@@ -13,6 +13,7 @@ ARCTIC_BIN64_FILES= \
  ./arctic/bin64/reboot \
  ./arctic/bin64/sleep \
  ./arctic/bin64/terminal \
+ ./arctic/bin64/true \
 
 ##############################################################################
 
@@ -28,3 +29,4 @@ ARCTIC_BIN64_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin64/reboot ::reboot
 	$(DY_MCOPY) -i $@ ./arctic/bin64/sleep ::sleep
 	$(DY_MCOPY) -i $@ ./arctic/bin64/terminal ::terminal
+	$(DY_MCOPY) -i $@ ./arctic/bin64/true ::true
