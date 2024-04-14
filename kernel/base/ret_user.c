@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,11 +21,19 @@
 
 void ret_user_handler(struct task *current, void *stack)
 {
+	uint32_t asm_data3 = (uint32_t)current->asm_data3;
 	int sig = 0;
 	int i;
 
-	if (current->asm_data3 != 0) {
+	if (asm_data3 != 0) {
 		void *address = &current->asm_data3;
+		uint32_t mask = current->sig.mask;
+
+		mask &= ~(((uint32_t)1) << (SIGKILL - 1));
+		mask &= ~(((uint32_t)1) << (SIGTERM - 1));
+
+		if ((asm_data3 & (~mask)) == 0)
+			return;
 
 		for (i = 0; sig == 0 && i < 31; i++) {
 			if (cpu_btr32(address, (uint32_t)i))
