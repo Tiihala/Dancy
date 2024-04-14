@@ -149,7 +149,7 @@ static int parse_pipeline(struct command *commands, int count, int no_wait)
 
 static int parse_list(struct command *commands, int count)
 {
-	const char *prev_op = NULL;
+	const char *prev_op = "";
 	struct command *p1, *p2;
 	int i;
 
@@ -185,15 +185,14 @@ static int parse_list(struct command *commands, int count)
 			return -1;
 		}
 
-		if (prev_op) {
-			if (!strcmp(prev_op, "&&") && dsh_exit_code != 0) {
-				prev_op = op, p1 = ++p2;
-				continue;
-			}
-			if (!strcmp(prev_op, "||") && dsh_exit_code == 0) {
-				prev_op = op, p1 = ++p2;
-				continue;
-			}
+		if (!strcmp(prev_op, "&&") && dsh_exit_code != 0) {
+			prev_op = op, p1 = ++p2;
+			continue;
+		}
+
+		if (!strcmp(prev_op, "||") && dsh_exit_code == 0) {
+			prev_op = op, p1 = ++p2;
+			continue;
 		}
 
 		if (parse_pipeline(p1, (int)(p2 - p1), no_wait))
