@@ -635,6 +635,17 @@ void task_prepare_rebooting(void)
 	spin_leave(&lock_local);
 }
 
+int task_signaled(struct task *task)
+{
+	uint32_t asm_data3 = (uint32_t)task->asm_data3;
+	uint32_t mask = task->sig.mask;
+
+	mask &= ~(((uint32_t)1) << (SIGKILL - 1));
+	mask &= ~(((uint32_t)1) << (SIGTERM - 1));
+
+	return ((asm_data3 & (~mask)) != 0);
+}
+
 void task_identify(uint64_t *id, uint64_t *id_owner,
 	uint64_t *id_group, uint64_t *id_session)
 {
@@ -956,7 +967,7 @@ static int task_wait_descendant_shared(uint64_t *id, uint64_t id_group,
 			if (!descendant_state || mode_trywait)
 				break;
 
-			if (current->asm_data3) {
+			if (task_signaled(current)) {
 				de_interrupt = 1;
 				break;
 			}

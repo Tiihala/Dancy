@@ -110,6 +110,7 @@ void task_access(void (*func)(struct task *, void *), void *arg);
 void task_foreach(int (*func)(struct task *, void *), void *arg);
 void task_set_cmdline(struct task *task, void *line, const char *cline);
 void task_prepare_rebooting(void);
+int task_signaled(struct task *task);
 
 void task_identify(uint64_t *id, uint64_t *id_owner,
 	uint64_t *id_group, uint64_t *id_session);
