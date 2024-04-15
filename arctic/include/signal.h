@@ -40,14 +40,20 @@ typedef __dancy_sig_atomic_t sig_atomic_t;
 typedef __dancy_sigset_t sigset_t;
 #endif
 
-#define SIG_DFL ((void (*)(int))( 0))
-#define SIG_ERR ((void (*)(int))(-1))
-#define SIG_IGN ((void (*)(int))( 1))
-
 void (*signal(int sig, void (*func)(int)))(int);
 int raise(int sig);
 
 int kill(pid_t pid, int sig);
+
+int sigemptyset(sigset_t *set);
+int sigfillset(sigset_t *set);
+
+int sigaddset(sigset_t *set, int sig);
+int sigdelset(sigset_t *set, int sig);
+
+int sigpending(sigset_t *out);
+int sigprocmask(int how, const sigset_t *set, sigset_t *out);
+int sigismember(const sigset_t *set, int sig);
 
 __Dancy_Header_End
 
