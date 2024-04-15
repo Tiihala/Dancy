@@ -60,6 +60,14 @@ __Dancy_Header_Begin
  * #define __DANCY_SIGNAL_COUNT  29
  */
 
+#define SIG_DFL ((void (*)(int))( 0))
+#define SIG_ERR ((void (*)(int))(-1))
+#define SIG_IGN ((void (*)(int))( 1))
+
+#define SIG_BLOCK   0
+#define SIG_UNBLOCK 1
+#define SIG_SETMASK 2
+
 __Dancy_Header_End
 
 #endif
