@@ -1094,6 +1094,62 @@ static long long dancy_syscall_sigpending(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_sigprocmask(va_list va)
+{
+	int how = va_arg(va, int);
+	const __dancy_sigset_t *set = va_arg(va, const void *);
+	__dancy_sigset_t *out = va_arg(va, void *);
+
+	struct task *current = task_current();
+	uint32_t mask = current->sig.mask;
+	uint32_t s = 0;
+
+	if (how != SIG_BLOCK && how != SIG_UNBLOCK && how != SIG_SETMASK)
+		return -EINVAL;
+
+	if (set) {
+		if (((addr_t)set % (addr_t)sizeof(void *)) != 0)
+			return -EFAULT;
+
+		if (pg_check_user_read(set, sizeof(__dancy_sigset_t)))
+			return -EFAULT;
+
+		s = (uint32_t)(*set);
+	}
+
+	if (out) {
+		if (((addr_t)out % (addr_t)sizeof(void *)) != 0)
+			return -EFAULT;
+
+		if (pg_check_user_write(out, sizeof(__dancy_sigset_t)))
+			return -EFAULT;
+
+		*out = (__dancy_sigset_t)mask;
+	}
+
+	if (set) {
+		if (how == SIG_UNBLOCK) {
+			current->sig.mask = (mask & (~s));
+			return 0;
+		}
+
+		s &= ~(((uint32_t)1) << (SIGKILL - 1));
+		s &= ~(((uint32_t)1) << (SIGTERM - 1));
+
+		if (how == SIG_BLOCK) {
+			current->sig.mask = (mask | s);
+			return 0;
+		}
+
+		if (how == SIG_SETMASK) {
+			current->sig.mask = s;
+			return 0;
+		}
+	}
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -1138,6 +1194,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_memusage },
 	{ dancy_syscall_reboot },
 	{ dancy_syscall_sigpending },
+	{ dancy_syscall_sigprocmask },
 	{ dancy_syscall_reserved }
 };
 

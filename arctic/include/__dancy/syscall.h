@@ -306,6 +306,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_sigpending,
 
+	/*
+	 * long long __dancy_syscall_sigprocmask(
+	 *         int how,
+	 *         const sigset_t *set,
+	 *         sigset_t *out);
+	 */
+	__dancy_syscall_sigprocmask,
+
 	__dancy_syscall_argn__
 };
 
