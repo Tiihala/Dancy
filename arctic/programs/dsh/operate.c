@@ -22,6 +22,7 @@
 int dsh_exit_code = 0;
 int dsh_operate_state = 1;
 int dsh_interactive = 1;
+sigset_t dsh_sigmask;
 
 static void welcome(void)
 {
@@ -55,6 +56,9 @@ int operate(struct options *opt)
 {
 	int r;
 
+	sigset_t set;
+	sigemptyset(&set);
+
 	if (opt->operands[0] != NULL && opt->command_string == NULL) {
 		FILE *stream = (errno = 0, fopen(opt->operands[0], "rb"));
 
@@ -74,8 +78,18 @@ int operate(struct options *opt)
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
 
-	signal(SIGTTIN, SIG_IGN);
-	signal(SIGTTOU, SIG_IGN);
+	sigaddset(&set, SIGTTIN);
+	sigaddset(&set, SIGTTOU);
+
+	if (dsh_interactive) {
+		sigaddset(&set, SIGINT);
+		sigaddset(&set, SIGQUIT);
+	}
+
+	if ((errno = 0, sigprocmask(SIG_BLOCK, &set, &dsh_sigmask)) == -1) {
+		fprintf(stderr, "dsh: %s\n", strerror(errno));
+		return EXIT_FAILURE;
+	}
 
 	if (dsh_interactive)
 		welcome();

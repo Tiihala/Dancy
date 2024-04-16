@@ -55,6 +55,7 @@ extern struct dsh_builtin dsh_builtin_array[];
 extern int dsh_exit_code;
 extern int dsh_operate_state;
 extern int dsh_interactive;
+extern sigset_t dsh_sigmask;
 
 int operate(struct options *opt);
 

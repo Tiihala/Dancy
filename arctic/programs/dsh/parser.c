@@ -136,8 +136,10 @@ static int parse_pipeline(struct command *commands, int count, int no_wait)
 	posix_spawn_file_actions_addtcsetpgrp_np(&state.actions, 0);
 
 	posix_spawnattr_init(&state.attr);
-	posix_spawnattr_setflags(&state.attr, POSIX_SPAWN_SETPGROUP);
+	posix_spawnattr_setflags(&state.attr,
+		POSIX_SPAWN_SETPGROUP | POSIX_SPAWN_SETSIGMASK);
 	posix_spawnattr_setpgroup(&state.attr, 0);
+	posix_spawnattr_setsigmask(&state.attr, &dsh_sigmask);
 
 	dsh_execute(&state);
 
