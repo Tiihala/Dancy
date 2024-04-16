@@ -188,6 +188,10 @@
     ./arctic/libc/signal/kill.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/signal/kill.c
 
+./o32/arctic/libc/signal/procmask.o: \
+    ./arctic/libc/signal/procmask.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/signal/procmask.c
+
 ./o32/arctic/libc/signal/raise.o: \
     ./arctic/libc/signal/raise.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/signal/raise.c
@@ -1539,6 +1543,10 @@
 ./o64/arctic/libc/signal/kill.o: \
     ./arctic/libc/signal/kill.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/signal/kill.c
+
+./o64/arctic/libc/signal/procmask.o: \
+    ./arctic/libc/signal/procmask.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/signal/procmask.c
 
 ./o64/arctic/libc/signal/raise.o: \
     ./arctic/libc/signal/raise.c $(DANCY_DEPS)

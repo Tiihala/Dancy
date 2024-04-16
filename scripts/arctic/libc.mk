@@ -47,6 +47,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/poll/poll.o \
  ./o32/arctic/libc/pty/openpty.o \
  ./o32/arctic/libc/signal/kill.o \
+ ./o32/arctic/libc/signal/procmask.o \
  ./o32/arctic/libc/signal/raise.o \
  ./o32/arctic/libc/signal/signal.o \
  ./o32/arctic/libc/signal/sigset_t.o \
@@ -243,6 +244,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/poll/poll.o \
  ./o64/arctic/libc/pty/openpty.o \
  ./o64/arctic/libc/signal/kill.o \
+ ./o64/arctic/libc/signal/procmask.o \
  ./o64/arctic/libc/signal/raise.o \
  ./o64/arctic/libc/signal/signal.o \
  ./o64/arctic/libc/signal/sigset_t.o \
