@@ -642,7 +642,7 @@ int task_signaled(struct task *task)
 	uint32_t mask = task->sig.mask;
 
 	mask &= ~(((uint32_t)1) << (SIGKILL - 1));
-	mask &= ~(((uint32_t)1) << (SIGTERM - 1));
+	mask &= ~(((uint32_t)1) << (SIGSTOP - 1));
 
 	return ((asm_data3 & (~mask)) != 0);
 }

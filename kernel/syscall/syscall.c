@@ -1134,7 +1134,7 @@ static long long dancy_syscall_sigprocmask(va_list va)
 		}
 
 		s &= ~(((uint32_t)1) << (SIGKILL - 1));
-		s &= ~(((uint32_t)1) << (SIGTERM - 1));
+		s &= ~(((uint32_t)1) << (SIGSTOP - 1));
 
 		if (how == SIG_BLOCK) {
 			current->sig.mask = (mask | s);

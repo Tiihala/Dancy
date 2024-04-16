@@ -47,7 +47,7 @@ static void func_setsigmask(struct task *current, void *arg)
 	uint32_t mask = *((uint32_t *)arg);
 
 	mask &= ~(((uint32_t)1) << (SIGKILL - 1));
-	mask &= ~(((uint32_t)1) << (SIGTERM - 1));
+	mask &= ~(((uint32_t)1) << (SIGSTOP - 1));
 
 	current->sig.mask = mask;
 }
