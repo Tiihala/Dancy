@@ -533,6 +533,7 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 		new_task->uniproc = 1;
 
 	new_task->sched.priority = current->sched.priority;
+	new_task->sig.mask = current->sig.mask;
 
 	if (current->fd.state)
 		current->fd.clone(current, new_task);
