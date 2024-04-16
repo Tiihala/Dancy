@@ -1075,6 +1075,25 @@ static long long dancy_syscall_reboot(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_sigpending(va_list va)
+{
+	__dancy_sigset_t *out = va_arg(va, void *);
+
+	struct task *current = task_current();
+	uint32_t asm_data3 = (uint32_t)current->asm_data3;
+	uint32_t mask = current->sig.mask;
+
+	if (((addr_t)out % (addr_t)sizeof(void *)) != 0)
+		return -EFAULT;
+
+	if (pg_check_user_write(out, sizeof(__dancy_sigset_t)))
+		return -EFAULT;
+
+	*out = (__dancy_sigset_t)(asm_data3 & mask);
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -1118,6 +1137,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_openpty },
 	{ dancy_syscall_memusage },
 	{ dancy_syscall_reboot },
+	{ dancy_syscall_sigpending },
 	{ dancy_syscall_reserved }
 };
 

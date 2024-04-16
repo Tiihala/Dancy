@@ -300,6 +300,12 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_reboot,
 
+	/*
+	 * long long __dancy_syscall_sigpending(
+	 *         sigset_t *out);
+	 */
+	__dancy_syscall_sigpending,
+
 	__dancy_syscall_argn__
 };
 
