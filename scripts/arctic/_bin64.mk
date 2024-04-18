@@ -7,6 +7,7 @@ ARCTIC_BIN64_FILES= \
  ./arctic/bin64/cat \
  ./arctic/bin64/dsh \
  ./arctic/bin64/false \
+ ./arctic/bin64/hexdump \
  ./arctic/bin64/init \
  ./arctic/bin64/ls \
  ./arctic/bin64/poweroff \
@@ -23,6 +24,7 @@ ARCTIC_BIN64_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin64/cat ::cat
 	$(DY_MCOPY) -i $@ ./arctic/bin64/dsh ::dsh
 	$(DY_MCOPY) -i $@ ./arctic/bin64/false ::false
+	$(DY_MCOPY) -i $@ ./arctic/bin64/hexdump ::hexdump
 	$(DY_MCOPY) -i $@ ./arctic/bin64/init ::init
 	$(DY_MCOPY) -i $@ ./arctic/bin64/ls ::ls
 	$(DY_MCOPY) -i $@ ./arctic/bin64/poweroff ::poweroff

@@ -22,6 +22,11 @@ ARCTIC_PROGRAMS_FALSE_OBJECTS_32= \
  ./o32/arctic/programs/false/main.o \
  ./o32/arctic/libc.a \
 
+ARCTIC_PROGRAMS_HEXDUMP_OBJECTS_32= \
+ ./o32/arctic/programs/hexdump/main.o \
+ ./o32/arctic/programs/hexdump/operate.o \
+ ./o32/arctic/libc.a \
+
 ARCTIC_PROGRAMS_INIT_OBJECTS_32= \
  ./o32/arctic/programs/init/main.o \
  ./o32/arctic/programs/init/operate.o \
@@ -76,6 +81,11 @@ ARCTIC_PROGRAMS_FALSE_OBJECTS_64= \
  ./o64/arctic/programs/false/main.o \
  ./o64/arctic/libc.a \
 
+ARCTIC_PROGRAMS_HEXDUMP_OBJECTS_64= \
+ ./o64/arctic/programs/hexdump/main.o \
+ ./o64/arctic/programs/hexdump/operate.o \
+ ./o64/arctic/libc.a \
+
 ARCTIC_PROGRAMS_INIT_OBJECTS_64= \
  ./o64/arctic/programs/init/main.o \
  ./o64/arctic/programs/init/operate.o \
@@ -120,6 +130,9 @@ ARCTIC_PROGRAMS_DSH_HEADERS= \
 
 ARCTIC_PROGRAMS_FALSE_HEADERS= \
 
+ARCTIC_PROGRAMS_HEXDUMP_HEADERS= \
+ ./arctic/programs/hexdump/main.h \
+
 ARCTIC_PROGRAMS_INIT_HEADERS= \
  ./arctic/programs/init/main.h \
 
@@ -151,6 +164,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 ./arctic/bin32/false: $(ARCTIC_PROGRAMS_FALSE_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_FALSE_OBJECTS_32)
 
+./arctic/bin32/hexdump: $(ARCTIC_PROGRAMS_HEXDUMP_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_HEXDUMP_OBJECTS_32)
+
 ./arctic/bin32/init: $(ARCTIC_PROGRAMS_INIT_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_INIT_OBJECTS_32)
 
@@ -180,6 +196,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 
 ./arctic/bin64/false: $(ARCTIC_PROGRAMS_FALSE_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_FALSE_OBJECTS_64)
+
+./arctic/bin64/hexdump: $(ARCTIC_PROGRAMS_HEXDUMP_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_HEXDUMP_OBJECTS_64)
 
 ./arctic/bin64/init: $(ARCTIC_PROGRAMS_INIT_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_INIT_OBJECTS_64)
