@@ -168,6 +168,7 @@ int operate(struct options *opt)
 	for (i = 0; opt->operands[i] != NULL; i++) {
 		if ((r = hd(opt->operands[i])) != 0)
 			return free(input_buffer), r;
+		offset = 0;
 	}
 
 	return free(input_buffer), 0;
