@@ -259,14 +259,12 @@ int operate(struct options *opt)
 
 		if ((fds[1].revents & POLLIN) != 0) {
 			unsigned char buffer[2048];
-			ssize_t size = (ssize_t)(sizeof(buffer) - 1);
+			ssize_t size = (ssize_t)(sizeof(buffer));
 
 			size = read(fd_amaster, &buffer[0], (size_t)size);
 
-			if (size > 0) {
-				buffer[size++] = 0x00;
+			if (size > 0)
 				write(1, &buffer[0], (size_t)size);
-			}
 		}
 	}
 
