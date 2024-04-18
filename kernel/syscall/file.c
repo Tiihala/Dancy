@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023 Antti Tiihala
+ * Copyright (c) 2022, 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -267,7 +267,7 @@ int file_close(int fd)
 int file_read(int fd, size_t *size, void *buffer)
 {
 	struct task *task = task_current();
-	size_t requested_size = *size;
+	size_t s = 0, requested_size = *size;
 	int r;
 
 	if (fd >= 0 && fd < (int)task->fd.state) {
@@ -306,6 +306,7 @@ int file_read(int fd, size_t *size, void *buffer)
 
 			unlock_fte(fte);
 			r = n->n_read(n, 0, size, buffer);
+			s += *size;
 
 			while (*size == 0) {
 				if (r == DE_EMPTY) {
@@ -326,6 +327,7 @@ int file_read(int fd, size_t *size, void *buffer)
 
 				*size = requested_size;
 				r = n->n_read(n, 0, size, buffer);
+				s += *size;
 
 				if (!n->internal_event) {
 					if (*size == 0 && r == 0)
@@ -333,7 +335,7 @@ int file_read(int fd, size_t *size, void *buffer)
 				}
 			}
 
-			return r;
+			return *size = s, r;
 		}
 	}
 
@@ -344,7 +346,7 @@ int file_write(int fd, size_t *size, const void *buffer)
 {
 	struct task *task = task_current();
 	const unsigned char *ptr = buffer;
-	size_t requested_size = *size;
+	size_t s = 0, requested_size = *size;
 	int r;
 
 	if (fd >= 0 && fd < (int)task->fd.state) {
@@ -394,6 +396,8 @@ int file_write(int fd, size_t *size, const void *buffer)
 			else
 				r = n->n_write(n, 0, size, ptr);
 
+			s += *size;
+
 			while (*size != requested_size) {
 				if ((f & O_NONBLOCK) != 0)
 					break;
@@ -418,9 +422,11 @@ int file_write(int fd, size_t *size, const void *buffer)
 					r = n->n_append(n, size, ptr);
 				else
 					r = n->n_write(n, 0, size, ptr);
+
+				s += *size;
 			}
 
-			return r;
+			return *size = s, r;
 		}
 	}
 
