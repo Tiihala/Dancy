@@ -314,6 +314,13 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_sigprocmask,
 
+	/*
+	 * long long __dancy_syscall_proclist(
+	 *         pid_t *buffer,
+	 *         size_t size);
+	 */
+	__dancy_syscall_proclist,
+
 	__dancy_syscall_argn__
 };
 

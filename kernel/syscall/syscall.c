@@ -1150,6 +1150,30 @@ static long long dancy_syscall_sigprocmask(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_proclist(va_list va)
+{
+	__dancy_pid_t *buffer = va_arg(va, void *);
+	size_t size = va_arg(va, size_t);
+	int r;
+
+	if (size == 0)
+		return -ENOMEM;
+
+	if (((addr_t)buffer % (addr_t)sizeof(void *)) != 0)
+		return -EFAULT;
+
+	if (pg_check_user_write(buffer, size))
+		return -EFAULT;
+
+	if ((r = proclist_internal(&size, buffer)) != 0) {
+		if (r == DE_MEMORY)
+			return -ENOMEM;
+		return -EACCES;
+	}
+
+	return (long long)size;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -1195,6 +1219,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_reboot },
 	{ dancy_syscall_sigpending },
 	{ dancy_syscall_sigprocmask },
+	{ dancy_syscall_proclist },
 	{ dancy_syscall_reserved }
 };
 
