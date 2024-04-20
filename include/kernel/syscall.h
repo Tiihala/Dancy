@@ -82,6 +82,12 @@ int getpgid_internal(uint64_t id, uint64_t *id_group);
 int getsid_internal(uint64_t id, uint64_t *id_session);
 
 /*
+ * Declarations of proc.c
+ */
+int proclist_internal(size_t *size, __dancy_pid_t *out);
+int procinfo_internal(__dancy_pid_t id, int request, size_t *size, void *out);
+
+/*
  * Declarations of reboot.c
  */
 int reboot_internal(int request, long long arg);

@@ -1322,6 +1322,10 @@
     ./kernel/syscall/misc.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/misc.c
 
+./o32/kernel/syscall/proc.o: \
+    ./kernel/syscall/proc.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/syscall/proc.c
+
 ./o32/kernel/syscall/reboot.o: \
     ./kernel/syscall/reboot.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/reboot.c
@@ -2763,6 +2767,10 @@
 ./o64/kernel/syscall/misc.o: \
     ./kernel/syscall/misc.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/misc.c
+
+./o64/kernel/syscall/proc.o: \
+    ./kernel/syscall/proc.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/syscall/proc.c
 
 ./o64/kernel/syscall/reboot.o: \
     ./kernel/syscall/reboot.c $(DANCY_DEPS)
