@@ -321,6 +321,15 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_proclist,
 
+	/*
+	 * long long __dancy_syscall_procinfo(
+	 *         pid_t pid,
+	 *         int request,
+	 *         void *buffer,
+	 *         size_t size);
+	 */
+	__dancy_syscall_procinfo,
+
 	__dancy_syscall_argn__
 };
 
