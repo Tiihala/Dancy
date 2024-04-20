@@ -176,6 +176,10 @@
     ./arctic/libc/misc/memusage.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/misc/memusage.c
 
+./o32/arctic/libc/misc/procinfo.o: \
+    ./arctic/libc/misc/procinfo.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/misc/procinfo.c
+
 ./o32/arctic/libc/misc/proclist.o: \
     ./arctic/libc/misc/proclist.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/misc/proclist.c
@@ -1553,6 +1557,10 @@
 ./o64/arctic/libc/misc/memusage.o: \
     ./arctic/libc/misc/memusage.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/misc/memusage.c
+
+./o64/arctic/libc/misc/procinfo.o: \
+    ./arctic/libc/misc/procinfo.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/misc/procinfo.c
 
 ./o64/arctic/libc/misc/proclist.o: \
     ./arctic/libc/misc/proclist.c $(DANCY_DEPS)
