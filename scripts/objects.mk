@@ -895,6 +895,16 @@
     $(ARCTIC_PROGRAMS_POWEROFF_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/poweroff/operate.c
 
+./o32/arctic/programs/ps/main.o: \
+    ./arctic/programs/ps/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_PS_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/ps/main.c
+
+./o32/arctic/programs/ps/operate.o: \
+    ./arctic/programs/ps/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_PS_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/ps/operate.c
+
 ./o32/arctic/programs/reboot/main.o: \
     ./arctic/programs/reboot/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_REBOOT_HEADERS)
@@ -2276,6 +2286,16 @@
     ./arctic/programs/poweroff/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_POWEROFF_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/poweroff/operate.c
+
+./o64/arctic/programs/ps/main.o: \
+    ./arctic/programs/ps/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_PS_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/ps/main.c
+
+./o64/arctic/programs/ps/operate.o: \
+    ./arctic/programs/ps/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_PS_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/ps/operate.c
 
 ./o64/arctic/programs/reboot/main.o: \
     ./arctic/programs/reboot/main.c $(DANCY_DEPS) \
