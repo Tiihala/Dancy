@@ -9,6 +9,7 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/__dancy/mman.h \
  ./arctic/include/__dancy/mode.h \
  ./arctic/include/__dancy/pollfd.h \
+ ./arctic/include/__dancy/proc.h \
  ./arctic/include/__dancy/reboot.h \
  ./arctic/include/__dancy/sched.h \
  ./arctic/include/__dancy/seek.h \
@@ -82,6 +83,9 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/__dancy/pollfd.h \
 		::include/__dancy/pollfd.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/__dancy/proc.h \
+		::include/__dancy/proc.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/__dancy/reboot.h \
 		::include/__dancy/reboot.h

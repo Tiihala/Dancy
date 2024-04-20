@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2023 Antti Tiihala
+ * Copyright (c) 2017-2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -34,6 +34,7 @@
 #include <arctic/include/__dancy/mman.h>
 #include <arctic/include/__dancy/mode.h>
 #include <arctic/include/__dancy/pollfd.h>
+#include <arctic/include/__dancy/proc.h>
 #include <arctic/include/__dancy/reboot.h>
 #include <arctic/include/__dancy/signum.h>
 #include <arctic/include/__dancy/spawn.h>
