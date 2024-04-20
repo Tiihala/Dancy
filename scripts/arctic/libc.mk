@@ -44,6 +44,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/locale/set.o \
  ./o32/arctic/libc/misc/__main.o \
  ./o32/arctic/libc/misc/memusage.o \
+ ./o32/arctic/libc/misc/proclist.o \
  ./o32/arctic/libc/poll/poll.o \
  ./o32/arctic/libc/pty/openpty.o \
  ./o32/arctic/libc/signal/kill.o \
@@ -242,6 +243,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/locale/set.o \
  ./o64/arctic/libc/misc/__main.o \
  ./o64/arctic/libc/misc/memusage.o \
+ ./o64/arctic/libc/misc/proclist.o \
  ./o64/arctic/libc/poll/poll.o \
  ./o64/arctic/libc/pty/openpty.o \
  ./o64/arctic/libc/signal/kill.o \
