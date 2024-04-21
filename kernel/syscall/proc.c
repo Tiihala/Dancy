@@ -154,8 +154,13 @@ static int f2(struct task *task, void *arg)
 			if (line[i + 0] == 0 && line[i + 1] == 0)
 				break;
 
-			if (a->size[0] >= a->size[1])
-				return (a->r = DE_MEMORY), 1;
+			if (a->size[0] >= a->size[1]) {
+				if (a->size[0] < 16)
+					return (a->r = DE_MEMORY), 1;
+
+				memcpy(&out[-3], "...", 3);
+				return (a->r = 0), 1;
+			}
 
 			*out++ = line[i++];
 			a->size[0] += 1;
