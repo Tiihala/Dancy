@@ -22,6 +22,8 @@
 static pid_t *pid_array;
 static size_t pid_array_count;
 
+static struct { pid_t ppid; pid_t pgid; pid_t sess; } *pid_array_other;
+
 static int get_width(pid_t pid, int min)
 {
 	char b[32];
@@ -32,7 +34,8 @@ static int get_width(pid_t pid, int min)
 static int write_information(struct options *opt)
 {
 	int cmdline = 0;
-	int width;
+	pid_t max_pid[4] = { 0, 0, 0, 0 };
+	int width[4];
 	size_t i, j;
 
 	for (i = 0; opt->operands[i] != NULL; i++) {
@@ -45,30 +48,77 @@ static int write_information(struct options *opt)
 		}
 	}
 
-	if (pid_array_count == 0) {
-		fputs(MAIN_CMDNAME ": no processes\n", stderr);
-		return EXIT_FAILURE;
+	max_pid[0] = pid_array[pid_array_count - 1];
+
+	for (i = 0; i < pid_array_count; i++) {
+		pid_t pid = pid_array[i];
+		ssize_t size = 0;
+
+		if (!(size < 0))
+			size = __dancy_procinfo(pid,
+				__DANCY_PROCINFO_OWNER_ID,
+				&pid_array_other[i].ppid, sizeof(pid_t));
+
+		if (!(size < 0))
+			size = __dancy_procinfo(pid,
+				__DANCY_PROCINFO_GROUP_ID,
+				&pid_array_other[i].pgid, sizeof(pid_t));
+
+		if (!(size < 0))
+			size = __dancy_procinfo(pid,
+				__DANCY_PROCINFO_SESSION_ID,
+				&pid_array_other[i].sess, sizeof(pid_t));
+
+		if (size < 0) {
+			if (errno == ESRCH)
+				continue;
+
+			perror(MAIN_CMDNAME ":__dancy_procinfo");
+			return EXIT_FAILURE;
+		}
+
+		if (max_pid[1] < pid_array_other[i].ppid)
+			max_pid[1] = pid_array_other[i].ppid;
+
+		if (max_pid[2] < pid_array_other[i].pgid)
+			max_pid[2] = pid_array_other[i].pgid;
+
+		if (max_pid[3] < pid_array_other[i].sess)
+			max_pid[3] = pid_array_other[i].sess;
 	}
 
-	width = get_width(pid_array[pid_array_count - 1], 4);
+	width[0] = get_width(max_pid[0], 4);
+	width[1] = get_width(max_pid[1], 4);
+	width[2] = get_width(max_pid[2], 4);
+	width[3] = get_width(max_pid[3], 4);
 
-	printf("%*s %s\n", width, "PID", cmdline ? "COMMAND" : "CMD");
+	printf("%*s  %*s  %*s  %*s  %s\n",
+		width[0],  "PID", width[1], "PPID",
+		width[2], "PGID", width[3], "SESS",
+		cmdline ? "COMMAND" : "CMD");
 
 	for (i = 0; i < pid_array_count; i++) {
 		pid_t pid = pid_array[i];
 		const int request = __DANCY_PROCINFO_CMDLINE;
 
-		uint8_t cmd[0x10000];
+		uint8_t cmd[48];
 		ssize_t size;
 
 		size = __dancy_procinfo(pid, request, &cmd[0], sizeof(cmd));
 
 		if (size < 0) {
+			if (errno == ESRCH)
+				continue;
+
 			perror(MAIN_CMDNAME ":__dancy_procinfo");
 			return EXIT_FAILURE;
 		}
 
-		printf("%*lld ", width, (long long)pid_array[i]);
+		printf("%*lld  %*lld  %*lld  %*lld  ",
+			width[0], (long long)pid_array[i],
+			width[1], (long long)pid_array_other[i].ppid,
+			width[2], (long long)pid_array_other[i].pgid,
+			width[3], (long long)pid_array_other[i].sess);
 
 		for (j = 0; j < (size_t)size; j++) {
 			int c = (int)cmd[j];
@@ -125,7 +175,21 @@ int operate(struct options *opt)
 		}
 	}
 
+	if (pid_array_count == 0) {
+		fputs(MAIN_CMDNAME ": no processes\n", stderr);
+		return free(pid_array), EXIT_FAILURE;
+	}
+
+	pid_array_other = calloc(pid_array_count, sizeof(*pid_array_other));
+
+	if (pid_array_other == NULL) {
+		fputs(MAIN_CMDNAME ": out of memory\n", stderr);
+		return free(pid_array), EXIT_FAILURE;
+	}
+
 	r = write_information(opt);
+
+	free(pid_array_other);
 	free(pid_array);
 
 	return r;
