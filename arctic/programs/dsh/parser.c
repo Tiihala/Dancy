@@ -162,6 +162,9 @@ static int parse_list(struct command *commands, int count)
 		int accept_op = 0;
 		int no_wait = 0;
 
+		if (dsh_exit_code == 128 + SIGINT)
+			break;
+
 		if (!strcmp(op, "\\n"))
 			accept_op = 1;
 		else if (!strcmp(op, "&"))
@@ -265,8 +268,10 @@ static void parse_input(struct token *token)
 		}
 	}
 
-	if (!(state < 0) && commands_count > 1)
+	if (!(state < 0) && commands_count > 1) {
+		dsh_exit_code = 0;
 		parse_list(&commands[0], commands_count);
+	}
 
 	while (commands_count > 0)
 		command_release(&commands[--commands_count]);
