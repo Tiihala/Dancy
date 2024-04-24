@@ -87,6 +87,72 @@ static char *append_arg(struct command *command, const char *arg)
 	return r;
 }
 
+static int handle_builtin(char **argv, int fd_out, int fd_err)
+{
+	int i;
+
+	for (i = 0; dsh_builtin_array[i].name != NULL; i++) {
+		int (*builtin_cmd)(int, char **);
+
+		if (!strcmp(dsh_builtin_array[i].name, argv[0])) {
+			int current_fd_out = -1, current_fd_err = -1;
+			int state = 0;
+
+			if (fd_out >= 0 && state >= 0) {
+				fflush(stdout);
+				current_fd_out = dup(1);
+
+				if (current_fd_out >= 0)
+					state = dup2(fd_out, 1);
+				else
+					state = -1;
+			}
+
+			if (fd_err >= 0 && state >= 0) {
+				fflush(stderr);
+				current_fd_err = dup(2);
+
+				if (current_fd_err >= 0)
+					state = dup2(fd_err, 2);
+				else
+					state = -1;
+			}
+
+			if (state >= 0) {
+				int argc = 0;
+
+				while (argv[argc] != NULL)
+					argc += 1;
+
+				builtin_cmd = dsh_builtin_array[i].execute;
+				dsh_exit_code = builtin_cmd(argc, argv);
+			}
+
+			if (current_fd_out >= 0) {
+				fflush(stdout);
+				dup2(current_fd_out, 1);
+				close(current_fd_out);
+			}
+
+			if (current_fd_err >= 0) {
+				fflush(stderr);
+				dup2(current_fd_err, 2);
+				close(current_fd_err);
+			}
+
+			if (state < 0) {
+				fputs("dsh: error: "
+					"builtin redirections\n", stderr);
+				dsh_exit_code = 1;
+			}
+
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
 static int parse_pipeline(struct command *commands, int count, int no_wait)
 {
 	struct dsh_execute_state state;
@@ -117,20 +183,8 @@ static int parse_pipeline(struct command *commands, int count, int no_wait)
 		return -1;
 	}
 
-	for (i = 0; dsh_builtin_array[i].name != NULL; i++) {
-		int (*builtin_cmd)(int, char **);
-
-		if (!strcmp(dsh_builtin_array[i].name, state.argv[0])) {
-			int argc = 0;
-
-			while (state.argv[argc] != NULL)
-				argc += 1;
-
-			builtin_cmd = dsh_builtin_array[i].execute;
-			dsh_exit_code = builtin_cmd(argc, state.argv);
-			return 0;
-		}
-	}
+	if (handle_builtin(state.argv, -1, -1) == 0)
+		return 0;
 
 	posix_spawn_file_actions_init(&state.actions);
 	posix_spawn_file_actions_addtcsetpgrp_np(&state.actions, 0);
