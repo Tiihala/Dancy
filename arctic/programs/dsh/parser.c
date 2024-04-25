@@ -21,7 +21,7 @@
 
 struct command {
 	char **argv;
-	size_t state[2];
+	size_t state[3];
 	char op[TOKEN_DATA_SIZE];
 	long value;
 };
@@ -156,10 +156,25 @@ static int handle_builtin(char **argv, int fd_out, int fd_err)
 static int parse_pipeline(struct command *commands, int count, int no_wait)
 {
 	struct dsh_execute_state state;
-	int i;
+	int fd_out = -1, fd_err = -1;
+	int e = 0;
 
-	memset(&state, 0, sizeof(state));
-	state.argv = commands->argv;
+	struct {
+		int fd[2];
+		int close_fd;
+	} fd_array[16];
+
+	size_t i, fd_array_i = 0;
+
+	memset(&state, 0x00, sizeof(state));
+
+	for (i = 0; i < sizeof(fd_array) / sizeof(fd_array[0]); i++) {
+		fd_array[i].fd[0] = -1;
+		fd_array[i].fd[1] = -1;
+		fd_array[i].close_fd = -1;
+	}
+
+	state.argv = NULL;
 	state.no_wait = no_wait;
 
 	if (state.no_wait) {
@@ -167,27 +182,146 @@ static int parse_pipeline(struct command *commands, int count, int no_wait)
 		state.no_wait = 0;
 	}
 
-	if (state.argv == NULL || count > 1) {
-		parsing_error("redirections and pipes are not supported");
-		fputs("dsh: parsing state:", stderr);
+	for (i = 0; i < (size_t)(count - 1); i++) {
+		struct command *command = &commands[i];
+		char *op = &command->op[0];
 
-		for (i = 0; i < count; i++) {
-			struct command *command = &commands[i];
-			if (command->argv != NULL)
-				fprintf(stderr, "\033[94m arg");
-			else
-				fprintf(stderr, "\033[95m %s", command->op);
+		if (command->argv != NULL)
+			continue;
 
+		if (fd_array_i >= sizeof(fd_array) / sizeof(fd_array[0])) {
+			fputs("dsh: too many operators\n", stderr);
+			e = -1;
+			break;
 		}
-		fputs("\033[0m\n", stderr);
-		return -1;
+
+		if (!strcmp(op, "<")) {
+			int flags, fd0, fd1;
+
+			if (command->value >= 0)
+				fd0 = (int)command->value;
+			else
+				fd0 = 0;
+
+			command = &commands[++i];
+
+			if (command->argv == NULL) {
+				fprintf(stderr,
+					"dsh: word missing after %s\n", op);
+				e = -1;
+				break;
+			}
+
+			flags = O_RDONLY;
+			flags |= O_CLOEXEC;
+
+			if ((fd1 = open(command->argv[0], flags)) < 0) {
+				fprintf(stderr, "dsh: %s: %s\n",
+					command->argv[0], strerror(errno));
+				e = -1;
+				break;
+			}
+
+			fd_array[fd_array_i].fd[0] = fd0;
+			fd_array[fd_array_i].fd[1] = fd1;
+			fd_array[fd_array_i].close_fd = fd1;
+
+			command->state[2] += 1;
+			fd_array_i += 1;
+			continue;
+		}
+
+		if (!strcmp(op, ">") || !strcmp(op, ">>")) {
+			int flags, fd0, fd1;
+
+			if (command->value >= 0)
+				fd0 = (int)command->value;
+			else
+				fd0 = 1;
+
+			command = &commands[++i];
+
+			if (command->argv == NULL) {
+				fprintf(stderr,
+					"dsh: word missing after %s\n", op);
+				e = -1;
+				break;
+			}
+
+			if (!strcmp(op, ">"))
+				flags = O_WRONLY | O_CREAT | O_TRUNC;
+			else
+				flags = O_WRONLY | O_CREAT | O_APPEND;
+
+			flags |= O_CLOEXEC;
+
+			if ((fd1 = open(command->argv[0], flags, 0666)) < 0) {
+				fprintf(stderr, "dsh: %s: %s\n",
+					command->argv[0], strerror(errno));
+				e = -1;
+				break;
+			}
+
+			fd_array[fd_array_i].fd[0] = fd0;
+			fd_array[fd_array_i].fd[1] = fd1;
+			fd_array[fd_array_i].close_fd = fd1;
+
+			switch (fd0) {
+				case 1: fd_out = fd1; break;
+				case 2: fd_err = fd1; break;
+			}
+
+			command->state[2] += 1;
+			fd_array_i += 1;
+			continue;
+		}
+
+		fprintf(stderr, "dsh: operator \033[95m%s"
+			"\033[0m is not supported\n", op);
+		e = -1;
+		break;
 	}
 
-	if (handle_builtin(state.argv, -1, -1) == 0)
+	for (i = 0; i < (size_t)count && state.argv == NULL; i++) {
+		struct command *command = &commands[i];
+
+		if (command->argv != NULL) {
+			char **argv = &command->argv[command->state[2]];
+			if (argv[0] != NULL)
+				state.argv = argv;
+		}
+	}
+
+	if (e != 0 || state.argv == NULL) {
+		for (i = 0; i < fd_array_i; i++) {
+			if (fd_array[i].close_fd >= 0)
+				close(fd_array[i].close_fd);
+		}
+		if (e != 0)
+			dsh_exit_code = 1;
+		return e;
+	}
+
+	if (handle_builtin(state.argv, fd_out, fd_err) == 0) {
+		for (i = 0; i < fd_array_i; i++) {
+			if (fd_array[i].close_fd >= 0)
+				close(fd_array[i].close_fd);
+		}
 		return 0;
+	}
 
 	posix_spawn_file_actions_init(&state.actions);
 	posix_spawn_file_actions_addtcsetpgrp_np(&state.actions, 0);
+
+	for (i = 0; i < fd_array_i; i++) {
+		int fd0 = fd_array[i].fd[0];
+		int fd1 = fd_array[i].fd[1];
+
+		if (fd0 == 2 && fd_err >= 0)
+			continue;
+
+		posix_spawn_file_actions_adddup2(&state.actions, fd1, fd0);
+	}
 
 	posix_spawnattr_init(&state.attr);
 	posix_spawnattr_setflags(&state.attr,
@@ -195,10 +329,42 @@ static int parse_pipeline(struct command *commands, int count, int no_wait)
 	posix_spawnattr_setpgroup(&state.attr, 0);
 	posix_spawnattr_setsigmask(&state.attr, &dsh_sigmask);
 
-	dsh_execute(&state);
+	{
+		int current_fd_err = -1;
+
+		if (fd_err >= 0) {
+			fflush(stderr);
+			current_fd_err = fcntl(2, F_DUPFD_CLOEXEC, 0);
+
+			if (current_fd_err >= 0)
+				e = dup2(fd_err, 2);
+			else
+				e = -1;
+		}
+
+		if (e >= 0)
+			dsh_execute(&state);
+
+		if (current_fd_err >= 0) {
+			fflush(stderr);
+			dup2(current_fd_err, 2);
+			close(current_fd_err);
+		}
+
+		if (e < 0) {
+			fputs("dsh: error: "
+				"redirections\n", stderr);
+			dsh_exit_code = 1;
+		}
+	}
 
 	posix_spawn_file_actions_destroy(&state.actions);
 	posix_spawnattr_destroy(&state.attr);
+
+	for (i = 0; i < fd_array_i; i++) {
+		if (fd_array[i].close_fd >= 0)
+			close(fd_array[i].close_fd);
+	}
 
 	return 0;
 }
