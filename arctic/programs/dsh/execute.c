@@ -78,7 +78,7 @@ static void execute_spawn(struct dsh_execute_state *state, const char *path)
 
 	for (;;) {
 		int status = 0;
-		pid_t wpid = waitpid(state->pid, &status, 0);
+		pid_t wpid = waitpid(-1, &status, 0);
 
 		if (wpid != state->pid)
 			continue;
