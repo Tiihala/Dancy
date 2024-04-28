@@ -940,16 +940,16 @@ static int task_wait_descendant_shared(uint64_t *id, uint64_t id_group,
 				if (id_group && id_group != t->id_group)
 					valid_candidate = 0;
 
-				descendant_state |= valid_candidate;
-
 				if (valid_candidate && t->stopped) {
-					descendant_state = 2;
 					if (spin_trylock(&t->detached)) {
 						out_id = t->id;
 						out_retval = t->retval;
+					} else {
+						valid_candidate = 0;
 					}
 				}
 
+				descendant_state |= valid_candidate;
 				spin_leave(&lock_local);
 			}
 
