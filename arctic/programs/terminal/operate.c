@@ -164,11 +164,6 @@ int operate(struct options *opt)
 	int r = 0;
 	pid_t pid;
 
-	if (exe_path != NULL && opt->operands[1] != NULL) {
-		opt->error = "too many operands";
-		return EXIT_FAILURE;
-	}
-
 	fd_keyboard = open("/dev/dancy-keyboard", O_RDONLY | O_NONBLOCK);
 
 	if (fd_keyboard < 0) {
@@ -207,7 +202,7 @@ int operate(struct options *opt)
 
 		if (r == 0) {
 			r = posix_spawn(&pid, exe_path,
-				&actions, &attr, NULL, environ);
+				&actions, &attr, opt->operands, environ);
 		}
 
 		if (r != 0) {
@@ -223,6 +218,11 @@ int operate(struct options *opt)
 	while (exe_path) {
 		struct pollfd fds[2];
 
+		if (waitpid(pid, NULL, WNOHANG) == pid) {
+			r = 0;
+			break;
+		}
+
 		fds[0].fd = fd_keyboard;
 		fds[0].events = POLLIN;
 		fds[0].revents = 0;
@@ -237,11 +237,8 @@ int operate(struct options *opt)
 			break;
 		}
 
-		if (r == 0) {
-			if (waitpid(pid, NULL, WNOHANG) == pid)
-				break;
+		if (r == 0)
 			continue;
-		}
 
 		if ((fds[0].revents & POLLIN) != 0) {
 			int buffer[128];

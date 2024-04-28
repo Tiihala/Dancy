@@ -21,7 +21,7 @@
 
 static const char *help_str =
 	"Usage: " MAIN_CMDNAME
-	" executable\n"
+	" executable [args...]\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -63,8 +63,14 @@ int main(int argc, char *argv[])
 	while (argv_i && *++argv_i) {
 		const char *arg = *argv_i;
 
-		if (arg[0] != '-' || arg[1] == '\0')
-			continue;
+		/*
+		 * In this program, the first operand
+		 * prevents interpreting other options.
+		 */
+		if (arg[0] != '-') {
+			argv_i = &argv[argc];
+			break;
+		}
 
 		*argv_i = NULL;
 
