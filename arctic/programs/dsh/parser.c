@@ -154,10 +154,8 @@ static int handle_builtin(char **argv, int fd_out, int fd_err)
 }
 
 static int parse_pipeline_part(struct command *commands, int count,
-	int no_wait, int pipe_fd_in, int pipe_fd_out, int *pipe_fd,
-	pid_t pgroup, pid_t *pid)
+	int pipe_fd_in, int pipe_fd_out, struct dsh_execute_state *state)
 {
-	struct dsh_execute_state state;
 	int fd_out = pipe_fd_out, fd_err = -1;
 	int e = 0;
 
@@ -168,22 +166,15 @@ static int parse_pipeline_part(struct command *commands, int count,
 
 	size_t i, fd_array_i = 0;
 
-	memset(&state, 0x00, sizeof(state));
-
 	for (i = 0; i < sizeof(fd_array) / sizeof(fd_array[0]); i++) {
 		fd_array[i].fd[0] = -1;
 		fd_array[i].fd[1] = -1;
 		fd_array[i].close_fd = -1;
 	}
 
-	state.pgroup = pgroup;
-	state.argv = NULL;
-	state.no_wait = no_wait;
-	state.pipe_fd = pipe_fd;
-
-	if (state.no_wait) {
+	if (state->no_wait) {
 		fputs("dsh: warning: operator '&' is synchronous\n", stderr);
-		state.no_wait = 0;
+		state->no_wait = 0;
 	}
 
 	for (i = 0; i < (size_t)count; i++) {
@@ -286,7 +277,7 @@ static int parse_pipeline_part(struct command *commands, int count,
 		break;
 	}
 
-	for (i = 0; i < (size_t)count && state.argv == NULL; i++) {
+	for (i = 0; i < (size_t)count && state->argv == NULL; i++) {
 		struct command *command = &commands[i];
 		char *op = &command->op[0];
 
@@ -296,11 +287,11 @@ static int parse_pipeline_part(struct command *commands, int count,
 		if (command->argv != NULL) {
 			char **argv = &command->argv[command->state[2]];
 			if (argv[0] != NULL)
-				state.argv = argv;
+				state->argv = argv;
 		}
 	}
 
-	if (e != 0 || state.argv == NULL) {
+	if (e != 0 || state->argv == NULL) {
 		for (i = 0; i < fd_array_i; i++) {
 			if (fd_array[i].close_fd >= 0)
 				close(fd_array[i].close_fd);
@@ -310,7 +301,7 @@ static int parse_pipeline_part(struct command *commands, int count,
 		return e;
 	}
 
-	if (handle_builtin(state.argv, fd_out, fd_err) == 0) {
+	if (handle_builtin(state->argv, fd_out, fd_err) == 0) {
 		for (i = 0; i < fd_array_i; i++) {
 			if (fd_array[i].close_fd >= 0)
 				close(fd_array[i].close_fd);
@@ -318,22 +309,22 @@ static int parse_pipeline_part(struct command *commands, int count,
 		return 0;
 	}
 
-	posix_spawn_file_actions_init(&state.actions);
-	posix_spawn_file_actions_addtcsetpgrp_np(&state.actions, 0);
+	posix_spawn_file_actions_init(&state->actions);
+	posix_spawn_file_actions_addtcsetpgrp_np(&state->actions, 0);
 
 	if (pipe_fd_in >= 0) {
 		int fd0 = 0;
 		int fd1 = pipe_fd_in;
 
-		posix_spawn_file_actions_adddup2(&state.actions, fd1, fd0);
+		posix_spawn_file_actions_adddup2(&state->actions, fd1, fd0);
 	}
 
 	if (pipe_fd_out >= 0) {
 		int fd0 = 1;
 		int fd1 = pipe_fd_out;
 
-		posix_spawn_file_actions_adddup2(&state.actions, fd1, fd0);
-		state.no_wait = 1;
+		posix_spawn_file_actions_adddup2(&state->actions, fd1, fd0);
+		state->no_wait = 1;
 	}
 
 	for (i = 0; i < fd_array_i; i++) {
@@ -343,14 +334,14 @@ static int parse_pipeline_part(struct command *commands, int count,
 		if (fd0 == 2 && fd_err >= 0)
 			continue;
 
-		posix_spawn_file_actions_adddup2(&state.actions, fd1, fd0);
+		posix_spawn_file_actions_adddup2(&state->actions, fd1, fd0);
 	}
 
-	posix_spawnattr_init(&state.attr);
-	posix_spawnattr_setflags(&state.attr,
+	posix_spawnattr_init(&state->attr);
+	posix_spawnattr_setflags(&state->attr,
 		POSIX_SPAWN_SETPGROUP | POSIX_SPAWN_SETSIGMASK);
-	posix_spawnattr_setpgroup(&state.attr, pgroup);
-	posix_spawnattr_setsigmask(&state.attr, &dsh_sigmask);
+	posix_spawnattr_setpgroup(&state->attr, state->pgroup);
+	posix_spawnattr_setsigmask(&state->attr, &dsh_sigmask);
 
 	{
 		int current_fd_err = -1;
@@ -365,10 +356,8 @@ static int parse_pipeline_part(struct command *commands, int count,
 				e = -1;
 		}
 
-		if (e >= 0) {
-			dsh_execute(&state);
-			*pid = state.pid;
-		}
+		if (e >= 0)
+			dsh_execute(state);
 
 		if (current_fd_err >= 0) {
 			fflush(stderr);
@@ -383,8 +372,8 @@ static int parse_pipeline_part(struct command *commands, int count,
 		}
 	}
 
-	posix_spawn_file_actions_destroy(&state.actions);
-	posix_spawnattr_destroy(&state.attr);
+	posix_spawn_file_actions_destroy(&state->actions);
+	posix_spawnattr_destroy(&state->attr);
 
 	for (i = 0; i < fd_array_i; i++) {
 		if (fd_array[i].close_fd >= 0)
@@ -396,7 +385,7 @@ static int parse_pipeline_part(struct command *commands, int count,
 
 static int parse_pipeline(struct command *commands, int count, int no_wait)
 {
-	pid_t pgroup = 0, pid = 0;
+	pid_t pgroup = 0;
 
 	struct {
 		int fd[2];
@@ -462,19 +451,27 @@ static int parse_pipeline(struct command *commands, int count, int no_wait)
 		int pipe_fd_in = fd_array[i].fd[0];
 		int pipe_fd_out = -1;
 
+		struct dsh_execute_state state;
+
+		memset(&state, 0x00, sizeof(state));
+
+		state.pgroup = pgroup;
+		state.argv = NULL;
+		state.no_wait = no_wait;
+		state.pipe_fd = &fd_array[i].fd[0];
+
 		if (i + 1 < fd_array_i)
 			pipe_fd_out = fd_array[i + 1].fd[1];
 
 		e = parse_pipeline_part(
-			fd_array[i].commands, fd_array[i].count, no_wait,
-			pipe_fd_in, pipe_fd_out, &fd_array[i].fd[0],
-			pgroup, &pid);
+			fd_array[i].commands, fd_array[i].count,
+			pipe_fd_in, pipe_fd_out, &state);
 
 		if (e != 0)
 			break;
 
 		if (pgroup == 0)
-			pgroup = pid;
+			pgroup = state.pid;
 	}
 
 	for (i = 1; i < fd_array_i; i++) {
