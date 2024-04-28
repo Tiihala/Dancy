@@ -21,7 +21,8 @@
 
 struct command {
 	char **argv;
-	size_t state[3];
+	char **_argv;
+	size_t state[2];
 	char op[TOKEN_DATA_SIZE];
 	long value;
 };
@@ -30,21 +31,22 @@ static void command_init(struct command *command)
 {
 	memset(command, 0, sizeof(*command));
 	command->argv = NULL;
+	command->_argv = NULL;
 }
 
 static void command_release(struct command *command)
 {
 	size_t i;
 
-	if (!command->argv)
+	if (!command->_argv)
 		return;
 
-	for (i = 0; command->argv[i]; i++) {
-		free(command->argv[i]);
-		command->argv[i] = NULL;
+	for (i = 0; command->_argv[i]; i++) {
+		free(command->_argv[i]);
+		command->_argv[i] = NULL;
 	}
 
-	free(command->argv);
+	free(command->_argv);
 	command_init(command);
 }
 
@@ -62,6 +64,9 @@ static char *append_arg(struct command *command, const char *arg)
 {
 	void *r;
 
+	if (command->argv != command->_argv)
+		return NULL;
+
 	if (command->state[0] + 2 > command->state[1]) {
 		const size_t add = 16;
 		size_t size = (command->state[1] + add) * sizeof(char *);
@@ -70,10 +75,14 @@ static char *append_arg(struct command *command, const char *arg)
 		if (new_argv == NULL)
 			return NULL;
 
-		size = command->state[1] * sizeof(char *);
-		memcpy(new_argv, command->argv, size);
+		if (command->argv != NULL) {
+			size = command->state[1] * sizeof(char *);
+			memcpy(new_argv, command->argv, size);
+			free(command->argv);
+		}
 
 		command->argv = new_argv;
+		command->_argv = new_argv;
 		command->state[1] += add;
 	}
 
@@ -221,7 +230,7 @@ static int parse_pipeline_part(struct command *commands, int count,
 			fd_array[fd_array_i].fd[1] = fd1;
 			fd_array[fd_array_i].close_fd = fd1;
 
-			command->state[2] += 1;
+			command->argv += 1;
 			fd_array_i += 1;
 			continue;
 		}
@@ -266,7 +275,7 @@ static int parse_pipeline_part(struct command *commands, int count,
 				case 2: fd_err = fd1; break;
 			}
 
-			command->state[2] += 1;
+			command->argv += 1;
 			fd_array_i += 1;
 			continue;
 		}
@@ -285,7 +294,7 @@ static int parse_pipeline_part(struct command *commands, int count,
 			break;
 
 		if (command->argv != NULL) {
-			char **argv = &command->argv[command->state[2]];
+			char **argv = command->argv;
 			if (argv[0] != NULL)
 				state->argv = argv;
 		}
