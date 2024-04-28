@@ -50,6 +50,10 @@ static void n_release(struct vfs_node **node)
 
 	*node = NULL;
 
+	spin_enter(&lock_local);
+	event_signal(shared_data->event);
+	spin_leave(&lock_local);
+
 	if (vfs_decrement_count(n) == 0) {
 		memset(n, 0, sizeof(*n));
 		free(n);
@@ -96,7 +100,8 @@ static int n_read(struct vfs_node *node,
 				shared_data->start = (start + 1) % PIPE_SIZE;
 			} else {
 				b = -1;
-				event_reset(shared_data->event);
+				if (shared_data->count == 2)
+					event_reset(shared_data->event);
 			}
 
 			if (b < 0)
@@ -109,9 +114,13 @@ static int n_read(struct vfs_node *node,
 				break;
 		}
 
-		if (*size == 0 && shared_data->count != 2) {
-			spin_leave(&lock_local);
-			return DE_EMPTY;
+		if (shared_data->count != 2) {
+			event_signal(shared_data->event);
+
+			if (*size == 0) {
+				spin_leave(&lock_local);
+				return DE_EMPTY;
+			}
 		}
 
 		spin_leave(&lock_local);
