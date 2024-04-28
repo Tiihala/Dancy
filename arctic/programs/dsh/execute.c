@@ -64,6 +64,13 @@ static void execute_spawn(struct dsh_execute_state *state, const char *path)
 		return;
 	}
 
+	if (state->pipe_fd != NULL) {
+		if (state->pipe_fd[0] >= 0)
+			close(state->pipe_fd[0]), state->pipe_fd[0] = -1;
+		if (state->pipe_fd[1] >= 0)
+			close(state->pipe_fd[1]), state->pipe_fd[1] = -1;
+	}
+
 	if (state->no_wait) {
 		dsh_exit_code = 0;
 		return;
@@ -85,6 +92,11 @@ static void execute_spawn(struct dsh_execute_state *state, const char *path)
 			dsh_exit_code = 128 + WTERMSIG(status);
 			break;
 		}
+	}
+
+	while (state->pgroup > 1) {
+		if (waitpid(-state->pgroup, NULL, 0) <= 0)
+			break;
 	}
 }
 

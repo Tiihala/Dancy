@@ -61,10 +61,12 @@ int operate(struct options *opt);
 
 struct dsh_execute_state {
 	pid_t pid;
+	pid_t pgroup;
 	char **argv;
 	posix_spawn_file_actions_t actions;
 	posix_spawnattr_t attr;
 	int no_wait;
+	int *pipe_fd;
 };
 
 void dsh_execute(struct dsh_execute_state *state);
