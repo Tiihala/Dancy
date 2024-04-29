@@ -218,11 +218,6 @@ int operate(struct options *opt)
 	while (exe_path) {
 		struct pollfd fds[2];
 
-		if (waitpid(pid, NULL, WNOHANG) == pid) {
-			r = 0;
-			break;
-		}
-
 		fds[0].fd = fd_keyboard;
 		fds[0].events = POLLIN;
 		fds[0].revents = 0;
@@ -231,14 +226,25 @@ int operate(struct options *opt)
 		fds[1].events = POLLIN;
 		fds[1].revents = 0;
 
-		if ((r = poll(fds, 2, 1000)) < 0) {
+		if (pid >= 0 && waitpid(pid, NULL, WNOHANG) == pid)
+			pid = -1;
+
+		if (pid >= 0)
+			r = poll(&fds[0], 2, 100);
+		else
+			r = poll(&fds[1], 1, 100);
+
+		if (r < 0) {
 			perror("poll");
 			r = EXIT_FAILURE;
 			break;
 		}
 
-		if (r == 0)
+		if (r == 0) {
+			if (pid < 0)
+				break;
 			continue;
+		}
 
 		if ((fds[0].revents & POLLIN) != 0) {
 			int buffer[128];
