@@ -181,11 +181,6 @@ static int parse_pipeline_part(struct command *commands, int count,
 		fd_array[i].close_fd = -1;
 	}
 
-	if (state->no_wait) {
-		fputs("dsh: warning: operator '&' is synchronous\n", stderr);
-		state->no_wait = 0;
-	}
-
 	for (i = 0; i < (size_t)count; i++) {
 		struct command *command = &commands[i];
 		char *op = &command->op[0];
