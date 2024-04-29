@@ -96,6 +96,8 @@ static int allowed_signal(int sig)
 			return 1;
 		case SIGQUIT:
 			return 1;
+		case SIGSTOP:
+			return 1;
 		case SIGTERM:
 			return 1;
 		case SIGUSR1:
