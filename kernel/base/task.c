@@ -70,7 +70,7 @@ static uint64_t task_create_id(void)
 
 	task_id = (id = cpu_read64(&task_id) + 1);
 
-	if (id == 0 || (id & 0x8000000000000000ull) != 0)
+	if (id == 0 || (id & 0xC000000000000000ull) != 0)
 		panic("Error: task ID");
 
 	spin_leave(&lock_local);
