@@ -197,6 +197,7 @@ int operate(struct options *opt)
 		posix_spawn_file_actions_addopen(&actions, 0, p, O_RDONLY, 0);
 		posix_spawn_file_actions_addopen(&actions, 1, p, O_WRONLY, 0);
 		posix_spawn_file_actions_addopen(&actions, 2, p, O_WRONLY, 0);
+		posix_spawn_file_actions_addtcsetpgrp_np(&actions, 0);
 
 		posix_spawnattr_setflags(&attr, POSIX_SPAWN_SETSID);
 
