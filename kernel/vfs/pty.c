@@ -617,7 +617,7 @@ static int n_read_secondary(struct vfs_node *node,
 
 		if (group != id_group) {
 			if (id_group > 1)
-				send_signals(-id_group, SIGSTOP, 0);
+				send_signals(-id_group, SIGTTIN, 0);
 			requested_size = 0;
 		}
 	}
