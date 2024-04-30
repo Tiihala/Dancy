@@ -471,7 +471,7 @@ static int parse_pipeline(struct command *commands, int count, int no_wait)
 			fd_array[i].commands, fd_array[i].count,
 			pipe_fd_in, pipe_fd_out, &state);
 
-		if (e != 0)
+		if (e != 0 || dsh_operate_state == 0)
 			break;
 
 		if (pgroup == 0)
@@ -500,6 +500,9 @@ static int parse_list(struct command *commands, int count)
 		const char *op = &p2->op[0];
 		int accept_op = 0;
 		int no_wait = 0;
+
+		if (dsh_operate_state == 0)
+			break;
 
 		if (dsh_exit_code == 128 + SIGINT)
 			break;
