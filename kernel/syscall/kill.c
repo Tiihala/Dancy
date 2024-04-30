@@ -100,6 +100,10 @@ static int allowed_signal(int sig)
 			return 1;
 		case SIGTERM:
 			return 1;
+		case SIGTTIN:
+			return 1;
+		case SIGTTOU:
+			return 1;
 		case SIGUSR1:
 			return 1;
 		case SIGUSR2:
