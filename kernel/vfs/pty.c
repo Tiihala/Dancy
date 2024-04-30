@@ -655,12 +655,25 @@ static int n_write_secondary(struct vfs_node *node,
 	size_t requested_size = *size;
 	struct pty_internal_data *internal_data = node->internal_data;
 	struct pty_shared_data *shared_data = internal_data->shared_data;
+	__dancy_pid_t group;
 	int r = 0;
 
 	(void)offset;
 	*size = 0;
 
 	lock_shared_data(shared_data);
+
+	if ((group = shared_data->group) > 0) {
+		struct task *current = task_current();
+		__dancy_pid_t id_group = (__dancy_pid_t)current->id_group;
+		__dancy_tcflag_t c_lflag = shared_data->termios.c_lflag;
+		int tostop = (c_lflag & __DANCY_TERMIOS_TOSTOP) != 0;
+
+		if (tostop && group != id_group && id_group > 1) {
+			send_signals(-id_group, SIGTTOU, 0);
+			requested_size = 0;
+		}
+	}
 
 	while (*size < requested_size) {
 		int c = (int)(((unsigned char *)buffer)[*size]);
