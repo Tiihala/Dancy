@@ -110,6 +110,9 @@ int dsh_token_read(struct token *token)
 		}
 
 		if (c == '\\') {
+			if (input[new_i] == '\0')
+				break;
+
 			c = input[new_i++];
 
 			if (c == '\n')
