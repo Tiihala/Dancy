@@ -22,12 +22,14 @@
 static pid_t *pid_array;
 static size_t pid_array_count;
 
-static struct { pid_t ppid; pid_t pgid; pid_t sess; } *pid_array_other;
+static struct {
+	pid_t ppid; pid_t pgid; pid_t sess; size_t mem;
+} *pid_array_other;
 
-static int get_width(pid_t pid, int min)
+static int get_width(long long num, int min)
 {
 	char b[32];
-	int w = snprintf(&b[0], sizeof(b), "%lld", (long long)pid);
+	int w = snprintf(&b[0], sizeof(b), "%lld", num);
 	return (w < min) ? min : w;
 }
 
@@ -35,7 +37,8 @@ static int write_information(struct options *opt)
 {
 	int cmdline = 0;
 	pid_t max_pid[4] = { 0, 0, 0, 0 };
-	int width[4];
+	size_t max_mem[1] = { 0 };
+	int width[5];
 	size_t i, j;
 
 	for (i = 0; opt->operands[i] != NULL; i++) {
@@ -69,6 +72,11 @@ static int write_information(struct options *opt)
 				__DANCY_PROCINFO_SESSION_ID,
 				&pid_array_other[i].sess, sizeof(pid_t));
 
+		if (!(size < 0))
+			size = __dancy_procinfo(pid,
+				__DANCY_PROCINFO_MEMORY,
+				&pid_array_other[i].mem, sizeof(size_t));
+
 		if (size < 0) {
 			if (errno == ESRCH)
 				continue;
@@ -85,17 +93,21 @@ static int write_information(struct options *opt)
 
 		if (max_pid[3] < pid_array_other[i].sess)
 			max_pid[3] = pid_array_other[i].sess;
+
+		if (max_mem[0] < pid_array_other[i].mem)
+			max_mem[0] = pid_array_other[i].mem;
 	}
 
-	width[0] = get_width(max_pid[0], 4);
-	width[1] = get_width(max_pid[1], 4);
-	width[2] = get_width(max_pid[2], 4);
-	width[3] = get_width(max_pid[3], 4);
+	width[0] = get_width((long long)max_pid[0], 4);
+	width[1] = get_width((long long)max_pid[1], 4);
+	width[2] = get_width((long long)max_pid[2], 4);
+	width[3] = get_width((long long)max_pid[3], 4);
+	width[4] = get_width((long long)max_mem[0], 6);
 
-	printf("%*s  %*s  %*s  %*s  %s\n",
+	printf("%*s  %*s  %*s  %*s  %*s  %s\n",
 		width[0],  "PID", width[1], "PPID",
 		width[2], "PGID", width[3], "SESS",
-		cmdline ? "COMMAND" : "CMD");
+		width[4],  "MEMORY", "COMMAND");
 
 	for (i = 0; i < pid_array_count; i++) {
 		pid_t pid = pid_array[i];
@@ -114,11 +126,12 @@ static int write_information(struct options *opt)
 			return EXIT_FAILURE;
 		}
 
-		printf("%*lld  %*lld  %*lld  %*lld  ",
+		printf("%*lld  %*lld  %*lld  %*lld  %*lld  ",
 			width[0], (long long)pid_array[i],
 			width[1], (long long)pid_array_other[i].ppid,
 			width[2], (long long)pid_array_other[i].pgid,
-			width[3], (long long)pid_array_other[i].sess);
+			width[3], (long long)pid_array_other[i].sess,
+			width[4], (long long)pid_array_other[i].mem);
 
 		for (j = 0; j < (size_t)size; j++) {
 			int c = (int)cmd[j];
