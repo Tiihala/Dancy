@@ -855,6 +855,11 @@
     $(ARCTIC_PROGRAMS_FALSE_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/false/main.c
 
+./o32/arctic/programs/hd/main.o: \
+    ./arctic/programs/hd/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_HD_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/hd/main.c
+
 ./o32/arctic/programs/hexdump/main.o: \
     ./arctic/programs/hexdump/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_HEXDUMP_HEADERS)
@@ -2246,6 +2251,11 @@
     ./arctic/programs/false/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_FALSE_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/false/main.c
+
+./o64/arctic/programs/hd/main.o: \
+    ./arctic/programs/hd/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_HD_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/hd/main.c
 
 ./o64/arctic/programs/hexdump/main.o: \
     ./arctic/programs/hexdump/main.c $(DANCY_DEPS) \
