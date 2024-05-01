@@ -66,6 +66,8 @@ int dsh_token_read(struct token *token)
 	while ((c = input[new_i]) == ' ' || c == '\t')
 		new_i += 1;
 
+	token->_i = new_i;
+
 	while ((c = input[new_i]) != '\0') {
 		new_i += 1;
 
@@ -132,9 +134,9 @@ int dsh_token_read(struct token *token)
 			size = (int)(b - &_b[0]);
 
 			if (c == '<' || c == '>') {
-				char *p = &_b[0];
+				const char *p = &input[token->_i];
 
-				while (p < b) {
+				while (p < &input[new_i - 1]) {
 					if (*p < '0' || *p > '9') {
 						value = -1;
 						break;
