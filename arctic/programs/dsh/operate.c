@@ -22,6 +22,8 @@
 int dsh_exit_code = 0;
 int dsh_operate_state = 1;
 int dsh_interactive = 1;
+
+pid_t dsh_tcpgrp = 0;
 sigset_t dsh_sigmask;
 
 static void welcome(void)
@@ -54,6 +56,7 @@ static void create_safe_cwd(void *out, const void *in)
 
 int operate(struct options *opt)
 {
+	pid_t pgrp = getpgrp();
 	int r;
 
 	sigset_t set;
@@ -78,8 +81,11 @@ int operate(struct options *opt)
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
 
-	sigaddset(&set, SIGTTIN);
-	sigaddset(&set, SIGTTOU);
+	if (tcgetpgrp(0) == pgrp && pgrp > 0) {
+		dsh_tcpgrp = pgrp;
+		sigaddset(&set, SIGTTIN);
+		sigaddset(&set, SIGTTOU);
+	}
 
 	if (dsh_interactive) {
 		sigaddset(&set, SIGINT);

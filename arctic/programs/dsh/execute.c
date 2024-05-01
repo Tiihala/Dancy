@@ -103,7 +103,6 @@ static void execute_spawn(struct dsh_execute_state *state, const char *path)
 void dsh_execute(struct dsh_execute_state *state)
 {
 	const char *path = state->argv[0];
-	pid_t tc_pgrp;
 	char cmd[512];
 	size_t i;
 
@@ -135,9 +134,10 @@ void dsh_execute(struct dsh_execute_state *state)
 		path = &cmd[0];
 	}
 
-	tc_pgrp = tcgetpgrp(0);
 	execute_spawn(state, path);
-	tcsetpgrp(0, tc_pgrp);
+
+	if (dsh_tcpgrp)
+		tcsetpgrp(0, dsh_tcpgrp);
 
 	if (dsh_exit_code >= 128)
 		fputs("\n", stderr);

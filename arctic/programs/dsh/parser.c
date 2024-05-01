@@ -314,7 +314,9 @@ static int parse_pipeline_part(struct command *commands, int count,
 	}
 
 	posix_spawn_file_actions_init(&state->actions);
-	posix_spawn_file_actions_addtcsetpgrp_np(&state->actions, 0);
+
+	if (dsh_tcpgrp && !state->no_wait)
+		posix_spawn_file_actions_addtcsetpgrp_np(&state->actions, 0);
 
 	if (pipe_fd_in >= 0) {
 		int fd0 = 0;
