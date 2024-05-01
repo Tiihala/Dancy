@@ -169,6 +169,18 @@ static int f2(struct task *task, void *arg)
 		return (a->r = 0), 1;
 	}
 
+	if (a->request == __DANCY_PROCINFO_MEMORY) {
+		size_t m = (size_t)task->pg_user_memory;
+
+		if (a->size[1] < sizeof(m))
+			return (a->r = DE_MEMORY), 1;
+
+		memcpy(a->out, &m, sizeof(m));
+		a->size[0] +=  sizeof(m);
+
+		return (a->r = 0), 1;
+	}
+
 	return (a->r = DE_ARGUMENT), 1;
 }
 
