@@ -5,6 +5,7 @@
 ARCTIC_BIN32_FILES= \
  ./arctic/bin32/hello \
  ./arctic/bin32/cat \
+ ./arctic/bin32/date \
  ./arctic/bin32/dsh \
  ./arctic/bin32/false \
  ./arctic/bin32/hd \
@@ -24,6 +25,7 @@ ARCTIC_BIN32_FILES= \
 	$(DY_VBR) -t ramfs $@ 720
 	$(DY_MCOPY) -i $@ ./arctic/bin32/hello ::hello
 	$(DY_MCOPY) -i $@ ./arctic/bin32/cat ::cat
+	$(DY_MCOPY) -i $@ ./arctic/bin32/date ::date
 	$(DY_MCOPY) -i $@ ./arctic/bin32/dsh ::dsh
 	$(DY_MCOPY) -i $@ ./arctic/bin32/false ::false
 	$(DY_MCOPY) -i $@ ./arctic/bin32/hd ::hd
