@@ -22,6 +22,8 @@
 static pid_t *pid_array;
 static size_t pid_array_count;
 
+static pid_t ps_sess = -1;
+
 static struct {
 	pid_t ppid; pid_t pgid; pid_t sess; size_t mem;
 } *pid_array_other;
@@ -85,6 +87,9 @@ static int write_information(struct options *opt)
 			return EXIT_FAILURE;
 		}
 
+		if (ps_sess > 0 && ps_sess != pid_array_other[i].sess)
+			continue;
+
 		if (max_pid[1] < pid_array_other[i].ppid)
 			max_pid[1] = pid_array_other[i].ppid;
 
@@ -115,6 +120,9 @@ static int write_information(struct options *opt)
 
 		uint8_t cmd[48];
 		ssize_t size;
+
+		if (ps_sess > 0 && ps_sess != pid_array_other[i].sess)
+			continue;
 
 		size = __dancy_procinfo(pid, request, &cmd[0], sizeof(cmd));
 
@@ -162,6 +170,13 @@ int operate(struct options *opt)
 	size_t array_size = 64 * sizeof(pid_t);
 	int r;
 
+	if (!opt->all) {
+		if ((ps_sess = getsid(0)) < 0) {
+			perror(MAIN_CMDNAME ": getsid");
+			return EXIT_FAILURE;
+		}
+	}
+
 	for (;;) {
 		ssize_t size;
 
@@ -178,7 +193,7 @@ int operate(struct options *opt)
 		free(pid_array);
 
 		if (errno != ENOMEM) {
-			perror(MAIN_CMDNAME ":__dancy_proclist");
+			perror(MAIN_CMDNAME ": __dancy_proclist");
 			return EXIT_FAILURE;
 		}
 

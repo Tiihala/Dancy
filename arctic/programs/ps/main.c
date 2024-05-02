@@ -23,7 +23,7 @@ static const char *help_str =
 	"Usage: " MAIN_CMDNAME
 	" [-A] [-e] [a]\n"
 	"\nOptions:\n"
-	"  -A, -e        include all processes (default)\n"
+	"  -A, -e        include all processes\n"
 	"\nOperands:\n"
 	"  a             full command line\n"
 	"\nGeneral:\n"
@@ -91,8 +91,10 @@ int main(int argc, char *argv[])
 				arg = NULL;
 				break;
 			case 'A':
+				opts.all = 1;
 				break;
 			case 'e':
+				opts.all = 1;
 				break;
 			case 'h':
 				help(NULL);
