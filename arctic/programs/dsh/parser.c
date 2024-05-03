@@ -225,6 +225,11 @@ static int parse_pipeline_part(struct command *commands, int count,
 			fd_array[fd_array_i].fd[1] = fd1;
 			fd_array[fd_array_i].close_fd = fd1;
 
+			switch (fd0) {
+				case 1: fd_out = fd1; break;
+				case 2: fd_err = fd1; break;
+			}
+
 			command->argv += 1;
 			fd_array_i += 1;
 			continue;
