@@ -94,6 +94,21 @@ static int cmd_exit(int argc, char *argv[])
 	return 0;
 }
 
+static int cmd_unlink(int argc, char *argv[])
+{
+	const char *usage = "Usage: unlink FILE\n";
+
+	if (argc != 2)
+		return fputs(usage, stderr), EXIT_FAILURE;
+
+	if (unlink(argv[1]) != 0) {
+		fprintf(stderr, "unlink: %s: %s\n", argv[1], strerror(errno));
+		return EXIT_FAILURE;
+	}
+
+	return 0;
+}
+
 static int cmd_default(int argc, char *argv[])
 {
 	(void)argc;
@@ -110,5 +125,6 @@ struct dsh_builtin dsh_builtin_array[] = {
 	{ cmd_clear, "reset" },
 	{ cmd_echo, "echo" },
 	{ cmd_exit, "exit" },
+	{ cmd_unlink, "unlink" },
 	{ cmd_default, NULL }
 };
