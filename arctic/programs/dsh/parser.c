@@ -194,7 +194,7 @@ static int parse_pipeline_part(struct command *commands, int count,
 			break;
 		}
 
-		if (!strcmp(op, "<")) {
+		if (!strcmp(op, "<") || !strcmp(op, "<>")) {
 			int flags, fd0, fd1;
 
 			if (command->value >= 0)
@@ -211,7 +211,11 @@ static int parse_pipeline_part(struct command *commands, int count,
 				break;
 			}
 
-			flags = O_RDONLY;
+			if (!strcmp(op, "<"))
+				flags = O_RDONLY;
+			else
+				flags = O_RDWR | O_CREAT;
+
 			flags |= O_CLOEXEC;
 
 			if ((fd1 = open(command->argv[0], flags)) < 0) {
