@@ -326,7 +326,7 @@ static int parse_pipeline_part(struct command *commands, int count,
 						value = 0;
 
 					value *= 10;
-					value += (long)((int)*p - '0');
+					value += ((int)*p - '0');
 
 					if (value > 0xFFFF)
 						value = 0xFFFF;
