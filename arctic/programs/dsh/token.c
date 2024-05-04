@@ -168,6 +168,13 @@ int dsh_token_read(struct token *token)
 				if (input[new_i] == '&') {
 					strcpy(token->data, "&&");
 					new_i += 1;
+				} else if (input[new_i] == '>') {
+					strcpy(token->data, "&>");
+					new_i += 1;
+					if (input[new_i] == '>') {
+						strcpy(token->data, "&>>");
+						new_i += 1;
+					}
 				}
 				token->type = token_type_op;
 				return (token->_i = new_i), 0;

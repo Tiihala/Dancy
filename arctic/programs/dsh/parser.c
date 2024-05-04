@@ -190,13 +190,14 @@ static int parse_pipeline_part(struct command *commands, int count,
 	}
 
 	for (i = 0; i < (size_t)count; i++) {
+		size_t array_limit = sizeof(fd_array) / sizeof(fd_array[0]);
 		struct command *command = &commands[i];
 		char *op = &command->op[0];
 
 		if (command->argv != NULL)
 			continue;
 
-		if (fd_array_i >= sizeof(fd_array) / sizeof(fd_array[0])) {
+		if (fd_array_i >= array_limit) {
 			fputs("dsh: too many operators\n", stderr);
 			e = -1;
 			break;
@@ -289,6 +290,53 @@ static int parse_pipeline_part(struct command *commands, int count,
 
 			command->argv += 1;
 			fd_array_i += 1;
+			continue;
+		}
+
+		if (!strcmp(op, "&>") || !strcmp(op, "&>>")) {
+			int flags, fd1;
+
+			if (fd_array_i + 1 >= array_limit) {
+				fputs("dsh: too many operators\n", stderr);
+				e = -1;
+				break;
+			}
+
+			command = &commands[++i];
+
+			if (command->argv == NULL) {
+				fprintf(stderr,
+					"dsh: word missing after %s\n", op);
+				e = -1;
+				break;
+			}
+
+			if (!strcmp(op, "&>"))
+				flags = O_WRONLY | O_CREAT | O_TRUNC;
+			else
+				flags = O_WRONLY | O_CREAT | O_APPEND;
+
+			flags |= O_CLOEXEC;
+
+			if ((fd1 = open(command->argv[0], flags, 0666)) < 0) {
+				fprintf(stderr, "dsh: %s: %s\n",
+					command->argv[0], strerror(errno));
+				e = -1;
+				break;
+			}
+
+			fd_array[fd_array_i + 0].fd[0] = 1;
+			fd_array[fd_array_i + 0].fd[1] = fd1;
+			fd_array[fd_array_i + 0].close_fd = fd1;
+
+			fd_array[fd_array_i + 1].fd[0] = 2;
+			fd_array[fd_array_i + 1].fd[1] = fd1;
+
+			fd_out = fd1;
+			fd_err = fd1;
+
+			command->argv += 1;
+			fd_array_i += 2;
 			continue;
 		}
 
