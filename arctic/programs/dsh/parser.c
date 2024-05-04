@@ -111,20 +111,28 @@ static int handle_builtin(char **argv, int fd_out, int fd_err)
 				fflush(stdout);
 				current_fd_out = dup(1);
 
-				if (current_fd_out >= 0)
-					state = dup2(fd_out, 1);
-				else
+				if (current_fd_out >= 0) {
+					if (fd_out == INT_MAX)
+						(void)close(1);
+					else
+						state = dup2(fd_out, 1);
+				} else {
 					state = -1;
+				}
 			}
 
 			if (fd_err >= 0 && state >= 0) {
 				fflush(stderr);
 				current_fd_err = dup(2);
 
-				if (current_fd_err >= 0)
-					state = dup2(fd_err, 2);
-				else
+				if (current_fd_err >= 0) {
+					if (fd_err == INT_MAX)
+						(void)close(2);
+					else
+						state = dup2(fd_err, 2);
+				} else {
 					state = -1;
+				}
 			}
 
 			if (state >= 0) {
@@ -284,6 +292,106 @@ static int parse_pipeline_part(struct command *commands, int count,
 			continue;
 		}
 
+		if (!strcmp(op, "<&") || !strcmp(op, ">&")) {
+			int fd0, fd1 = -1;
+			int mode = O_RDWR;
+
+			if (command->value >= 0)
+				fd0 = (int)command->value;
+			else
+				fd0 = !strcmp(op, "<&") ? 0 : 1;
+
+			command = &commands[++i];
+
+			if (command->argv == NULL) {
+				fprintf(stderr,
+					"dsh: word missing after %s\n", op);
+				e = -1;
+				break;
+			}
+
+			if (!strcmp(command->argv[0], "-")) {
+				fd1 = INT_MAX;
+			} else {
+				const char *p = command->argv[0];
+				int value = -1;
+
+				while (*p != '\0') {
+					if (*p < '0' || *p > '9') {
+						value = -1;
+						break;
+					}
+
+					if (value < 0)
+						value = 0;
+
+					value *= 10;
+					value += (long)((int)*p - '0');
+
+					if (value > 0xFFFF)
+						value = 0xFFFF;
+
+					p += 1;
+				}
+
+				if (value >= 0)
+					fd1 = value;
+			}
+
+			if (fd1 < 0) {
+				fprintf(stderr,
+					"dsh: number missing after %s\n", op);
+				e = -1;
+				break;
+			}
+
+			if (fd1 != INT_MAX) {
+				int fl = fcntl(fd1, F_GETFL);
+
+				if (fl < 0) {
+					fprintf(stderr,
+						"dsh: %d: %s\n",
+						fd1, strerror(errno));
+					e = -1;
+					break;
+				}
+
+				mode = (fl & O_ACCMODE);
+			}
+
+
+			if (!strcmp(op, "<&")) {
+				if (mode != O_RDWR && mode != O_RDONLY) {
+					fprintf(stderr,
+						"dsh: %d: %s\n",
+						fd1, "not open for input");
+					e = -1;
+					break;
+				}
+
+			} else {
+				if (mode != O_RDWR && mode != O_WRONLY) {
+					fprintf(stderr,
+						"dsh: %d: %s\n",
+						fd1, "not open for output");
+					e = -1;
+					break;
+				}
+			}
+
+			fd_array[fd_array_i].fd[0] = fd0;
+			fd_array[fd_array_i].fd[1] = fd1;
+
+			switch (fd0) {
+				case 1: fd_out = fd1; break;
+				case 2: fd_err = fd1; break;
+			}
+
+			command->argv += 1;
+			fd_array_i += 1;
+			continue;
+		}
+
 		fprintf(stderr, "dsh: operator \033[95m%s"
 			"\033[0m is not supported\n", op);
 		e = -1;
@@ -346,8 +454,14 @@ static int parse_pipeline_part(struct command *commands, int count,
 		int fd0 = fd_array[i].fd[0];
 		int fd1 = fd_array[i].fd[1];
 
-		if (fd0 == 2 && fd_err >= 0)
+		if (fd0 == fd1)
 			continue;
+
+		if (fd1 == INT_MAX) {
+			posix_spawn_file_actions_addclose(
+				&state->actions, fd0);
+			continue;
+		}
 
 		posix_spawn_file_actions_adddup2(&state->actions, fd1, fd0);
 	}
@@ -365,10 +479,14 @@ static int parse_pipeline_part(struct command *commands, int count,
 			fflush(stderr);
 			current_fd_err = fcntl(2, F_DUPFD_CLOEXEC, 0);
 
-			if (current_fd_err >= 0)
-				e = dup2(fd_err, 2);
-			else
+			if (current_fd_err >= 0) {
+				if (fd_err == INT_MAX)
+					(void)close(2);
+				else
+					e = dup2(fd_err, 2);
+			} else {
 				e = -1;
+			}
 		}
 
 		if (e >= 0)
