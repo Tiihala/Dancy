@@ -130,7 +130,7 @@ static int new_task(void *arg)
 
 			if (type == __DANCY_SPAWN_ADD_CLOSE) {
 				fd[0] = ta->actions->_actions[i]._args[0];
-				r = file_close(fd[0]);
+				(void)file_close(fd[0]);
 
 			} else if (type == __DANCY_SPAWN_ADD_DUP2) {
 				fd[0] = ta->actions->_actions[i]._args[0];
