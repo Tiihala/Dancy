@@ -17,12 +17,5 @@ then
     exit 0
 fi
 
-if
-    which yasm > /dev/null 2>&1
-then
-    yasm "$@"
-    exit 0
-fi
-
 echo "Error: a compatible assembler was not found" 1>&2
 exit 1

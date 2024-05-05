@@ -34,9 +34,6 @@ export PATH="$PREFIX/bin:$PATH"
 ASM_AVAILABLE=0
 GCC_AVAILABLE=0
 
-which nasm > /dev/null 2>&1 && ASM_AVAILABLE=1
-which yasm > /dev/null 2>&1 && ASM_AVAILABLE=1
-
 if [ $ASM_AVAILABLE -eq 0 ]
 then
     echo -e "\e[33mBuilding an assembler:"
