@@ -11,7 +11,7 @@ Build Instructions (Unix/Linux)
 
   1. Install the following packages (this may require root privileges)
 
-       gcc, g++, make, git
+       gcc, g++, make, git, bzip2
 
      Optionally, also the following packages
 
