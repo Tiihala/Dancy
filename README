@@ -13,14 +13,6 @@ Build Instructions (Unix/Linux)
 
        gcc, g++, make, git, bzip2
 
-     Optionally, also the following packages
-
-       binutils-mingw-w64, gcc-mingw-w64, nasm
-
-     If the above three packages are not installed, the Makefile will
-     build them (scripts/external.sh). This step itself does not require
-     root privileges because all files are put in "./external" directory.
-
   2. Use a proper current directory
 
   3. Run the following commands (normal user privileges)
