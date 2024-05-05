@@ -31,6 +31,51 @@ static void welcome(void)
 	fputs("\tWelcome to the Dancy Operating System!\n\n", stdout);
 }
 
+static int check_standard_descriptors(void)
+{
+	int i, fl[3], mode[3];
+
+	if (fileno(stdin) != 0) {
+		fputs("dsh: stdin: unexpected file descriptor\n", stderr);
+		return EXIT_FAILURE;
+	}
+
+	if (fileno(stdout) != 1) {
+		fputs("dsh: stdout: unexpected file descriptor\n", stderr);
+		return EXIT_FAILURE;
+	}
+
+	if (fileno(stderr) != 2) {
+		fputs("dsh: stderr: unexpected file descriptor\n", stderr);
+		return EXIT_FAILURE;
+	}
+
+	for (i = 0; i < 3; i++) {
+		if ((fl[i] = fcntl(i, F_GETFL)) < 0) {
+			fprintf(stderr, "dsh: %d: %s\n", i, strerror(errno));
+			return EXIT_FAILURE;
+		}
+		mode[i] = (fl[i] & O_ACCMODE);
+	}
+
+	if (mode[0] != O_RDWR && mode[0] != O_RDONLY) {
+		fputs("dsh: 0 (stdin): not open for input\n", stderr);
+		return EXIT_FAILURE;
+	}
+
+	if (mode[1] != O_RDWR && mode[1] != O_WRONLY) {
+		fputs("dsh: 1 (stdout): not open for output\n", stderr);
+		return EXIT_FAILURE;
+	}
+
+	if (mode[2] != O_RDWR && mode[2] != O_WRONLY) {
+		fputs("dsh: 2 (stderr): not open for output\n", stderr);
+		return EXIT_FAILURE;
+	}
+
+	return 0;
+}
+
 static void create_safe_cwd(void *out, const void *in)
 {
 	unsigned char *o = out;
@@ -61,6 +106,9 @@ int operate(struct options *opt)
 
 	sigset_t set;
 	sigemptyset(&set);
+
+	if (check_standard_descriptors())
+		return EXIT_FAILURE;
 
 	if (opt->operands[0] != NULL && opt->command_string == NULL) {
 		FILE *stream = (errno = 0, fopen(opt->operands[0], "rb"));
