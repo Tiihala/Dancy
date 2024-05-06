@@ -50,7 +50,7 @@ void __dancy_stdio_init(void)
 	 */
 	default_streams[0]._fd = 0;
 	default_streams[0]._i = 0;
-	default_streams[0]._mode = O_RDONLY;
+	default_streams[0]._mode = O_RDWR;
 	default_streams[0]._state = _IOLBF;
 	default_streams[0]._state |= __DANCY_FILE_STATIC_BUFFER;
 
@@ -63,7 +63,7 @@ void __dancy_stdio_init(void)
 	 */
 	default_streams[1]._fd = 1;
 	default_streams[1]._i = 1;
-	default_streams[1]._mode = O_WRONLY;
+	default_streams[1]._mode = O_RDWR;
 	default_streams[1]._state = _IOLBF;
 	default_streams[1]._state |= __DANCY_FILE_STATIC_BUFFER;
 
@@ -76,7 +76,7 @@ void __dancy_stdio_init(void)
 	 */
 	default_streams[2]._fd = 2;
 	default_streams[2]._i = 2;
-	default_streams[2]._mode = O_WRONLY;
+	default_streams[2]._mode = O_RDWR;
 	default_streams[2]._state = _IONBF;
 
 	mtx_init(&default_streams[2]._mtx, mtx_plain);

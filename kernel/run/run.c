@@ -39,19 +39,19 @@ static int open_file_descriptors(void)
 {
 	int fd, r;
 
-	if ((r = file_open(&fd, "/dev/null", O_RDONLY, 0)) != 0)
+	if ((r = file_open(&fd, "/dev/null", O_RDWR, 0)) != 0)
 		return r;
 
 	if (fd != 0)
 		return DE_UNEXPECTED;
 
-	if ((r = file_open(&fd, "/dev/console", O_WRONLY, 0)) != 0)
+	if ((r = file_open(&fd, "/dev/console", O_RDWR, 0)) != 0)
 		return r;
 
 	if (fd != 1)
 		return DE_UNEXPECTED;
 
-	if ((r = file_open(&fd, "/dev/console", O_WRONLY, 0)) != 0)
+	if ((r = file_open(&fd, "/dev/console", O_RDWR, 0)) != 0)
 		return r;
 
 	if (fd != 2)
