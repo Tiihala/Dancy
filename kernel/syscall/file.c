@@ -426,6 +426,11 @@ int file_write(int fd, size_t *size, const void *buffer)
 				s += *size;
 			}
 
+			if (r == DE_PIPE) {
+				__dancy_pid_t pid = (__dancy_pid_t)task->id;
+				kill_internal(pid, SIGPIPE, 0);
+			}
+
 			return *size = s, r;
 		}
 	}
