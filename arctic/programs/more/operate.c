@@ -24,7 +24,7 @@ static int ws_row;
 
 static int temporary_implementation(FILE *stream)
 {
-	int r;
+	char c;
 
 	save_termios();
 
@@ -39,12 +39,15 @@ static int temporary_implementation(FILE *stream)
 		printf("\033[2K\r\033[7m--More--\033[0m\033[%dG", ws_col);
 		fflush(stdout);
 
-		r = fgetc(stderr);
+		while (read(STDERR_FILENO, &buffer[0], 1) != 1)
+			/* void */;
+
+		c = buffer[0];
 
 		printf("\033[2K\r");
 		fflush(stdout);
 
-		if (r == EOF || r == 'q' || r == 'Q')
+		if (c == 'q' || c == 'Q')
 			break;
 	}
 
