@@ -94,6 +94,8 @@ static int allowed_signal(int sig)
 			return 1;
 		case SIGKILL:
 			return 1;
+		case SIGPIPE:
+			return 1;
 		case SIGQUIT:
 			return 1;
 		case SIGSTOP:
