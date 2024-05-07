@@ -152,7 +152,7 @@ static int n_write(struct vfs_node *node,
 
 		if (shared_data->count != 2) {
 			spin_leave(&lock_local);
-			return DE_UNINITIALIZED;
+			return DE_PIPE;
 		}
 
 		original_end = shared_data->end;
