@@ -12,6 +12,7 @@ ARCTIC_BIN32_FILES= \
  ./arctic/bin32/hexdump \
  ./arctic/bin32/init \
  ./arctic/bin32/ls \
+ ./arctic/bin32/more \
  ./arctic/bin32/poweroff \
  ./arctic/bin32/ps \
  ./arctic/bin32/reboot \
@@ -32,6 +33,7 @@ ARCTIC_BIN32_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin32/hexdump ::hexdump
 	$(DY_MCOPY) -i $@ ./arctic/bin32/init ::init
 	$(DY_MCOPY) -i $@ ./arctic/bin32/ls ::ls
+	$(DY_MCOPY) -i $@ ./arctic/bin32/more ::more
 	$(DY_MCOPY) -i $@ ./arctic/bin32/poweroff ::poweroff
 	$(DY_MCOPY) -i $@ ./arctic/bin32/ps ::ps
 	$(DY_MCOPY) -i $@ ./arctic/bin32/reboot ::reboot
