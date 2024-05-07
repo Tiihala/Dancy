@@ -378,6 +378,8 @@ static long long dancy_syscall_write(va_list va)
 			return -ENOSPC;
 		if (r == DE_READ_ONLY)
 			return -EINVAL;
+		if (r == DE_PIPE)
+			return -EPIPE;
 		return -EIO;
 	}
 
