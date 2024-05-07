@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, 2021, 2022, 2023 Antti Tiihala
+ * Copyright (c) 2020-2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,6 +31,7 @@ DANCY_X(DE_CHECKSUM                  , "checksum does not match"         )
 DANCY_X(DE_ARGUMENT                  , "function argument"               )
 DANCY_X(DE_RETRY                     , "temporarily unavailable"         )
 DANCY_X(DE_EMPTY                     , "no data available"               )
+DANCY_X(DE_PIPE                      , "pipe failure"                    )
 DANCY_X(DE_UNINITIALIZED             , "uninitialized"                   )
 DANCY_X(DE_UNSUPPORTED               , "unsupported"                     )
 DANCY_X(DE_PLACEHOLDER               , "placeholder data"                )
