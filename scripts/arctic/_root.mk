@@ -32,6 +32,7 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/errno.h \
  ./arctic/include/fcntl.h \
  ./arctic/include/fenv.h \
+ ./arctic/include/glob.h \
  ./arctic/include/inttypes.h \
  ./arctic/include/locale.h \
  ./arctic/include/math.h \
@@ -152,6 +153,9 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/fenv.h \
 		::include/fenv.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/glob.h \
+		::include/glob.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/inttypes.h \
 		::include/inttypes.h
