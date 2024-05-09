@@ -774,6 +774,47 @@ static void parse_input(struct token *token)
 			continue;
 		}
 
+		if (token->type == token_type_glob) {
+			size_t i;
+			glob_t g;
+			int r;
+
+			memset(&g, 0, sizeof(g));
+
+			if (state == 0) {
+				command_init(command);
+				state = 1;
+			}
+
+			r = glob(token->data, GLOB_NOCHECK, NULL, &g);
+
+			if (r != 0) {
+				if (r == GLOB_NOSPACE)
+					parsing_error("out of memory");
+				else
+					parsing_error("pattern-matching");
+
+				globfree(&g), state = -1;
+				break;
+			}
+
+			for (i = 0; i < g.gl_pathc; i++) {
+				if (!append_arg(command, g.gl_pathv[i])) {
+					r = -1;
+					break;
+				}
+			}
+
+			if (r != 0) {
+				parsing_error("out of memory");
+				globfree(&g), state = -1;
+				break;
+			}
+
+			globfree(&g);
+			continue;
+		}
+
 		if (token->type == token_type_op) {
 			if (state == 1) {
 				command = &commands[++commands_count];

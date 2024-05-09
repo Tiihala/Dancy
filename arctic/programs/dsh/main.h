@@ -22,6 +22,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <glob.h>
 #include <limits.h>
 #include <signal.h>
 #include <spawn.h>
@@ -83,6 +84,7 @@ void dsh_restore_termios(void);
 enum token_type {
 	token_type_null,
 	token_type_arg,
+	token_type_glob,
 	token_type_op,
 	token_max_type
 };

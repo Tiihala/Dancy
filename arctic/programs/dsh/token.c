@@ -53,6 +53,7 @@ int dsh_token_read(struct token *token)
 	const char *input = token->_input;
 	size_t new_i = token->_i;
 	int size, empty_allowed = 0;
+	int glob_mode = 0;
 	int quote_mode = 0;
 	char c;
 
@@ -72,6 +73,9 @@ int dsh_token_read(struct token *token)
 		new_i += 1;
 
 		if (b >= e)
+			return token_error("buffer overflow");
+
+		if (glob_mode && b + 1 >= e)
 			return token_error("buffer overflow");
 
 		if (quote_mode == '"') {
@@ -95,6 +99,9 @@ int dsh_token_read(struct token *token)
 				}
 			}
 
+			if (glob_mode == 1 && strchr("*?[", c))
+				*b++ = '\\';
+
 			*b++ = c, *b = '\0';
 			continue;
 		}
@@ -104,6 +111,9 @@ int dsh_token_read(struct token *token)
 				quote_mode = 0;
 				continue;
 			}
+
+			if (glob_mode == 1 && strchr("*?[", c))
+				*b++ = '\\';
 
 			*b++ = c, *b = '\0';
 			continue;
@@ -118,6 +128,9 @@ int dsh_token_read(struct token *token)
 			if (c == '\n')
 				continue;
 
+			if (glob_mode == 1 && strchr("*?[", c))
+				*b++ = '\\';
+
 			*b++ = c, *b = '\0';
 			continue;
 		}
@@ -125,6 +138,34 @@ int dsh_token_read(struct token *token)
 		if (c == '"' || c == '\'') {
 			quote_mode = (int)c;
 			empty_allowed = 1;
+			continue;
+		}
+
+		if (glob_mode == 0 && strchr("*?[", c)) {
+			empty_allowed = 0;
+			glob_mode = 1;
+			new_i = token->_i;
+
+			b = &_b[0], *b = '\0';
+			continue;
+		}
+
+		if (glob_mode == 1 && c == '[') {
+			glob_mode = 2;
+
+			if (input[new_i] == ']') {
+				*b++ = c;
+				c = input[new_i++];
+			}
+
+			*b++ = c, *b = '\0';
+			continue;
+		}
+
+		if (glob_mode == 2 && c == ']') {
+			glob_mode = 1;
+
+			*b++ = c, *b = '\0';
 			continue;
 		}
 
@@ -244,6 +285,9 @@ int dsh_token_read(struct token *token)
 		return 0;
 
 	token->type = token_type_arg;
+
+	if (glob_mode)
+		token->type = token_type_glob;
 
 	if (size < TOKEN_DATA_SIZE) {
 		strcpy(token->data, &_b[0]);
