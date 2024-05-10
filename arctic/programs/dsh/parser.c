@@ -181,7 +181,8 @@ static int parse_pipeline_part(struct command *commands, int count,
 		int close_fd;
 	} fd_array[16];
 
-	size_t i, fd_array_i = 0;
+	size_t i, j, fd_array_i = 0;
+	struct command *main_command = NULL;
 
 	for (i = 0; i < sizeof(fd_array) / sizeof(fd_array[0]); i++) {
 		fd_array[i].fd[0] = -1;
@@ -446,17 +447,28 @@ static int parse_pipeline_part(struct command *commands, int count,
 		break;
 	}
 
-	for (i = 0; i < (size_t)count && state->argv == NULL; i++) {
+	for (i = 0; e == 0 && i < (size_t)count; i++) {
 		struct command *command = &commands[i];
 		char *op = &command->op[0];
 
 		if (!strcmp(op, "\\n"))
 			break;
 
-		if (command->argv != NULL) {
-			char **argv = command->argv;
-			if (argv[0] != NULL)
-				state->argv = argv;
+		if (command->argv == NULL || command->argv[0] == NULL)
+			continue;
+
+		if (main_command == NULL) {
+			main_command = command;
+			state->argv = command->argv;
+			continue;
+		}
+
+		for (j = 0; command->argv[j] != NULL; j++) {
+			if (!append_arg(main_command, command->argv[j])) {
+				parsing_error("out of memory");
+				e = -1;
+				break;
+			}
 		}
 	}
 
