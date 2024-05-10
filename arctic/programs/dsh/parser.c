@@ -23,6 +23,7 @@ struct command {
 	char **argv;
 	char **_argv;
 	size_t state[2];
+	size_t gl_pathc;
 	char op[TOKEN_DATA_SIZE];
 	long value;
 };
@@ -221,6 +222,13 @@ static int parse_pipeline_part(struct command *commands, int count,
 				break;
 			}
 
+			if (command->gl_pathc > 1) {
+				fprintf(stderr,
+					"dsh: ambiguous word after %s\n", op);
+				e = -1;
+				break;
+			}
+
 			if (!strcmp(op, "<"))
 				flags = O_RDONLY;
 			else
@@ -262,6 +270,13 @@ static int parse_pipeline_part(struct command *commands, int count,
 			if (command->argv == NULL) {
 				fprintf(stderr,
 					"dsh: word missing after %s\n", op);
+				e = -1;
+				break;
+			}
+
+			if (command->gl_pathc > 1) {
+				fprintf(stderr,
+					"dsh: ambiguous word after %s\n", op);
 				e = -1;
 				break;
 			}
@@ -312,6 +327,13 @@ static int parse_pipeline_part(struct command *commands, int count,
 				break;
 			}
 
+			if (command->gl_pathc > 1) {
+				fprintf(stderr,
+					"dsh: ambiguous word after %s\n", op);
+				e = -1;
+				break;
+			}
+
 			if (!strcmp(op, "&>"))
 				flags = O_WRONLY | O_CREAT | O_TRUNC;
 			else
@@ -355,6 +377,13 @@ static int parse_pipeline_part(struct command *commands, int count,
 			if (command->argv == NULL) {
 				fprintf(stderr,
 					"dsh: word missing after %s\n", op);
+				e = -1;
+				break;
+			}
+
+			if (command->gl_pathc > 1) {
+				fprintf(stderr,
+					"dsh: ambiguous word after %s\n", op);
 				e = -1;
 				break;
 			}
@@ -809,6 +838,8 @@ static void parse_input(struct token *token)
 				globfree(&g), state = -1;
 				break;
 			}
+
+			command->gl_pathc = g.gl_pathc;
 
 			for (i = 0; i < g.gl_pathc; i++) {
 				if (!append_arg(command, g.gl_pathv[i])) {
