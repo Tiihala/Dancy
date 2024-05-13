@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * libc/glob/glob.c
- *      Pathname pattern-matching types
+ *      Generate pathnames matching a pattern
  */
 
 #include <glob.h>
@@ -93,24 +93,4 @@ int glob(const char *pattern, int flags,
 	}
 
 	return 0;
-}
-
-void globfree(glob_t *pglob)
-{
-	size_t i;
-
-	for (i = 0; i < pglob->gl_offs; i++)
-		pglob->gl_pathv[i] = NULL;
-
-	for (i = 0; i < pglob->gl_pathc; i++) {
-		char **p = &pglob->gl_pathv[pglob->gl_offs + i];
-		free(*p), *p = NULL;
-	}
-
-	free(pglob->gl_pathv);
-
-	pglob->gl_pathc = 0;
-	pglob->gl_pathv = NULL;
-	pglob->gl_offs = 0;
-	pglob->_dancy = 0;
 }
