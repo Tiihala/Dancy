@@ -152,6 +152,10 @@
     ./arctic/libc/glob/glob.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/glob/glob.c
 
+./o32/arctic/libc/glob/globfree.o: \
+    ./arctic/libc/glob/globfree.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/glob/globfree.c
+
 ./o32/arctic/libc/keymap/_keymap.o: \
     ./arctic/libc/keymap/_keymap.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/keymap/_keymap.c
@@ -1582,6 +1586,10 @@
 ./o64/arctic/libc/glob/glob.o: \
     ./arctic/libc/glob/glob.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/glob/glob.c
+
+./o64/arctic/libc/glob/globfree.o: \
+    ./arctic/libc/glob/globfree.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/glob/globfree.c
 
 ./o64/arctic/libc/keymap/_keymap.o: \
     ./arctic/libc/keymap/_keymap.c $(DANCY_DEPS)

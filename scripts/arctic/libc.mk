@@ -38,6 +38,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/fcntl/fcntl.o \
  ./o32/arctic/libc/fcntl/open.o \
  ./o32/arctic/libc/glob/glob.o \
+ ./o32/arctic/libc/glob/globfree.o \
  ./o32/arctic/libc/keymap/_keymap.o \
  ./o32/arctic/libc/keymap/_write.o \
  ./o32/arctic/libc/keymap/fi.o \
@@ -239,6 +240,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/fcntl/fcntl.o \
  ./o64/arctic/libc/fcntl/open.o \
  ./o64/arctic/libc/glob/glob.o \
+ ./o64/arctic/libc/glob/globfree.o \
  ./o64/arctic/libc/keymap/_keymap.o \
  ./o64/arctic/libc/keymap/_write.o \
  ./o64/arctic/libc/keymap/fi.o \
