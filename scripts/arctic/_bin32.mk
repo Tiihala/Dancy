@@ -15,6 +15,7 @@ ARCTIC_BIN32_FILES= \
  ./arctic/bin32/more \
  ./arctic/bin32/poweroff \
  ./arctic/bin32/ps \
+ ./arctic/bin32/pwd \
  ./arctic/bin32/reboot \
  ./arctic/bin32/sleep \
  ./arctic/bin32/terminal \
@@ -36,6 +37,7 @@ ARCTIC_BIN32_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin32/more ::more
 	$(DY_MCOPY) -i $@ ./arctic/bin32/poweroff ::poweroff
 	$(DY_MCOPY) -i $@ ./arctic/bin32/ps ::ps
+	$(DY_MCOPY) -i $@ ./arctic/bin32/pwd ::pwd
 	$(DY_MCOPY) -i $@ ./arctic/bin32/reboot ::reboot
 	$(DY_MCOPY) -i $@ ./arctic/bin32/sleep ::sleep
 	$(DY_MCOPY) -i $@ ./arctic/bin32/terminal ::terminal

@@ -63,6 +63,11 @@ ARCTIC_PROGRAMS_PS_OBJECTS_32= \
  ./o32/arctic/programs/ps/operate.o \
  ./o32/arctic/libc.a \
 
+ARCTIC_PROGRAMS_PWD_OBJECTS_32= \
+ ./o32/arctic/programs/pwd/main.o \
+ ./o32/arctic/programs/pwd/operate.o \
+ ./o32/arctic/libc.a \
+
 ARCTIC_PROGRAMS_REBOOT_OBJECTS_32= \
  ./o32/arctic/programs/reboot/main.o \
  ./o32/arctic/programs/reboot/operate.o \
@@ -143,6 +148,11 @@ ARCTIC_PROGRAMS_PS_OBJECTS_64= \
  ./o64/arctic/programs/ps/operate.o \
  ./o64/arctic/libc.a \
 
+ARCTIC_PROGRAMS_PWD_OBJECTS_64= \
+ ./o64/arctic/programs/pwd/main.o \
+ ./o64/arctic/programs/pwd/operate.o \
+ ./o64/arctic/libc.a \
+
 ARCTIC_PROGRAMS_REBOOT_OBJECTS_64= \
  ./o64/arctic/programs/reboot/main.o \
  ./o64/arctic/programs/reboot/operate.o \
@@ -195,6 +205,9 @@ ARCTIC_PROGRAMS_POWEROFF_HEADERS= \
 ARCTIC_PROGRAMS_PS_HEADERS= \
  ./arctic/programs/ps/main.h \
 
+ARCTIC_PROGRAMS_PWD_HEADERS= \
+ ./arctic/programs/pwd/main.h \
+
 ARCTIC_PROGRAMS_REBOOT_HEADERS= \
  ./arctic/programs/reboot/main.h \
 
@@ -241,6 +254,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 ./arctic/bin32/ps: $(ARCTIC_PROGRAMS_PS_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_PS_OBJECTS_32)
 
+./arctic/bin32/pwd: $(ARCTIC_PROGRAMS_PWD_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_PWD_OBJECTS_32)
+
 ./arctic/bin32/reboot: $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_32)
 
@@ -285,6 +301,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 
 ./arctic/bin64/ps: $(ARCTIC_PROGRAMS_PS_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_PS_OBJECTS_64)
+
+./arctic/bin64/pwd: $(ARCTIC_PROGRAMS_PWD_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_PWD_OBJECTS_64)
 
 ./arctic/bin64/reboot: $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_64)
