@@ -25,11 +25,6 @@ static int fd_keyboard;
 
 static const struct __dancy_keymap *keymap;
 
-static void select_keymap(void)
-{
-	keymap = __dancy_keymaps[0];
-}
-
 static void handle_key(int key)
 {
 	const char *command = NULL;
@@ -171,7 +166,7 @@ int operate(struct options *opt)
 		return EXIT_FAILURE;
 	}
 
-	select_keymap();
+	keymap = select_keymap();
 
 	if (openpty(&fd_amaster, &fd_aslave, &pty_name[0], NULL, NULL)) {
 		perror("openpty");

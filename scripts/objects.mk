@@ -978,6 +978,11 @@
     $(ARCTIC_PROGRAMS_SLEEP_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/sleep/operate.c
 
+./o32/arctic/programs/terminal/keymap.o: \
+    ./arctic/programs/terminal/keymap.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_TERMINAL_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/terminal/keymap.c
+
 ./o32/arctic/programs/terminal/main.o: \
     ./arctic/programs/terminal/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_TERMINAL_HEADERS)
@@ -2422,6 +2427,11 @@
     ./arctic/programs/sleep/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_SLEEP_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/sleep/operate.c
+
+./o64/arctic/programs/terminal/keymap.o: \
+    ./arctic/programs/terminal/keymap.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_TERMINAL_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/terminal/keymap.c
 
 ./o64/arctic/programs/terminal/main.o: \
     ./arctic/programs/terminal/main.c $(DANCY_DEPS) \

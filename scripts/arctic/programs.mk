@@ -79,6 +79,7 @@ ARCTIC_PROGRAMS_SLEEP_OBJECTS_32= \
  ./o32/arctic/libc.a \
 
 ARCTIC_PROGRAMS_TERMINAL_OBJECTS_32= \
+ ./o32/arctic/programs/terminal/keymap.o \
  ./o32/arctic/programs/terminal/main.o \
  ./o32/arctic/programs/terminal/operate.o \
  ./o32/arctic/libc.a \
@@ -164,6 +165,7 @@ ARCTIC_PROGRAMS_SLEEP_OBJECTS_64= \
  ./o64/arctic/libc.a \
 
 ARCTIC_PROGRAMS_TERMINAL_OBJECTS_64= \
+ ./o64/arctic/programs/terminal/keymap.o \
  ./o64/arctic/programs/terminal/main.o \
  ./o64/arctic/programs/terminal/operate.o \
  ./o64/arctic/libc.a \

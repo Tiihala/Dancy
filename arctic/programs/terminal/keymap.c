@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,39 +13,13 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * terminal/main.h
+ * terminal/keymap.c
  *      The terminal program
  */
 
-#ifndef MAIN_CMDNAME
-#define MAIN_CMDNAME "terminal"
+#include "main.h"
 
-#include <__dancy/keys.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <poll.h>
-#include <pty.h>
-#include <spawn.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-#include <termios.h>
-#include <unistd.h>
-
-struct options {
-	char **operands;
-	const char *error;
-	int verbose;
-};
-
-int operate(struct options *opt);
-const struct __dancy_keymap *select_keymap(void);
-
-#else
-#error "MAIN_CMDNAME"
-#endif
+const struct __dancy_keymap *select_keymap(void)
+{
+	return __dancy_keymaps[0];
+}
