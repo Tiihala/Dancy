@@ -19,7 +19,7 @@
 
 #include "main.h"
 
-const struct __dancy_keymap *select_keymap(void)
+const struct __dancy_keymap *select_keymap(int fd_keyboard)
 {
-	return __dancy_keymaps[0];
+	return (void)fd_keyboard, __dancy_keymaps[0];
 }

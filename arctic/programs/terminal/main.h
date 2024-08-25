@@ -44,7 +44,7 @@ struct options {
 };
 
 int operate(struct options *opt);
-const struct __dancy_keymap *select_keymap(void);
+const struct __dancy_keymap *select_keymap(int fd_keyboard);
 
 #else
 #error "MAIN_CMDNAME"

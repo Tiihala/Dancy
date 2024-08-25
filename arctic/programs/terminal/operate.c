@@ -166,7 +166,7 @@ int operate(struct options *opt)
 		return EXIT_FAILURE;
 	}
 
-	keymap = select_keymap();
+	keymap = select_keymap(fd_keyboard);
 
 	if (openpty(&fd_amaster, &fd_aslave, &pty_name[0], NULL, NULL)) {
 		perror("openpty");
