@@ -164,6 +164,10 @@
     ./arctic/libc/keymap/_write.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/keymap/_write.c
 
+./o32/arctic/libc/keymap/de.o: \
+    ./arctic/libc/keymap/de.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/keymap/de.c
+
 ./o32/arctic/libc/keymap/fi.o: \
     ./arctic/libc/keymap/fi.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/keymap/fi.c
@@ -1617,6 +1621,10 @@
 ./o64/arctic/libc/keymap/_write.o: \
     ./arctic/libc/keymap/_write.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/keymap/_write.c
+
+./o64/arctic/libc/keymap/de.o: \
+    ./arctic/libc/keymap/de.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/keymap/de.c
 
 ./o64/arctic/libc/keymap/fi.o: \
     ./arctic/libc/keymap/fi.c $(DANCY_DEPS)
