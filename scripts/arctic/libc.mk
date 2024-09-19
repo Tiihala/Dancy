@@ -43,6 +43,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/keymap/_write.o \
  ./o32/arctic/libc/keymap/de.o \
  ./o32/arctic/libc/keymap/fi.o \
+ ./o32/arctic/libc/keymap/sv.o \
  ./o32/arctic/libc/keymap/us.o \
  ./o32/arctic/libc/locale/conv.o \
  ./o32/arctic/libc/locale/set.o \
@@ -247,6 +248,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/keymap/_write.o \
  ./o64/arctic/libc/keymap/de.o \
  ./o64/arctic/libc/keymap/fi.o \
+ ./o64/arctic/libc/keymap/sv.o \
  ./o64/arctic/libc/keymap/us.o \
  ./o64/arctic/libc/locale/conv.o \
  ./o64/arctic/libc/locale/set.o \
