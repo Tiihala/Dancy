@@ -22,12 +22,14 @@
 extern const struct __dancy_keymap __dancy_keymap_us;
 extern const struct __dancy_keymap __dancy_keymap_fi;
 extern const struct __dancy_keymap __dancy_keymap_de;
+extern const struct __dancy_keymap __dancy_keymap_no;
 extern const struct __dancy_keymap __dancy_keymap_sv;
 
 const struct __dancy_keymap *const __dancy_keymaps[] = {
 	&__dancy_keymap_us,
 	&__dancy_keymap_fi,
 	&__dancy_keymap_de,
+	&__dancy_keymap_no,
 	&__dancy_keymap_sv,
 	NULL
 };
