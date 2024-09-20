@@ -47,7 +47,7 @@ static void *table_alloc(size_t size)
 
 	heap_used = (heap_used + 0x0Fu) & 0xFFFFFFF0u;
 
-	if (size > 0x10000 || (heap_used + aligned_size) > heap_size)
+	if (size > 0x100000 || (heap_used + aligned_size) > heap_size)
 		panic("table_alloc: out of memory");
 
 	addr = kernel->heap_addr + (addr_t)heap_used;
@@ -216,9 +216,9 @@ void table_init(void)
 		}
 
 		/*
-		 * Unicode range from 0xA0 to 0xFF.
+		 * Unicode range from 0xA0 to 0x2FF.
 		 */
-		kernel->glyph[1].unicode_count = 96;
+		kernel->glyph[1].unicode_count = 608;
 		kernel->glyph[1].unicode = 0xA0;
 
 		size = (size_t)kernel->glyph[1].unicode_count;
