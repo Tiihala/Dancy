@@ -66,6 +66,17 @@ const struct __dancy_keymap *select_keymap(int fd_keyboard)
 	if (visible_lines > count)
 		visible_lines = count;
 
+	/*
+	 * The Finnish keyboard layout is the default for now.
+	 */
+	for (i = 0; i < count; i++) {
+		if (!strcmp(__dancy_keymaps[i]->name, "fi")) {
+			if ((active = i) >= visible_lines)
+				offset = active - (visible_lines / 2);
+			break;
+		}
+	}
+
 	printf("\033[?25l\n");
 
 	printf("\t\033[32m" T0
