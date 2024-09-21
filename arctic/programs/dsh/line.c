@@ -190,8 +190,13 @@ char *dsh_get_input(struct options *opt, const char *prompt, size_t offset)
 		u[utf8_state] = 0;
 		utf8_state = 0;
 
-		if (c >= 0 && c <= 0x1F)
-			u[0] = 0xEF, u[1] = 0xB7, u[2] = 0xBF, u[3] = 0x00;
+		if (c == 0x1B) {
+			u[0] = 0xC2, u[1] = 0xB7, u[2] = 0x00;
+
+		} else if (c >= 0 && c <= 0x1F) {
+			buffer[--i] = (char)(u[0] = 0x00);
+			continue;
+		}
 
 		fputs((const char *)&u[0], stdout);
 		column += 1;
