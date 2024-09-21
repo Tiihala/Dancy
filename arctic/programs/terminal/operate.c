@@ -159,6 +159,11 @@ int operate(struct options *opt)
 	int r = 0;
 	pid_t pid;
 
+	if (isatty(0) || isatty(1) || isatty(2)) {
+		fputs("Error: only single terminal allowed\n", stderr);
+		return EXIT_FAILURE;
+	}
+
 	fd_keyboard = open("/dev/dancy-keyboard", O_RDONLY | O_NONBLOCK);
 
 	if (fd_keyboard < 0) {

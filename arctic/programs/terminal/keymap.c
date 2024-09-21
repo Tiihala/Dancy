@@ -141,10 +141,12 @@ const struct __dancy_keymap *select_keymap(int fd_keyboard)
 		if ((key & __DANCY_KEYTYP_RELEASE) != 0)
 			continue;
 
-		if ((key & 0xFF) == __DANCY_KEY_ENTER)
+		key = key & 0xFF;
+
+		if (key == __DANCY_KEY_ENTER || key == __DANCY_KEY_PADENTER)
 			break;
 
-		if ((key & 0xFF) == __DANCY_KEY_DOWNARROW) {
+		if (key == __DANCY_KEY_DOWNARROW) {
 			if (active + 1 < count) {
 				active += 1;
 				if (active - offset >= visible_lines)
@@ -153,7 +155,7 @@ const struct __dancy_keymap *select_keymap(int fd_keyboard)
 			continue;
 		}
 
-		if ((key & 0xFF) == __DANCY_KEY_UPARROW) {
+		if (key == __DANCY_KEY_UPARROW) {
 			if (active - 1 >= 0) {
 				active -= 1;
 				if (active < offset)
