@@ -565,7 +565,7 @@ static int acpios_task(void *arg)
 			continue;
 		}
 
-		task_yield();
+		task_sleep(30);
 	}
 
 	return 0;
