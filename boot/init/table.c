@@ -19,6 +19,20 @@
 
 #include <boot/init.h>
 
+/*
+ * The Unicode ranges to be exported to the kernel console.
+ */
+static struct {
+	int start; int end;
+} unicode_ranges[] = {
+	{ 0x000020, 0x00007F },
+	{ 0x0000A0, 0x0002FF },
+	{ 0x0020AC, 0x0020AC },
+	{ 0x002122, 0x002122 },
+	{ 0x002500, 0x00257F },
+	{ -1, -1 }
+};
+
 static size_t heap_size = 0;
 static size_t heap_used = 0;
 
@@ -174,6 +188,11 @@ void table_init(void)
 		if (width < 8 || width > (unsigned)glyph_em)
 			panic("Glyph: unexpected glyph width");
 
+		kernel->glyph_count = 0;
+
+		for (i = 0; unicode_ranges[i].start > 0; i++)
+			kernel->glyph_count += 1;
+
 		kernel->glyph_width = (int)width;
 		kernel->glyph_height = glyph_em;
 
@@ -184,6 +203,45 @@ void table_init(void)
 
 		size = (size_t)kernel->glyph_count * sizeof(kernel->glyph[0]);
 		kernel->glyph = table_alloc(size);
+
+		for (i = 0; i < (size_t)kernel->glyph_count; i++) {
+			int s = unicode_ranges[i].start;
+			int e = unicode_ranges[i].end;
+			int unicode_count;
+
+			if (s <= 0 || s > e)
+				panic("Glyph: unexpected unicode range");
+
+			unicode_count = (e - s) + 1;
+
+			kernel->glyph[i].unicode_count = unicode_count;
+			kernel->glyph[i].unicode = (uint32_t)s;
+
+			size = (size_t)unicode_count;
+			size *= ((size_t)width * (size_t)glyph_em);
+
+			kernel->glyph[i].data = table_alloc(size);
+
+			code_point = (unsigned)kernel->glyph[i].unicode;
+			data = kernel->glyph[i].data;
+
+			for (j = 0; j < (size_t)unicode_count; j++) {
+				unsigned char *ptr = &ttf_bitmap[0];
+				unsigned w;
+				int x, y;
+
+				if (ttf_render(ttf_kernel, code_point++, &w))
+					panic("Glyph: rendering error");
+
+				data += (extra_height * (int)width);
+
+				for (y = 0; y < glyph_em; y++) {
+					for (x = 0; x < (int)width; x++)
+						*data++ = ptr[x];
+					ptr += glyph_em;
+				}
+			}
+		}
 	}
 
 	/*
