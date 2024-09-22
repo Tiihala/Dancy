@@ -164,7 +164,7 @@ void table_init(void)
 
 		void *ttf_kernel = ttf_array[2];
 		unsigned code_point, width = 0;
-		int extra_height, glyph_em = 16;
+		int glyph_em = 16;
 		unsigned char *data;
 
 		if (vi->width >= 1920 && vi->height >= 1080)
@@ -195,8 +195,6 @@ void table_init(void)
 
 		kernel->glyph_width = (int)width;
 		kernel->glyph_height = glyph_em;
-
-		extra_height = 0;
 
 		if (kernel->glyph_height < kernel->glyph_width)
 			panic("Glyph: unexpected glyph height");
@@ -232,8 +230,6 @@ void table_init(void)
 
 				if (ttf_render(ttf_kernel, code_point++, &w))
 					panic("Glyph: rendering error");
-
-				data += (extra_height * (int)width);
 
 				for (y = 0; y < glyph_em; y++) {
 					for (x = 0; x < (int)width; x++)
