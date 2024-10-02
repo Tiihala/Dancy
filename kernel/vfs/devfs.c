@@ -59,6 +59,9 @@ static int n_open(struct vfs_node *node, const char *name,
 	if ((mode & vfs_mode_create) == 0)
 		return mtx_unlock(&devfs_mtx), DE_NAME;
 
+	if (task_current()->pg_cr3 != 0)
+		return mtx_unlock(&devfs_mtx), DE_FULL;
+
 	for (i = 1; i < DEVFS_COUNT; i++) {
 		if (devfs_table[i].node == NULL) {
 			devfs_table[i].node = alloc_node(i, type);
