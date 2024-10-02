@@ -46,6 +46,11 @@ ARCTIC_PROGRAMS_LS_OBJECTS_32= \
  ./o32/arctic/programs/ls/operate.o \
  ./o32/arctic/libc.a \
 
+ARCTIC_PROGRAMS_MKDIR_OBJECTS_32= \
+ ./o32/arctic/programs/mkdir/main.o \
+ ./o32/arctic/programs/mkdir/operate.o \
+ ./o32/arctic/libc.a \
+
 ARCTIC_PROGRAMS_MORE_OBJECTS_32= \
  ./o32/arctic/programs/more/cat.o \
  ./o32/arctic/programs/more/main.o \
@@ -132,6 +137,11 @@ ARCTIC_PROGRAMS_LS_OBJECTS_64= \
  ./o64/arctic/programs/ls/operate.o \
  ./o64/arctic/libc.a \
 
+ARCTIC_PROGRAMS_MKDIR_OBJECTS_64= \
+ ./o64/arctic/programs/mkdir/main.o \
+ ./o64/arctic/programs/mkdir/operate.o \
+ ./o64/arctic/libc.a \
+
 ARCTIC_PROGRAMS_MORE_OBJECTS_64= \
  ./o64/arctic/programs/more/cat.o \
  ./o64/arctic/programs/more/main.o \
@@ -198,6 +208,9 @@ ARCTIC_PROGRAMS_INIT_HEADERS= \
 ARCTIC_PROGRAMS_LS_HEADERS= \
  ./arctic/programs/ls/main.h \
 
+ARCTIC_PROGRAMS_MKDIR_HEADERS= \
+ ./arctic/programs/mkdir/main.h \
+
 ARCTIC_PROGRAMS_MORE_HEADERS= \
  ./arctic/programs/more/main.h \
 
@@ -247,6 +260,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 ./arctic/bin32/ls: $(ARCTIC_PROGRAMS_LS_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LS_OBJECTS_32)
 
+./arctic/bin32/mkdir: $(ARCTIC_PROGRAMS_MKDIR_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_MKDIR_OBJECTS_32)
+
 ./arctic/bin32/more: $(ARCTIC_PROGRAMS_MORE_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_MORE_OBJECTS_32)
 
@@ -294,6 +310,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 
 ./arctic/bin64/ls: $(ARCTIC_PROGRAMS_LS_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LS_OBJECTS_64)
+
+./arctic/bin64/mkdir: $(ARCTIC_PROGRAMS_MKDIR_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_MKDIR_OBJECTS_64)
 
 ./arctic/bin64/more: $(ARCTIC_PROGRAMS_MORE_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_MORE_OBJECTS_64)

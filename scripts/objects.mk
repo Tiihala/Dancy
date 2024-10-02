@@ -936,6 +936,16 @@
     $(ARCTIC_PROGRAMS_LS_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/ls/operate.c
 
+./o32/arctic/programs/mkdir/main.o: \
+    ./arctic/programs/mkdir/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_MKDIR_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/mkdir/main.c
+
+./o32/arctic/programs/mkdir/operate.o: \
+    ./arctic/programs/mkdir/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_MKDIR_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/mkdir/operate.c
+
 ./o32/arctic/programs/more/cat.o: \
     ./arctic/programs/more/cat.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_MORE_HEADERS)
@@ -2413,6 +2423,16 @@
     ./arctic/programs/ls/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_LS_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/ls/operate.c
+
+./o64/arctic/programs/mkdir/main.o: \
+    ./arctic/programs/mkdir/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_MKDIR_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/mkdir/main.c
+
+./o64/arctic/programs/mkdir/operate.o: \
+    ./arctic/programs/mkdir/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_MKDIR_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/mkdir/operate.c
 
 ./o64/arctic/programs/more/cat.o: \
     ./arctic/programs/more/cat.c $(DANCY_DEPS) \

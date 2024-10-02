@@ -12,6 +12,7 @@ ARCTIC_BIN64_FILES= \
  ./arctic/bin64/hexdump \
  ./arctic/bin64/init \
  ./arctic/bin64/ls \
+ ./arctic/bin64/mkdir \
  ./arctic/bin64/more \
  ./arctic/bin64/poweroff \
  ./arctic/bin64/ps \
@@ -34,6 +35,7 @@ ARCTIC_BIN64_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin64/hexdump ::hexdump
 	$(DY_MCOPY) -i $@ ./arctic/bin64/init ::init
 	$(DY_MCOPY) -i $@ ./arctic/bin64/ls ::ls
+	$(DY_MCOPY) -i $@ ./arctic/bin64/mkdir ::mkdir
 	$(DY_MCOPY) -i $@ ./arctic/bin64/more ::more
 	$(DY_MCOPY) -i $@ ./arctic/bin64/poweroff ::poweroff
 	$(DY_MCOPY) -i $@ ./arctic/bin64/ps ::ps
