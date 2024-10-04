@@ -63,7 +63,7 @@ static int translate_error(int fat_error)
 		r = DE_BLOCK_WRITE;
 		break;
 	case FAT_DIRECTORY_NOT_EMPTY:
-		r = DE_BUSY;
+		r = DE_NOT_EMPTY;
 		break;
 	case FAT_FILE_ALREADY_OPEN:
 		r = DE_BUSY;
