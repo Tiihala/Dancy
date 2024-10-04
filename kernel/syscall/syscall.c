@@ -548,6 +548,8 @@ static long long dancy_syscall_rmdir(va_list va)
 			return -EBUSY;
 		if (r == DE_READ_ONLY)
 			return -EACCES;
+		if (r == DE_NOT_EMPTY)
+			return -ENOTEMPTY;
 		return -ENOENT;
 	}
 
