@@ -78,6 +78,11 @@ ARCTIC_PROGRAMS_REBOOT_OBJECTS_32= \
  ./o32/arctic/programs/reboot/operate.o \
  ./o32/arctic/libc.a \
 
+ARCTIC_PROGRAMS_RMDIR_OBJECTS_32= \
+ ./o32/arctic/programs/rmdir/main.o \
+ ./o32/arctic/programs/rmdir/operate.o \
+ ./o32/arctic/libc.a \
+
 ARCTIC_PROGRAMS_SLEEP_OBJECTS_32= \
  ./o32/arctic/programs/sleep/main.o \
  ./o32/arctic/programs/sleep/operate.o \
@@ -169,6 +174,11 @@ ARCTIC_PROGRAMS_REBOOT_OBJECTS_64= \
  ./o64/arctic/programs/reboot/operate.o \
  ./o64/arctic/libc.a \
 
+ARCTIC_PROGRAMS_RMDIR_OBJECTS_64= \
+ ./o64/arctic/programs/rmdir/main.o \
+ ./o64/arctic/programs/rmdir/operate.o \
+ ./o64/arctic/libc.a \
+
 ARCTIC_PROGRAMS_SLEEP_OBJECTS_64= \
  ./o64/arctic/programs/sleep/main.o \
  ./o64/arctic/programs/sleep/operate.o \
@@ -226,6 +236,9 @@ ARCTIC_PROGRAMS_PWD_HEADERS= \
 ARCTIC_PROGRAMS_REBOOT_HEADERS= \
  ./arctic/programs/reboot/main.h \
 
+ARCTIC_PROGRAMS_RMDIR_HEADERS= \
+ ./arctic/programs/rmdir/main.h \
+
 ARCTIC_PROGRAMS_SLEEP_HEADERS= \
  ./arctic/programs/sleep/main.h \
 
@@ -278,6 +291,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 ./arctic/bin32/reboot: $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_32)
 
+./arctic/bin32/rmdir: $(ARCTIC_PROGRAMS_RMDIR_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_RMDIR_OBJECTS_32)
+
 ./arctic/bin32/sleep: $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_32)
 
@@ -328,6 +344,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 
 ./arctic/bin64/reboot: $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_REBOOT_OBJECTS_64)
+
+./arctic/bin64/rmdir: $(ARCTIC_PROGRAMS_RMDIR_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_RMDIR_OBJECTS_64)
 
 ./arctic/bin64/sleep: $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_64)

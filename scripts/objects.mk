@@ -1006,6 +1006,16 @@
     $(ARCTIC_PROGRAMS_REBOOT_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/reboot/operate.c
 
+./o32/arctic/programs/rmdir/main.o: \
+    ./arctic/programs/rmdir/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_RMDIR_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/rmdir/main.c
+
+./o32/arctic/programs/rmdir/operate.o: \
+    ./arctic/programs/rmdir/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_RMDIR_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/rmdir/operate.c
+
 ./o32/arctic/programs/sleep/main.o: \
     ./arctic/programs/sleep/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_SLEEP_HEADERS)
@@ -2493,6 +2503,16 @@
     ./arctic/programs/reboot/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_REBOOT_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/reboot/operate.c
+
+./o64/arctic/programs/rmdir/main.o: \
+    ./arctic/programs/rmdir/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_RMDIR_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/rmdir/main.c
+
+./o64/arctic/programs/rmdir/operate.o: \
+    ./arctic/programs/rmdir/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_RMDIR_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/rmdir/operate.c
 
 ./o64/arctic/programs/sleep/main.o: \
     ./arctic/programs/sleep/main.c $(DANCY_DEPS) \
