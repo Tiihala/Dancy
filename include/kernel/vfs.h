@@ -40,6 +40,7 @@ enum vfs_mode {
 	vfs_mode_read_only = 0x0100,
 	vfs_mode_hidden    = 0x0200,
 	vfs_mode_system    = 0x0400,
+	vfs_mode_write     = 0x0800,
 	vfs_mode_last
 };
 
