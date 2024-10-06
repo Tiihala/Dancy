@@ -208,6 +208,12 @@ int file_open(int *fd, const char *name, int flags, mode_t mode)
 	if (accmode != O_RDONLY && accmode != O_WRONLY && accmode != O_RDWR)
 		return DE_ARGUMENT;
 
+	if ((flags & O_DIRECTORY) != 0) {
+		vtype = vfs_type_directory;
+		if (accmode != O_RDONLY)
+			return DE_ARGUMENT;
+	}
+
 	if ((fte = alloc_file_entry()) == NULL)
 		return DE_MEMORY;
 
@@ -218,9 +224,6 @@ int file_open(int *fd, const char *name, int flags, mode_t mode)
 	fte->flags = flags;
 	fte->offset = 0;
 
-	if ((flags & O_DIRECTORY) != 0)
-		vtype = vfs_type_directory;
-
 	if ((flags & O_CREAT) != 0)
 		vmode |= vfs_mode_create;
 	if ((flags & O_TRUNC) != 0)
@@ -228,11 +231,17 @@ int file_open(int *fd, const char *name, int flags, mode_t mode)
 	if ((flags & O_EXCL) != 0)
 		vmode |= vfs_mode_exclusive;
 
+	if (accmode != O_RDONLY)
+		vmode |= vfs_mode_write;
+
 	r = vfs_open(name, &fte->node, vtype, vmode);
 	spin_unlock(&fte->lock[1]);
 
 	if (r)
 		return file_decrement_count(fte), r;
+
+	if (fte->node->type == vfs_type_directory && accmode != O_RDONLY)
+		return file_decrement_count(fte), DE_DIRECTORY;
 
 	if ((*fd = alloc_file_descriptor(task)) < 0)
 		return file_decrement_count(fte), DE_OVERFLOW;
