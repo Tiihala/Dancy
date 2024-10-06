@@ -18,6 +18,7 @@ ARCTIC_BIN64_FILES= \
  ./arctic/bin64/ps \
  ./arctic/bin64/pwd \
  ./arctic/bin64/reboot \
+ ./arctic/bin64/rm \
  ./arctic/bin64/rmdir \
  ./arctic/bin64/sleep \
  ./arctic/bin64/terminal \
@@ -42,6 +43,7 @@ ARCTIC_BIN64_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin64/ps ::ps
 	$(DY_MCOPY) -i $@ ./arctic/bin64/pwd ::pwd
 	$(DY_MCOPY) -i $@ ./arctic/bin64/reboot ::reboot
+	$(DY_MCOPY) -i $@ ./arctic/bin64/rm ::rm
 	$(DY_MCOPY) -i $@ ./arctic/bin64/rmdir ::rmdir
 	$(DY_MCOPY) -i $@ ./arctic/bin64/sleep ::sleep
 	$(DY_MCOPY) -i $@ ./arctic/bin64/terminal ::terminal
