@@ -394,6 +394,9 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 			return DE_TYPE;
 	}
 
+	if ((mode & vfs_mode_write) != 0 && type == vfs_type_directory)
+		return DE_DIRECTORY;
+
 	if ((mode & vfs_mode_exclusive) != 0 && type == vfs_type_directory) {
 		if ((mode & vfs_mode_create) == 0)
 			return DE_ARGUMENT;
