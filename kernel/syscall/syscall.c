@@ -297,6 +297,8 @@ static long long dancy_syscall_open(va_list va)
 			return -EMFILE;
 		if (r == DE_FILE)
 			return -ENOTDIR;
+		if (r == DE_DIRECTORY)
+			return -EISDIR;
 		if (r == DE_BUSY)
 			return -EBUSY;
 		if (r == DE_FULL)
