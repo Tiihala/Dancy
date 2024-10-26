@@ -846,6 +846,16 @@
     $(ARCTIC_PROGRAMS_CAT_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/cat/operate.c
 
+./o32/arctic/programs/cp/main.o: \
+    ./arctic/programs/cp/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_CP_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/cp/main.c
+
+./o32/arctic/programs/cp/operate.o: \
+    ./arctic/programs/cp/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_CP_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/cp/operate.c
+
 ./o32/arctic/programs/date/main.o: \
     ./arctic/programs/date/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_DATE_HEADERS)
@@ -2353,6 +2363,16 @@
     ./arctic/programs/cat/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_CAT_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/cat/operate.c
+
+./o64/arctic/programs/cp/main.o: \
+    ./arctic/programs/cp/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_CP_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/cp/main.c
+
+./o64/arctic/programs/cp/operate.o: \
+    ./arctic/programs/cp/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_CP_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/cp/operate.c
 
 ./o64/arctic/programs/date/main.o: \
     ./arctic/programs/date/main.c $(DANCY_DEPS) \
