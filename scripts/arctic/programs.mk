@@ -28,6 +28,11 @@ ARCTIC_PROGRAMS_DSH_OBJECTS_32= \
  ./o32/arctic/programs/dsh/token.o \
  ./o32/arctic/libc.a \
 
+ARCTIC_PROGRAMS_ENV_OBJECTS_32= \
+ ./o32/arctic/programs/env/main.o \
+ ./o32/arctic/programs/env/operate.o \
+ ./o32/arctic/libc.a \
+
 ARCTIC_PROGRAMS_FALSE_OBJECTS_32= \
  ./o32/arctic/programs/false/main.o \
  ./o32/arctic/libc.a \
@@ -134,6 +139,11 @@ ARCTIC_PROGRAMS_DSH_OBJECTS_64= \
  ./o64/arctic/programs/dsh/token.o \
  ./o64/arctic/libc.a \
 
+ARCTIC_PROGRAMS_ENV_OBJECTS_64= \
+ ./o64/arctic/programs/env/main.o \
+ ./o64/arctic/programs/env/operate.o \
+ ./o64/arctic/libc.a \
+
 ARCTIC_PROGRAMS_FALSE_OBJECTS_64= \
  ./o64/arctic/programs/false/main.o \
  ./o64/arctic/libc.a \
@@ -228,6 +238,9 @@ ARCTIC_PROGRAMS_DATE_HEADERS= \
 ARCTIC_PROGRAMS_DSH_HEADERS= \
  ./arctic/programs/dsh/main.h \
 
+ARCTIC_PROGRAMS_ENV_HEADERS= \
+ ./arctic/programs/env/main.h \
+
 ARCTIC_PROGRAMS_FALSE_HEADERS= \
 
 ARCTIC_PROGRAMS_HD_HEADERS= \
@@ -286,6 +299,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 
 ./arctic/bin32/dsh: $(ARCTIC_PROGRAMS_DSH_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_DSH_OBJECTS_32)
+
+./arctic/bin32/env: $(ARCTIC_PROGRAMS_ENV_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_ENV_OBJECTS_32)
 
 ./arctic/bin32/false: $(ARCTIC_PROGRAMS_FALSE_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_FALSE_OBJECTS_32)
@@ -346,6 +362,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 
 ./arctic/bin64/dsh: $(ARCTIC_PROGRAMS_DSH_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_DSH_OBJECTS_64)
+
+./arctic/bin64/env: $(ARCTIC_PROGRAMS_ENV_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_ENV_OBJECTS_64)
 
 ./arctic/bin64/false: $(ARCTIC_PROGRAMS_FALSE_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_FALSE_OBJECTS_64)

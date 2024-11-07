@@ -8,6 +8,7 @@ ARCTIC_BIN32_FILES= \
  ./arctic/bin32/cp \
  ./arctic/bin32/date \
  ./arctic/bin32/dsh \
+ ./arctic/bin32/env \
  ./arctic/bin32/false \
  ./arctic/bin32/hd \
  ./arctic/bin32/hexdump \
@@ -34,6 +35,7 @@ ARCTIC_BIN32_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin32/cp ::cp
 	$(DY_MCOPY) -i $@ ./arctic/bin32/date ::date
 	$(DY_MCOPY) -i $@ ./arctic/bin32/dsh ::dsh
+	$(DY_MCOPY) -i $@ ./arctic/bin32/env ::env
 	$(DY_MCOPY) -i $@ ./arctic/bin32/false ::false
 	$(DY_MCOPY) -i $@ ./arctic/bin32/hd ::hd
 	$(DY_MCOPY) -i $@ ./arctic/bin32/hexdump ::hexdump

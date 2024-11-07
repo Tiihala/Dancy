@@ -906,6 +906,16 @@
     $(ARCTIC_PROGRAMS_DSH_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/dsh/token.c
 
+./o32/arctic/programs/env/main.o: \
+    ./arctic/programs/env/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_ENV_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/env/main.c
+
+./o32/arctic/programs/env/operate.o: \
+    ./arctic/programs/env/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_ENV_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/env/operate.c
+
 ./o32/arctic/programs/false/main.o: \
     ./arctic/programs/false/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_FALSE_HEADERS)
@@ -2423,6 +2433,16 @@
     ./arctic/programs/dsh/token.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_DSH_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/dsh/token.c
+
+./o64/arctic/programs/env/main.o: \
+    ./arctic/programs/env/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_ENV_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/env/main.c
+
+./o64/arctic/programs/env/operate.o: \
+    ./arctic/programs/env/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_ENV_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/env/operate.c
 
 ./o64/arctic/programs/false/main.o: \
     ./arctic/programs/false/main.c $(DANCY_DEPS) \
