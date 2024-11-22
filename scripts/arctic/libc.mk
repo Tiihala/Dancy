@@ -209,6 +209,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/unistd/tcpgrp.o \
  ./o32/arctic/libc/unistd/unlink.o \
  ./o32/arctic/libc/unistd/write.o \
+ ./o32/arctic/libc/wchar/wcwidth.o \
  ./o32/common/a32/dark.o \
 
 ARCTIC_LIBC_OBJECTS_64= \
@@ -418,6 +419,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/unistd/tcpgrp.o \
  ./o64/arctic/libc/unistd/unlink.o \
  ./o64/arctic/libc/unistd/write.o \
+ ./o64/arctic/libc/wchar/wcwidth.o \
  ./o64/common/a64/dark.o \
 
 ##############################################################################

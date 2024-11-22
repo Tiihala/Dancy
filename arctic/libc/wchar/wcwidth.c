@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,20 +13,19 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * wchar.h
- *      The C Standard Library
+ * libc/wchar/wcwidth.c
+ *      Number of column positions of a wide-character code
  */
 
-#ifndef __DANCY_WCHAR_H
-#define __DANCY_WCHAR_H
+#include <wchar.h>
 
-#include <__dancy/core.h>
-#include <stddef.h>
+int wcwidth(wchar_t w)
+{
+	if (w == 0)
+		return 0;
 
-__Dancy_Header_Begin
+	if (w < 0x20 || (w > 0x7E && w < 0xA0))
+		return -1;
 
-int wcwidth(wchar_t w);
-
-__Dancy_Header_End
-
-#endif
+	return 1;
+}

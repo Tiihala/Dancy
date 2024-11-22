@@ -836,6 +836,10 @@
     ./arctic/libc/unistd/write.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/write.c
 
+./o32/arctic/libc/wchar/wcwidth.o: \
+    ./arctic/libc/wchar/wcwidth.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wcwidth.c
+
 ./o32/arctic/programs/cat/main.o: \
     ./arctic/programs/cat/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_CAT_HEADERS)
@@ -2363,6 +2367,10 @@
 ./o64/arctic/libc/unistd/write.o: \
     ./arctic/libc/unistd/write.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/write.c
+
+./o64/arctic/libc/wchar/wcwidth.o: \
+    ./arctic/libc/wchar/wcwidth.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wchar/wcwidth.c
 
 ./o64/arctic/programs/cat/main.o: \
     ./arctic/programs/cat/main.c $(DANCY_DEPS) \
