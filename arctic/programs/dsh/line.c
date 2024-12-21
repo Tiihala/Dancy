@@ -18,26 +18,7 @@
  */
 
 #include "main.h"
-
-static int ws_col = 80;
-static int ws_row = 25;
-
-static void get_winsize(void)
-{
-	struct winsize ws = { 0, 0, 0, 0 };
-	const unsigned int max = 0x7FFF;
-
-	ioctl(1, TIOCGWINSZ, &ws);
-
-	if (ws.ws_col == 0 || ws.ws_col > max)
-		return;
-
-	if (ws.ws_row == 0 || ws.ws_row > max)
-		return;
-
-	ws_col = ws.ws_col;
-	ws_row = ws.ws_row;
-}
+#include "prompt.h"
 
 static char *get_from_command_string(struct options *opt)
 {
@@ -118,14 +99,8 @@ static char *get_from_file(struct options *opt)
 
 char *dsh_get_input(struct options *opt, const char *prompt, size_t offset)
 {
-	size_t column = offset;
-	size_t i = 0;
-
-	int utf8_state = 0;
-	unsigned char u[8];
-
-	const size_t size = 0x2000;
-	char *buffer;
+	static struct dsh_prompt _state;
+	static struct dsh_prompt *state;
 
 	if (opt->command_string != NULL)
 		return get_from_command_string(opt);
@@ -133,77 +108,10 @@ char *dsh_get_input(struct options *opt, const char *prompt, size_t offset)
 	if (opt->input_stream != NULL)
 		return get_from_file(opt);
 
-	if ((buffer = malloc(size)) == NULL) {
-		fputs("dsh: out of memory\n", stderr);
-		return NULL;
+	if (state == NULL) {
+		state = &_state;
+		dsh_prompt_init(state);
 	}
 
-	fputs(prompt, stdout);
-
-	dsh_save_termios();
-	get_winsize();
-
-	for (;;) {
-		int c = getchar();
-
-		if (c == EOF || c == '\n' || (char)c == '\0')
-			break;
-
-		if (c == '\r')
-			continue;
-
-		if (c == 0x7F) {
-			if (i > 0) {
-				c = (int)buffer[--i];
-				buffer[i] = '\0';
-
-				fputs("\x08\x20\x08", stdout);
-				column -= 1;
-
-				while (i > 0 && (c & 0xC0) == 0x80) {
-					c = (int)buffer[--i];
-					buffer[i] = '\0';
-				}
-			}
-			continue;
-		}
-
-		if (column + 2 > (size_t)ws_col)
-			continue;
-
-		if (i + 2 > size) {
-			fputs("dsh: line length error", stderr);
-			dsh_restore_termios();
-			return free(buffer), NULL;
-		}
-
-		buffer[i++] = (char)c;
-		u[utf8_state++] = (unsigned char)c;
-
-		if ((u[0] & 0xE0) == 0xC0 && utf8_state < 2)
-			continue;
-		if ((u[0] & 0xF0) == 0xE0 && utf8_state < 3)
-			continue;
-		if ((u[0] & 0xF8) == 0xF0 && utf8_state < 4)
-			continue;
-
-		u[utf8_state] = 0;
-		utf8_state = 0;
-
-		if (c == 0x1B) {
-			u[0] = 0xC2, u[1] = 0xB7, u[2] = 0x00;
-
-		} else if (c >= 0 && c <= 0x1F) {
-			buffer[--i] = (char)(u[0] = 0x00);
-			continue;
-		}
-
-		fputs((const char *)&u[0], stdout);
-		column += 1;
-	}
-
-	buffer[i] = '\0';
-	dsh_restore_termios();
-
-	return buffer;
+	return dsh_prompt_read(state, prompt, (int)offset);
 }
