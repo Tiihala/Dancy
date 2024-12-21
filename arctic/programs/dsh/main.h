@@ -78,9 +78,6 @@ void dsh_execute(struct dsh_execute_state *state);
 char *dsh_get_input(struct options *opt, const char *prompt, size_t offset);
 void dsh_parse_input(const char *input);
 
-int dsh_save_termios(void);
-void dsh_restore_termios(void);
-
 enum token_type {
 	token_type_null,
 	token_type_arg,
