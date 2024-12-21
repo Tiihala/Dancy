@@ -446,6 +446,11 @@ void dsh_prompt_init(struct dsh_prompt *state)
 	memcpy(state, &null_state, sizeof(*state));
 }
 
+void dsh_prompt_free(struct dsh_prompt *state)
+{
+	(void)state;
+}
+
 char *dsh_prompt_read(struct dsh_prompt *state,
 	const char *prompt, int prompt_offset)
 {

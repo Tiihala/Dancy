@@ -195,6 +195,8 @@ int operate(struct options *opt)
 		free(buffer);
 	}
 
+	dsh_prompt_free(&prompt_state);
+
 	if (opt->input_stream != NULL)
 		fclose(opt->input_stream);
 

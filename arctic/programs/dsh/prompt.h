@@ -43,6 +43,7 @@ struct dsh_prompt {
 
 int dsh_prompt_available(void);
 void dsh_prompt_init(struct dsh_prompt *state);
+void dsh_prompt_free(struct dsh_prompt *state);
 
 char *dsh_prompt_read(struct dsh_prompt *state,
 	const char *prompt, int prompt_offset);
