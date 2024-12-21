@@ -20,6 +20,31 @@
 #ifndef __DANCY_DSH_PROMPT_H
 #define __DANCY_DSH_PROMPT_H
 
+#include <termios.h>
+
+struct dsh_prompt {
+	struct termios _default_termios;
+	struct termios *default_termios;
+
+	int ws_col;
+	int ws_row;
+
+	const char *prompt;
+	int prompt_offset;
+
+	char *buffer;
+	int buffer_state[2];
+
+	char escape[8];
+	int escape_state;
+
+	int skip_render;
+};
+
 int dsh_prompt_available(void);
+void dsh_prompt_init(struct dsh_prompt *state);
+
+char *dsh_prompt_read(struct dsh_prompt *state,
+	const char *prompt, int prompt_offset);
 
 #endif
