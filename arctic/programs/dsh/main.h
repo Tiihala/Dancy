@@ -36,6 +36,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "prompt.h"
+
 struct options {
 	char **operands;
 	const char *error;
@@ -45,6 +47,8 @@ struct options {
 
 	FILE *input_stream;
 	int input_stream_eof;
+
+	struct dsh_prompt *prompt_state;
 };
 
 struct dsh_builtin {

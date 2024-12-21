@@ -18,7 +18,6 @@
  */
 
 #include "main.h"
-#include "prompt.h"
 
 static char *get_from_command_string(struct options *opt)
 {
@@ -99,19 +98,11 @@ static char *get_from_file(struct options *opt)
 
 char *dsh_get_input(struct options *opt, const char *prompt, size_t offset)
 {
-	static struct dsh_prompt _state;
-	static struct dsh_prompt *state;
-
 	if (opt->command_string != NULL)
 		return get_from_command_string(opt);
 
 	if (opt->input_stream != NULL)
 		return get_from_file(opt);
 
-	if (state == NULL) {
-		state = &_state;
-		dsh_prompt_init(state);
-	}
-
-	return dsh_prompt_read(state, prompt, (int)offset);
+	return dsh_prompt_read(opt->prompt_state, prompt, (int)offset);
 }

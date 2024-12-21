@@ -26,6 +26,8 @@ int dsh_interactive = 1;
 pid_t dsh_tcpgrp = 0;
 sigset_t dsh_sigmask;
 
+static struct dsh_prompt prompt_state;
+
 static void welcome(void)
 {
 	fputs("\tWelcome to the Dancy Operating System!\n\n", stdout);
@@ -147,6 +149,9 @@ int operate(struct options *opt)
 
 	if (dsh_interactive)
 		welcome();
+
+	dsh_prompt_init(&prompt_state);
+	opt->prompt_state = &prompt_state;
 
 	while (dsh_operate_state != 0) {
 		char prompt[2048];
