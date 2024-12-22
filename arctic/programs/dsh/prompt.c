@@ -324,6 +324,7 @@ static int move_cursor(struct dsh_prompt *state, int columns)
 
 static int prompt_read(struct dsh_prompt *state)
 {
+	size_t histories = sizeof(state->history) / sizeof(state->history[0]);
 	char *buffer = malloc(DSH_PROMPT_BUFFER_SIZE);
 
 	if ((state->buffer = buffer) == NULL)
@@ -340,6 +341,7 @@ static int prompt_read(struct dsh_prompt *state)
 	state->escape_state = 0;
 
 	state->skip_render = 0;
+	state->history_state = 0;
 
 	while (!render(state)) {
 		int c = getchar();
@@ -382,6 +384,56 @@ static int prompt_read(struct dsh_prompt *state)
 
 			} else if (!strcmp(p, "\033[3~")) {
 				del_char(state);
+
+			} else if (!strcmp(p, "\033[A")) {
+				int i = state->history_state;
+				char *b = NULL;
+
+				if (i + 1 < (int)histories) {
+					if (state->history[i + 1])
+						b = strdup(state->buffer);
+				}
+
+				if (b) {
+					if (state->history[i])
+						free(state->history[i]);
+
+					state->history[i] = b;
+
+					strcpy(state->buffer,
+						state->history[i + 1]);
+
+					i = (int)strlen(state->buffer);
+					state->buffer_state[0] = i;
+					state->buffer_state[1] = i;
+
+					state->history_state += 1;
+				}
+
+			} else if (!strcmp(p, "\033[B")) {
+				int i = state->history_state;
+				char *b = NULL;
+
+				if (i > 0) {
+					if (state->history[i - 1])
+						b = strdup(state->buffer);
+				}
+
+				if (b) {
+					if (state->history[i])
+						free(state->history[i]);
+
+					state->history[i] = b;
+
+					strcpy(state->buffer,
+						state->history[i - 1]);
+
+					i = (int)strlen(state->buffer);
+					state->buffer_state[0] = i;
+					state->buffer_state[1] = i;
+
+					state->history_state -= 1;
+				}
 
 			} else if (!strcmp(p, "\033[C")) {
 				move_cursor(state, 1);
@@ -448,12 +500,21 @@ void dsh_prompt_init(struct dsh_prompt *state)
 
 void dsh_prompt_free(struct dsh_prompt *state)
 {
-	(void)state;
+	size_t histories = sizeof(state->history) / sizeof(state->history[0]);
+	size_t i;
+
+	for (i = 0; i < histories; i++) {
+		if (state->history[i])
+			free(state->history[i]), state->history[i] = NULL;
+	}
 }
 
 char *dsh_prompt_read(struct dsh_prompt *state,
 	const char *prompt, int prompt_offset)
 {
+	size_t histories = sizeof(state->history) / sizeof(state->history[0]);
+	size_t i;
+
 	state->buffer = NULL;
 
 	if (save_termios(state))
@@ -473,6 +534,39 @@ char *dsh_prompt_read(struct dsh_prompt *state,
 
 	state->prompt = NULL;
 	state->prompt_offset = 0;
+
+	if (state->history[0])
+		free(state->history[0]), state->history[0] = NULL;
+
+	if (state->buffer) {
+		char *buffer = state->buffer;
+
+		while (*buffer != '\0') {
+			if (*buffer++ != ' ') {
+				buffer = NULL;
+				break;
+			}
+		}
+
+		if (buffer)
+			return state->buffer;
+
+		if (state->history[1]) {
+			if (!strcmp(state->history[1], state->buffer))
+				return state->buffer;
+		}
+
+		if ((buffer = strdup(state->buffer)) == NULL)
+			return state->buffer;
+
+		if (state->history[histories - 1])
+			free(state->history[histories - 1]);
+
+		for (i = histories - 1; i > 1; i--)
+			state->history[i] = state->history[i - 1];
+
+		state->history[1] = buffer;
+	}
 
 	return state->buffer;
 }

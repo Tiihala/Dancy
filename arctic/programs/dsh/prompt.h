@@ -39,6 +39,9 @@ struct dsh_prompt {
 	int escape_state;
 
 	int skip_render;
+
+	char *history[32];
+	int history_state;
 };
 
 int dsh_prompt_available(void);
