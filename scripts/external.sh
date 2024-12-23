@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 
-ASM_VERSION=2.15.05
-BIN_VERSION=2.37
-GCC_VERSION=11.2.0
+ASM_VERSION=2.16.03
+BIN_VERSION=2.43.1
+GCC_VERSION=14.2.0
 
 ASM_ADDR=https://www.nasm.us/pub/nasm
-GNU_ADDR=ftp://ftp.gnu.org/gnu
+GNU_ADDR=https://ftp.gnu.org/gnu
 
 ASM_LINK=$ASM_ADDR/releasebuilds/$ASM_VERSION/nasm-$ASM_VERSION.tar.xz
 BIN_LINK=$GNU_ADDR/binutils/binutils-$BIN_VERSION.tar.xz
