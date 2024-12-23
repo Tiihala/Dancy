@@ -127,6 +127,11 @@ int operate(struct options *opt)
 	if (opt->command_string != NULL || opt->input_stream != NULL)
 		dsh_interactive = 0;
 
+	if (dsh_interactive && !dsh_prompt_available()) {
+		opt->input_stream = stdin;
+		dsh_interactive = 0;
+	}
+
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
