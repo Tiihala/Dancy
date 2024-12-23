@@ -72,6 +72,7 @@ then
     which gmake > /dev/null 2>&1 && ln -s `which gmake` external/bin/make
     check_dependency make
 
+    check_dependency makeinfo
     check_dependency tar
     check_dependency wget
     check_dependency xz
