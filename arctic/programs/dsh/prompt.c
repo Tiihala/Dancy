@@ -346,6 +346,9 @@ static int prompt_read(struct dsh_prompt *state)
 	while (!render(state)) {
 		int c = getchar();
 
+		if (c == EOF && state->buffer[0] == '\0')
+			return EXIT_FAILURE;
+
 		if (c == EOF || c == '\n' || (char)c == '\0')
 			return 0;
 
