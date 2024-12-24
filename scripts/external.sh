@@ -18,12 +18,7 @@ then
     exit 1
 fi
 
-if [ -d "external/bin" ] || [ -d "external/src" ]
-then
-    echo "Error: remove previous tools first (make distclean)" 1>&2
-    exit 1
-fi
-
+rm -rf external
 mkdir -p external/bin
 mkdir -p external/src
 
@@ -72,7 +67,6 @@ then
     which gmake > /dev/null 2>&1 && ln -s `which gmake` external/bin/make
     check_dependency make
 
-    check_dependency makeinfo
     check_dependency tar
     check_dependency wget
     check_dependency xz
@@ -122,9 +116,8 @@ then
         fi
     popd
 
-    mkdir external/src/binutils-build
-    pushd external/src/binutils-build
-        ../binutils-$BIN_VERSION/configure \
+    pushd external/src/binutils-$BIN_VERSION
+        ./configure \
             --prefix=$PREFIX \
             --target=x86_64-w64-mingw32 \
             --enable-targets=x86_64-w64-mingw32,i686-w64-mingw32 \
