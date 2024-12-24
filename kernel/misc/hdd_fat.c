@@ -219,7 +219,7 @@ static int find_drives(void)
 			continue;
 		}
 
-		snprintf(name, 16, "/mnt/drive_%c", letter++);
+		snprintf(name, 16, "/mnt/%c", letter++);
 
 		r = mount_drive(name, dev_node);
 		dev_node->n_release(&dev_node);
