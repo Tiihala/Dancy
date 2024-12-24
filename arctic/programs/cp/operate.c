@@ -70,6 +70,28 @@ static int copy(struct options *opt, struct stat *destination_status,
 		return 1;
 	}
 
+	/*
+	 * Try to detect if source and destination are the same file.
+	 */
+	{
+		char *path_s = realpath(source, NULL);
+		char *path_d = realpath(destination, NULL);
+		int same_file = 0;
+
+		if (path_s && path_d && !strcmp(path_s, path_d))
+			same_file = 1;
+
+		free(path_s);
+		free(path_d);
+
+		if (same_file) {
+			fprintf(stderr,
+				"cp: \'%s\' and \'%s\' are the same file\n",
+				source, destination);
+			return 1;
+		}
+	}
+
 	if (lstat(source, &status)) {
 		fprintf(stderr,
 			"cp: cannot stat \'%s\': %s\n",
@@ -104,7 +126,7 @@ static int copy(struct options *opt, struct stat *destination_status,
 			return 1;
 		}
 
-		fd[1] = open(destination, O_WRONLY | O_CREAT, mode);
+		fd[1] = open(destination, O_WRONLY | O_CREAT | O_TRUNC, mode);
 
 		if (fd[1] < 0) {
 			fprintf(stderr,
