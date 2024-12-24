@@ -51,6 +51,23 @@ static void check_id(int id)
 	kernel->panic("fat_io: using an uninitialized ID");
 }
 
+static int check_name(const char *name)
+{
+	size_t i;
+
+	for (i = 0; name[i] != '\0'; i++) {
+		char c = name[i];
+
+		if (c >= 'A' && c <= 'Z')
+			return 1;
+
+		if (c < 0x20 || c > 0x7E)
+			return 1;
+	}
+
+	return 0;
+}
+
 static int translate_error(int fat_error)
 {
 	int r;
@@ -75,7 +92,7 @@ static int translate_error(int fat_error)
 		r = DE_UNEXPECTED;
 		break;
 	case FAT_INVALID_FILE_NAME:
-		r = DE_PATH;
+		r = DE_ARGUMENT;
 		break;
 	case FAT_INVALID_PARAMETERS:
 		r = DE_ARGUMENT;
@@ -310,6 +327,9 @@ static int n_open(struct vfs_node *node, const char *name,
 	}
 
 	buf[0] = '\0';
+
+	if (check_name(name))
+		return DE_ARGUMENT;
 
 	{
 		struct vfs_node *owner = node;
@@ -773,6 +793,9 @@ static int n_remove(struct vfs_node *node, const char *name, int dir)
 	int i, r;
 
 	buf[0] = '\0';
+
+	if (check_name(name))
+		return DE_ARGUMENT;
 
 	{
 		struct vfs_node *owner = node;
