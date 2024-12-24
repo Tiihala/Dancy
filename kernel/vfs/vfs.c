@@ -506,7 +506,7 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 		return (*node = NULL), DE_TYPE;
 	}
 
-	if ((new_node->mode & vfs_mode_truncate) != 0) {
+	if ((mode & vfs_mode_truncate) != 0) {
 		if ((r = new_node->n_truncate(new_node, 0)) != 0) {
 			new_node->n_release(&new_node);
 			return (*node = NULL), r;
