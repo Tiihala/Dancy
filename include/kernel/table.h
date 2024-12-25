@@ -227,6 +227,17 @@ struct kernel_table {
 	 * A flag, which is set if the system is going down.
 	 */
 	int rebooting;
+
+	/*
+	 * Events signaled by special key combinations.
+	 */
+	struct {
+		event_t ctrl_alt_del_event;
+		uint32_t ctrl_alt_del_data;
+
+		event_t console_switch_event;
+		uint32_t console_switch_data;
+	} keyboard;
 };
 
 #endif

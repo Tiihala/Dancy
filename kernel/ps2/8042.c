@@ -163,6 +163,14 @@ int ps2_init(void)
 		return DE_UNEXPECTED;
 
 	/*
+	 * Create the events for special key combinations.
+	 */
+	if ((kernel->keyboard.ctrl_alt_del_event = event_create(0)) == NULL)
+		return DE_MEMORY;
+	if ((kernel->keyboard.console_switch_event = event_create(0)) == NULL)
+		return DE_MEMORY;
+
+	/*
 	 * The init module is responsible for initializing all the USB
 	 * controllers and disabling the "USB Legacy Support" features
 	 * before executing this module.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022, 2023 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -356,6 +356,31 @@ static void process_keycode(int keycode, int release)
 			break;
 		default:
 			break;
+	}
+
+	if ((keymod_lctrl || keymod_rctrl) && (keymod_lalt || keymod_ralt)) {
+		if (keycode == DANCY_KEY_DELETE) {
+			if (release)
+				return;
+			cpu_write32(&kernel->keyboard.ctrl_alt_del_data, 1);
+			event_signal(kernel->keyboard.ctrl_alt_del_event);
+			return;
+		}
+		if (keycode == DANCY_KEY_PADDELETE) {
+			if (release)
+				return;
+			cpu_write32(&kernel->keyboard.ctrl_alt_del_data, 2);
+			event_signal(kernel->keyboard.ctrl_alt_del_event);
+			return;
+		}
+		if (keycode >= DANCY_KEY_F1 && keycode <= DANCY_KEY_F12) {
+			uint32_t f = (uint32_t)(keycode - DANCY_KEY_F1) + 1;
+			if (release)
+				return;
+			cpu_write32(&kernel->keyboard.console_switch_data, f);
+			event_signal(kernel->keyboard.console_switch_event);
+			return;
+		}
 	}
 
 	if (keymod_lctrl)
