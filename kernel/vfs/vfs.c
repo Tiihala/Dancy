@@ -425,12 +425,12 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 		if ((new_node = find_node(owner, n)) != NULL) {
 			if (last_component) {
 				int new_mode = new_node->mode;
-				int excl = 0;
+				int de_busy = 0;
 
-				excl |= (mode & vfs_mode_exclusive);
-				excl |= (new_mode & vfs_mode_exclusive);
+				de_busy |= (mode & vfs_mode_exclusive);
+				de_busy |= (new_mode & vfs_mode_exclusive);
 
-				if (excl) {
+				if (de_busy) {
 					r = DE_BUSY;
 					break;
 				}
