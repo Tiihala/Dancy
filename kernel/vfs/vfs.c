@@ -430,6 +430,16 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 				de_busy |= (mode & vfs_mode_exclusive);
 				de_busy |= (new_mode & vfs_mode_exclusive);
 
+				if (new_node->mount_state != 0) {
+					if ((mode & vfs_mode_create) == 0) {
+						if (new_node->count == 1)
+							de_busy = 0;
+					}
+				}
+
+				if ((mode & vfs_mode_stat_only) != 0)
+					de_busy = 0;
+
 				if (de_busy) {
 					r = DE_BUSY;
 					break;
