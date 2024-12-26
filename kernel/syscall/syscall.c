@@ -628,7 +628,7 @@ static long long dancy_syscall_stat(va_list va)
 		if (pg_check_user_string(path, &count))
 			return -EFAULT;
 
-		if ((r = vfs_open(path, &node, 0, 0)) != 0) {
+		if ((r = vfs_open(path, &node, 0, vfs_mode_stat_only)) != 0) {
 			if (r == DE_NAME)
 				return -ENOENT;
 			return -EINVAL;
