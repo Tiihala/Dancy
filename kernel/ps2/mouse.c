@@ -202,6 +202,7 @@ int ps2_mse_init(void)
 
 		vfs_init_node(&mse_node, 0);
 		mse_node.type = vfs_type_character;
+		mse_node.mode = vfs_mode_exclusive;
 		mse_node.internal_event = mse_pipe_nodes[0]->internal_event;
 		mse_node.n_read = n_read;
 		mse_node.n_write = n_write;

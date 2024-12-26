@@ -204,6 +204,7 @@ int ps2_kbd_init(void)
 
 		vfs_init_node(&kbd_node, 0);
 		kbd_node.type = vfs_type_character;
+		kbd_node.mode = vfs_mode_exclusive;
 		kbd_node.internal_event = kbd_pipe_nodes[0]->internal_event;
 		kbd_node.n_read = n_read;
 		kbd_node.n_write = n_write;
