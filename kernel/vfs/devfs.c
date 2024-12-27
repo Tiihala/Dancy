@@ -22,7 +22,7 @@
 static mtx_t devfs_mtx;
 
 struct devfs_data {
-	char name[16];
+	char name[20];
 	struct vfs_node *node;
 };
 
