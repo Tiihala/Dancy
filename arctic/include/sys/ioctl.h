@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,6 +32,12 @@ struct winsize {
 	unsigned short ws_ypixel;
 };
 
+struct vt_stat {
+	unsigned short v_active;
+	unsigned short v_signal;
+	unsigned short v_state;
+};
+
 #define TCGETS                  __DANCY_IOCTL_TCGETS
 #define TCSETS                  __DANCY_IOCTL_TCSETS
 #define TCSETSW                 __DANCY_IOCTL_TCSETSW
@@ -42,6 +48,10 @@ struct winsize {
 
 #define TIOCGPGRP               __DANCY_IOCTL_TIOCGPGRP
 #define TIOCSPGRP               __DANCY_IOCTL_TIOCSPGRP
+
+#define VT_GETSTATE             __DANCY_IOCTL_VT_GETSTATE
+#define VT_ACTIVATE             __DANCY_IOCTL_VT_ACTIVATE
+#define VT_WAITACTIVE           __DANCY_IOCTL_VT_WAITACTIVE
 
 int ioctl(int fd, unsigned long request, ...);
 

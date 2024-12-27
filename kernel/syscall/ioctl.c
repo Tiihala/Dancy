@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -81,6 +81,14 @@ int ioctl_internal(int fd, int request, long long arg, long long *retval)
 		case __DANCY_IOCTL_TIOCSPGRP:
 			alignment = sizeof(size_t);
 			size = sizeof(__dancy_pid_t);
+			break;
+		case __DANCY_IOCTL_VT_GETSTATE:
+			alignment = sizeof(short);
+			size = sizeof(struct __dancy_vt_stat), rw = 1;
+			break;
+		case __DANCY_IOCTL_VT_ACTIVATE:
+			break;
+		case __DANCY_IOCTL_VT_WAITACTIVE:
 			break;
 		default:
 			r = DE_UNSUPPORTED;
