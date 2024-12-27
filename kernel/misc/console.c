@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2024 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -43,6 +43,63 @@ static int n_write(struct vfs_node *node,
 	return con_write(buffer, *size), 0;
 }
 
+static int n_ioctl(struct vfs_node *node,
+	int request, long long arg)
+{
+	const unsigned int count = 2;
+
+	(void)node;
+
+	if (request == __DANCY_IOCTL_VT_GETSTATE) {
+		struct __dancy_vt_stat *d = (void *)((addr_t)arg);
+		size_t size = sizeof(*d);
+
+		unsigned int v_active = kernel->keyboard.console_switch_data;
+		unsigned int v_state = (((1U << count) - 1) << 1) + 1;
+
+		if (v_active < 1 || v_active > count)
+			v_active = 1;
+
+		memset(d, 0, size);
+		d->v_active = (unsigned short)v_active;
+		d->v_state = (unsigned short)v_state;
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_VT_ACTIVATE) {
+		uint32_t f;
+
+		if (arg < 1 || arg > (long long)count)
+			return DE_UNSUPPORTED;
+
+		f = (uint32_t)arg;
+		cpu_write32(&kernel->keyboard.console_switch_data, f);
+		event_signal(kernel->keyboard.console_switch_event);
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_VT_WAITACTIVE) {
+		uint32_t f;
+
+		if (arg < 1 || arg > (long long)count)
+			return DE_UNSUPPORTED;
+
+		f = (uint32_t)arg;
+
+		while (kernel->keyboard.console_switch_data != f) {
+			if (task_signaled(task_current()))
+				return DE_INTERRUPT;
+			task_sleep(100);
+		}
+
+		return 0;
+	}
+
+	return DE_UNSUPPORTED;
+}
+
 int console_init(void)
 {
 	static int run_once;
@@ -61,6 +118,7 @@ int console_init(void)
 	console_node.type = vfs_type_character;
 	console_node.n_read = n_read;
 	console_node.n_write = n_write;
+	console_node.n_ioctl = n_ioctl;
 
 	if ((r = vfs_mount("/dev/console", &console_node)) != 0)
 		return r;
