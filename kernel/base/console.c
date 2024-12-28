@@ -35,6 +35,7 @@ static int con_wrap_delay;
 
 static int con_cells;
 static int con_cursor_visible;
+static int con_switch_state;
 
 static uint32_t *con_buffer;
 static uint32_t *con_buffer_main;
@@ -202,9 +203,11 @@ static void con_reset(void)
 	uint32_t *p = (uint32_t *)kernel->fb_standard_addr;
 	int i;
 
-	fb_enter();
-	memset(p, 0, kernel->fb_standard_size);
-	fb_leave();
+	if (con_switch_state == 0) {
+		fb_enter();
+		memset(p, 0, kernel->fb_standard_size);
+		fb_leave();
+	}
 
 	con_buffer = con_buffer_main;
 
@@ -282,6 +285,39 @@ int con_init(void)
 	kernel->con_rows = con_rows;
 
 	cpu_write32((uint32_t *)&con_ready, 1);
+
+	return 0;
+}
+
+int con_switch(int i)
+{
+	if (!con_ready)
+		return 0;
+
+	if (mtx_lock(&con_mtx) != thrd_success)
+		return DE_UNEXPECTED;
+
+	i = (i == 1) ? 0 : i;
+
+	if (con_switch_state == i) {
+		mtx_unlock(&con_mtx);
+		return 0;
+	}
+
+	con_switch_state = i;
+
+	for (i = 0; i < con_cells; i++)
+		con_buffer_main[i] &= (~con_rendered_bit);
+
+	for (i = 0; i < con_cells; i++)
+		con_buffer_alt[i] &= (~con_rendered_bit);
+
+	fb_enter();
+	memset((void *)kernel->fb_standard_addr, 0, kernel->fb_standard_size);
+	fb_leave();
+
+	mtx_unlock(&con_mtx);
+	con_write("", 0);
 
 	return 0;
 }
@@ -1360,9 +1396,12 @@ void con_print(const char *format, ...)
 			memset(data, 0, (size_t)r);
 		}
 
-		fb_enter();
-		con_render();
-		fb_leave();
+		if (con_switch_state == 0) {
+			fb_enter();
+			con_render();
+			fb_leave();
+		}
+
 		mtx_unlock(&con_mtx);
 	}
 }
@@ -1374,9 +1413,12 @@ void con_write(const void *data, size_t size)
 
 	if (size <= (size_t)(INT_MAX)) {
 		con_write_locked(data, (int)size);
-		fb_enter();
-		con_render();
-		fb_leave();
+
+		if (con_switch_state == 0) {
+			fb_enter();
+			con_render();
+			fb_leave();
+		}
 	}
 
 	mtx_unlock(&con_mtx);
