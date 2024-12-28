@@ -62,7 +62,7 @@ static struct vfs_node **get_pipe_nodes(struct vfs_node *node)
 	uint32_t i = 0;
 
 	if (node == NULL) {
-		i = kernel->keyboard.console_switch_data - 1;
+		i = (kernel->keyboard.console_switch_data & 0xFF) - 1;
 
 	} else {
 		while (i < KBD_DEVICE_COUNT) {
