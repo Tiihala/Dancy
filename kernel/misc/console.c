@@ -34,8 +34,10 @@ static int console_task(void *arg)
 
 		data = cpu_read32(&kernel->keyboard.console_switch_data);
 
-		if (data <= 0xFF)
+		if (data <= 0xFF) {
 			con_switch((int)data);
+			cpu_bts32(&kernel->keyboard.console_switch_data, 8);
+		}
 	}
 
 	return 0;
@@ -88,14 +90,26 @@ static int n_ioctl(struct vfs_node *node,
 	}
 
 	if (request == __DANCY_IOCTL_VT_ACTIVATE) {
-		uint32_t f;
+		uint32_t a, f, i = 0;
 
 		if (arg < 1 || arg > (long long)count)
 			return DE_UNSUPPORTED;
 
-		f = (uint32_t)arg;
-		cpu_write32(&kernel->keyboard.console_switch_data, f);
-		event_signal(kernel->keyboard.console_switch_event);
+		a = (uint32_t)arg;
+		f = (uint32_t)arg | (uint32_t)(0x100);
+
+		while (kernel->keyboard.console_switch_data != f) {
+			if (task_signaled(task_current()))
+				return DE_INTERRUPT;
+
+			if (((i++) % 100) > 0) {
+				task_sleep(10);
+				continue;
+			}
+
+			cpu_write32(&kernel->keyboard.console_switch_data, a);
+			event_signal(kernel->keyboard.console_switch_event);
+		}
 
 		return 0;
 	}
@@ -106,7 +120,7 @@ static int n_ioctl(struct vfs_node *node,
 		if (arg < 1 || arg > (long long)count)
 			return DE_UNSUPPORTED;
 
-		f = (uint32_t)arg;
+		f = (uint32_t)arg | (uint32_t)(0x100);
 
 		while (kernel->keyboard.console_switch_data != f) {
 			if (task_signaled(task_current()))
