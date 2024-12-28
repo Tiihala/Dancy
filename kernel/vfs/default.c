@@ -138,7 +138,7 @@ static int vfs_default_truncate(struct vfs_node *node, uint64_t size)
 	(void)node;
 	(void)size;
 
-	return DE_UNSUPPORTED;
+	return 0;
 }
 
 static int vfs_default_remove(struct vfs_node *node,
