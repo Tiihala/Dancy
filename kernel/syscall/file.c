@@ -447,6 +447,18 @@ int file_write(int fd, size_t *size, const void *buffer)
 	return *size = 0, DE_ARGUMENT;
 }
 
+static int lseek_allowed(int type)
+{
+	if (type == vfs_type_regular)
+		return 1;
+	if (type == vfs_type_directory)
+		return 1;
+	if (type == vfs_type_block)
+		return 1;
+
+	return 0;
+}
+
 int file_lseek(int fd, off_t offset, uint64_t *new_offset, int whence)
 {
 	struct task *task = task_current();
@@ -464,15 +476,16 @@ int file_lseek(int fd, off_t offset, uint64_t *new_offset, int whence)
 
 			lock_fte(fte);
 
+			if (!lseek_allowed(fte->node->type)) {
+				unlock_fte(fte);
+				return DE_ACCESS;
+			}
+
 			if (fte->node->type == vfs_type_directory) {
 				if (whence != SEEK_SET || offset != 0) {
 					unlock_fte(fte);
 					return DE_DIRECTORY;
 				}
-
-			} else if (fte->node->type != vfs_type_regular) {
-					unlock_fte(fte);
-					return DE_ACCESS;
 			}
 
 			if (whence == SEEK_SET && offset >= 0) {
