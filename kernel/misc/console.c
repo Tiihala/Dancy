@@ -21,6 +21,26 @@
 
 static struct vfs_node console_node;
 
+static int console_task(void *arg)
+{
+	task_set_cmdline(task_current(), NULL, "[console]");
+
+	while (arg == NULL) {
+		const uint16_t ms = 0xFFFF;
+		uint32_t data;
+
+		if (event_wait(kernel->keyboard.console_switch_event, ms) < 0)
+			continue;
+
+		data = cpu_read32(&kernel->keyboard.console_switch_data);
+
+		if (data <= 0xFF)
+			con_switch((int)data);
+	}
+
+	return 0;
+}
+
 static int n_read(struct vfs_node *node,
 	uint64_t offset, size_t *size, void *buffer)
 {
@@ -122,6 +142,9 @@ int console_init(void)
 
 	if ((r = vfs_mount("/dev/console", &console_node)) != 0)
 		return r;
+
+	if (!task_create(console_task, NULL, task_detached))
+		return DE_MEMORY;
 
 	return 0;
 }
