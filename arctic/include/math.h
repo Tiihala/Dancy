@@ -24,6 +24,9 @@
 
 __Dancy_Header_Begin
 
+double fabs(double x);
+float fabsf(float x);
+
 __Dancy_Header_End
 
 #endif
