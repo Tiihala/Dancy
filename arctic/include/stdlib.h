@@ -46,6 +46,8 @@ int atexit(void (*func)(void));
 int __dancy_ull(const char *str, char **end, int base, unsigned long long *r);
 
 void abort(void);
+int system(const char *command);
+
 int abs(int i);
 long int labs(long int i);
 long long int llabs(long long int i);
