@@ -54,6 +54,11 @@ unsigned long long epoch_read_ms(void);
 void epoch_sync(void);
 
 /*
+ * Declarations of fb_user.c
+ */
+int fb_user_init(void);
+
+/*
  * Declarations of floppy.c
  */
 int floppy_init(void);

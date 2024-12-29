@@ -8,6 +8,7 @@ DANCY_MISC_OBJECTS_32= \
  ./o32/kernel/misc/console.o \
  ./o32/kernel/misc/dma.o \
  ./o32/kernel/misc/epoch.o \
+ ./o32/kernel/misc/fb_user.o \
  ./o32/kernel/misc/floppy.o \
  ./o32/kernel/misc/hdd_fat.o \
  ./o32/kernel/misc/hdd_part.o \
@@ -21,6 +22,7 @@ DANCY_MISC_OBJECTS_64= \
  ./o64/kernel/misc/console.o \
  ./o64/kernel/misc/dma.o \
  ./o64/kernel/misc/epoch.o \
+ ./o64/kernel/misc/fb_user.o \
  ./o64/kernel/misc/floppy.o \
  ./o64/kernel/misc/hdd_fat.o \
  ./o64/kernel/misc/hdd_part.o \

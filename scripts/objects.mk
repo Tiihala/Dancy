@@ -1404,6 +1404,10 @@
     ./kernel/misc/epoch.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/epoch.c
 
+./o32/kernel/misc/fb_user.o: \
+    ./kernel/misc/fb_user.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/misc/fb_user.c
+
 ./o32/kernel/misc/floppy.o: \
     ./kernel/misc/floppy.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/floppy.c
@@ -3007,6 +3011,10 @@
 ./o64/kernel/misc/epoch.o: \
     ./kernel/misc/epoch.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/epoch.c
+
+./o64/kernel/misc/fb_user.o: \
+    ./kernel/misc/fb_user.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/misc/fb_user.c
 
 ./o64/kernel/misc/floppy.o: \
     ./kernel/misc/floppy.c $(DANCY_DEPS)
