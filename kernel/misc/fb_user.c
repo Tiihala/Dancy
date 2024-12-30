@@ -27,6 +27,60 @@ static struct __dancy_fb fb_user_struct;
 
 static int fb_update(const struct __dancy_fb *fb)
 {
+	volatile uint32_t *d = (volatile uint32_t *)kernel->fb_standard_addr;
+	const uint32_t *s = fb->s;
+	int x, y, w, h;
+	int i, j;
+
+	if (fb->x >= fb_user_struct.w || fb->y >= fb_user_struct.h)
+		return 0;
+
+	x = (int)fb->x;
+	y = (int)fb->y;
+
+	w = (int)((fb->w < fb_user_struct.w) ? fb->w : fb_user_struct.w);
+	h = (int)((fb->h < fb_user_struct.h) ? fb->h : fb_user_struct.h);
+
+	if (w == 0 || h == 0)
+		return 0;
+
+	if (x + w > (int)fb_user_struct.w)
+		w = (int)fb_user_struct.w - x;
+
+	if (y + h > (int)fb_user_struct.h)
+		h = (int)fb_user_struct.h - y;
+
+	d += ((y * (int)fb_user_struct.w) + x);
+	s += ((y * (int)fb_user_struct.w) + x);
+
+	fb_enter();
+
+	if (kernel->keyboard.console_switch_data != 0x102)
+		return fb_leave(), DE_READ_ONLY;
+
+	for (i = 0; i < h; i++) {
+		for (j = 0; j < w; j++) {
+			uint32_t val = s[j];
+
+			/*
+			 * Avoid writing to the standard framebuffer,
+			 * which is in normal memory, if the values
+			 * do not change. Paging tricks are used.
+			 *
+			 * The d pointer is volatile.
+			 */
+			if (d[j] != val)
+				d[j] = val;
+		}
+
+		if (i + 1 < h) {
+			d += fb_user_struct.w;
+			s += fb_user_struct.w;
+		}
+	}
+
+	fb_leave();
+
 	return 0;
 }
 
