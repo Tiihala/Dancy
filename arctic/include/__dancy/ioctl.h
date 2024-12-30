@@ -47,6 +47,14 @@ struct __dancy_vt_stat {
 	unsigned short v_state;
 };
 
+struct __dancy_fb {
+	unsigned short x;
+	unsigned short y;
+	unsigned short w;
+	unsigned short h;
+	const void *s;
+};
+
 #define __DANCY_IOCTL_TCGETS \
 	__DANCY_IOCTL(0x1000, __DANCY_IOCTL_ARG_POINTER)
 #define __DANCY_IOCTL_TCSETS \
@@ -72,6 +80,11 @@ struct __dancy_vt_stat {
 	__DANCY_IOCTL(0x1031, __DANCY_IOCTL_ARG_INT)
 #define __DANCY_IOCTL_VT_WAITACTIVE \
 	__DANCY_IOCTL(0x1032, __DANCY_IOCTL_ARG_INT)
+
+#define __DANCY_IOCTL_FB_SIZE \
+	__DANCY_IOCTL(0x1040, __DANCY_IOCTL_ARG_POINTER)
+#define __DANCY_IOCTL_FB_UPDATE \
+	__DANCY_IOCTL(0x1041, __DANCY_IOCTL_ARG_POINTER)
 
 __Dancy_Header_End
 

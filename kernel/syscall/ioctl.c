@@ -90,6 +90,14 @@ int ioctl_internal(int fd, int request, long long arg, long long *retval)
 			break;
 		case __DANCY_IOCTL_VT_WAITACTIVE:
 			break;
+		case __DANCY_IOCTL_FB_SIZE:
+			alignment = sizeof(size_t);
+			size = sizeof(struct __dancy_fb), rw = 1;
+			break;
+		case __DANCY_IOCTL_FB_UPDATE:
+			alignment = sizeof(size_t);
+			size = sizeof(struct __dancy_fb);
+			break;
 		default:
 			r = DE_UNSUPPORTED;
 			break;
