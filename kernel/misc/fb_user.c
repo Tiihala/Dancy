@@ -23,6 +23,12 @@ static struct vfs_node fb_user_node;
 
 static int fb_user_size;
 static struct __dancy_winsize fb_user_winsize;
+static struct __dancy_fb fb_user_struct;
+
+static int fb_update(const struct __dancy_fb *fb)
+{
+	return 0;
+}
 
 static int n_read(struct vfs_node *node,
 	uint64_t offset, size_t *size, void *buffer)
@@ -132,6 +138,24 @@ static int n_ioctl(struct vfs_node *node,
 		return 0;
 	}
 
+	if (request == __DANCY_IOCTL_FB_SIZE) {
+		void *p = (void *)((addr_t)arg);
+		memcpy(p, &fb_user_struct, sizeof(fb_user_struct));
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_FB_UPDATE) {
+		const struct __dancy_fb *fb = (const void *)((addr_t)arg);
+
+		if (((addr_t)fb->s % (addr_t)sizeof(uint32_t)) != 0)
+			return DE_ACCESS;
+
+		if (pg_check_user_read(fb->s, (size_t)fb_user_size))
+			return DE_ACCESS;
+
+		return fb_update(fb);
+	}
+
 	return DE_UNSUPPORTED;
 }
 
@@ -167,6 +191,9 @@ int fb_user_init(void)
 
 	fb_user_winsize.ws_xpixel = (unsigned short)kernel->fb_width;
 	fb_user_winsize.ws_ypixel = (unsigned short)kernel->fb_height;
+
+	fb_user_struct.w = (unsigned short)kernel->fb_width;
+	fb_user_struct.h = (unsigned short)kernel->fb_height;
 
 	if ((r = vfs_open(name, &node, 0, vfs_mode_create)) != 0)
 		return r;
