@@ -21,6 +21,7 @@
 #define __DANCY_INTTYPES_H
 
 #include <__dancy/core.h>
+#include <stdint.h>
 
 __Dancy_Header_Begin
 
