@@ -19,6 +19,7 @@
 
 #include <__dancy/ssize.h>
 #include <limits.h>
+#include <signal.h>
 #include <stdio.h>
 
 int snprintf(char *s, size_t n, const char *format, ...)
@@ -541,6 +542,9 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 		/*
 		 * Other conversion specifiers are not supported.
 		 */
+		fputs("libc: vsnprintf conversion specifier error\n", stderr);
+		raise(SIGKILL);
+
 		return s[out] = '\0', -1;
 	}
 
