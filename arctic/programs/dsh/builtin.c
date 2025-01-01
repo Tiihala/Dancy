@@ -27,16 +27,7 @@ static int cmd_chdir(int argc, char *argv[])
 		return 1;
 
 	if ((errno = 0, chdir(path)) == -1) {
-		const char *enoent = "no such file or directory";
-		const char *enotdir = "not a directory";
-
-		if (errno == ENOENT)
-			fprintf(stderr, "chdir: %s\n", enoent);
-		else if (errno == ENOTDIR)
-			fprintf(stderr, "chdir: %s\n", enotdir);
-		else
-			perror("chdir");
-
+		perror("chdir");
 		return 1;
 	}
 
