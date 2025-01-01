@@ -5,6 +5,7 @@
 DANCY_SYSCALL_OBJECTS_32= \
  ./o32/kernel/syscall/a32/trap.o \
  ./o32/kernel/syscall/arg.o \
+ ./o32/kernel/syscall/errno.o \
  ./o32/kernel/syscall/file.o \
  ./o32/kernel/syscall/ioctl.o \
  ./o32/kernel/syscall/kill.o \
@@ -18,6 +19,7 @@ DANCY_SYSCALL_OBJECTS_32= \
 DANCY_SYSCALL_OBJECTS_64= \
  ./o64/kernel/syscall/a64/trap.o \
  ./o64/kernel/syscall/arg.o \
+ ./o64/kernel/syscall/errno.o \
  ./o64/kernel/syscall/file.o \
  ./o64/kernel/syscall/ioctl.o \
  ./o64/kernel/syscall/kill.o \

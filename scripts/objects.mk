@@ -1472,6 +1472,10 @@
     ./kernel/syscall/arg.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/arg.c
 
+./o32/kernel/syscall/errno.o: \
+    ./kernel/syscall/errno.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/syscall/errno.c
+
 ./o32/kernel/syscall/file.o: \
     ./kernel/syscall/file.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/file.c
@@ -3083,6 +3087,10 @@
 ./o64/kernel/syscall/arg.o: \
     ./kernel/syscall/arg.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/arg.c
+
+./o64/kernel/syscall/errno.o: \
+    ./kernel/syscall/errno.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/syscall/errno.c
 
 ./o64/kernel/syscall/file.o: \
     ./kernel/syscall/file.c $(DANCY_DEPS)
