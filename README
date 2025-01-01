@@ -17,8 +17,8 @@ Build Instructions (Unix/Linux)
 
   3. Run the following commands (normal user privileges)
 
-     git clone https://github.com/tiihala/dancy.git
-     cd dancy
+     git clone https://github.com/Tiihala/Dancy.git
+     cd Dancy
      make
 
      If cleaning the source tree with "make clean", the external tools
@@ -51,8 +51,8 @@ Build Instructions (Windows)
 
   7. Run the following commands
 
-     git.exe clone https://github.com/tiihala/dancy.git
-     cd dancy
+     git.exe clone https://github.com/Tiihala/Dancy.git
+     cd Dancy
      nmake
 
 
