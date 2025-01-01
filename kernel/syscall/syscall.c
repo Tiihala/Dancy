@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023, 2024 Antti Tiihala
+ * Copyright (c) 2022, 2023, 2024, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -1205,6 +1205,26 @@ static long long dancy_syscall_procinfo(va_list va)
 	return (long long)size;
 }
 
+static long long dancy_syscall_errno(va_list va)
+{
+	int number = va_arg(va, int);
+	void *buffer = va_arg(va, void *);
+	int flags = va_arg(va, int);
+
+	size_t size = 64;
+
+	if (pg_check_user_write(buffer, size))
+		return -EFAULT;
+
+	if (flags == 0 || flags == 1) {
+		memset(buffer, 0, size);
+		errno_internal(number, buffer, flags);
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -1252,6 +1272,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_sigprocmask },
 	{ dancy_syscall_proclist },
 	{ dancy_syscall_procinfo },
+	{ dancy_syscall_errno },
 	{ dancy_syscall_reserved }
 };
 
