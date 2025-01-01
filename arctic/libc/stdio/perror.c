@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,13 +17,18 @@
  *      Write error messages to standard error stream
  */
 
+#include <__dancy/syscall.h>
 #include <errno.h>
 #include <stdio.h>
-#include <string.h>
 
 void perror(const char *s)
 {
-	const char *e = strerror(errno);
+	char buffer[64];
+	int number = errno;
+	char *e = &buffer[0];
+
+	if (__dancy_syscall3(__dancy_syscall_errno, number, e, 1))
+		e[0] = '\0';
 
 	if (s != NULL && s[0] != '\0')
 		fprintf(stderr, "%s: %s\n", s, e);
