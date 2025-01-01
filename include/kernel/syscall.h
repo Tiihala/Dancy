@@ -31,6 +31,11 @@ int arg_set_cmdline(struct vfs_node *node, addr_t user_sp);
 void arg_delete(void *arg_state);
 
 /*
+ * Declarations of errno.c
+ */
+void errno_internal(int number, char buffer[64], int flags);
+
+/*
  * Declarations of file.c
  */
 struct file_table_entry {
