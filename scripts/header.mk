@@ -71,8 +71,6 @@ DANCY_TARGET_SYSTEM= \
  ./system/DB_000.AT \
  ./system/DB_100.AT \
  ./system/DB_200.AT \
- ./system/DB_300.AT \
- ./system/DB_400.AT \
  ./system/IN_IA16.AT \
  ./system/IN_IA32.AT \
  ./system/IN_X64.AT \
