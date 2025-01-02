@@ -20,6 +20,7 @@ DANCY_DB_100_FILES= \
  ./o32/run.at \
  ./o32/sched.at \
  ./o32/syscall.at \
+ ./o32/usb.at \
  ./o32/vfs.at \
  $(ACPICA_O32_AT)
 
@@ -33,6 +34,7 @@ DANCY_DB_200_FILES= \
  ./o64/run.at \
  ./o64/sched.at \
  ./o64/syscall.at \
+ ./o64/usb.at \
  ./o64/vfs.at \
  $(ACPICA_O64_AT)
 

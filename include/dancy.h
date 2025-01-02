@@ -75,6 +75,7 @@ enum dancy_error {
 #include <kernel/syscall.h>
 #include <kernel/table.h>
 #include <kernel/task.h>
+#include <kernel/usb.h>
 #include <kernel/vfs.h>
 
 #endif

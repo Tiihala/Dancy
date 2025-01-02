@@ -1512,6 +1512,10 @@
     ./kernel/syscall/syscall.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/syscall.c
 
+./o32/kernel/usb/xhci.o: \
+    ./kernel/usb/xhci.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/usb/xhci.c
+
 ./o32/kernel/vfs/default.o: \
     ./kernel/vfs/default.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/vfs/default.c
@@ -3127,6 +3131,10 @@
 ./o64/kernel/syscall/syscall.o: \
     ./kernel/syscall/syscall.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/syscall.c
+
+./o64/kernel/usb/xhci.o: \
+    ./kernel/usb/xhci.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/usb/xhci.c
 
 ./o64/kernel/vfs/default.o: \
     ./kernel/vfs/default.c $(DANCY_DEPS)

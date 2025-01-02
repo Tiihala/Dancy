@@ -56,6 +56,7 @@ distclean: clean
 !include .\scripts\at\run.mk
 !include .\scripts\at\sched.mk
 !include .\scripts\at\syscall.mk
+!include .\scripts\at\usb.mk
 !include .\scripts\at\vfs.mk
 
 !include .\scripts\arctic\_bin32.mk
