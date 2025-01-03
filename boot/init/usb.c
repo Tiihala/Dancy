@@ -610,6 +610,9 @@ static int usb_init_xhci(struct pci_device *pci, int early)
 		hcc_params[1] = cpu_read32((const uint32_t *)(base + 0x1C));
 
 		xecp_addr = base + (((hcc_params[0] >> 16) & 0xFFFFu) << 2);
+
+		if (xecp_addr == base)
+			xecp_addr = 0;
 	}
 
 	/*
