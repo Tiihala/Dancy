@@ -192,6 +192,16 @@ void init(void)
 	b_log_free();
 
 	/*
+	 * Initialize video hardware (early).
+	 */
+	{
+		struct b_video_info *new_vi;
+
+		if ((new_vi = video_driver_init_early()) != NULL)
+			memcpy(&vi, new_vi, sizeof(vi));
+	}
+
+	/*
 	 * Initialize the graphical user interface.
 	 */
 	if (gui_init(&vi)) {
@@ -358,6 +368,16 @@ void init(void)
 	 * Initialize USB.
 	 */
 	usb_init();
+
+	/*
+	 * Initialize video hardware.
+	 */
+	{
+		struct b_video_info *new_vi;
+
+		if ((new_vi = video_driver_init()) != NULL)
+			gui_init(new_vi);
+	}
 
 	/*
 	 * Print messages before initializing the kernel. This will create

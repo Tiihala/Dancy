@@ -60,6 +60,7 @@ DANCY_INIT_OBJECTS_32= \
  ./o32/boot/init/a32/kernel.o \
  ./o32/boot/init/smp/smp.o \
  ./o32/boot/init/smp/start32.o \
+ ./o32/boot/init/video/_driver.o \
  ./o32/boot/init/acpi.o \
  ./o32/boot/init/apic.o \
  ./o32/boot/init/cpu.o \
@@ -90,6 +91,7 @@ DANCY_INIT_OBJECTS_64= \
  ./o64/boot/init/a64/kernel.o \
  ./o64/boot/init/smp/smp.o \
  ./o64/boot/init/smp/start64.o \
+ ./o64/boot/init/video/_driver.o \
  ./o64/boot/init/acpi.o \
  ./o64/boot/init/apic.o \
  ./o64/boot/init/cpu.o \
