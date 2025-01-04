@@ -178,7 +178,7 @@ void fs_write_logs(void);
  */
 extern struct b_video_info *gui_video_info;
 
-int gui_init(void);
+int gui_init(struct b_video_info *vip);
 int gui_detach(void);
 
 void gui_print(const char *format, ...);

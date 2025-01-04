@@ -192,10 +192,9 @@ void init(void)
 	b_log_free();
 
 	/*
-	 * Initialize graphical user interface while boot services
-	 * are still available. The actual GUI does not require them.
+	 * Initialize the graphical user interface.
 	 */
-	if (gui_init()) {
+	if (gui_init(&vi)) {
 		const char *message =
 			"*************************************\n"
 			"** Graphical mode is not supported **\n"

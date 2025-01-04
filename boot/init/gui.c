@@ -333,16 +333,33 @@ static void ttf_set_colors(const unsigned char *indices)
 	}
 }
 
-int gui_init(void)
+int gui_init(struct b_video_info *vip)
 {
 	size_t size;
 
-	/*
-	 * This gui_init function is the only one in this module
-	 * that uses boot loader services.
-	 */
-	if (!b_get_structure(&vi, B_VIDEO_INFO))
-		return 1;
+	spin_lock(&gui_lock);
+
+	if (gui_video_info) {
+		void *p = back_buffer;
+
+		back_buffer = NULL;
+		free(p);
+
+		while (gui_window_stack != NULL) {
+			p = gui_window_stack->prev;
+
+			free(gui_window_stack->win_behind);
+			free(gui_window_stack);
+
+			gui_window_stack = p;
+		}
+	}
+
+	gui_video_info = NULL;
+	memcpy(&vi, vip, sizeof(vi));
+
+	spin_unlock(&gui_lock);
+
 	if (!ttf)
 		return 1;
 
@@ -350,8 +367,10 @@ int gui_init(void)
 	if (!size)
 		return 1;
 
-	ttf_bitmap_size = ttf_height * ttf_height;
-	ttf_bitmap = malloc(ttf_bitmap_size);
+	if (!ttf_bitmap_size) {
+		ttf_bitmap_size = ttf_height * ttf_height;
+		ttf_bitmap = malloc(ttf_bitmap_size);
+	}
 
 	if (!ttf_bitmap) {
 		memset(&vi, 0, sizeof(vi));
@@ -404,7 +423,9 @@ int gui_init(void)
 
 	memset(back_buffer, 0x04, size);
 
+	spin_lock(&gui_lock);
 	gui_video_info = &vi;
+	spin_unlock(&gui_lock);
 
 	return 0;
 }
@@ -417,7 +438,7 @@ static int create_window(const char *name, int x1, int y1, int x2, int y2)
 	unsigned win_height;
 	unsigned x, y;
 
-	if (!back_buffer)
+	if (!gui_video_info)
 		return 1;
 
 	if (x1 < 0 || y1 < 0)
@@ -639,10 +660,12 @@ void gui_print(const char *format, ...)
 	vsnprintf(buf, sizeof(buf), format, va);
 	va_end(va);
 
-	if (!back_buffer)
-		return;
-
 	spin_lock(&gui_lock);
+
+	if (!gui_video_info) {
+		spin_unlock(&gui_lock);
+		return;
+	}
 
 	if (!gui_window_stack) {
 		int x1, y1, x2, y2;
@@ -688,7 +711,7 @@ void gui_print_alert(const char *message)
 	 * the panic() situations, this behavior has been accepted.
 	 */
 
-	if (!back_buffer)
+	if (!gui_video_info)
 		return;
 
 	/*
@@ -737,10 +760,10 @@ void gui_print_alert(const char *message)
 
 void gui_refresh(void)
 {
-	if (back_buffer == NULL)
-		return;
-
 	spin_lock(&gui_lock);
-	blit();
+
+	if (gui_video_info)
+		blit();
+
 	spin_unlock(&gui_lock);
 }
