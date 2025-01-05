@@ -19,7 +19,40 @@
 
 #include <boot/init.h>
 
+uint16_t video_driver_request_width;
+uint16_t video_driver_request_height;
+uint16_t video_driver_request_bpp;
+
 struct b_video_info *video_driver_init(void)
 {
+	uint32_t i;
+
+	if (gui_video_info == NULL)
+		return NULL;
+
+	if (video_driver_request_width < 640)
+		return NULL;
+	if (video_driver_request_width > 3840)
+		return NULL;
+
+	if (video_driver_request_height < 480)
+		return NULL;
+	if (video_driver_request_height > 2160)
+		return NULL;
+
+	switch (video_driver_request_bpp) {
+		case 15: break; case 16: break;
+		case 24: break; case 32: break;
+		default: return NULL;
+	}
+
+	for (i = 0; i < pci_device_count; i++) {
+		struct pci_device *pci = &pci_devices[i];
+		struct b_video_info *vi;
+
+		if ((pci->class_code & 0xFF0000) != 0x030000)
+			continue;
+	}
+
 	return NULL;
 }

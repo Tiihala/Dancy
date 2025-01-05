@@ -388,6 +388,10 @@ void vga_set_palette(void);
 /*
  * Declarations of video/_driver.c
  */
+extern uint16_t video_driver_request_width;
+extern uint16_t video_driver_request_height;
+extern uint16_t video_driver_request_bpp;
+
 struct b_video_info *video_driver_init(void);
 
 #endif
