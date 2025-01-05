@@ -388,7 +388,6 @@ void vga_set_palette(void);
 /*
  * Declarations of video/_driver.c
  */
-struct b_video_info *video_driver_init_early(void);
 struct b_video_info *video_driver_init(void);
 
 #endif

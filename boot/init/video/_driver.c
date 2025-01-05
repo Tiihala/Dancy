@@ -19,11 +19,6 @@
 
 #include <boot/init.h>
 
-struct b_video_info *video_driver_init_early(void)
-{
-	return NULL;
-}
-
 struct b_video_info *video_driver_init(void)
 {
 	return NULL;
