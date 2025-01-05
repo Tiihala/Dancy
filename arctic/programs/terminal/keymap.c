@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Antti Tiihala
+ * Copyright (c) 2024, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,6 +28,43 @@
 #define T6 "\xE2\x94\x94"
 
 static int visible_lines = 8;
+
+static void modify_tab_stops(void)
+{
+	static int state = 0;
+	const int ui_width = 46;
+	int i;
+
+	printf("\r");
+
+	if (state == 0) {
+		struct winsize w = { 0 };
+
+		ioctl(1, TIOCGWINSZ, &w);
+
+		if ((int)w.ws_col < (ui_width + 16)) {
+			state = -1;
+			return;
+		}
+
+		state = ((int)w.ws_col - ui_width) / 2;
+
+		for (i = 0; i < (state / 8); i++)
+			printf("\033[%dG\033[g\r", ((i + 1) * 8) + 1);
+
+		printf("\033[%dG\033H\r", state + 1);
+		return;
+	}
+
+	if (state > 1) {
+		printf("\033[%dG\033[g\r", state + 1);
+
+		for (i = 0; i < (state / 8); i++)
+			printf("\033[%dG\033H\r", ((i + 1) * 8) + 1);
+	}
+
+	state = 0;
+}
 
 static void render_list(int offset, int active, int count)
 {
@@ -78,6 +115,7 @@ const struct __dancy_keymap *select_keymap(int fd_keyboard)
 	}
 
 	printf("\033[?25l\n");
+	modify_tab_stops();
 
 	printf("\t\033[32m" T0
 		T1 T1 T1 T1 T1 T1 T1 T1 T1 T1
@@ -165,6 +203,7 @@ const struct __dancy_keymap *select_keymap(int fd_keyboard)
 		}
 	}
 
+	modify_tab_stops();
 	printf("\033[7A\033[%dM\033[?25h", visible_lines + 9);
 	fflush(stdout);
 
