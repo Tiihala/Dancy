@@ -72,6 +72,17 @@ static int n_ioctl(struct vfs_node *node,
 
 	(void)node;
 
+	if (request == __DANCY_IOCTL_TIOCGWINSZ) {
+		struct __dancy_winsize *d = (void *)((addr_t)arg);
+		size_t size = sizeof(*d);
+
+		memset(d, 0, size);
+		d->ws_row = (unsigned short)kernel->con_rows;
+		d->ws_col = (unsigned short)kernel->con_columns;
+
+		return 0;
+	}
+
 	if (request == __DANCY_IOCTL_VT_GETSTATE) {
 		struct __dancy_vt_stat *d = (void *)((addr_t)arg);
 		size_t size = sizeof(*d);
