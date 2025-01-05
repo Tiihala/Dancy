@@ -23,6 +23,8 @@ uint16_t video_driver_request_width;
 uint16_t video_driver_request_height;
 uint16_t video_driver_request_bpp;
 
+extern struct b_video_info *video_driver_init_bochs(struct pci_device *);
+
 struct b_video_info *video_driver_init(void)
 {
 	uint32_t i;
@@ -52,6 +54,11 @@ struct b_video_info *video_driver_init(void)
 
 		if ((pci->class_code & 0xFF0000) != 0x030000)
 			continue;
+
+		if (pci->vendor_id == 0x80EE && pci->device_id == 0xBEEF) {
+			if ((vi = video_driver_init_bochs(pci)) != NULL)
+				return vi;
+		}
 	}
 
 	return NULL;

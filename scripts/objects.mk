@@ -1216,6 +1216,10 @@
     ./boot/init/video/_driver.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./boot/init/video/_driver.c
 
+./o32/boot/init/video/bochs.o: \
+    ./boot/init/video/bochs.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./boot/init/video/bochs.c
+
 ./o32/common/a32/dark.o: \
     ./common/a32/dark.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./common/a32/dark.asm
@@ -2767,6 +2771,10 @@
 ./o64/boot/init/video/_driver.o: \
     ./boot/init/video/_driver.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./boot/init/video/_driver.c
+
+./o64/boot/init/video/bochs.o: \
+    ./boot/init/video/bochs.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./boot/init/video/bochs.c
 
 ./o64/boot/uefi/a64/cpu.o: \
     ./boot/uefi/a64/cpu.asm $(DANCY_DEPS)
