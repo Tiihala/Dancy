@@ -121,8 +121,13 @@ static int detect_fs(struct vfs_node *dev_node)
 		r = dev_node->n_read(dev_node, 0, &size, buf);
 	}
 
-	if (r != 0 || size < 512)
-		return free(buf), DE_READ;
+	if (r != 0 || size < 512) {
+		snprintf((char *)buf, 4096, "returned %d bytes", (int)size);
+		kernel->print("\033[91m[WARNING]\033[m /dev/%s (%s)\n",
+			&dev_node->name[0],
+			(r != 0) ? strerror(r) : (char *)buf);
+		return free(buf), DE_UNSUPPORTED;
+	}
 
 	if (inspect_bpb(buf))
 		r = DE_UNSUPPORTED;
