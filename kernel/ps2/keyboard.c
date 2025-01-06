@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022, 2023, 2024 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023, 2024, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -202,6 +202,15 @@ int ps2_kbd_init(void)
 	 */
 	if (send_command(0xF0, data_scan_code, 0, NULL))
 		return 1;
+
+	/*
+	 * Check the Fixed ACPI Description Table (FADT) and disable
+	 * Num Lock initially if Preferred_PM_Profile is 2 (Mobile).
+	 */
+	if (kernel->acpi && kernel->acpi->fadt_addr) {
+		if (pg_read_memory(kernel->acpi->fadt_addr + 45, 1) == 2)
+			data_led_state[0] = 0, data_led_state[1] = 0;
+	}
 
 	/*
 	 * Set keyboard LEDs.
