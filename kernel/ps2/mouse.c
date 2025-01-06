@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2023 Antti Tiihala
+ * Copyright (c) 2021, 2023, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,8 +26,63 @@ static int mse_mode = 0;
 
 static const int data_none = -1;
 
-static struct vfs_node *mse_pipe_nodes[2];
-static struct vfs_node mse_node;
+struct mse_device {
+	struct vfs_node *pipe[2];
+	struct vfs_node node;
+	int state;
+	const char *name;
+};
+
+static struct mse_device mse_devices[] = {
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-ps2-mouse" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-ps2-mouse-gui" }
+};
+
+#define MSE_DEVICE_COUNT ((int)(sizeof(mse_devices) / sizeof(mse_devices[0])))
+
+static int create_and_mount_devices(void);
+
+static struct vfs_node **get_pipe_nodes(struct vfs_node *node)
+{
+	uint32_t i = 0;
+
+	if (node == NULL) {
+		i = (kernel->keyboard.console_switch_data & 0xFF) - 1;
+
+	} else {
+		while (i < MSE_DEVICE_COUNT) {
+			if (&mse_devices[i].node == node)
+				break;
+			i += 1;
+		}
+	}
+
+	if (i >= (uint32_t)MSE_DEVICE_COUNT)
+		i = 0;
+
+	if (mse_devices[i].state == 0)
+		return kernel->panic("PS/2: unexpected node state"), NULL;
+
+	return &mse_devices[i].pipe[0];
+}
+
+static void remove_unused_input(void)
+{
+	int i;
+
+	for (i = 0; i < MSE_DEVICE_COUNT; i++) {
+		while (mse_devices[i].node.count == 1) {
+			size_t size = sizeof(int);
+			struct vfs_node *pn = mse_devices[i].pipe[0];
+			int read_data;
+
+			(void)pn->n_read(pn, 0, &size, &read_data);
+
+			if (size != sizeof(int))
+				break;
+		}
+	}
+}
 
 static int send_command(int command, int data, int count, int *response)
 {
@@ -81,9 +136,8 @@ static int send_command(int command, int data, int count, int *response)
 static int n_read(struct vfs_node *node,
 	uint64_t offset, size_t *size, void *buffer)
 {
-	struct vfs_node *pn = mse_pipe_nodes[0];
+	struct vfs_node *pn = get_pipe_nodes(node)[0];
 
-	(void)node;
 	(void)offset;
 
 	if ((*size % sizeof(int)) != 0)
@@ -112,10 +166,9 @@ static int n_write(struct vfs_node *node,
 
 static int n_poll(struct vfs_node *node, int events, int *revents)
 {
-	struct vfs_node *pn = mse_pipe_nodes[0];
+	struct vfs_node *pn = get_pipe_nodes(node)[0];
 	int r;
 
-	(void)node;
 	*revents = 0;
 
 	if ((r = pn->n_poll(pn, events, revents)) == 0) {
@@ -130,7 +183,6 @@ static int n_poll(struct vfs_node *node, int events, int *revents)
 
 int ps2_mse_init(void)
 {
-	static int create_device_node_once;
 	int response[2];
 
 	mse_ready = 0;
@@ -186,31 +238,10 @@ int ps2_mse_init(void)
 	(void)send_command(0xF4, data_none, 0, NULL);
 
 	/*
-	 * Create the device node.
+	 * Create and mount the mouse devices.
 	 */
-	if (spin_trylock(&create_device_node_once)) {
-		const char *name = "/dev/dancy-ps2-mouse";
-		struct vfs_node *node;
-
-		if (vfs_pipe(mse_pipe_nodes) != 0)
-			return 1;
-
-		if (vfs_open(name, &node, 0, vfs_mode_create) != 0)
-			return 1;
-
-		node->n_release(&node);
-
-		vfs_init_node(&mse_node, 0);
-		mse_node.type = vfs_type_character;
-		mse_node.mode = vfs_mode_exclusive;
-		mse_node.internal_event = mse_pipe_nodes[0]->internal_event;
-		mse_node.n_read = n_read;
-		mse_node.n_write = n_write;
-		mse_node.n_poll = n_poll;
-
-		if (vfs_mount(name, &mse_node) != 0)
-			return 1;
-	}
+	if (create_and_mount_devices())
+		return 1;
 
 	mse_ready = 1;
 
@@ -228,16 +259,7 @@ void ps2_mse_handler(void)
 			return;
 	}
 
-	while (mse_node.count == 1) {
-		size_t size = sizeof(int);
-		struct vfs_node *pn = mse_pipe_nodes[0];
-		int read_data;
-
-		(void)pn->n_read(pn, 0, &size, &read_data);
-
-		if (size != sizeof(int))
-			break;
-	}
+	remove_unused_input();
 
 	while ((b = ps2_receive_port2()) >= 0) {
 		switch (state) {
@@ -266,7 +288,7 @@ void ps2_mse_handler(void)
 
 		while (state == 4) {
 			size_t size = sizeof(int);
-			struct vfs_node *pn = mse_pipe_nodes[1];
+			struct vfs_node *pn = get_pipe_nodes(NULL)[1];
 			int r = pn->n_write(pn, 0, &size, &data);
 
 			if (size == sizeof(int) || r != DE_RETRY)
@@ -276,16 +298,7 @@ void ps2_mse_handler(void)
 		}
 	}
 
-	while (mse_node.count == 1) {
-		size_t size = sizeof(int);
-		struct vfs_node *pn = mse_pipe_nodes[0];
-		int read_data;
-
-		(void)pn->n_read(pn, 0, &size, &read_data);
-
-		if (size != sizeof(int))
-			break;
-	}
+	remove_unused_input();
 }
 
 void ps2_mse_probe(void)
@@ -313,4 +326,44 @@ void ps2_mse_probe(void)
 	}
 
 	probe_state = 0;
+}
+
+static int create_and_mount_devices(void)
+{
+	static int run_once;
+	static int r = 1;
+
+	int i;
+
+	if (!spin_trylock(&run_once))
+		return r;
+
+	for (i = 0; i < MSE_DEVICE_COUNT; i++)  {
+		const char *name = mse_devices[i].name;
+		struct vfs_node *node;
+
+		if (vfs_pipe(mse_devices[i].pipe) != 0)
+			return kernel->panic("PS/2: vfs_pipe error"), r;
+
+		if (vfs_open(name, &node, 0, vfs_mode_create) != 0)
+			return kernel->panic("PS/2: vfs_open error"), r;
+
+		node->n_release(&node);
+		node = &mse_devices[i].node;
+
+		vfs_init_node(node, 0);
+		node->type = vfs_type_character;
+		node->mode = vfs_mode_exclusive;
+		node->internal_event = mse_devices[i].pipe[0]->internal_event;
+		node->n_read = n_read;
+		node->n_write = n_write;
+		node->n_poll = n_poll;
+
+		if (vfs_mount(name, node) != 0)
+			return kernel->panic("PS/2: vfs_mount error"), r;
+
+		spin_trylock(&mse_devices[i].state);
+	}
+
+	return (r = 0);
 }
