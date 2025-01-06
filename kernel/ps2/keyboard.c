@@ -81,6 +81,24 @@ static struct vfs_node **get_pipe_nodes(struct vfs_node *node)
 	return &kbd_devices[i].pipe[0];
 }
 
+static void remove_unused_input(void)
+{
+	int i;
+
+	for (i = 0; i < KBD_DEVICE_COUNT; i++) {
+		while (kbd_devices[i].node.count == 1) {
+			size_t size = sizeof(int);
+			struct vfs_node *pn = kbd_devices[i].pipe[0];
+			int read_data;
+
+			(void)pn->n_read(pn, 0, &size, &read_data);
+
+			if (size != sizeof(int))
+				break;
+		}
+	}
+}
+
 static int send_command(int command, int data, int count, int *response)
 {
 	uint32_t ticks_timeout = (uint32_t)((command == 0xFF) ? 2000 : 100);
@@ -459,6 +477,8 @@ void ps2_kbd_handler(void)
 			return;
 	}
 
+	remove_unused_input();
+
 	while ((b = ps2_receive_port1()) >= 0) {
 		int keycode = 0;
 		int release = 0;
@@ -565,6 +585,8 @@ void ps2_kbd_handler(void)
 		data_led_state[0] = data_led_state[1];
 		send_command(0xED, data_led_state[0], 0, NULL);
 	}
+
+	remove_unused_input();
 }
 
 void ps2_kbd_probe(void)
