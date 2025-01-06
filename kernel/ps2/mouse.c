@@ -189,7 +189,7 @@ int ps2_mse_init(void)
 	 * Create the device node.
 	 */
 	if (spin_trylock(&create_device_node_once)) {
-		const char *name = "/dev/dancy-mouse";
+		const char *name = "/dev/dancy-ps2-mouse";
 		struct vfs_node *node;
 
 		if (vfs_pipe(mse_pipe_nodes) != 0)
