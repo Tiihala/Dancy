@@ -175,21 +175,6 @@ int ps2_init(void)
 	 * controllers and disabling the "USB Legacy Support" features
 	 * before executing this module.
 	 *
-	 * The ACPI table (FADT) has an "IA-PC Boot Architecture Flags"
-	 * which indicates the availability of an "8042 Controller". If
-	 * there is no FADT, the controller should exist.
-	 */
-	if (kernel->acpi && kernel->acpi->fadt_addr) {
-		const unsigned int flag_8042 = 2;
-
-		/*
-		 * The flag is set if the controller is available.
-		 */
-		if (!(kernel->acpi->iapc_boot_arch & flag_8042))
-			return 0;
-	}
-
-	/*
 	 * Install IRQ handlers for the both PS/2 ports.
 	 */
 	{
