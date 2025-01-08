@@ -703,7 +703,7 @@ static int usb_init_xhci(struct pci_device *pci, int early)
 		uint32_t *ctlsts_addr = (uint32_t *)(xecp_addr + 0x04);
 
 		/*
-		 * Request ownership of the EHCI controller.
+		 * Request ownership of the xHCI controller.
 		 */
 		val = cpu_read32(legsup_addr);
 		cpu_write32(legsup_addr, (val | hc_os_semaphore));
