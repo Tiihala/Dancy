@@ -64,6 +64,36 @@ static int pci_device_found(phys_addr_t ecam, int gbdf[4], uint32_t id_pair)
 		pci_devices[i].header_type = (int)type;
 	}
 
+	/*
+	 * Message Signaled Interrupts (MSI).
+	 */
+	{
+		const uint32_t cap_list_bit = 0x10;
+		int safety_count = 4096;
+
+		uint32_t status = pci_read(&pci_devices[i], 0x04) >> 16;
+		int cap_off = (int)(pci_read(&pci_devices[i], 0x34) & 0xFCu);
+
+		pci_devices[i].cap_msi = 0;
+		pci_devices[i].cap_msi_x = 0;
+
+		while ((status & cap_list_bit) != 0 && cap_off > 0) {
+			uint32_t cap = pci_read(&pci_devices[i], cap_off);
+			uint32_t cap_id = (cap & 0xFFu);
+
+			if (cap_id == 0x05 && pci_devices[i].cap_msi == 0)
+				pci_devices[i].cap_msi = cap_off;
+
+			if (cap_id == 0x11 && pci_devices[i].cap_msi_x == 0)
+				pci_devices[i].cap_msi_x = cap_off;
+
+			if (!(safety_count--))
+				break;
+
+			cap_off = (int)((cap >> 8) & 0xFCu);
+		}
+	}
+
 	pci_device_count += 1;
 
 	return 0;
@@ -300,6 +330,10 @@ int pci_init_early(void)
 
 		if (pci_devices[i].ecam)
 			b_log(" ECAM %p", (const void *)pci_devices[i].ecam);
+		if (pci_devices[i].cap_msi)
+			b_log(" MSI");
+		if (pci_devices[i].cap_msi_x)
+			b_log(" MSI-X");
 		b_log("\n");
 	}
 

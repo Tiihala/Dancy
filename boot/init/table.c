@@ -440,6 +440,9 @@ void table_init(void)
 			uint32_t device_id  = pci_devices[i].device_id;
 			uint32_t class_code = pci_devices[i].class_code;
 
+			int cap_msi   = pci_devices[i].cap_msi;
+			int cap_msi_x = pci_devices[i].cap_msi_x;
+
 			kernel->pci_device[i].group  = group;
 			kernel->pci_device[i].bus    = bus;
 			kernel->pci_device[i].device = device;
@@ -449,6 +452,9 @@ void table_init(void)
 			kernel->pci_device[i].vendor_id  = vendor_id;
 			kernel->pci_device[i].device_id  = device_id;
 			kernel->pci_device[i].class_code = class_code;
+
+			kernel->pci_device[i].cap_msi   = cap_msi;
+			kernel->pci_device[i].cap_msi_x = cap_msi_x;
 		}
 	}
 

@@ -204,6 +204,9 @@ struct kernel_table {
 		uint32_t vendor_id;
 		uint32_t device_id;
 		uint32_t class_code;
+
+		int cap_msi;
+		int cap_msi_x;
 	} *pci_device;
 
 	/*

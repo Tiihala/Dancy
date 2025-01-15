@@ -303,6 +303,8 @@ struct pci_device {
 	uint32_t device_id;
 	uint32_t class_code;
 	int header_type;
+	int cap_msi;
+	int cap_msi_x;
 };
 
 extern uint32_t pci_device_count;
