@@ -32,10 +32,13 @@ struct xhci {
 	uint8_t *base;
 	size_t size;
 
+	uint32_t irq_count;
+
 	uint32_t cap_length;
 	uint32_t hci_version;
 	uint32_t hcs_params[3];
 	uint32_t hcc_params[2];
+	uint32_t page_size;
 
 	uint32_t db_off;
 	uint32_t rts_off;
@@ -46,11 +49,28 @@ struct xhci {
 	int max_slots;
 	int max_intrs;
 	int max_ports;
+	int max_scratchpads;
 
 	struct xhci_port *ports;
 
 	uint32_t *usb_cmd;
 	uint32_t *usb_sts;
+	uint32_t *dn_ctrl;
+	uint32_t *crcr;
+	uint32_t *dcbaap;
+	uint32_t *config;
+
+	uint32_t *buffer_crcr;
+	uint64_t *buffer_dcbaap;
+
+	uint32_t *buffer_er;
+	uint64_t *buffer_erst;
+	uint64_t *buffer_scratch;
+
+	int buffer_er_cycle;
+	int buffer_er_dequeue;
+
+	int last_event_type;
 };
 
 static int xhci_count;
@@ -65,6 +85,76 @@ static int usb_task(void *arg)
 	task_sleep(10000);
 
 	return (cpu_read32(xhci->usb_sts) & 1) ? 0 : 1;
+}
+
+static void usb_irq_trb(struct xhci *xhci, volatile uint32_t *trb)
+{
+	int type = (int)((trb[3] >> 10) & 0x3F);
+
+	xhci->last_event_type = type;
+}
+
+static void usb_irq_func(int irq, void *arg)
+{
+	volatile uint32_t *trb;
+	uint32_t val;
+
+	pg_enter_kernel();
+
+	if ((cpu_read32(((struct xhci *)arg)->usb_sts) & 8) != 0) {
+		struct xhci *xhci = arg;
+
+		addr_t a = (addr_t)(xhci->base + xhci->rts_off + 0x20);
+		uint32_t *i0 = (uint32_t *)a;
+
+		/*
+		 * Clear the event interrupt (EINT) by writing to it (RW1C).
+		 */
+		cpu_write32(xhci->usb_sts, 8);
+
+		/*
+		 * Clear the interrupt pending (IP) by writing to it (RW1C).
+		 */
+		val = cpu_read32(i0 + 0);
+		cpu_write32(i0 + 0, val | 3);
+
+		/*
+		 * Process the event ring.
+		 */
+		for (;;) {
+			int cycle = xhci->buffer_er_cycle;
+
+			trb = &xhci->buffer_er[xhci->buffer_er_dequeue * 4];
+
+			if ((int)(trb[3] & 1) != cycle)
+				break;
+
+			usb_irq_trb(xhci, trb);
+
+			if ((xhci->buffer_er_dequeue += 1) >= 64) {
+				xhci->buffer_er_cycle = !cycle;
+				xhci->buffer_er_dequeue = 0;
+			}
+		}
+
+		/*
+		 * Clear the event handler busy (EHB) by writing to it (RW1C).
+		 */
+		{
+			val = (uint32_t)((addr_t)xhci->buffer_er);
+			val += (uint32_t)(xhci->buffer_er_dequeue * 16);
+			val |= 8;
+
+			cpu_write32(i0 + 6, val);
+			cpu_write32(i0 + 7, 0);
+		}
+
+		cpu_add32(&xhci->irq_count, 1);
+	}
+
+	pg_leave_kernel();
+
+	(void)irq;
 }
 
 static int xhci_add(struct xhci *xhci)
@@ -202,6 +292,8 @@ static int xhci_init(struct xhci *xhci)
 	if (xhci->xecp == base)
 		return DE_UNSUPPORTED;
 
+	xhci->page_size = cpu_read32(xhci->base_cap + 0x08);
+
 	xhci->max_slots = (int)((xhci->hcs_params[0] >>  0) & 0x00FF);
 	xhci->max_intrs = (int)((xhci->hcs_params[0] >>  8) & 0x07FF);
 	xhci->max_ports = (int)((xhci->hcs_params[0] >> 24) & 0x00FF);
@@ -222,6 +314,224 @@ static int xhci_init(struct xhci *xhci)
 
 	xhci->usb_cmd = (uint32_t *)((void *)(xhci->base_cap + 0x0000));
 	xhci->usb_sts = (uint32_t *)((void *)(xhci->base_cap + 0x0004));
+	xhci->dn_ctrl = (uint32_t *)((void *)(xhci->base_cap + 0x0014));
+	xhci->crcr    = (uint32_t *)((void *)(xhci->base_cap + 0x0018));
+	xhci->dcbaap  = (uint32_t *)((void *)(xhci->base_cap + 0x0030));
+	xhci->config  = (uint32_t *)((void *)(xhci->base_cap + 0x0038));
+
+	/*
+	 * The boot procesures are responsible of resetting the controller
+	 * and taking the ownership from the firmware. HCHalted must be 1.
+	 */
+	if ((cpu_read32(xhci->usb_sts) & 1) == 0) {
+		kernel->print("\033[91m[WARNING]\033[m "
+			"xHCI HCHalted is 0\n");
+		return DE_UNSUPPORTED;
+	}
+
+	/*
+	 * Check the page size register (PAGESIZE).
+	 */
+	if ((xhci->page_size & 0xFFFF) != 1) {
+		kernel->print("\033[91m[WARNING]\033[m "
+			"xHCI Page Size is not 4 KiB\n");
+		return DE_UNSUPPORTED;
+	}
+
+	/*
+	 * The command ring control register (CRCR).
+	 */
+	{
+		const uint32_t ring_cycle_state = 1;
+		size_t size = 64;
+
+		while (size < (size_t)(xhci->max_ports * 8))
+			size <<= 1;
+
+		xhci->buffer_crcr = aligned_alloc(size, size);
+
+		if (xhci->buffer_crcr == NULL)
+			return DE_MEMORY;
+
+		memset(xhci->buffer_crcr, 0, size);
+
+		val = (uint32_t)((addr_t)xhci->buffer_crcr);
+
+		cpu_write32(xhci->crcr + 0, val | ring_cycle_state);
+		cpu_write32(xhci->crcr + 1, 0);
+	}
+
+	/*
+	 * The device context base address array pointer register (DCBAAP).
+	 */
+	{
+		xhci->buffer_dcbaap = (void *)mm_alloc_pages(mm_addr32, 0);
+
+		if (xhci->buffer_dcbaap == NULL)
+			return DE_MEMORY;
+
+		memset(xhci->buffer_dcbaap, 0, 0x1000);
+
+		val = (uint32_t)((addr_t)xhci->buffer_dcbaap);
+
+		cpu_write32(xhci->dcbaap + 0, val);
+		cpu_write32(xhci->dcbaap + 1, 0);
+	}
+
+	/*
+	 * The configure register (CONFIG).
+	 */
+	{
+		uint32_t slots_enabled = (uint32_t)xhci->max_slots;
+
+		val = cpu_read32(xhci->config) & 0xFFFFFF00;
+		cpu_write32(xhci->config, val | slots_enabled);
+	}
+
+	/*
+	 * The scratchpad buffers.
+	 */
+	{
+		uint32_t n_lo = (xhci->hcs_params[1] >> 27) & 0x1F;
+		uint32_t n_hi = (xhci->hcs_params[1] >> 21) & 0x1F;
+
+		xhci->max_scratchpads = (int)((n_hi << 5) | n_lo);
+
+		if (xhci->max_scratchpads) {
+			size_t size = 64;
+			phys_addr_t addr;
+
+			while (size < (size_t)(xhci->max_scratchpads * 8))
+				size <<= 1;
+
+			xhci->buffer_scratch = aligned_alloc(size, size);
+
+			if (xhci->buffer_scratch == NULL)
+				return DE_MEMORY;
+
+			memset(xhci->buffer_scratch, 0, size);
+
+			for (i = 0; i < xhci->max_scratchpads; i++) {
+				addr = mm_alloc_pages(mm_addr32, 0);
+
+				if (addr == 0)
+					return DE_MEMORY;
+
+				memset((void *)addr, 0, 0x1000);
+				xhci->buffer_scratch[i] = (uint64_t)addr;
+			}
+
+			addr = (addr_t)xhci->buffer_scratch;
+			xhci->buffer_dcbaap[0] = (uint64_t)addr;
+		}
+	}
+
+	/*
+	 * The event ring.
+	 */
+	{
+		xhci->buffer_er = (void *)mm_alloc_pages(mm_addr32, 0);
+
+		if (xhci->buffer_er == NULL)
+			return DE_MEMORY;
+
+		memset(xhci->buffer_er, 0, 0x1000);
+		xhci->buffer_er_cycle = 1;
+	}
+
+	/*
+	 * The event ring segment table.
+	 */
+	{
+		size_t size = 64;
+
+		xhci->buffer_erst = aligned_alloc(size, size);
+
+		if (xhci->buffer_erst == NULL)
+			return DE_MEMORY;
+
+		memset(xhci->buffer_erst, 0, size);
+
+		/*
+		 * Number of TRBs supported by the event ring is 64.
+		 */
+		xhci->buffer_erst[0] = (uint64_t)((addr_t)xhci->buffer_er);
+		xhci->buffer_erst[1] = 64;
+	}
+
+	/*
+	 * The primary interrupter.
+	 */
+	{
+		addr_t a = (addr_t)(xhci->base + xhci->rts_off + 0x20);
+		uint32_t *i0 = (uint32_t *)a;
+
+		/*
+		 * Set interrupter moderation register.
+		 */
+		cpu_write32(i0 + 1, 4000);
+
+		/*
+		 * Set event ring segment table size, which is 1.
+		 */
+		val = (cpu_read32(i0 + 2) & 0xFFFF0000) | 1;
+		cpu_write32(i0 + 2, val);
+
+		/*
+		 * Set event ring segment table base address (ERSTBA).
+		 */
+		cpu_write32(i0 + 4, (uint32_t)((addr_t)xhci->buffer_erst));
+		cpu_write32(i0 + 5, 0);
+
+		/*
+		 * Set event ring dequeue pointer (ERDP).
+		 */
+		cpu_write32(i0 + 6, (uint32_t)((addr_t)xhci->buffer_er | 8));
+		cpu_write32(i0 + 7, 0);
+
+		/*
+		 * Set the interrupter management register (IMAN).
+		 */
+		val = (cpu_read32(i0 + 0) & 0xFFFFFFFC) | 3;
+		cpu_write32(i0 + 0, val);
+	}
+
+	/*
+	 * Install the IRQ handler.
+	 */
+	if (pci_install_handler(xhci->pci, xhci, usb_irq_func) == NULL) {
+		kernel->print("\033[91m[ERROR]\033[m xHCI IRQ Handling\n");
+		return DE_UNSUPPORTED;
+	}
+
+	/*
+	 * Set the INTE and R/S bits (USBCMD).
+	 */
+	{
+		const uint32_t interrupter_enable = 4;
+		const uint32_t run_stop = 1;
+
+		val = cpu_read32(xhci->usb_cmd);
+		cpu_write32(xhci->usb_cmd, val | interrupter_enable);
+
+		val = cpu_read32(xhci->usb_cmd);
+		cpu_write32(xhci->usb_cmd, val | run_stop);
+
+		for (i = 0; /* void */; i++) {
+			const uint32_t hc_halted = 1;
+
+			if ((cpu_read32(xhci->usb_sts) & hc_halted) == 0)
+				break;
+
+			if (i == 2000) {
+				kernel->print("\033[91m[ERROR]\033[m "
+					"xHCI Run/Stop Failure\n");
+				break;
+			}
+
+			cpu_halt(1);
+		}
+	}
 
 	return 0;
 }
@@ -246,6 +556,8 @@ static int usb_xhci_init(struct pci_id *pci)
 			xhci->pci = pci;
 			xhci->base = base;
 			xhci->size = size;
+
+			pci_write(pci, 0x04, cmd | 4);
 
 			if ((r = xhci_add(xhci)) == 0)
 				r = xhci_init(xhci);
