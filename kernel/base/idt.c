@@ -441,6 +441,13 @@ void idt_panic(int num, void *stack, struct idt_context *context)
 	kernel->panic(&buffer[0]);
 }
 
+static void msi_nop_handler(int irq)
+{
+	(void)irq;
+}
+
+void (*idt_msi_handler)(int irq) = msi_nop_handler;
+
 void idt_handler(int num, void *stack)
 {
 	/*
@@ -503,6 +510,14 @@ void idt_handler(int num, void *stack)
 	 */
 	if (num == 0x5F) {
 		apic_eoi();
+		return;
+	}
+
+	/*
+	 * Message signaled interrupts.
+	 */
+	if (num >= 0xA0 && num <= 0xDF) {
+		idt_msi_handler(num);
 		return;
 	}
 
