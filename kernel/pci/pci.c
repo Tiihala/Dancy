@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,6 +20,55 @@
 #include <dancy.h>
 
 static int pci_lock;
+
+struct handler_entry {
+	void (*func)(int irq, void *arg);
+	void *arg;
+	int lock;
+};
+
+static struct handler_entry handler_array[64];
+
+static struct handler_entry *get_handler_entry(int *i)
+{
+	struct handler_entry *entry = NULL;
+	void *lock_local = &pci_lock;
+
+	spin_enter(&lock_local);
+
+	{
+		static int array_i;
+
+		if ((*i = array_i) < 64)
+			entry = &handler_array[array_i++];
+	}
+
+	spin_leave(&lock_local);
+
+	return entry;
+}
+
+static void pci_msi_handler(int irq)
+{
+	struct handler_entry *entry;
+
+	if (irq < 0xA0 || irq > 0xDF)
+		return;
+
+	entry = &handler_array[irq - 0xA0];
+
+	task_switch_disable();
+
+	if (spin_trylock(&entry->lock)) {
+		if (entry->func)
+			entry->func(irq, entry->arg);
+		spin_unlock(&entry->lock);
+	}
+
+	apic_eoi();
+
+	task_switch_enable();
+}
 
 static uint32_t pci_read32_locked(int b, int d, int f, int off)
 {
@@ -70,6 +119,8 @@ int pci_init(void)
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
+
+	idt_msi_handler = pci_msi_handler;
 
 	if ((driver_array = calloc(1024, sizeof(*driver_array))) == NULL)
 		return DE_MEMORY;
@@ -189,4 +240,77 @@ void pci_write(struct pci_id *pci, int offset, uint32_t value)
 			spin_leave(&lock_local);
 		}
 	}
+}
+
+void *pci_install_handler(struct pci_id *pci,
+	void *arg, void (*func)(int irq, void *arg))
+{
+	void *r = NULL;
+
+	if (kernel->io_apic_enabled) {
+		uint32_t msi_addr = 0xFEE00000;
+		uint32_t dst_id = kernel->apic_bsp_id & 0xFF;
+		struct handler_entry *entry;
+
+		if (dst_id == 0xFF)
+			return NULL;
+
+		msi_addr |= (dst_id << 12);
+
+		if (pci->cap_msi) {
+			int i, c = pci->cap_msi;
+
+			uint32_t val = pci_read(pci, 0x04);
+			val = val | (1u << 10);
+			pci_write(pci, 0x04, val);
+
+			if ((entry = get_handler_entry(&i)) == NULL)
+				return NULL;
+
+			if (!spin_trylock(&entry->lock))
+				return NULL;
+
+			entry->func = func;
+			entry->arg = arg;
+
+			spin_unlock(&entry->lock);
+
+			/*
+			 * MSI Enable = 0
+			 */
+			val = pci_read(pci, c + 0) & 0xFF8EFFFF;
+			pci_write(pci, c + 0, val);
+
+			if ((val & 0x00800000) != 0) {
+				pci_write(pci, c + 4, msi_addr);
+				pci_write(pci, c + 8, 0);
+				pci_write(pci, c + 12, (uint32_t)(0xA0 + i));
+			} else {
+				pci_write(pci, c + 4, msi_addr);
+				pci_write(pci, c + 8, (uint32_t)(0xA0 + i));
+			}
+
+			/*
+			 * MSI Enable = 1
+			 */
+			pci_write(pci, c + 0, val | 0x00010000);
+
+			return (void *)entry;
+		}
+	}
+
+	/*
+	 * ISA interrupt requests.
+	 */
+	{
+		int irq = (int)(pci_read(pci, 0x3C) & 0xFF);
+
+		if (irq == 0 || irq == 2 || irq > 15)
+			return r;
+
+		if ((r = irq_install(irq, arg, func)) != NULL)
+			irq_enable(irq);
+	}
+
+	return r;
 }
