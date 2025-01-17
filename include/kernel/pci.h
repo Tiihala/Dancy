@@ -46,4 +46,7 @@ int pci_init(void);
 uint32_t pci_read(struct pci_id *pci, int offset);
 void pci_write(struct pci_id *pci, int offset, uint32_t value);
 
+void *pci_install_handler(struct pci_id *pci,
+	void *arg, void (*func)(int irq, void *arg));
+
 #endif

@@ -130,6 +130,8 @@ extern const uint8_t idt_asm_panic[];
 extern uint32_t idt_nmi_panic[];
 extern uint32_t idt_nmi_unknown;
 
+extern void (*idt_msi_handler)(int irq);
+
 int idt_init(void);
 int idt_init_ap(void);
 
