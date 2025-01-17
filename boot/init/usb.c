@@ -836,6 +836,48 @@ static int usb_init_xhci(struct pci_device *pci, int early)
 	return 0;
 }
 
+static void usb_init_xhci_intel(void)
+{
+	struct pci_device *intel_xhci = NULL;
+	struct pci_device *intel_ehci = NULL;
+	int i, vendor_id_intel = 0x8086;
+
+	for (i = 0; i < (int)pci_device_count; i++) {
+		struct pci_device *pci = &pci_devices[i];
+
+		if (pci->vendor_id != (uint32_t)vendor_id_intel)
+			continue;
+		if (pci->class_code == 0x0C0330)
+			intel_xhci = pci;
+		if (pci->class_code == 0x0C0320)
+			intel_ehci = pci;
+	}
+
+	if (intel_xhci == NULL || intel_ehci == NULL)
+		return;
+
+	for (i = 0; i < (int)pci_device_count; i++) {
+		struct pci_device *pci = &pci_devices[i];
+
+		if (pci->vendor_id != (uint32_t)vendor_id_intel)
+			continue;
+		/*
+		 * Use an Intel-specific procedure for xHCI.
+		 */
+		if (pci->class_code == 0x0C0330) {
+			uint32_t val;
+
+			val = pci_read(pci, 0xDC);
+			pci_write(pci, 0xD8, val);
+			(void)pci_read(pci, 0xD8);
+
+			val = pci_read(pci, 0xD4);
+			pci_write(pci, 0xD0, val);
+			(void)pci_read(pci, 0xD0);
+		}
+	}
+}
+
 static int usb_init_controllers(int early)
 {
 	struct pci_device *pci;
@@ -887,6 +929,9 @@ static int usb_init_controllers(int early)
 				return r;
 		}
 	}
+
+	if (!early)
+		usb_init_xhci_intel();
 
 	return 0;
 }
