@@ -33,6 +33,7 @@ struct xhci {
 	size_t size;
 
 	uint32_t irq_count;
+	event_t irq_event;
 
 	uint32_t cap_length;
 	uint32_t hci_version;
@@ -69,8 +70,6 @@ struct xhci {
 
 	int buffer_er_cycle;
 	int buffer_er_dequeue;
-
-	int last_event_type;
 };
 
 static int xhci_count;
@@ -82,30 +81,22 @@ static int usb_task(void *arg)
 
 	task_set_cmdline(task_current(), NULL, "[xhci]");
 
-	task_sleep(10000);
-
-	return (cpu_read32(xhci->usb_sts) & 1) ? 0 : 1;
-}
-
-static void usb_irq_trb(struct xhci *xhci, volatile uint32_t *trb)
-{
-	int type = (int)((trb[3] >> 10) & 0x3F);
-
-	xhci->last_event_type = type;
-}
-
-static void usb_irq_func(int irq, void *arg)
-{
-	volatile uint32_t *trb;
-	uint32_t val;
-
-	pg_enter_kernel();
-
-	if ((cpu_read32(((struct xhci *)arg)->usb_sts) & 8) != 0) {
-		struct xhci *xhci = arg;
+	while (xhci) {
+		int dequeue_advanced = 0;
 
 		addr_t a = (addr_t)(xhci->base + xhci->rts_off + 0x20);
-		uint32_t *i0 = (uint32_t *)a;
+		uint32_t val, *i0 = (uint32_t *)a;
+
+		/*
+		 * Wait for the interrupt request.
+		 */
+		event_wait(xhci->irq_event, 2000);
+
+		/*
+		 * Check the event interrupt (EINT).
+		 */
+		if ((cpu_read32(((struct xhci *)arg)->usb_sts) & 8) == 0)
+			continue;
 
 		/*
 		 * Clear the event interrupt (EINT) by writing to it (RW1C).
@@ -123,24 +114,25 @@ static void usb_irq_func(int irq, void *arg)
 		 */
 		for (;;) {
 			int cycle = xhci->buffer_er_cycle;
+			uint32_t *trb;
 
 			trb = &xhci->buffer_er[xhci->buffer_er_dequeue * 4];
 
 			if ((int)(trb[3] & 1) != cycle)
 				break;
 
-			usb_irq_trb(xhci, trb);
-
 			if ((xhci->buffer_er_dequeue += 1) >= 64) {
 				xhci->buffer_er_cycle = !cycle;
 				xhci->buffer_er_dequeue = 0;
 			}
+
+			dequeue_advanced = 1;
 		}
 
 		/*
 		 * Clear the event handler busy (EHB) by writing to it (RW1C).
 		 */
-		{
+		if (dequeue_advanced) {
 			val = (uint32_t)((addr_t)xhci->buffer_er);
 			val += (uint32_t)(xhci->buffer_er_dequeue * 16);
 			val |= 8;
@@ -148,11 +140,17 @@ static void usb_irq_func(int irq, void *arg)
 			cpu_write32(i0 + 6, val);
 			cpu_write32(i0 + 7, 0);
 		}
-
-		cpu_add32(&xhci->irq_count, 1);
 	}
 
-	pg_leave_kernel();
+	return 0;
+}
+
+static void usb_irq_func(int irq, void *arg)
+{
+	struct xhci *xhci = arg;
+
+	cpu_add32(&xhci->irq_count, 1);
+	event_signal(xhci->irq_event);
 
 	(void)irq;
 }
@@ -271,6 +269,9 @@ static int xhci_init(struct xhci *xhci)
 	uint8_t *base = xhci->base;
 	uint32_t val;
 	int i;
+
+	if (!(xhci->irq_event = event_create(0)))
+		return DE_MEMORY;
 
 	val = cpu_read32(base + 0x00);
 	xhci->cap_length = (val & 0xFF);
