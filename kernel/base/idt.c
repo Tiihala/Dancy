@@ -518,6 +518,7 @@ void idt_handler(int num, void *stack)
 	 */
 	if (num >= 0xA0 && num <= 0xDF) {
 		idt_msi_handler(num);
+		event_yield();
 		return;
 	}
 
