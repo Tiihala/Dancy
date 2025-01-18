@@ -75,6 +75,33 @@ struct xhci {
 static int xhci_count;
 static struct xhci *xhci_array[32];
 
+static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
+{
+	int type = (int)((trb[3] >> 10) & 0x3F);
+	uint32_t val;
+
+	/*
+	 * The port status change event.
+	 */
+	if (type == 34) {
+		int port_id = (int)((trb[0] >> 24) & 0xFF);
+
+		if (port_id >= 1 && port_id <= xhci->max_ports) {
+			struct xhci_port *port = &xhci->ports[port_id - 1];
+
+			val = cpu_read32(port->portsc);
+			val &= 0x4F01FFE1;
+			val |= (1u << 17);
+			cpu_write32(port->portsc, val);
+		}
+
+		val = (1u << 4);
+		cpu_write32(xhci->usb_sts, val);
+
+		return;
+	}
+}
+
 static int usb_task(void *arg)
 {
 	struct xhci *xhci = arg;
@@ -120,6 +147,8 @@ static int usb_task(void *arg)
 
 			if ((int)(trb[3] & 1) != cycle)
 				break;
+
+			event_ring_handler(xhci, trb);
 
 			if ((xhci->buffer_er_dequeue += 1) >= 64) {
 				xhci->buffer_er_cycle = !cycle;
