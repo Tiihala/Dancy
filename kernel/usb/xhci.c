@@ -129,7 +129,7 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 	}
 }
 
-static int usb_task(void *arg)
+static int xhci_task(void *arg)
 {
 	struct xhci *xhci = arg;
 
@@ -201,7 +201,7 @@ static int usb_task(void *arg)
 	return 0;
 }
 
-static void usb_irq_func(int irq, void *arg)
+static void xhci_irq_func(int irq, void *arg)
 {
 	struct xhci *xhci = arg;
 
@@ -556,7 +556,7 @@ static int xhci_init(struct xhci *xhci)
 	/*
 	 * Install the IRQ handler.
 	 */
-	if (pci_install_handler(xhci->pci, xhci, usb_irq_func) == NULL) {
+	if (pci_install_handler(xhci->pci, xhci, xhci_irq_func) == NULL) {
 		kernel->print("\033[91m[ERROR]\033[m xHCI IRQ Handling\n");
 		return DE_UNSUPPORTED;
 	}
@@ -604,6 +604,7 @@ static int usb_xhci_init(struct pci_id *pci)
 		void *base = pg_map_kernel(addr, size, pg_uncached);
 
 		if (base != NULL) {
+			const int type = task_detached;
 			struct xhci *xhci;
 
 			if ((xhci = malloc(sizeof(*xhci))) == NULL)
@@ -619,7 +620,7 @@ static int usb_xhci_init(struct pci_id *pci)
 			if ((r = xhci_add(xhci)) == 0)
 				r = xhci_init(xhci);
 
-			if (!r && !task_create(usb_task, xhci, task_detached))
+			if (!r && !task_create(xhci_task, xhci, type))
 				r = DE_MEMORY;
 		}
 	}
