@@ -93,6 +93,21 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 			val = cpu_read32(port->portsc);
 
 			/*
+			 * Clear CSC, PEC, WRC, OCC, PRC, PLC, and CEC bits.
+			 */
+			{
+				uint32_t clear_bits = val;
+
+				clear_bits &= portsc_mask;
+				clear_bits |= 0x00FE0000;
+
+				if (port->rev_major < 3)
+					clear_bits &= 0xFF77FFFF;
+
+				cpu_write32(port->portsc, clear_bits);
+			}
+
+			/*
 			 * Check the connect status change bit (CSC).
 			 */
 			if ((val & (1u << 17)) != 0) {
@@ -103,13 +118,6 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 
 				cpu_write32(port->portsc, port_reset);
 			}
-
-			/*
-			 * Clear the CSC, PEC, WRC, OCC, PRC, and PLC bits.
-			 */
-			val &= portsc_mask;
-			val |= 0x007E0000;
-			cpu_write32(port->portsc, val);
 		}
 
 		/*
@@ -145,17 +153,6 @@ static int usb_task(void *arg)
 			continue;
 
 		/*
-		 * Clear the event interrupt (EINT) by writing to it (RW1C).
-		 */
-		cpu_write32(xhci->usb_sts, 8);
-
-		/*
-		 * Clear the interrupt pending (IP) by writing to it (RW1C).
-		 */
-		val = cpu_read32(i0 + 0);
-		cpu_write32(i0 + 0, val | 3);
-
-		/*
 		 * Process the event ring.
 		 */
 		for (;;) {
@@ -188,6 +185,17 @@ static int usb_task(void *arg)
 			cpu_write32(i0 + 6, val);
 			cpu_write32(i0 + 7, 0);
 		}
+
+		/*
+		 * Clear the event interrupt (EINT) by writing to it (RW1C).
+		 */
+		cpu_write32(xhci->usb_sts, 8);
+
+		/*
+		 * Clear the interrupt pending (IP) by writing to it (RW1C).
+		 */
+		val = cpu_read32(i0 + 0);
+		cpu_write32(i0 + 0, val | 3);
 	}
 
 	return 0;
