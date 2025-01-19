@@ -88,15 +88,34 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 
 		if (port_id >= 1 && port_id <= xhci->max_ports) {
 			struct xhci_port *port = &xhci->ports[port_id - 1];
+			const uint32_t portsc_mask = 0x4F01FFE1;
 
 			val = cpu_read32(port->portsc);
-			val &= 0x4F01FFE1;
-			val |= (1u << 17);
+
+			/*
+			 * Check the connect status change bit (CSC).
+			 */
+			if ((val & (1u << 17)) != 0) {
+				uint32_t port_reset = val;
+
+				port_reset &= portsc_mask;
+				port_reset |= (1u << 4);
+
+				cpu_write32(port->portsc, port_reset);
+			}
+
+			/*
+			 * Clear the CSC, PEC, WRC, OCC, PRC, and PLC bits.
+			 */
+			val &= portsc_mask;
+			val |= 0x007E0000;
 			cpu_write32(port->portsc, val);
 		}
 
-		val = (1u << 4);
-		cpu_write32(xhci->usb_sts, val);
+		/*
+		 * Clear the port change detect bit (PCD).
+		 */
+		cpu_write32(xhci->usb_sts, (1u << 4));
 
 		return;
 	}
