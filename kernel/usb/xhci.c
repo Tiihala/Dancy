@@ -399,22 +399,18 @@ static int xhci_init(struct xhci *xhci)
 	 * The command ring control register (CRCR).
 	 */
 	{
-		const uint32_t ring_cycle_state = 1;
-		size_t size = 64;
-
-		while (size < (size_t)(xhci->max_ports * 8))
-			size <<= 1;
-
-		xhci->buffer_crcr = aligned_alloc(size, size);
+		xhci->buffer_crcr = (void *)mm_alloc_pages(mm_addr32, 0);
 
 		if (xhci->buffer_crcr == NULL)
 			return DE_MEMORY;
 
-		memset(xhci->buffer_crcr, 0, size);
+		memset(xhci->buffer_crcr, 0, 0x1000);
 
-		val = (uint32_t)((addr_t)xhci->buffer_crcr);
+		val = (1u << 0);
+		val |= (cpu_read32(xhci->crcr + 0) & 0x30);
+		val |= (uint32_t)((addr_t)xhci->buffer_crcr);
 
-		cpu_write32(xhci->crcr + 0, val | ring_cycle_state);
+		cpu_write32(xhci->crcr + 0, val);
 		cpu_write32(xhci->crcr + 1, 0);
 	}
 
