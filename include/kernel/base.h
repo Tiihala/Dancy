@@ -165,8 +165,9 @@ enum mm_type {
 	mm_normal = 0x00,
 	mm_addr36 = 0x01,
 	mm_addr32 = 0x02,
+	mm_addr28 = 0x03,
 	mm_addr24 = 0x04,
-	mm_addr20 = 0x08,
+	mm_addr20 = 0x05,
 	mm_kernel = 0x10
 };
 
