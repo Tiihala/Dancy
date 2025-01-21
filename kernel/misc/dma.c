@@ -44,8 +44,10 @@ static void alloc_dma_buffer(int dma)
 	if (dma_buffer[dma] > 0xFFFFFF || (dma_buffer[dma] & 0xFFFF) != 0)
 		kernel->panic("DMA: unexpected address");
 
-	if (dma_buffer[dma])
+	if (dma_buffer[dma]) {
+		pg_map_kernel(dma_buffer[dma], 0x10000, pg_uncached);
 		memset((void *)dma_buffer[dma], 0, 0x10000);
+	}
 }
 
 static phys_addr_t set_dma_from_0_to_3(int dma, size_t size, int mode)

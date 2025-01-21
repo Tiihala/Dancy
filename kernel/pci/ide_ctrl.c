@@ -270,6 +270,7 @@ static int read_write_common(struct vfs_node *node,
 		if (!(channel->buffer = mm_alloc_pages(mm_addr24, 4)))
 			return mtx_unlock(&channel->mtx), DE_MEMORY;
 
+		pg_map_kernel(channel->buffer, 0x10000, pg_uncached);
 		memset((void *)channel->buffer, 0, 0x10000);
 	}
 
