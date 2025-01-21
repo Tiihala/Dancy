@@ -75,6 +75,21 @@ struct xhci {
 static int xhci_count;
 static struct xhci *xhci_array[32];
 
+static void *xhci_alloc(size_t size)
+{
+	if (size <= 0x1000) {
+		phys_addr_t addr = mm_alloc_pages(mm_addr28, 0);
+		return pg_map_kernel(addr, 0x1000, pg_uncached);
+	}
+
+	if (size <= 0x2000) {
+		phys_addr_t addr = mm_alloc_pages(mm_addr28, 1);
+		return pg_map_kernel(addr, 0x2000, pg_uncached);
+	}
+
+	return NULL;
+}
+
 static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 {
 	int type = (int)((trb[3] >> 10) & 0x3F);
@@ -399,7 +414,7 @@ static int xhci_init(struct xhci *xhci)
 	 * The command ring control register (CRCR).
 	 */
 	{
-		xhci->buffer_crcr = (void *)mm_alloc_pages(mm_addr32, 0);
+		xhci->buffer_crcr = xhci_alloc(0x1000);
 
 		if (xhci->buffer_crcr == NULL)
 			return DE_MEMORY;
@@ -418,7 +433,7 @@ static int xhci_init(struct xhci *xhci)
 	 * The device context base address array pointer register (DCBAAP).
 	 */
 	{
-		xhci->buffer_dcbaap = (void *)mm_alloc_pages(mm_addr32, 0);
+		xhci->buffer_dcbaap = xhci_alloc(0x1000);
 
 		if (xhci->buffer_dcbaap == NULL)
 			return DE_MEMORY;
@@ -451,13 +466,13 @@ static int xhci_init(struct xhci *xhci)
 		xhci->max_scratchpads = (int)((n_hi << 5) | n_lo);
 
 		if (xhci->max_scratchpads) {
-			size_t size = 64;
+			size_t size = 0x1000;
 			phys_addr_t addr;
 
 			while (size < (size_t)(xhci->max_scratchpads * 8))
 				size <<= 1;
 
-			xhci->buffer_scratch = aligned_alloc(size, size);
+			xhci->buffer_scratch = xhci_alloc(size);
 
 			if (xhci->buffer_scratch == NULL)
 				return DE_MEMORY;
@@ -465,7 +480,7 @@ static int xhci_init(struct xhci *xhci)
 			memset(xhci->buffer_scratch, 0, size);
 
 			for (i = 0; i < xhci->max_scratchpads; i++) {
-				addr = mm_alloc_pages(mm_addr32, 0);
+				addr = (phys_addr_t)xhci_alloc(0x1000);
 
 				if (addr == 0)
 					return DE_MEMORY;
@@ -483,7 +498,7 @@ static int xhci_init(struct xhci *xhci)
 	 * The event ring.
 	 */
 	{
-		xhci->buffer_er = (void *)mm_alloc_pages(mm_addr32, 0);
+		xhci->buffer_er = xhci_alloc(0x1000);
 
 		if (xhci->buffer_er == NULL)
 			return DE_MEMORY;
@@ -496,14 +511,12 @@ static int xhci_init(struct xhci *xhci)
 	 * The event ring segment table.
 	 */
 	{
-		size_t size = 64;
-
-		xhci->buffer_erst = aligned_alloc(size, size);
+		xhci->buffer_erst = xhci_alloc(0x1000);
 
 		if (xhci->buffer_erst == NULL)
 			return DE_MEMORY;
 
-		memset(xhci->buffer_erst, 0, size);
+		memset(xhci->buffer_erst, 0, 0x1000);
 
 		/*
 		 * Number of TRBs supported by the event ring is 64.
