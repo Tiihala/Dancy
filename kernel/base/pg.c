@@ -105,6 +105,9 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 	int offset = (int)(addr >> 22);
 	uint32_t page, *ptr;
 
+	if (addr < 0x10000000 && page_type != 0)
+		return 1;
+
 	/*
 	 * Page-directory table.
 	 */
@@ -364,6 +367,9 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 	int pdpe_offset = (int)((addr >> 30) & 0x1FF);
 	int offset = (int)((addr >> 21) & 0x1FF);
 	uint64_t page, *ptr;
+
+	if (addr < 0x10000000 && page_type != 0)
+		return 1;
 
 	if (pml4e_offset > 0xFF)
 		return 1;
