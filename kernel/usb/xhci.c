@@ -62,11 +62,16 @@ struct xhci {
 	uint32_t *config;
 
 	uint32_t *buffer_crcr;
+	uint32_t *buffer_crcr_high;
 	uint64_t *buffer_dcbaap;
 
 	uint32_t *buffer_er;
 	uint64_t *buffer_erst;
 	uint64_t *buffer_scratch;
+
+	int buffer_crcr_lock;
+	int buffer_crcr_cycle;
+	int buffer_crcr_enqueue;
 
 	int buffer_er_cycle;
 	int buffer_er_dequeue;
@@ -90,10 +95,149 @@ static void *xhci_alloc(size_t size)
 	return NULL;
 }
 
+static int write_command(struct xhci *xhci, const uint32_t *in, uint32_t *out)
+{
+	int i, r = DE_WRITE;
+
+	spin_lock(&xhci->buffer_crcr_lock);
+
+	{
+		int offset = xhci->buffer_crcr_enqueue * 4;
+		uint32_t trb[4];
+
+		for (i = 0; i < 4; i++)
+			trb[i] = in[i];
+
+		trb[3] &= 0xFFFFFFFE;
+		trb[3] |= ((xhci->buffer_crcr_cycle ? 1u : 0u) << 0);
+
+		for (i = 0; i < 4; i++) {
+			xhci->buffer_crcr[offset + i] = trb[i];
+			xhci->buffer_crcr_high[offset + i] = 0;
+
+			if (out != NULL)
+				out[i] = 0;
+		}
+	}
+
+	/*
+	 * Ring the host controller doorbell (0).
+	 */
+	cpu_write32((void *)(xhci->base + xhci->db_off), 0);
+
+	/*
+	 * Wait for the command completion event.
+	 */
+	for (i = 0; i < 400; i++) {
+		int offset = xhci->buffer_crcr_enqueue * 4;
+		uint32_t *p = &xhci->buffer_crcr_high[offset];
+		uint32_t completion_trb[4];
+
+		completion_trb[3] = cpu_read32(p + 3);
+		completion_trb[2] = cpu_read32(p + 2);
+		completion_trb[1] = cpu_read32(p + 1);
+		completion_trb[0] = cpu_read32(p + 0);
+
+		if (((completion_trb[3] >> 10) & 0x3F) == 33) {
+			int valid_completion_trb = 0;
+
+			p = &xhci->buffer_crcr[offset];
+
+			if (completion_trb[0] == (uint32_t)((addr_t)p))
+				valid_completion_trb = 1;
+
+			if (completion_trb[1] != 0)
+				valid_completion_trb = 0;
+
+			if (valid_completion_trb) {
+				if (out != NULL) {
+					out[0] = completion_trb[0];
+					out[1] = completion_trb[1];
+					out[2] = completion_trb[2];
+					out[3] = completion_trb[3];
+				}
+				r = 0;
+				break;
+			}
+		}
+
+		if (i < 100)
+			cpu_halt(1);
+		else
+			task_sleep(10);
+	}
+
+	/*
+	 * Advance the enqueue pointer.
+	 */
+	if ((xhci->buffer_crcr_enqueue += 1) >= 127) {
+		int offset = xhci->buffer_crcr_enqueue * 4;
+		uint32_t *p = &xhci->buffer_crcr[offset];
+
+		/*
+		 * Set the ring segment pointer high and low.
+		 */
+		p[0] = (uint32_t)((addr_t)xhci->buffer_crcr);
+		p[1] = 0;
+		p[2] = 0;
+
+		/*
+		 * Set the cycle bit, toggle cycle, and Link TRB Type (6).
+		 */
+		{
+			uint32_t ctrl = 0;
+
+			ctrl |= ((xhci->buffer_crcr_cycle ? 1u : 0u) << 0);
+			ctrl |= (1u << 1);
+			ctrl |= (6u << 10);
+
+			p[3] = ctrl;
+		}
+
+		xhci->buffer_crcr_cycle = !xhci->buffer_crcr_cycle;
+		xhci->buffer_crcr_enqueue = 0;
+	}
+
+	spin_unlock(&xhci->buffer_crcr_lock);
+
+	return r;
+}
+
 static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 {
 	int type = (int)((trb[3] >> 10) & 0x3F);
 	uint32_t val;
+
+	/*
+	 * The command completion event.
+	 */
+	if (type == 33) {
+		addr_t a = (addr_t)xhci->buffer_crcr;
+
+		if (trb[0] == 0 || (trb[0] & 3) != 0 || trb[1] != 0)
+			return;
+
+		if (trb[0] < a || trb[0] >= (addr_t)xhci->buffer_crcr_high)
+			return;
+
+		{
+			int offset = (int)((addr_t)trb[0] - a) / 4;
+			uint32_t *p = &xhci->buffer_crcr_high[offset];
+
+			if (p[0] != 0 || p[1] != 0)
+				return;
+
+			if (p[2] != 0 || p[3] != 0)
+				return;
+
+			cpu_write32(&p[0], trb[0]);
+			cpu_write32(&p[1], trb[1]);
+			cpu_write32(&p[2], trb[2]);
+			cpu_write32(&p[3], trb[3]);
+		}
+
+		return;
+	}
 
 	/*
 	 * The port status change event.
@@ -190,6 +334,17 @@ static int xhci_task(void *arg)
 		}
 
 		/*
+		 * Clear the event interrupt (EINT) by writing to it (RW1C).
+		 */
+		cpu_write32(xhci->usb_sts, 8);
+
+		/*
+		 * Clear the interrupt pending (IP) by writing to it (RW1C).
+		 */
+		val = cpu_read32(i0 + 0);
+		cpu_write32(i0 + 0, val | 3);
+
+		/*
 		 * Clear the event handler busy (EHB) by writing to it (RW1C).
 		 */
 		if (dequeue_advanced) {
@@ -200,17 +355,6 @@ static int xhci_task(void *arg)
 			cpu_write32(i0 + 6, val);
 			cpu_write32(i0 + 7, 0);
 		}
-
-		/*
-		 * Clear the event interrupt (EINT) by writing to it (RW1C).
-		 */
-		cpu_write32(xhci->usb_sts, 8);
-
-		/*
-		 * Clear the interrupt pending (IP) by writing to it (RW1C).
-		 */
-		val = cpu_read32(i0 + 0);
-		cpu_write32(i0 + 0, val | 3);
 	}
 
 	return 0;
@@ -420,6 +564,9 @@ static int xhci_init(struct xhci *xhci)
 			return DE_MEMORY;
 
 		memset(xhci->buffer_crcr, 0, 0x1000);
+
+		xhci->buffer_crcr_high = xhci->buffer_crcr + 512;
+		xhci->buffer_crcr_cycle = 1;
 
 		val = (1u << 0);
 		val |= (cpu_read32(xhci->crcr + 0) & 0x30);
@@ -631,6 +778,11 @@ static int usb_xhci_init(struct pci_id *pci)
 
 			if (!r && !task_create(xhci_task, xhci, type))
 				r = DE_MEMORY;
+
+			if (!r) {
+				uint32_t no_op[4] = { 0, 0, 0, (23u << 10) };
+				r = write_command(xhci, &no_op[0], NULL);
+			}
 		}
 	}
 
