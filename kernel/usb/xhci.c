@@ -288,7 +288,7 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 	}
 }
 
-static int xhci_task(void *arg)
+static int xhci_irq_task(void *arg)
 {
 	struct xhci *xhci = arg;
 
@@ -776,7 +776,7 @@ static int usb_xhci_init(struct pci_id *pci)
 			if ((r = xhci_add(xhci)) == 0)
 				r = xhci_init(xhci);
 
-			if (!r && !task_create(xhci_task, xhci, type))
+			if (!r && !task_create(xhci_irq_task, xhci, type))
 				r = DE_MEMORY;
 
 			if (!r) {
