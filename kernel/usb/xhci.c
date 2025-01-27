@@ -19,12 +19,26 @@
 
 #include <dancy.h>
 
+struct xhci_slot {
+	int state;
+};
+
 struct xhci_port {
 	uint8_t rev_major;
 	uint8_t rev_minor;
 	char name[6];
 
+	uint32_t *psi;
+	int psi_count;
+
+	int slot_type;
+	int slot_id;
+
 	uint32_t *portsc;
+
+	void *xhci;
+	int port_id;
+	int lock;
 };
 
 struct xhci {
@@ -52,6 +66,7 @@ struct xhci {
 	int max_ports;
 	int max_scratchpads;
 
+	struct xhci_port *slots;
 	struct xhci_port *ports;
 
 	uint32_t *usb_cmd;
@@ -203,6 +218,57 @@ static int write_command(struct xhci *xhci, const uint32_t *in, uint32_t *out)
 	return r;
 }
 
+static int xhci_port_task(void *arg)
+{
+	struct xhci_port *port = arg;
+	struct xhci *xhci = port->xhci;
+
+	int port_id = port->port_id;
+	char cline[16];
+
+	if (snprintf(&cline[0], sizeof(cline), "[xhci-port%d]", port_id) <= 0)
+		return spin_unlock(&port->lock), EXIT_FAILURE;
+
+	task_set_cmdline(task_current(), NULL, &cline[0]);
+	task_sleep(100);
+
+	while (port->slot_id == 0) {
+		uint32_t in[4], out[4];
+		int slot_id;
+
+		/*
+		 * Write the enable slot command.
+		 */
+		in[0] = 0;
+		in[1] = 0;
+		in[2] = 0;
+		in[3] = (uint32_t)((port->slot_type << 16) | (9 << 10));
+
+		if (write_command(xhci, &in[0], &out[0]))
+			break;
+
+		/*
+		 * Check the completion code (Success).
+		 */
+		if (((out[2] >> 24) & 0xFF) != 1)
+			break;
+
+		/*
+		 * Get the slot ID.
+		 */
+		slot_id = (int)((out[3] >> 24) & 0xFF);
+
+		if (slot_id < 1 || slot_id > xhci->max_slots)
+			break;
+
+		port->slot_id = slot_id;
+	}
+
+	spin_unlock(&port->lock);
+
+	return 0;
+}
+
 static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 {
 	int type = (int)((trb[3] >> 10) & 0x3F);
@@ -276,6 +342,15 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 				port_reset |= (1u << 4);
 
 				cpu_write32(port->portsc, port_reset);
+			}
+
+			/*
+			 * Create a task if the CCS and PED bits are set.
+			 */
+			if ((val & 3) == 3 && spin_trylock(&port->lock)) {
+				const int t = task_detached;
+				if (!task_create(xhci_port_task, port, t))
+					spin_unlock(&port->lock);
 			}
 		}
 
@@ -438,6 +513,7 @@ static void check_supported_protocols(struct xhci *xhci)
 		if ((val & 0xFF) == supported_protocol) {
 			uint8_t rev_major, rev_minor;
 			uint8_t port_count, port_offset;
+			uint8_t psi_count, slot_type;
 
 			rev_major = (uint8_t)((val >> 24) & 0xFF);
 			rev_minor = (uint8_t)((val >> 16) & 0xFF);
@@ -447,6 +523,11 @@ static void check_supported_protocols(struct xhci *xhci)
 
 			port_count  = (uint8_t)((val >> 8) & 0xFF);
 			port_offset = (uint8_t)((val >> 0) & 0xFF);
+
+			psi_count = (uint8_t)((val >> 28) & 0x0F);
+
+			val = cpu_read32(p + 0x0C);
+			slot_type = (uint8_t)((val >> 0) & 0x1F);
 
 			for (i = 0; i < (int)port_count; i++) {
 				struct xhci_port *port;
@@ -469,6 +550,15 @@ static void check_supported_protocols(struct xhci *xhci)
 				for (j = 3; j >= 0; j--) {
 					if (port->name[j] == ' ')
 						port->name[j] = '\0';
+				}
+
+				port->psi = NULL;
+				port->psi_count = (int)psi_count;
+				port->slot_type = (int)slot_type;
+
+				if (port->psi_count > 0) {
+					addr_t psi = (addr_t)(p + 0x10);
+					port->psi = (void *)psi;
 				}
 			}
 		}
@@ -514,6 +604,13 @@ static int xhci_init(struct xhci *xhci)
 	xhci->max_intrs = (int)((xhci->hcs_params[0] >>  8) & 0x07FF);
 	xhci->max_ports = (int)((xhci->hcs_params[0] >> 24) & 0x00FF);
 
+	if (xhci->max_slots == 0)
+		return DE_UNSUPPORTED;
+
+	xhci->slots = calloc((size_t)xhci->max_slots, sizeof(*xhci->slots));
+	if (xhci->slots == NULL)
+		return DE_MEMORY;
+
 	if (xhci->max_ports == 0)
 		return DE_UNSUPPORTED;
 
@@ -526,6 +623,8 @@ static int xhci_init(struct xhci *xhci)
 	for (i = 0; i < xhci->max_ports; i++) {
 		addr_t a = (addr_t)(xhci->base_cap + 0x400 + (i * 16));
 		xhci->ports[i].portsc = (uint32_t *)a;
+		xhci->ports[i].xhci = xhci;
+		xhci->ports[i].port_id = i + 1;
 	}
 
 	xhci->usb_cmd = (uint32_t *)((void *)(xhci->base_cap + 0x0000));
