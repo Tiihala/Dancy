@@ -144,6 +144,16 @@ struct kernel_table {
 	uint64_t delay_tsc_hz;
 
 	/*
+	 * Kernel messages (KMSG).
+	 */
+	struct {
+		char *buffer;
+		size_t size;
+		int state;
+		int lock;
+	} kmsg;
+
+	/*
 	 * Framebuffer set by system firmware.
 	 */
 	uint32_t fb_mode;

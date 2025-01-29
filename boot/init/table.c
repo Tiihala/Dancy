@@ -129,6 +129,18 @@ void table_init(void)
 		panic("TSC: unexpected frequency value");
 
 	/*
+	 * Allocate the buffer for kernel messages (KMSG).
+	 */
+	{
+		const size_t count = 64;
+
+		kernel->kmsg.buffer = table_alloc_pages(count);
+		kernel->kmsg.size   = (count * 0x1000);
+		kernel->kmsg.state  = 0;
+		kernel->kmsg.lock   = 0;
+	}
+
+	/*
 	 * Allocate the virtual address slot for Local APIC registers.
 	 */
 	kernel->apic_base_vaddr = (addr_t)table_alloc_pages(1);
