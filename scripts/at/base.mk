@@ -18,6 +18,7 @@ DANCY_BASE_OBJECTS_32= \
  ./o32/kernel/base/idt.o \
  ./o32/kernel/base/idt_user.o \
  ./o32/kernel/base/irq.o \
+ ./o32/kernel/base/kmsg.o \
  ./o32/kernel/base/mm.o \
  ./o32/kernel/base/mtx.o \
  ./o32/kernel/base/panic.o \
@@ -43,6 +44,7 @@ DANCY_BASE_OBJECTS_64= \
  ./o64/kernel/base/idt.o \
  ./o64/kernel/base/idt_user.o \
  ./o64/kernel/base/irq.o \
+ ./o64/kernel/base/kmsg.o \
  ./o64/kernel/base/mm.o \
  ./o64/kernel/base/mtx.o \
  ./o64/kernel/base/panic.o \

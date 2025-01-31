@@ -159,6 +159,12 @@ void *irq_install(int irq, void *arg, void (*func)(int irq, void *arg));
 void irq_uninstall(void *irq);
 
 /*
+ * Declarations of kmsg.c
+ */
+int kmsg_write(const char *message);
+int printk(const char *format, ...);
+
+/*
  * Declarations of mm.c
  */
 enum mm_type {

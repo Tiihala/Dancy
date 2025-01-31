@@ -1316,6 +1316,10 @@
     ./kernel/base/irq.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/irq.c
 
+./o32/kernel/base/kmsg.o: \
+    ./kernel/base/kmsg.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/kmsg.c
+
 ./o32/kernel/base/mm.o: \
     ./kernel/base/mm.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/mm.c
@@ -2943,6 +2947,10 @@
 ./o64/kernel/base/irq.o: \
     ./kernel/base/irq.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/irq.c
+
+./o64/kernel/base/kmsg.o: \
+    ./kernel/base/kmsg.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/kmsg.c
 
 ./o64/kernel/base/mm.o: \
     ./kernel/base/mm.c $(DANCY_DEPS)
