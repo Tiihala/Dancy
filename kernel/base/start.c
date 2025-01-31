@@ -92,6 +92,8 @@ void kernel_start(void)
 	if (!spin_trylock(&run_once))
 		return;
 
+	printk("5" "Dancy %d.%d\n", DANCY_MAJOR, DANCY_MINOR);
+
 	/*
 	 * The kernel table structure is set by the init module. The size
 	 * of the structure is like a magic number, and it gives additional
