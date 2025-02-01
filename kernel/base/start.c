@@ -46,6 +46,7 @@ static struct {
 	{ 0, 0, SYMBOL_PREFIX "zero_init", "Devfs Zero" },
 	{ 0, 0, SYMBOL_PREFIX "console_init", "Devfs Console" },
 	{ 0, 0, SYMBOL_PREFIX "fb_user_init", "Devfs Framebuffer" },
+	{ 0, 0, SYMBOL_PREFIX "kmsg_init", "Kernel Messages" },
 	{ 0, 0, SYMBOL_PREFIX "pty_init", "Pseudoterminals" },
 	{ 0, 0, SYMBOL_PREFIX "dma_init", "DMA" },
 	{ 0, 0, SYMBOL_PREFIX "floppy_init", "Floppy" },

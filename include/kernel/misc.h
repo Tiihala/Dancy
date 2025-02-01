@@ -77,6 +77,11 @@ int hdd_fat_init(void);
 int hdd_part_init(void);
 
 /*
+ * Declarations of kmsg.c
+ */
+int kmsg_init(void);
+
+/*
  * Declarations of rtc.c
  */
 struct rtc_time {

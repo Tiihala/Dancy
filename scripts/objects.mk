@@ -1436,6 +1436,10 @@
     ./kernel/misc/hdd_part.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/hdd_part.c
 
+./o32/kernel/misc/kmsg.o: \
+    ./kernel/misc/kmsg.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/misc/kmsg.c
+
 ./o32/kernel/misc/rtc.o: \
     ./kernel/misc/rtc.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/rtc.c
@@ -3067,6 +3071,10 @@
 ./o64/kernel/misc/hdd_part.o: \
     ./kernel/misc/hdd_part.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/hdd_part.c
+
+./o64/kernel/misc/kmsg.o: \
+    ./kernel/misc/kmsg.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/misc/kmsg.c
 
 ./o64/kernel/misc/rtc.o: \
     ./kernel/misc/rtc.c $(DANCY_DEPS)
