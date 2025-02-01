@@ -25,7 +25,7 @@ static void kmsg_write_char_locked(int c)
 
 	kernel->kmsg.buffer[i] = (char)c;
 
-	if (i < (int)kernel->kmsg.size)
+	if (i + 1 < (int)kernel->kmsg.size)
 		kernel->kmsg.state += 2;
 	else
 		kernel->kmsg.state = 1;
