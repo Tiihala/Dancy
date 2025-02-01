@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023, 2024 Antti Tiihala
+ * Copyright (c) 2022, 2023, 2024, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -273,6 +273,24 @@ int file_close(int fd)
 	return DE_ARGUMENT;
 }
 
+static int call_n_read(struct vfs_node *node,
+	struct file_table_entry *fte, size_t *size, void *buffer)
+{
+	int r;
+
+	if (node->type == vfs_type_message) {
+		lock_fte(fte);
+
+		r = node->n_read(node, fte->offset, size, buffer);
+		fte->offset += (uint64_t)(*size != 0 ? 1 : 0);
+
+		unlock_fte(fte);
+		return r;
+	}
+
+	return node->n_read(node, 0, size, buffer);
+}
+
 int file_read(int fd, size_t *size, void *buffer)
 {
 	struct task *task = task_current();
@@ -299,6 +317,8 @@ int file_read(int fd, size_t *size, void *buffer)
 				block_capability = 1;
 			else if (n->type == vfs_type_character)
 				block_capability = 1;
+			else if (n->type == vfs_type_message)
+				block_capability = 1;
 
 			if ((f & O_ACCMODE) == O_WRONLY) {
 				unlock_fte(fte);
@@ -314,7 +334,7 @@ int file_read(int fd, size_t *size, void *buffer)
 			}
 
 			unlock_fte(fte);
-			r = n->n_read(n, 0, size, buffer);
+			r = call_n_read(n, fte, size, buffer);
 			s += *size;
 
 			while (*size == 0) {
@@ -335,7 +355,7 @@ int file_read(int fd, size_t *size, void *buffer)
 					task_yield();
 
 				*size = requested_size;
-				r = n->n_read(n, 0, size, buffer);
+				r = call_n_read(n, fte, size, buffer);
 				s += *size;
 
 				if (!n->internal_event) {
@@ -455,6 +475,8 @@ static int lseek_allowed(int type)
 		return 1;
 	if (type == vfs_type_block)
 		return 1;
+	if (type == vfs_type_message)
+		return 1;
 
 	return 0;
 }
@@ -485,6 +507,13 @@ int file_lseek(int fd, off_t offset, uint64_t *new_offset, int whence)
 				if (whence != SEEK_SET || offset != 0) {
 					unlock_fte(fte);
 					return DE_DIRECTORY;
+				}
+			}
+
+			if (fte->node->type == vfs_type_message) {
+				if (whence != SEEK_SET || offset != 0) {
+					unlock_fte(fte);
+					return DE_ACCESS;
 				}
 			}
 
