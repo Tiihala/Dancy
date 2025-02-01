@@ -30,6 +30,7 @@ enum vfs_type {
 	vfs_type_character = 4,
 	vfs_type_block     = 5,
 	vfs_type_socket    = 6,
+	vfs_type_message   = 7,
 	vfs_type_last
 };
 
