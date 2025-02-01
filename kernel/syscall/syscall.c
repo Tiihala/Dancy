@@ -348,6 +348,10 @@ static long long dancy_syscall_read(va_list va)
 			return -EAGAIN;
 		if (r == DE_DIRECTORY)
 			return -EISDIR;
+		if (r == DE_PIPE)
+			return -EPIPE;
+		if (r == DE_BUFFER)
+			return -EINVAL;
 		return -EIO;
 	}
 
@@ -681,6 +685,9 @@ static long long dancy_syscall_stat(va_list va)
 
 	else if (node->type == vfs_type_socket)
 		buffer->st_mode = 0x1B6 | __DANCY_S_IFSOCK;
+
+	else if (node->type == vfs_type_message)
+		buffer->st_mode = 0x1B6 | __DANCY_S_IFCHR;
 
 	node->n_release(&node);
 
