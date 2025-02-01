@@ -138,6 +138,9 @@ void table_init(void)
 		kernel->kmsg.size   = (count * 0x1000);
 		kernel->kmsg.state  = 0;
 		kernel->kmsg.lock   = 0;
+
+		kernel->kmsg.counter = 0;
+		kernel->kmsg.event = NULL;
 	}
 
 	/*

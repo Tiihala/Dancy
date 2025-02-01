@@ -33,7 +33,6 @@ static void kmsg_write_char_locked(int c)
 
 static int kmsg_write_locked(const char *m)
 {
-	static unsigned long long counter;
 	static char prefix[64];
 
 	unsigned int level = 6;
@@ -52,7 +51,7 @@ static int kmsg_write_locked(const char *m)
 		return 0;
 
 	r = snprintf(&prefix[0], sizeof(prefix),
-		"%u,%llu,%llu,-;", level, counter,
+		"%u,%llu,%llu,-;", level, kernel->kmsg.counter,
 		(unsigned long long)timer_read() * 1000ull);
 
 	if (r < 8 || r >= (int)sizeof(prefix))
@@ -101,7 +100,10 @@ static int kmsg_write_locked(const char *m)
 	i = kernel->kmsg.state >> 1;
 	kernel->kmsg.buffer[i] = '\0';
 
-	counter += 1;
+	kernel->kmsg.counter += 1;
+
+	if (kernel->kmsg.event)
+		event_signal(kernel->kmsg.event);
 
 	return r;
 }

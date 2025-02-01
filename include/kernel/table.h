@@ -151,6 +151,9 @@ struct kernel_table {
 		size_t size;
 		int state;
 		int lock;
+
+		unsigned long long counter;
+		event_t event;
 	} kmsg;
 
 	/*
