@@ -51,10 +51,10 @@ static int kmsg_write_locked(const char *m)
 		return 0;
 
 	r = snprintf(&prefix[0], sizeof(prefix),
-		"%u,%llu,%llu,-;", level, kernel->kmsg.counter,
+		"\t%u,%llu,%llu,-;", level, kernel->kmsg.counter,
 		(unsigned long long)timer_read() * 1000ull);
 
-	if (r < 8 || r >= (int)sizeof(prefix))
+	if (r < 9 || r >= (int)sizeof(prefix))
 		return 0;
 
 	for (i = 0; i < r; i++)
