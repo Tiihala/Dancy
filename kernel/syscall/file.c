@@ -330,7 +330,7 @@ int file_read(int fd, size_t *size, void *buffer)
 					break;
 
 				if (n->internal_event)
-					event_wait(*n->internal_event, 2000);
+					event_wait(*n->internal_event, 500);
 				else
 					task_yield();
 
