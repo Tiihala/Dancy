@@ -276,15 +276,44 @@ int file_close(int fd)
 static int call_n_read(struct vfs_node *node,
 	struct file_table_entry *fte, size_t *size, void *buffer)
 {
+	size_t requested_size = *size;
 	int r;
 
-	if (node->type == vfs_type_message) {
+	while (node->type == vfs_type_message) {
 		lock_fte(fte);
 
+		*size = requested_size;
 		r = node->n_read(node, fte->offset, size, buffer);
 		fte->offset += (uint64_t)(*size != 0 ? 1 : 0);
 
+		if (r == DE_PLACEHOLDER && *size == 0) {
+			uint64_t offset = 0;
+
+			fte->offset += 1;
+
+			if (node->internal_event == &kernel->kmsg.event) {
+				void *lock_local = &kernel->kmsg.lock;
+
+				spin_enter(&lock_local);
+
+				if (kernel->kmsg.counter > 1024)
+					offset = kernel->kmsg.counter - 1024;
+
+				spin_leave(&lock_local);
+			}
+
+			if (fte->offset < offset)
+				fte->offset = offset;
+		}
+
 		unlock_fte(fte);
+
+		if (r == DE_PLACEHOLDER) {
+			if (task_signaled(task_current()))
+				return DE_INTERRUPT;
+			continue;
+		}
+
 		return r;
 	}
 
