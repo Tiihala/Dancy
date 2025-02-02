@@ -308,7 +308,7 @@ static int call_n_read(struct vfs_node *node,
 
 		unlock_fte(fte);
 
-		if (r == DE_PLACEHOLDER) {
+		if (r == DE_PLACEHOLDER && *size == 0) {
 			if (task_signaled(task_current()))
 				return DE_INTERRUPT;
 			continue;
