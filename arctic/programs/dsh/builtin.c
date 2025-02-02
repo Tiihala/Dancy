@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Antti Tiihala
+ * Copyright (c) 2024, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -85,6 +85,21 @@ static int cmd_exit(int argc, char *argv[])
 	return 0;
 }
 
+static int cmd_rename(int argc, char *argv[])
+{
+	const char *usage = "Usage: rename OLD_FILE NEW_FILE\n";
+
+	if (argc != 3)
+		return fputs(usage, stderr), EXIT_FAILURE;
+
+	if (rename(argv[1], argv[2]) != 0) {
+		fprintf(stderr, "rename: %s\n", strerror(errno));
+		return EXIT_FAILURE;
+	}
+
+	return 0;
+}
+
 static int cmd_unlink(int argc, char *argv[])
 {
 	const char *usage = "Usage: unlink FILE\n";
@@ -116,6 +131,7 @@ struct dsh_builtin dsh_builtin_array[] = {
 	{ cmd_clear, "reset" },
 	{ cmd_echo, "echo" },
 	{ cmd_exit, "exit" },
+	{ cmd_rename, "rename" },
 	{ cmd_unlink, "unlink" },
 	{ cmd_default, NULL }
 };
