@@ -244,6 +244,10 @@ static int xhci_port_task(void *arg)
 		in[2] = 0;
 		in[3] = (uint32_t)((port->slot_type << 16) | (9 << 10));
 
+		printk("[xHCI] Enable Slot Command, "
+			"Port ID %d, Slot Type %d\n",
+			port->port_id, port->slot_type);
+
 		if (write_command(xhci, &in[0], &out[0]))
 			break;
 
@@ -262,6 +266,9 @@ static int xhci_port_task(void *arg)
 			break;
 
 		port->slot_id = slot_id;
+
+		printk("[xHCI] Port ID %d, Slot ID %d\n",
+			port->port_id, port->slot_id);
 	}
 
 	spin_unlock(&port->lock);
@@ -279,6 +286,9 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 	 */
 	if (type == 33) {
 		addr_t a = (addr_t)xhci->buffer_crcr;
+
+		printk("[xHCI] Event Ring, Command Completion, "
+			"Address %08X\n", (unsigned int)trb[0]);
 
 		if (trb[0] == 0 || (trb[0] & 3) != 0 || trb[1] != 0)
 			return;
@@ -316,6 +326,9 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 			const uint32_t portsc_mask = 0x4F01FFE1;
 
 			val = cpu_read32(port->portsc);
+
+			printk("[xHCI] Event Ring, Port %d Status Change%s\n",
+				port_id, (val & (1u << 21)) ? ", Reset" : "");
 
 			/*
 			 * Clear CSC, PEC, WRC, OCC, PRC, PLC, and CEC bits.
@@ -361,6 +374,8 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 
 		return;
 	}
+
+	printk("[xHCI] Event Ring, Unknown Type %2d\n", type);
 }
 
 static int xhci_irq_task(void *arg)
