@@ -64,7 +64,4 @@ int acpios_init(void);
 int acpios_shutdown(void);
 int acpios_reset(void);
 
-extern size_t acpios_log_size;
-extern char acpios_log[];
-
 #endif
