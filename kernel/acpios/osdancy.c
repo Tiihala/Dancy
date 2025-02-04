@@ -806,8 +806,8 @@ ACPI_STATUS AcpiOsWritePciConfiguration(
 	return (AE_BAD_PARAMETER);
 }
 
-size_t acpios_log_size;
-char acpios_log[0x20000];
+static size_t acpios_log_size;
+static char acpios_log[256];
 
 static int acpios_log_lock;
 
@@ -821,15 +821,15 @@ void AcpiOsPrintf(const char *Format, ...)
 
 void AcpiOsVprintf(const char *Format, va_list Args)
 {
-	static char buffer[4096];
+	static char buffer[128];
 	void *lock_local = &acpios_log_lock;
 	char *ptr = &buffer[0];
 	int r;
 
 	spin_enter(&lock_local);
-	r = vsnprintf(buffer, 4096, Format, Args);
+	r = vsnprintf(buffer, sizeof(buffer), Format, Args);
 
-	while (r > 0) {
+	while (r > 0 && r < (int)sizeof(buffer)) {
 		/*
 		 * The log is always terminated with '\0'.
 		 */
@@ -838,6 +838,20 @@ void AcpiOsVprintf(const char *Format, va_list Args)
 
 		acpios_log[acpios_log_size++] = *ptr++;
 		r -= 1;
+
+		if (acpios_log[acpios_log_size - 1] == '\n') {
+			char *log_ptr = &acpios_log[0];
+
+			log_ptr[--acpios_log_size] = '\0';
+
+			if (!strncmp(log_ptr, "ACPI: ", 6))
+				log_ptr += 6;
+
+			printk("[ACPICA] %s\n", log_ptr);
+
+			memset(acpios_log, 0, acpios_log_size);
+			acpios_log_size = 0;
+		}
 	}
 
 	spin_leave(&lock_local);
