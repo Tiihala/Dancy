@@ -66,7 +66,7 @@ struct xhci {
 	int max_ports;
 	int max_scratchpads;
 
-	struct xhci_port *slots;
+	struct xhci_slot *slots;
 	struct xhci_port *ports;
 
 	uint32_t *usb_cmd;
