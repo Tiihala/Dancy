@@ -20,6 +20,13 @@
 #include <dancy.h>
 
 struct xhci_slot {
+	uint32_t *device_context;
+	uint32_t *input_context;
+
+	struct {
+		uint32_t *tr;
+	} endpoints[32];
+
 	int state;
 };
 
@@ -269,6 +276,171 @@ static int xhci_port_task(void *arg)
 
 		printk("[xHCI] Port ID %d, Slot ID %d\n",
 			port->port_id, port->slot_id);
+
+		break;
+	}
+
+	while (port->slot_id != 0) {
+		uint32_t in[4], out[4];
+		int slot_id = port->slot_id;
+		uint32_t *m;
+
+		xhci->slots[slot_id - 1].state = 0;
+
+		/*
+		 * Allocate the device context.
+		 */
+		if ((m = xhci->slots[slot_id - 1].device_context) == NULL) {
+			if ((m = xhci_alloc(0x1000)) == NULL)
+				break;
+			xhci->slots[slot_id - 1].device_context = m;
+		}
+
+		memset(m, 0, 0x1000);
+
+		/*
+		 * Set the device context.
+		 */
+		{
+			xhci->buffer_dcbaap[slot_id] = (uint64_t)((addr_t)m);
+		}
+
+		/*
+		 * Allocate the transfer ring for endpoint 0.
+		 */
+		if ((m = xhci->slots[slot_id - 1].endpoints[0].tr) == NULL) {
+			if ((m = xhci_alloc(0x1000)) == NULL)
+				break;
+			xhci->slots[slot_id - 1].endpoints[0].tr = m;
+		}
+
+		memset(m, 0, 0x1000);
+
+		/*
+		 * Allocate the input context.
+		 */
+		if ((m = xhci->slots[slot_id - 1].input_context) == NULL) {
+			if ((m = xhci_alloc(0x1000)) == NULL)
+				break;
+			xhci->slots[slot_id - 1].input_context = m;
+		}
+
+		memset(m, 0, 0x1000);
+
+		/*
+		 * Initialize the input context.
+		 */
+		{
+			int csz = (xhci->hcc_params[0] & (1u << 2)) ? 1 : 0;
+
+			/*
+			 * Initialize the input control context.
+			 */
+			{
+				uint32_t *c = &m[(0 * (8 << csz))];
+
+				/*
+				 * Set "add context flags" A0 and A1.
+				 */
+				c[1] |= (1u << 0) | (1u << 1);
+			}
+
+			/*
+			 * Initialize the slot context.
+			 */
+			{
+				uint32_t *c = &m[(1 * (8 << csz))];
+
+				uint32_t portsc = cpu_read32(port->portsc);
+				uint32_t speed = (portsc >> 10) & 0x0F;
+
+				/*
+				 * Set the route string.
+				 */
+				c[0] |= (0u << 0);
+
+				/*
+				 * Set the speed (deprecated).
+				 */
+				c[0] |= (speed << 20);
+
+				/*
+				 * Set the context entries.
+				 */
+				c[0] |= (1u << 27);
+
+				/*
+				 * Set the root hub port number.
+				 */
+				c[1] |= ((uint32_t)port->port_id << 16);
+
+				/*
+				 * Set the interrupter target.
+				 */
+				c[2] |= (0u << 22);
+			}
+
+			/*
+			 * Initialize the endpoint context 0.
+			 */
+			{
+				uint32_t *c = &m[(2 * (8 << csz))];
+
+				uint32_t error_count = 3;
+				uint32_t ep_type = 4;
+				uint32_t max_packet_size = 8;
+				void *tr;
+
+				/*
+				 * Set the error count.
+				 */
+				c[1] |= (error_count << 1);
+
+				/*
+				 * Set the endpoint type.
+				 */
+				c[1] |= (ep_type << 3);
+
+				/*
+				 * Set the maximum packet size.
+				 */
+				c[1] |= (max_packet_size << 16);
+
+				/*
+				 * Set the transfer ring dequeue pointer.
+				 */
+				tr = xhci->slots[slot_id - 1].endpoints[0].tr;
+				c[2] |= ((uint32_t)((addr_t)tr) | 1u);
+			}
+		}
+
+		/*
+		 * Write the address device command (BSR 0).
+		 */
+		in[0] = (uint32_t)((addr_t)m);
+		in[1] = 0;
+		in[2] = 0;
+
+		in[3] = (uint32_t)(port->slot_id << 24);
+		in[3] |= (uint32_t)((11 << 10) | (0 << 9));
+
+		printk("[xHCI] Address Device Command, BSR 0, "
+			"Port ID %d, Slot ID %d\n",
+			port->port_id, port->slot_id);
+
+		if (write_command(xhci, &in[0], &out[0]))
+			break;
+
+		/*
+		 * Check the completion code (Success).
+		 */
+		xhci->slots[slot_id - 1].state = ((out[2] >> 24) & 0xFF) == 1;
+
+		printk("[xHCI] Address Device %s, Port ID %d, Slot ID %d\n",
+			xhci->slots[slot_id - 1].state != 0 ? "OK" : "Error",
+			port->port_id, port->slot_id);
+
+		break;
 	}
 
 	spin_unlock(&port->lock);
