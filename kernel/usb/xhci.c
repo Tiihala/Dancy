@@ -237,7 +237,39 @@ static int xhci_port_task(void *arg)
 		return spin_unlock(&port->lock), EXIT_FAILURE;
 
 	task_set_cmdline(task_current(), NULL, &cline[0]);
-	task_sleep(100);
+
+	if (port->slot_id != 0) {
+		uint32_t in[4], out[4];
+
+		/*
+		 * Write the disable slot command.
+		 */
+		in[0] = 0;
+		in[1] = 0;
+		in[2] = 0;
+		in[3] = (uint32_t)((port->slot_id << 24) | (10 << 10));
+
+		printk("[xHCI] Disable Slot Command, "
+			"Port ID %d, Slot ID %d\n",
+			port->port_id, port->slot_id);
+
+		if (write_command(xhci, &in[0], &out[0]))
+			return spin_unlock(&port->lock), EXIT_FAILURE;
+
+		/*
+		 * Check the completion code (Success).
+		 */
+		if (((out[2] >> 24) & 0xFF) != 1)
+			return spin_unlock(&port->lock), EXIT_FAILURE;
+
+		xhci->slots[port->slot_id - 1].state = 0;
+		port->slot_id = 0;
+
+		printk("[xHCI] Disable Slot OK, Port ID %d\n", port->port_id);
+	}
+
+	if ((cpu_read32(port->portsc) & 3) != 3)
+		return spin_unlock(&port->lock), 0;
 
 	while (port->slot_id == 0) {
 		uint32_t in[4], out[4];
