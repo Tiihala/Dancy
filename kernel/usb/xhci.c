@@ -117,6 +117,35 @@ static void *xhci_alloc(size_t size)
 	return NULL;
 }
 
+static void *xhci_mm_page(void *page)
+{
+	static int lock;
+	void *r = page;
+
+	if (!spin_trylock(&lock))
+		task_yield();
+
+	{
+		static void *array[64];
+		static size_t state;
+
+		if (r == NULL) {
+			if (state == 0)
+				r = xhci_alloc(0x1000);
+			else
+				r = array[--state];
+
+		} else if (state < sizeof(array) / sizeof(*array)) {
+			array[state++] = r;
+			r = NULL;
+		}
+	}
+
+	spin_unlock(&lock);
+
+	return r;
+}
+
 static int write_command(struct xhci *xhci, const uint32_t *in, uint32_t *out)
 {
 	int i, r = DE_WRITE;
@@ -262,6 +291,35 @@ static int xhci_port_task(void *arg)
 		if (((out[2] >> 24) & 0xFF) != 1)
 			return spin_unlock(&port->lock), EXIT_FAILURE;
 
+		/*
+		 * Clear the device context address.
+		 */
+		xhci->buffer_dcbaap[port->slot_id] = (uint64_t)(0);
+
+		/*
+		 * Optimize memory page usage, but it is not an error
+		 * if xhci_mm_page() returns a non-null pointer.
+		 */
+		{
+			struct xhci_slot *s = &xhci->slots[port->slot_id - 1];
+			size_t i, count;
+			void *page;
+
+			if ((page = s->device_context) != NULL)
+				s->device_context = xhci_mm_page(page);
+
+			if ((page = s->input_context) != NULL)
+				s->input_context = xhci_mm_page(page);
+
+			count = sizeof(s->endpoints) / sizeof(*s->endpoints);
+
+			for (i = 0; i < count; i++) {
+				if ((page = s->endpoints[i].tr) == NULL)
+					continue;
+				s->endpoints[i].tr = xhci_mm_page(page);
+			}
+		}
+
 		xhci->slots[port->slot_id - 1].state = 0;
 		port->slot_id = 0;
 
@@ -323,7 +381,7 @@ static int xhci_port_task(void *arg)
 		 * Allocate the device context.
 		 */
 		if ((m = xhci->slots[slot_id - 1].device_context) == NULL) {
-			if ((m = xhci_alloc(0x1000)) == NULL)
+			if ((m = xhci_mm_page(NULL)) == NULL)
 				break;
 			xhci->slots[slot_id - 1].device_context = m;
 		}
@@ -341,7 +399,7 @@ static int xhci_port_task(void *arg)
 		 * Allocate the transfer ring for endpoint 0.
 		 */
 		if ((m = xhci->slots[slot_id - 1].endpoints[0].tr) == NULL) {
-			if ((m = xhci_alloc(0x1000)) == NULL)
+			if ((m = xhci_mm_page(NULL)) == NULL)
 				break;
 			xhci->slots[slot_id - 1].endpoints[0].tr = m;
 		}
@@ -352,7 +410,7 @@ static int xhci_port_task(void *arg)
 		 * Allocate the input context.
 		 */
 		if ((m = xhci->slots[slot_id - 1].input_context) == NULL) {
-			if ((m = xhci_alloc(0x1000)) == NULL)
+			if ((m = xhci_mm_page(NULL)) == NULL)
 				break;
 			xhci->slots[slot_id - 1].input_context = m;
 		}
