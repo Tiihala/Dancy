@@ -25,7 +25,12 @@ struct xhci_slot {
 
 	struct {
 		uint32_t *tr;
+		int cycle;
+		int enqueue;
 	} endpoints[32];
+
+	uint32_t trb[4];
+	uint8_t buffer[128];
 
 	int state;
 };
@@ -254,6 +259,216 @@ static int write_command(struct xhci *xhci, const uint32_t *in, uint32_t *out)
 	return r;
 }
 
+static void advance_enqueue_locked(struct xhci_slot *slot, int i, int chained)
+{
+	if ((slot->endpoints[i].enqueue += 1) >= 255) {
+		int offset = slot->endpoints[i].enqueue * 4;
+		uint32_t *p = &slot->endpoints[i].tr[offset];
+
+		/*
+		 * Set the ring segment pointer high and low.
+		 */
+		p[0] = (uint32_t)((addr_t)slot->endpoints[i].tr);
+		p[1] = 0;
+		p[2] = 0;
+
+		/*
+		 * Set the relevant bits, toggle cycle, and Link TRB Type (6).
+		 */
+		{
+			uint32_t ctrl = 0;
+
+			ctrl |= ((slot->endpoints[i].cycle ? 1u : 0u) << 0);
+			ctrl |= (1u << 1);
+			ctrl |= ((chained ? 1u : 0u) << 4);
+			ctrl |= (6u << 10);
+
+			p[3] = ctrl;
+		}
+
+		slot->endpoints[i].cycle = !slot->endpoints[i].cycle;
+		slot->endpoints[i].enqueue = 0;
+	}
+}
+
+static int write_request_locked(struct xhci_port *port,
+	const struct usb_device_request *request, void *buffer)
+{
+	struct xhci *xhci = port->xhci;
+	struct xhci_slot *slot;
+	uint32_t size = 0;
+	int i, r = DE_WRITE;
+
+	if (port->slot_id == 0)
+		return DE_UNINITIALIZED;
+
+	slot = &xhci->slots[port->slot_id - 1];
+
+	if (slot->state == 0)
+		return DE_UNINITIALIZED;
+
+	/*
+	 * Write the setup stage TRB.
+	 */
+	{
+		int offset = slot->endpoints[0].enqueue * 4;
+		uint32_t *p = &slot->endpoints[0].tr[offset];
+
+		uint32_t transfer_type = 2;
+		uint32_t transfer_length = 8;
+
+		if ((request->bmRequestType & 0x80) != 0)
+			transfer_type = 3;
+
+		if (request->wLength == 0)
+			transfer_type = 0;
+
+		p[0] = 0;
+		p[0] |= ((uint32_t)request->bmRequestType << 0);
+		p[0] |= ((uint32_t)request->bRequest << 8);
+		p[0] |= ((uint32_t)request->wValue << 16);
+
+		p[1] = 0;
+		p[1] |= ((uint32_t)request->wIndex << 0);
+		p[1] |= ((uint32_t)request->wLength << 16);
+
+		p[2] = 0;
+		p[2] |= (transfer_length << 0);
+
+		{
+			const uint32_t trb_type = 2;
+			const uint32_t immediate_data = 1;
+
+			uint32_t ctrl = 0;
+
+			ctrl |= ((slot->endpoints[0].cycle ? 1u : 0u) << 0);
+			ctrl |= (immediate_data << 6);
+			ctrl |= (trb_type << 10);
+			ctrl |= (transfer_type << 16);
+
+			p[3] = ctrl;
+		}
+
+		advance_enqueue_locked(slot, 0, 0);
+	}
+
+	/*
+	 * Write the data stage TRBs.
+	 */
+	while (size < request->wLength) {
+		int offset = slot->endpoints[0].enqueue * 4;
+		uint32_t *p = &slot->endpoints[0].tr[offset];
+
+		uint32_t wLength = request->wLength;
+		uint32_t transfer_length, td_size = 0;
+		int chained = 0;
+
+		transfer_length = 8;
+
+		if (size + transfer_length < wLength)
+			chained = 1;
+
+		while (size + ((td_size + 1) * transfer_length) < wLength)
+			td_size += 1;
+
+		if (td_size > 31)
+			td_size = 31;
+
+		while (size + transfer_length > wLength)
+			transfer_length -= 1;
+
+		p[0] = (uint32_t)((addr_t)buffer) + size;
+		p[1] = 0;
+
+		p[2] = 0;
+		p[2] |= (transfer_length << 0);
+		p[2] |= (td_size << 17);
+
+		{
+			const uint32_t trb_type = 3;
+			const uint32_t direction = 1;
+
+			uint32_t ctrl = 0;
+
+			ctrl |= ((slot->endpoints[0].cycle ? 1u : 0u) << 0);
+			ctrl |= ((chained ? 1u : 0u) << 4);
+			ctrl |= (trb_type << 10);
+			ctrl |= (direction << 16);
+
+			p[3] = ctrl;
+		}
+
+		advance_enqueue_locked(slot, 0, chained);
+		size += transfer_length;
+	}
+
+	/*
+	 * Write the status stage TRB.
+	 */
+	{
+		int offset = slot->endpoints[0].enqueue * 4;
+		uint32_t *p = &slot->endpoints[0].tr[offset];
+
+		p[0] = 0;
+		p[1] = 0;
+		p[2] = 0;
+
+		{
+			const uint32_t trb_type = 4;
+			const uint32_t interrupt_on_completion = 1;
+
+			uint32_t ctrl = 0;
+
+			ctrl |= ((slot->endpoints[0].cycle ? 1u : 0u) << 0);
+			ctrl |= (interrupt_on_completion << 5);
+			ctrl |= (trb_type << 10);
+
+			p[3] = ctrl;
+		}
+
+		advance_enqueue_locked(slot, 0, 0);
+	}
+
+	cpu_write32(&slot->trb[0], 0);
+	cpu_write32(&slot->trb[1], 0);
+	cpu_write32(&slot->trb[2], 0);
+	cpu_write32(&slot->trb[3], 0);
+
+	/*
+	 * Ring the doorbell.
+	 */
+	{
+		uint32_t *db = (void *)((addr_t)(xhci->base + xhci->db_off));
+
+		cpu_write32(db + port->slot_id, 1);
+	}
+
+	/*
+	 * Wait for the transfer event.
+	 */
+	for (i = 0; i < 400; i++) {
+		uint32_t trb[4];
+
+		trb[3] = cpu_read32(&slot->trb[3]);
+		trb[2] = cpu_read32(&slot->trb[2]);
+		trb[1] = cpu_read32(&slot->trb[1]);
+		trb[0] = cpu_read32(&slot->trb[0]);
+
+		if ((int)((trb[3] >> 24) & 0xFF) == port->slot_id) {
+			if (((trb[2] >> 24) & 0xFF) == 1)
+				r = 0;
+			break;
+		}
+
+		if (i < 100)
+			cpu_halt(1);
+		else
+			task_sleep(10);
+	}
+
+	return r;
+}
+
 static int xhci_port_task(void *arg)
 {
 	struct xhci_port *port = arg;
@@ -269,6 +484,8 @@ static int xhci_port_task(void *arg)
 
 	if (port->slot_id != 0) {
 		uint32_t in[4], out[4];
+
+		xhci->slots[port->slot_id - 1].state = 0;
 
 		/*
 		 * Write the disable slot command.
@@ -320,7 +537,6 @@ static int xhci_port_task(void *arg)
 			}
 		}
 
-		xhci->slots[port->slot_id - 1].state = 0;
 		port->slot_id = 0;
 
 		printk("[xHCI] Disable Slot OK, Port ID %d\n", port->port_id);
@@ -405,6 +621,9 @@ static int xhci_port_task(void *arg)
 		}
 
 		memset(m, 0, 0x1000);
+
+		xhci->slots[slot_id - 1].endpoints[0].cycle= 1;
+		xhci->slots[slot_id - 1].endpoints[0].enqueue = 0;
 
 		/*
 		 * Allocate the input context.
@@ -533,6 +752,39 @@ static int xhci_port_task(void *arg)
 		break;
 	}
 
+	while (port->slot_id && xhci->slots[port->slot_id - 1].state != 0) {
+		struct xhci_slot *slot = &xhci->slots[port->slot_id - 1];
+		struct usb_device_request request;
+
+		memset(&request, 0, sizeof(request));
+
+		/*
+		 * Initialize the GET_DESCRIPTOR request structure.
+		 */
+		request.bmRequestType = 0x80;
+		request.bRequest      = 6;
+		request.wValue        = 0x0100;
+		request.wIndex        = 0;
+		request.wLength       = 8;
+
+		memset(&slot->buffer[0], 0, (size_t)request.wLength);
+
+		printk("[xHCI] Request GET_DESCRIPTOR, "
+			"Port ID %d, Slot ID %d\n",
+			port->port_id, port->slot_id);
+
+		if (write_request_locked(port, &request, &slot->buffer[0]))
+			break;
+
+		printk("[xHCI] Completed GET_DESCRIPTOR, "
+			"Port ID %d, Slot ID %d, Data: %08X %08X\n",
+			port->port_id, port->slot_id,
+			(unsigned int)cpu_read32(&slot->buffer[0]),
+			(unsigned int)cpu_read32(&slot->buffer[4]));
+
+		break;
+	}
+
 	spin_unlock(&port->lock);
 
 	return 0;
@@ -542,6 +794,24 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 {
 	int type = (int)((trb[3] >> 10) & 0x3F);
 	uint32_t val;
+
+	/*
+	 * The transfer event.
+	 */
+	if (type == 32) {
+		int slot_id = (int)((trb[3] >> 24) & 0xFF);
+
+		if (slot_id > 0 && slot_id < xhci->max_slots) {
+			uint32_t *p = &xhci->slots[slot_id - 1].trb[0];
+
+			cpu_write32(&p[0], trb[0]);
+			cpu_write32(&p[1], trb[1]);
+			cpu_write32(&p[2], trb[2]);
+			cpu_write32(&p[3], trb[3]);
+		}
+
+		return;
+	}
 
 	/*
 	 * The command completion event.
