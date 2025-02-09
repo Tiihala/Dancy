@@ -303,6 +303,8 @@ static long long dancy_syscall_open(va_list va)
 			return -EBUSY;
 		if (r == DE_FULL)
 			return -ENOSPC;
+		if (r == DE_READ_ONLY)
+			return -EACCES;
 		return -EIO;
 	}
 
@@ -383,7 +385,7 @@ static long long dancy_syscall_write(va_list va)
 		if (r == DE_FULL)
 			return -ENOSPC;
 		if (r == DE_READ_ONLY)
-			return -EINVAL;
+			return -EACCES;
 		if (r == DE_PIPE)
 			return -EPIPE;
 		return -EIO;
@@ -688,6 +690,11 @@ static long long dancy_syscall_stat(va_list va)
 
 	else if (node->type == vfs_type_message)
 		buffer->st_mode = 0x1B6 | __DANCY_S_IFCHR;
+
+	if ((node->mode & vfs_mode_read_only) != 0) {
+		buffer->st_mode |= 0x92;
+		buffer->st_mode ^= 0x92;
+	}
 
 	node->n_release(&node);
 
