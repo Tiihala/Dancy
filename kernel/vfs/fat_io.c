@@ -758,7 +758,11 @@ static int n_truncate(struct vfs_node *node, uint64_t size)
 	instance = data->io->instance;
 
 	if ((r = fat_control(instance, data->fd, 0, record)) == 0) {
+		int fat_attributes = (int)record[11];
 		unsigned long fat_size = LE32(&record[28]);
+
+		if ((fat_attributes & 0x1D) != 0)
+			return leave_fat(node), DE_READ_ONLY;
 
 		if (fat_size < (unsigned long)size)
 			extend_file = 1;
