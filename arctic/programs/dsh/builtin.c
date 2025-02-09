@@ -70,7 +70,10 @@ static int cmd_echo(int argc, char *argv[])
 		fputs(a, stdout);
 	}
 
-	fputs("\n", stdout);
+	if (fputs("\n", stdout) == EOF) {
+		fprintf(stderr, "echo: %s\n", strerror(errno));
+		return EXIT_FAILURE;
+	}
 
 	return 0;
 }
