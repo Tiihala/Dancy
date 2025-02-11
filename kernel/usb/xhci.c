@@ -32,6 +32,7 @@ struct xhci_slot {
 	uint32_t trb[4];
 	uint8_t buffer[128];
 
+	int max_packet_size;
 	int state;
 };
 
@@ -365,6 +366,9 @@ static int write_request_locked(struct xhci_port *port,
 
 		transfer_length = 8;
 
+		if (slot->max_packet_size > 8)
+			transfer_length = (uint32_t)slot->max_packet_size;
+
 		if (size + transfer_length < wLength)
 			chained = 1;
 
@@ -485,6 +489,7 @@ static int xhci_port_task(void *arg)
 	if (port->slot_id != 0) {
 		uint32_t in[4], out[4];
 
+		xhci->slots[port->slot_id - 1].max_packet_size = 0;
 		xhci->slots[port->slot_id - 1].state = 0;
 
 		/*
@@ -756,6 +761,9 @@ static int xhci_port_task(void *arg)
 		struct xhci_slot *slot = &xhci->slots[port->slot_id - 1];
 		struct usb_device_request request;
 
+		uint32_t in[4], out[4];
+		uint32_t *m, max_packet_size;
+
 		memset(&request, 0, sizeof(request));
 
 		/*
@@ -781,6 +789,105 @@ static int xhci_port_task(void *arg)
 			port->port_id, port->slot_id,
 			(unsigned int)cpu_read32(&slot->buffer[0]),
 			(unsigned int)cpu_read32(&slot->buffer[4]));
+
+		m = slot->input_context;
+		max_packet_size = (cpu_read32(&slot->buffer[4]) >> 24) & 0xFF;
+
+		if (port->rev_major > 2)
+			max_packet_size = (1u << max_packet_size);
+
+		if (max_packet_size < 8)
+			max_packet_size = 8;
+
+		memset(m, 0, 0x1000);
+
+		/*
+		 * Initialize the input context (evaluate).
+		 */
+		{
+			int csz = (xhci->hcc_params[0] & (1u << 2)) ? 1 : 0;
+
+			/*
+			 * Initialize the input control context (evaluate).
+			 */
+			{
+				uint32_t *c = &m[(0 * (8 << csz))];
+
+				/*
+				 * Set "add context flags" A0 and A1.
+				 */
+				c[1] |= (1u << 0) | (1u << 1);
+			}
+
+			/*
+			 * Initialize the endpoint context 0 (evaluate).
+			 */
+			{
+				uint32_t *c = &m[(2 * (8 << csz))];
+				uint32_t ep_type = 4;
+
+				/*
+				 * Set the endpoint type.
+				 */
+				c[1] |= (ep_type << 3);
+
+				/*
+				 * Set the maximum packet size.
+				 */
+				c[1] |= (max_packet_size << 16);
+			}
+		}
+
+		/*
+		 * Write the evaluate context command.
+		 */
+		in[0] = (uint32_t)((addr_t)m);
+		in[1] = 0;
+		in[2] = 0;
+
+		in[3] = (uint32_t)(port->slot_id << 24);
+		in[3] |= (uint32_t)((13 << 10) | (0 << 9));
+
+		printk("[xHCI] Evaluate Context Command, "
+			"Port ID %d, Slot ID %d\n",
+			port->port_id, port->slot_id);
+
+		if (write_command(xhci, &in[0], &out[0]))
+			break;
+
+		/*
+		 * Check the completion code (Success).
+		 */
+		if (((out[2] >> 24) & 0xFF) == 1)
+			slot->state = 2;
+
+		printk("[xHCI] Evaluate Context %s, Port ID %d, Slot ID %d\n",
+			slot->state == 2 ? "OK" : "Error",
+			port->port_id, port->slot_id);
+
+		/*
+		 * Check the endpoint context 0.
+		 */
+		{
+			int csz = (xhci->hcc_params[0] & (1u << 2)) ? 1 : 0;
+			uint32_t *c = &m[(2 * (8 << csz))];
+
+			if (max_packet_size != ((c[1] >> 16) & 0xFFFF)) {
+				printk("[xHCI] Max Packet Size Mismatch\n");
+				slot->state = 0;
+			}
+
+			max_packet_size = ((c[1] >> 16) & 0xFFFF);
+		}
+
+		slot->max_packet_size = (int)max_packet_size;
+
+		printk("[xHCI] Max Packet Size %u, %s %u.%u, "
+			"Port ID %d, Slot ID %d\n",
+			(unsigned int)max_packet_size, &port->name[0],
+			(unsigned int)port->rev_major,
+			(unsigned int)port->rev_minor,
+			port->port_id, port->slot_id);
 
 		break;
 	}
