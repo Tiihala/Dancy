@@ -115,11 +115,17 @@ static int vfs_default_sync(struct vfs_node *node)
 static int vfs_default_readdir(struct vfs_node *node,
 	uint32_t offset, struct vfs_dent *dent)
 {
-	(void)node;
-	(void)offset;
-
-	if (dent)
+	if (dent) {
 		memset(dent, 0, sizeof(*dent));
+
+		if (node->type == vfs_type_directory) {
+			if (offset == 0)
+				strcpy(&dent->name[0], ".");
+			if (offset == 1)
+				strcpy(&dent->name[0], "..");
+			return 0;
+		}
+	}
 
 	return DE_UNSUPPORTED;
 }
