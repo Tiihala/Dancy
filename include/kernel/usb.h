@@ -30,9 +30,20 @@ struct usb_device_request {
 	uint16_t wLength;
 };
 
+#define DANCY_USB_CONTROLLER_XHCI 1
+#define DANCY_USB_CONTROLLER_EHCI 2
+#define DANCY_USB_CONTROLLER_OHCI 3
+#define DANCY_USB_CONTROLLER_UHCI 4
+
+struct dancy_usb_controller {
+	int type;
+	struct pci_id *pci;
+	void *hci;
+};
+
 /*
  * Declarations of usbfs.c
  */
-int usbfs_create_directory(struct pci_id *pci);
+int usbfs_create(struct dancy_usb_controller *hci);
 
 #endif

@@ -105,9 +105,6 @@ struct xhci {
 	int buffer_er_dequeue;
 };
 
-static int xhci_count;
-static struct xhci *xhci_array[32];
-
 static void *xhci_alloc(size_t size)
 {
 	if (size <= 0x1000) {
@@ -1099,23 +1096,6 @@ static void xhci_irq_func(int irq, void *arg)
 	(void)irq;
 }
 
-static int xhci_add(struct xhci *xhci)
-{
-	static int lock;
-	int r = 0;
-
-	spin_lock(&lock);
-
-	if (xhci_count < (int)(sizeof(xhci_array) / sizeof(xhci_array[0])))
-		xhci_array[xhci_count++] = xhci;
-	else
-		r = DE_OVERFLOW;
-
-	spin_unlock(&lock);
-
-	return r;
-}
-
 static phys_addr_t get_base(struct pci_id *pci, int offset)
 {
 	phys_addr_t base = (phys_addr_t)pci_read(pci, offset), base_high = 0;
@@ -1508,16 +1488,17 @@ static int usb_xhci_init(struct pci_id *pci)
 	phys_addr_t addr = get_base(pci, 0x10);
 	int r = DE_UNSUPPORTED;
 
-	if (usbfs_create_directory(pci))
-		return DE_UNEXPECTED;
-
 	if ((cmd & 2) != 0 && addr > 1 && addr < SIZE_MAX) {
 		size_t size = get_size(pci, 0x10);
 		void *base = pg_map_kernel(addr, size, pg_uncached);
 
 		if (base != NULL) {
 			const int type = task_detached;
+			struct dancy_usb_controller *hci;
 			struct xhci *xhci;
+
+			if ((hci = malloc(sizeof(*hci))) == NULL)
+				return DE_MEMORY;
 
 			if ((xhci = malloc(sizeof(*xhci))) == NULL)
 				return DE_MEMORY;
@@ -1527,9 +1508,16 @@ static int usb_xhci_init(struct pci_id *pci)
 			xhci->base = base;
 			xhci->size = size;
 
+			memset(hci, 0, sizeof(*hci));
+			hci->type = DANCY_USB_CONTROLLER_XHCI;
+			hci->pci = pci;
+			hci->hci = xhci;
+
+			r = usbfs_create(hci);
+
 			pci_write(pci, 0x04, cmd | 4);
 
-			if ((r = xhci_add(xhci)) == 0)
+			if (!r)
 				r = xhci_init(xhci);
 
 			if (!r && !task_create(xhci_irq_task, xhci, type))
