@@ -13,26 +13,44 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * kernel/usb.h
- *      Header of Dancy Operating System
+ * usb/usbfs.c
+ *      Devices /dev/dancy-usb-*
  */
 
-#ifndef KERNEL_USB_H
-#define KERNEL_USB_H
+#include <dancy.h>
 
-#include <common/types.h>
+int usbfs_create_directory(struct pci_id *pci)
+{
+	struct vfs_node *node;
+	char buffer[32];
+	int r;
 
-struct usb_device_request {
-	uint8_t bmRequestType;
-	uint8_t bRequest;
-	uint16_t wValue;
-	uint16_t wIndex;
-	uint16_t wLength;
-};
+	r = snprintf(&buffer[0], sizeof(buffer),
+		"/dev/dancy-usb-%04X-%02X-%02X-%X/",
+		pci->group, pci->bus, pci->device, pci->func);
 
-/*
- * Declarations of usbfs.c
- */
-int usbfs_create_directory(struct pci_id *pci);
+	if (r != 28)
+		return DE_UNEXPECTED;
 
-#endif
+	{
+		int mode = vfs_mode_create | vfs_mode_exclusive;
+
+		if ((r = vfs_open(&buffer[0], &node, 0, mode)) != 0)
+			return r;
+	}
+
+	node->n_release(&node);
+
+	if ((node = malloc(sizeof(*node))) == NULL)
+		return DE_MEMORY;
+
+	vfs_init_node(node, 0);
+
+	node->count = 1;
+	node->type = vfs_type_directory;
+
+	r = vfs_mount(&buffer[0], node);
+	node->n_release(&node);
+
+	return r;
+}

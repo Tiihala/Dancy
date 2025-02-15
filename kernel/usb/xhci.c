@@ -1508,6 +1508,9 @@ static int usb_xhci_init(struct pci_id *pci)
 	phys_addr_t addr = get_base(pci, 0x10);
 	int r = DE_UNSUPPORTED;
 
+	if (usbfs_create_directory(pci))
+		return DE_UNEXPECTED;
+
 	if ((cmd & 2) != 0 && addr > 1 && addr < SIZE_MAX) {
 		size_t size = get_size(pci, 0x10);
 		void *base = pg_map_kernel(addr, size, pg_uncached);
