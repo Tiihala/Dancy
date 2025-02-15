@@ -37,11 +37,13 @@ static int n_open(struct vfs_node *node, const char *name,
 {
 	int i;
 
-	(void)node;
 	*new_node = NULL;
 
 	if (strlen(name) >= sizeof(devfs_table[0].name))
 		return DE_PATH;
+
+	if (node->internal_data == &devfs_table[0])
+		return DE_NAME;
 
 	if (mtx_lock(&devfs_mtx) != thrd_success)
 		return DE_UNEXPECTED;
@@ -123,6 +125,8 @@ static struct vfs_node *alloc_node(int i, int type)
 
 	if (i == 0)
 		node->n_readdir = n_readdir;
+	else
+		node->internal_data = &devfs_table[0];
 
 	devfs_table[i].node = node;
 
