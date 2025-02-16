@@ -22,6 +22,9 @@
 struct usbfs_node_data {
 	struct dancy_usb_controller *hci;
 	struct dancy_usb_device *dev;
+
+	int port;
+	int device;
 };
 
 static void n_release(struct vfs_node **node)
@@ -101,7 +104,7 @@ static int n_open(struct vfs_node *node, const char *name,
 		if ((data = hci->ports[i]->internal_data) == NULL)
 			continue;
 
-		if (data->dev->port != port || data->dev->device != device)
+		if (data->port != port || data->device != device)
 			continue;
 
 		vfs_increment_count(hci->ports[i]);
@@ -119,13 +122,24 @@ static int n_open(struct vfs_node *node, const char *name,
 static int n_read(struct vfs_node *node,
 	uint64_t offset, size_t *size, void *buffer)
 {
-	(void)node;
+	struct usbfs_node_data *data = node->internal_data;
+	struct dancy_usb_device *dev = data->dev;
+	int r = DE_RETRY;
+
 	(void)offset;
 	(void)buffer;
 
 	*size = 0;
 
-	return 0;
+	if (!spin_trylock(&dev->lock))
+		task_yield();
+
+	if (data->port != dev->port || data->device != dev->device)
+		r = DE_MEDIA_CHANGED;
+
+	spin_unlock(&dev->lock);
+
+	return r;
 }
 
 static int n_readdir(struct vfs_node *node,
@@ -160,8 +174,7 @@ static int n_readdir(struct vfs_node *node,
 		char buffer[32];
 
 		int t = snprintf(&buffer[0], sizeof(buffer),
-			"port-%03d-device-%06d",
-			n->dev->port, n->dev->device);
+			"port-%03d-device-%06d", n->port, n->device);
 
 		if (t == 22) {
 			strcpy(&dent->name[0], &buffer[0]);
@@ -281,6 +294,8 @@ static int usbfs_device_locked(struct dancy_usb_device *dev, int attached)
 		return DE_UNEXPECTED;
 
 	if ((node = hci->ports[dev->port]) != NULL) {
+		data = hci->ports[dev->port]->internal_data;
+		data->dev->device = 0;
 		node->n_release(&node);
 		hci->ports[dev->port] = NULL;
 	}
@@ -301,6 +316,9 @@ static int usbfs_device_locked(struct dancy_usb_device *dev, int attached)
 		data->hci = hci;
 		data->dev = dev;
 
+		data->port = dev->port;
+		data->device = dev->device;
+
 		hci->ports[dev->port] = node;
 	}
 
@@ -311,12 +329,15 @@ int usbfs_device(struct dancy_usb_device *dev, int attached)
 {
 	int r;
 
+	if (!spin_trylock(&dev->lock))
+		task_yield();
 	if (!spin_trylock(&dev->hci->lock))
 		task_yield();
 
 	r = usbfs_device_locked(dev, attached);
 
 	spin_unlock(&dev->hci->lock);
+	spin_unlock(&dev->lock);
 
 	return r;
 }
