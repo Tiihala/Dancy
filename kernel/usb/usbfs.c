@@ -50,27 +50,30 @@ static int n_open(struct vfs_node *node, const char *name,
 
 	*new_node = NULL;
 
+	if ((mode & vfs_mode_create) != 0)
+		r = DE_FULL;
+
 	if (type == vfs_type_directory)
-		return DE_NAME;
+		return r;
 
 	/*
 	 * Example: port-001-device-000001
 	 */
 	{
 		if (strlen(name) != 22)
-			return DE_NAME;
+			return r;
 
 		if (strncmp(&name[0], "port-", 5))
-			return DE_NAME;
+			return r;
 
 		if (strncmp(&name[8], "-device-", 8))
-			return DE_NAME;
+			return r;
 
 		for (i = 0; i < 3; i++) {
 			char c = name[5 + i];
 
 			if (c < '0' || c > '9')
-				return DE_NAME;
+				return r;
 			port *= 10;
 			port += (int)(c - '0');
 		}
@@ -79,14 +82,14 @@ static int n_open(struct vfs_node *node, const char *name,
 			char c = name[16 + i];
 
 			if (c < '0' || c > '9')
-				return DE_NAME;
+				return r;
 			device *= 10;
 			device += (int)(c - '0');
 		}
 	}
 
 	if (port < 1 || device < 0)
-		return DE_NAME;
+		return r;
 
 	if (!spin_trylock(&hci->lock))
 		task_yield();
@@ -109,9 +112,6 @@ static int n_open(struct vfs_node *node, const char *name,
 	}
 
 	spin_unlock(&hci->lock);
-
-	if (r == DE_NAME && (mode & vfs_mode_create) != 0)
-		r = DE_FULL;
 
 	return r;
 }
