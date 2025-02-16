@@ -39,11 +39,25 @@ struct dancy_usb_controller {
 	int type;
 	struct pci_id *pci;
 	void *hci;
+
+	int lock;
+	int monotonic;
+
+	struct vfs_node *ports[256];
+};
+
+struct dancy_usb_device {
+	struct dancy_usb_controller *hci;
+	struct dancy_usb_device *owner;
+
+	int port;
+	int device;
 };
 
 /*
  * Declarations of usbfs.c
  */
 int usbfs_create(struct dancy_usb_controller *hci);
+int usbfs_device(struct dancy_usb_device *dev, int attached);
 
 #endif

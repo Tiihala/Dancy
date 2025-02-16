@@ -30,7 +30,7 @@ struct xhci_slot {
 	} endpoints[32];
 
 	uint32_t trb[4];
-	uint8_t buffer[128];
+	uint8_t buffer[256];
 
 	int max_packet_size;
 	int state;
@@ -52,6 +52,8 @@ struct xhci_port {
 	void *xhci;
 	int port_id;
 	int lock;
+
+	struct dancy_usb_device *dev;
 };
 
 struct xhci {
@@ -103,6 +105,8 @@ struct xhci {
 
 	int buffer_er_cycle;
 	int buffer_er_dequeue;
+
+	struct dancy_usb_controller *hci;
 };
 
 static void *xhci_alloc(size_t size)
@@ -482,6 +486,9 @@ static int xhci_port_task(void *arg)
 		return spin_unlock(&port->lock), EXIT_FAILURE;
 
 	task_set_cmdline(task_current(), NULL, &cline[0]);
+
+	if (port->dev != NULL)
+		usbfs_device(port->dev, 0);
 
 	if (port->slot_id != 0) {
 		uint32_t in[4], out[4];
@@ -886,6 +893,31 @@ static int xhci_port_task(void *arg)
 			(unsigned int)port->rev_minor,
 			port->port_id, port->slot_id);
 
+		/*
+		 * Create the device structure and node.
+		 */
+		{
+			struct dancy_usb_device *dev = port->dev;
+
+			if (dev == NULL) {
+				if ((dev = malloc(sizeof(*dev))) == NULL) {
+					printk("[xHCI] Out Of Memory!\n");
+					break;
+				}
+
+				memset(dev, 0, sizeof(*dev));
+				dev->hci = xhci->hci;
+				dev->port = port->port_id;
+			}
+
+			if (usbfs_device((port->dev = dev), 1))
+				break;
+
+			printk("[xHCI] Device Node Created, "
+				"Port ID %d, Slot ID %d\n",
+				port->port_id, port->slot_id);
+		}
+
 		break;
 	}
 
@@ -960,6 +992,7 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 		if (port_id >= 1 && port_id <= xhci->max_ports) {
 			struct xhci_port *port = &xhci->ports[port_id - 1];
 			const uint32_t portsc_mask = 0x4F01FFE1;
+			int create_port_task = 0;
 
 			val = cpu_read32(port->portsc);
 
@@ -982,9 +1015,9 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 			}
 
 			/*
-			 * Check the connect status change bit (CSC).
+			 * Reset the port if CCS == 1 and CSC == 1.
 			 */
-			if ((val & (1u << 17)) != 0) {
+			if (((val & 1) != 0) && (val & (1u << 17)) != 0) {
 				uint32_t port_reset = val;
 
 				port_reset &= portsc_mask;
@@ -994,9 +1027,21 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 			}
 
 			/*
-			 * Create a task if the CCS and PED bits are set.
+			 * Create a task if CCS == 0 and CSC == 1.
 			 */
-			if ((val & 3) == 3 && spin_trylock(&port->lock)) {
+			if (((val & 1) == 0) && (val & (1u << 17)) != 0)
+				create_port_task = 1;
+
+			/*
+			 * Create a task if CCS == 1 and PED == 1.
+			 */
+			if ((val & 3) == 3)
+				create_port_task = 1;
+
+			/*
+			 * Acquire the lock if starting the port task.
+			 */
+			if (create_port_task && spin_trylock(&port->lock)) {
 				const int t = task_detached;
 				if (!task_create(xhci_port_task, port, t))
 					spin_unlock(&port->lock);
@@ -1507,6 +1552,7 @@ static int usb_xhci_init(struct pci_id *pci)
 			xhci->pci = pci;
 			xhci->base = base;
 			xhci->size = size;
+			xhci->hci = hci;
 
 			memset(hci, 0, sizeof(*hci));
 			hci->type = DANCY_USB_CONTROLLER_XHCI;
