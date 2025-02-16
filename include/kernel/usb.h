@@ -50,6 +50,7 @@ struct dancy_usb_device {
 	struct dancy_usb_controller *hci;
 	struct dancy_usb_device *owner;
 
+	int lock;
 	int port;
 	int device;
 };
