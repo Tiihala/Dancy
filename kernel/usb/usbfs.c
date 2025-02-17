@@ -94,7 +94,7 @@ static int n_open(struct vfs_node *node, const char *name,
 	if (port < 1 || device < 0)
 		return r;
 
-	if (!spin_trylock(&hci->lock))
+	while (!spin_trylock(&hci->lock))
 		task_yield();
 
 	for (i = 0; i < sizeof(hci->ports) / sizeof(*hci->ports); i++) {
@@ -131,7 +131,7 @@ static int n_read(struct vfs_node *node,
 
 	*size = 0;
 
-	if (!spin_trylock(&dev->lock))
+	while (!spin_trylock(&dev->lock))
 		task_yield();
 
 	if (data->port != dev->port || data->device != dev->device)
@@ -166,7 +166,7 @@ static int n_readdir(struct vfs_node *node,
 
 	port = (int)(offset - 1);
 
-	if (!spin_trylock(&hci->lock))
+	while (!spin_trylock(&hci->lock))
 		task_yield();
 
 	if (hci->ports[port] != NULL) {
@@ -238,7 +238,7 @@ int usbfs_create(struct dancy_usb_controller *hci)
 	char buffer[32];
 	int r = 0;
 
-	if (!spin_trylock(&controller_monotonic_lock))
+	while (!spin_trylock(&controller_monotonic_lock))
 		task_yield();
 
 	if (controller_monotonic >= 0 && controller_monotonic < 99)
@@ -329,9 +329,9 @@ int usbfs_device(struct dancy_usb_device *dev, int attached)
 {
 	int r;
 
-	if (!spin_trylock(&dev->lock))
+	while (!spin_trylock(&dev->lock))
 		task_yield();
-	if (!spin_trylock(&dev->hci->lock))
+	while (!spin_trylock(&dev->hci->lock))
 		task_yield();
 
 	r = usbfs_device_locked(dev, attached);
