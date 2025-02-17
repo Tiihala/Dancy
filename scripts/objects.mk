@@ -1344,6 +1344,10 @@
     ./kernel/base/runlevel.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/runlevel.c
 
+./o32/kernel/base/spin.o: \
+    ./kernel/base/spin.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/base/spin.c
+
 ./o32/kernel/base/start.o: \
     ./kernel/base/start.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/base/start.c
@@ -2983,6 +2987,10 @@
 ./o64/kernel/base/runlevel.o: \
     ./kernel/base/runlevel.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/base/runlevel.c
+
+./o64/kernel/base/spin.o: \
+    ./kernel/base/spin.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/base/spin.c
 
 ./o64/kernel/base/start.o: \
     ./kernel/base/start.c $(DANCY_DEPS)

@@ -266,6 +266,11 @@ int runlevel_current(void);
 int runlevel_send_request(int id);
 
 /*
+ * Declarations of spin.c
+ */
+void spin_lock_yield(int *lock);
+
+/*
  * Declarations of start.c
  */
 extern struct kernel_table *kernel;

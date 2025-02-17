@@ -25,6 +25,7 @@ DANCY_BASE_OBJECTS_32= \
  ./o32/kernel/base/pg.o \
  ./o32/kernel/base/ret_user.o \
  ./o32/kernel/base/runlevel.o \
+ ./o32/kernel/base/spin.o \
  ./o32/kernel/base/start.o \
  ./o32/kernel/base/task.o \
 
@@ -51,6 +52,7 @@ DANCY_BASE_OBJECTS_64= \
  ./o64/kernel/base/pg.o \
  ./o64/kernel/base/ret_user.o \
  ./o64/kernel/base/runlevel.o \
+ ./o64/kernel/base/spin.o \
  ./o64/kernel/base/start.o \
  ./o64/kernel/base/task.o \
 
