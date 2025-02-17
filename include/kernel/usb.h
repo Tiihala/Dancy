@@ -53,6 +53,9 @@ struct dancy_usb_device {
 	int lock;
 	int port;
 	int device;
+
+	int (*u_get_descriptor)(struct dancy_usb_device *dev_locked,
+		size_t *size, void *buffer);
 };
 
 /*

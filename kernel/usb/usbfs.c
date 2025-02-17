@@ -124,18 +124,20 @@ static int n_read(struct vfs_node *node,
 {
 	struct usbfs_node_data *data = node->internal_data;
 	struct dancy_usb_device *dev = data->dev;
-	int r = DE_RETRY;
+	int r;
 
-	(void)offset;
-	(void)buffer;
-
-	*size = 0;
+	if (offset != 0)
+		return (*size = 0), 0;
 
 	while (!spin_trylock(&dev->lock))
 		task_yield();
 
-	if (data->port != dev->port || data->device != dev->device)
-		r = DE_MEDIA_CHANGED;
+	if (data->port != dev->port || data->device != dev->device) {
+		spin_unlock(&dev->lock);
+		return (*size = 0), DE_MEDIA_CHANGED;
+	}
+
+	r = dev->u_get_descriptor(dev, size, buffer);
 
 	spin_unlock(&dev->lock);
 
@@ -309,7 +311,7 @@ static int usbfs_device_locked(struct dancy_usb_device *dev, int attached)
 		if ((node = alloc_node(sizeof(*data))) == NULL)
 			return DE_MEMORY;
 
-		node->type = vfs_type_character;
+		node->type = vfs_type_block;
 		node->n_read = n_read;
 
 		data = node->internal_data;

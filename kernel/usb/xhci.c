@@ -33,6 +33,7 @@ struct xhci_slot {
 	uint8_t buffer[256];
 
 	int max_packet_size;
+	int descriptor_length;
 	int state;
 };
 
@@ -129,7 +130,7 @@ static void *xhci_mm_page(void *page)
 	static int lock;
 	void *r = page;
 
-	if (!spin_trylock(&lock))
+	while (!spin_trylock(&lock))
 		task_yield();
 
 	{
@@ -445,7 +446,7 @@ static int write_request_locked(struct xhci_port *port,
 	{
 		uint32_t *db = (void *)((addr_t)(xhci->base + xhci->db_off));
 
-		cpu_write32(db + port->slot_id, 1);
+		pg_write_memory((phys_addr_t)(db + port->slot_id), 1, 4);
 	}
 
 	/*
@@ -470,6 +471,65 @@ static int write_request_locked(struct xhci_port *port,
 		else
 			task_sleep(10);
 	}
+
+	return r;
+}
+
+static int u_get_descriptor(struct dancy_usb_device *dev_locked,
+	size_t *size, void *buffer)
+{
+	size_t i, buffer_size = *size;
+	struct xhci *xhci = dev_locked->hci->hci;
+	struct xhci_port *port = NULL;
+	struct xhci_slot *slot = NULL;
+	int r = 0;
+
+	*size = 0;
+
+	if (dev_locked->port >= 0 && dev_locked->port <= xhci->max_ports)
+		port = &xhci->ports[dev_locked->port - 1];
+
+	if (port == NULL)
+		return DE_UNEXPECTED;
+
+	while (!spin_trylock(&port->lock))
+		task_yield();
+
+	if (port->slot_id > 0)
+		slot = &xhci->slots[port->slot_id - 1];
+
+	while (slot != NULL && slot->state > 1) {
+		struct usb_device_request request;
+
+		memset(&request, 0, sizeof(request));
+
+		/*
+		 * Initialize the GET_DESCRIPTOR request structure.
+		 */
+		request.bmRequestType = 0x80;
+		request.bRequest      = 6;
+		request.wValue        = 0x0100;
+		request.wIndex        = 0;
+		request.wLength       = (uint16_t)slot->descriptor_length;
+
+		memset(&slot->buffer[0], 0, (size_t)request.wLength);
+
+		if (write_request_locked(port, &request, &slot->buffer[0])) {
+			r = DE_READ;
+			break;
+		}
+
+		for (i = 0; i < (size_t)request.wLength; i++) {
+			if (i < buffer_size) {
+				((uint8_t *)buffer)[i] = slot->buffer[i];
+				*size += 1;
+			}
+		}
+
+		break;
+	}
+
+	spin_unlock(&port->lock);
 
 	return r;
 }
@@ -765,7 +825,7 @@ static int xhci_port_task(void *arg)
 		struct xhci_slot *slot = &xhci->slots[port->slot_id - 1];
 		struct usb_device_request request;
 
-		uint32_t in[4], out[4];
+		uint32_t in[4], out[4], val;
 		uint32_t *m, max_packet_size;
 
 		memset(&request, 0, sizeof(request));
@@ -781,21 +841,22 @@ static int xhci_port_task(void *arg)
 
 		memset(&slot->buffer[0], 0, (size_t)request.wLength);
 
-		printk("[xHCI] Request GET_DESCRIPTOR, "
+		printk("[xHCI] Request GET_DESCRIPTOR, Length 8, "
 			"Port ID %d, Slot ID %d\n",
 			port->port_id, port->slot_id);
 
 		if (write_request_locked(port, &request, &slot->buffer[0]))
 			break;
 
-		printk("[xHCI] Completed GET_DESCRIPTOR, "
-			"Port ID %d, Slot ID %d, Data: %08X %08X\n",
-			port->port_id, port->slot_id,
-			(unsigned int)cpu_read32(&slot->buffer[0]),
-			(unsigned int)cpu_read32(&slot->buffer[4]));
+		printk("[xHCI] Completed GET_DESCRIPTOR, Length 8, "
+			"Port ID %d, Slot ID %d\n",
+			port->port_id, port->slot_id);
 
 		m = slot->input_context;
 		max_packet_size = (cpu_read32(&slot->buffer[4]) >> 24) & 0xFF;
+
+		val = cpu_read32(&slot->buffer[0]) & 0xFF;
+		slot->descriptor_length = (int)val;
 
 		if (port->rev_major > 2)
 			max_packet_size = (1u << max_packet_size);
@@ -908,6 +969,7 @@ static int xhci_port_task(void *arg)
 				memset(dev, 0, sizeof(*dev));
 				dev->hci = xhci->hci;
 				dev->port = port->port_id;
+				dev->u_get_descriptor = u_get_descriptor;
 			}
 
 			if (usbfs_device((port->dev = dev), 1))
