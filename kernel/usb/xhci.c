@@ -130,8 +130,7 @@ static void *xhci_mm_page(void *page)
 	static int lock;
 	void *r = page;
 
-	while (!spin_trylock(&lock))
-		task_yield();
+	spin_lock_yield(&lock);
 
 	{
 		static void *array[64];
@@ -492,8 +491,7 @@ static int u_get_descriptor(struct dancy_usb_device *dev_locked,
 	if (port == NULL)
 		return DE_UNEXPECTED;
 
-	while (!spin_trylock(&port->lock))
-		task_yield();
+	spin_lock_yield(&port->lock);
 
 	if (port->slot_id > 0)
 		slot = &xhci->slots[port->slot_id - 1];
