@@ -157,7 +157,7 @@ static int write_command(struct xhci *xhci, const uint32_t *in, uint32_t *out)
 {
 	int i, r = DE_WRITE;
 
-	spin_lock(&xhci->buffer_crcr_lock);
+	spin_lock_yield(&xhci->buffer_crcr_lock);
 
 	{
 		int offset = xhci->buffer_crcr_enqueue * 4;
