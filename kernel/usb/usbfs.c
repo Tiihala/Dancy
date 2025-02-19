@@ -123,10 +123,7 @@ static int n_read(struct vfs_node *node,
 {
 	struct usbfs_node_data *data = node->internal_data;
 	struct dancy_usb_device *dev = data->dev;
-	int r;
-
-	if (offset != 0)
-		return (*size = 0), 0;
+	int r = 0;
 
 	spin_lock_yield(&dev->lock);
 
@@ -135,7 +132,25 @@ static int n_read(struct vfs_node *node,
 		return (*size = 0), DE_MEDIA_CHANGED;
 	}
 
-	r = (*size = 0), 0;
+	if (offset == 0) {
+		struct usb_device_request request;
+
+		memset(&request, 0, sizeof(request));
+
+		/*
+		 * Initialize the GET_DESCRIPTOR request structure.
+		 */
+		request.bmRequestType = 0x80;
+		request.bRequest      = 6;
+		request.wValue        = 0x0100;
+		request.wIndex        = 0;
+		request.wLength       = 18;
+
+		r = dev->u_write_request(dev, &request, size, buffer);
+
+	} else {
+		*size = 0;
+	}
 
 	spin_unlock(&dev->lock);
 

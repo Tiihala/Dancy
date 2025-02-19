@@ -473,6 +473,65 @@ static int write_request_locked(struct xhci_port *port,
 	return r;
 }
 
+static int u_write_request(struct dancy_usb_device *dev_locked,
+	const struct usb_device_request *request,
+	size_t *size, void *buffer)
+{
+	struct xhci *xhci = dev_locked->hci->hci;
+	struct xhci_port *port = NULL;
+	struct xhci_slot *slot = NULL;
+
+	size_t buffer_size = *size;
+	size_t wLength = (size_t)request->wLength;
+	int r = 0;
+
+	*size = 0;
+
+	if (wLength > 1024)
+		return DE_OVERFLOW;
+
+	if (buffer_size < wLength)
+		return DE_BUFFER;
+
+	if (dev_locked->port >= 0 && dev_locked->port <= xhci->max_ports)
+		port = &xhci->ports[dev_locked->port - 1];
+
+	if (port == NULL)
+		return DE_UNEXPECTED;
+
+	spin_lock_yield(&port->lock);
+
+	if (port->slot_id > 0)
+		slot = &xhci->slots[port->slot_id - 1];
+
+	while (slot != NULL && slot->state > 1) {
+		int device_to_host = (request->bmRequestType & 0x80) != 0;
+
+		if (device_to_host)
+			memset(slot->io_buffer, 0, wLength);
+		else
+			memcpy(slot->io_buffer, buffer, wLength);
+
+		if (write_request_locked(port, request, slot->io_buffer)) {
+			if (device_to_host)
+				r = DE_READ;
+			else
+				r = DE_WRITE;
+			break;
+		}
+
+		if (device_to_host)
+			memcpy(buffer, slot->io_buffer, wLength);
+
+		*size = wLength;
+		break;
+	}
+
+	spin_unlock(&port->lock);
+
+	return r;
+}
+
 static int xhci_port_task(void *arg)
 {
 	struct xhci_port *port = arg;
@@ -908,6 +967,7 @@ static int xhci_port_task(void *arg)
 				memset(dev, 0, sizeof(*dev));
 				dev->hci = xhci->hci;
 				dev->port = port->port_id;
+				dev->u_write_request = u_write_request;
 			}
 
 			if (usbfs_device((port->dev = dev), 1))

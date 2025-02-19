@@ -53,6 +53,10 @@ struct dancy_usb_device {
 	int lock;
 	int port;
 	int device;
+
+	int (*u_write_request)(struct dancy_usb_device *dev_locked,
+		const struct usb_device_request *request,
+		size_t *size, void *buffer);
 };
 
 /*
