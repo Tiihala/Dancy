@@ -123,33 +123,61 @@ static int n_read(struct vfs_node *node,
 {
 	struct usbfs_node_data *data = node->internal_data;
 	struct dancy_usb_device *dev = data->dev;
+	size_t buffer_size = *size;
 	int r = 0;
+
+	*size = 0;
+
+	if (buffer_size < 0x100)
+		return DE_BUFFER;
+
+	if ((offset & 0xFF) != 0 || (buffer_size & 0xFF) != 0)
+		return DE_ALIGNMENT;
+
+	memset(buffer, 0, 0x100);
 
 	spin_lock_yield(&dev->lock);
 
 	if (data->port != dev->port || data->device != dev->device) {
 		spin_unlock(&dev->lock);
-		return (*size = 0), DE_MEDIA_CHANGED;
+		return DE_MEDIA_CHANGED;
 	}
 
 	if (offset == 0) {
 		struct usb_device_request request;
+		size_t wLength = 18;
 
 		memset(&request, 0, sizeof(request));
 
 		/*
-		 * Initialize the GET_DESCRIPTOR request structure.
+		 * Get the DEVICE descriptor.
 		 */
 		request.bmRequestType = 0x80;
 		request.bRequest      = 6;
 		request.wValue        = 0x0100;
 		request.wIndex        = 0;
-		request.wLength       = 18;
+		request.wLength       = (uint16_t)wLength;
 
-		r = dev->u_write_request(dev, &request, size, buffer);
+		r = dev->u_write_request(dev, &request, &wLength, buffer);
+		*size = (size_t)((r == 0) ? 0x100 : 0);
 
-	} else {
-		*size = 0;
+	} else if (offset == 0x100) {
+		struct usb_device_request request;
+		size_t wLength = 9;
+
+		memset(&request, 0, sizeof(request));
+
+		/*
+		 * Get the CONFIGURATION descriptor.
+		 */
+		request.bmRequestType = 0x80;
+		request.bRequest      = 6;
+		request.wValue        = 0x0200;
+		request.wIndex        = 0;
+		request.wLength       = (uint16_t)wLength;
+
+		r = dev->u_write_request(dev, &request, &wLength, buffer);
+		*size = (size_t)((r == 0) ? 0x100 : 0);
 	}
 
 	spin_unlock(&dev->lock);
