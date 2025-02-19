@@ -135,7 +135,7 @@ static int n_read(struct vfs_node *node,
 		return (*size = 0), DE_MEDIA_CHANGED;
 	}
 
-	r = dev->u_get_descriptor(dev, size, buffer);
+	r = (*size = 0), 0;
 
 	spin_unlock(&dev->lock);
 
