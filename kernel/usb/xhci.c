@@ -20,8 +20,8 @@
 #include <dancy.h>
 
 struct xhci_slot {
-	uint32_t *device_context;
-	uint32_t *input_context;
+	void *device_context;
+	void *io_buffer;
 
 	struct {
 		uint32_t *tr;
@@ -592,8 +592,8 @@ static int xhci_port_task(void *arg)
 			if ((page = s->device_context) != NULL)
 				s->device_context = xhci_mm_page(page);
 
-			if ((page = s->input_context) != NULL)
-				s->input_context = xhci_mm_page(page);
+			if ((page = s->io_buffer) != NULL)
+				s->io_buffer = xhci_mm_page(page);
 
 			count = sizeof(s->endpoints) / sizeof(*s->endpoints);
 
@@ -693,12 +693,12 @@ static int xhci_port_task(void *arg)
 		xhci->slots[slot_id - 1].endpoints[0].enqueue = 0;
 
 		/*
-		 * Allocate the input context.
+		 * Allocate the I/O buffer.
 		 */
-		if ((m = xhci->slots[slot_id - 1].input_context) == NULL) {
+		if ((m = xhci->slots[slot_id - 1].io_buffer) == NULL) {
 			if ((m = xhci_mm_page(NULL)) == NULL)
 				break;
-			xhci->slots[slot_id - 1].input_context = m;
+			xhci->slots[slot_id - 1].io_buffer = m;
 		}
 
 		memset(m, 0, 0x1000);
@@ -850,7 +850,7 @@ static int xhci_port_task(void *arg)
 			"Port ID %d, Slot ID %d\n",
 			port->port_id, port->slot_id);
 
-		m = slot->input_context;
+		m = slot->io_buffer;
 		max_packet_size = (cpu_read32(&slot->buffer[4]) >> 24) & 0xFF;
 
 		val = cpu_read32(&slot->buffer[0]) & 0xFF;
