@@ -128,14 +128,6 @@ static int n_read(struct vfs_node *node,
 
 	*size = 0;
 
-	if (buffer_size < 0x100)
-		return DE_BUFFER;
-
-	if ((offset & 0xFF) != 0 || (buffer_size & 0xFF) != 0)
-		return DE_ALIGNMENT;
-
-	memset(buffer, 0, 0x100);
-
 	spin_lock_yield(&dev->lock);
 
 	if (data->port != dev->port || data->device != dev->device) {
@@ -143,7 +135,8 @@ static int n_read(struct vfs_node *node,
 		return DE_MEDIA_CHANGED;
 	}
 
-	if (offset == 0) {
+	while (offset == 0) {
+		unsigned char *b = buffer;
 		struct usb_device_request request;
 
 		memset(&request, 0, sizeof(request));
@@ -157,13 +150,11 @@ static int n_read(struct vfs_node *node,
 		request.wIndex        = 0;
 		request.wLength       = 18;
 
-		r = dev->u_write_request(dev, &request, buffer);
-		*size = (size_t)((r == 0) ? 0x100 : 0);
-
-	} else if (offset == 0x100) {
-		struct usb_device_request request;
-
-		memset(&request, 0, sizeof(request));
+		if (*size + (size_t)request.wLength > buffer_size)
+			break;
+		if ((r = dev->u_write_request(dev, &request, b + *size)) != 0)
+			break;
+		*size += (size_t)request.wLength;
 
 		/*
 		 * Get the CONFIGURATION descriptor.
@@ -174,8 +165,13 @@ static int n_read(struct vfs_node *node,
 		request.wIndex        = 0;
 		request.wLength       = 9;
 
-		r = dev->u_write_request(dev, &request, buffer);
-		*size = (size_t)((r == 0) ? 0x100 : 0);
+		if (*size + (size_t)request.wLength > buffer_size)
+			break;
+		if ((r = dev->u_write_request(dev, &request, b + *size)) != 0)
+			break;
+		*size += (size_t)request.wLength;
+
+		break;
 	}
 
 	spin_unlock(&dev->lock);
