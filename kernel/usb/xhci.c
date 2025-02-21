@@ -474,24 +474,17 @@ static int write_request_locked(struct xhci_port *port,
 }
 
 static int u_write_request(struct dancy_usb_device *dev_locked,
-	const struct usb_device_request *request,
-	size_t *size, void *buffer)
+	const struct usb_device_request *request, void *buffer)
 {
 	struct xhci *xhci = dev_locked->hci->hci;
 	struct xhci_port *port = NULL;
 	struct xhci_slot *slot = NULL;
 
-	size_t buffer_size = *size;
 	size_t wLength = (size_t)request->wLength;
 	int r = 0;
 
-	*size = 0;
-
 	if (wLength > 1024)
 		return DE_OVERFLOW;
-
-	if (buffer_size < wLength)
-		return DE_BUFFER;
 
 	if (dev_locked->port >= 0 && dev_locked->port <= xhci->max_ports)
 		port = &xhci->ports[dev_locked->port - 1];
@@ -523,7 +516,6 @@ static int u_write_request(struct dancy_usb_device *dev_locked,
 		if (device_to_host)
 			memcpy(buffer, slot->io_buffer, wLength);
 
-		*size = wLength;
 		break;
 	}
 

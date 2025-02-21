@@ -145,7 +145,6 @@ static int n_read(struct vfs_node *node,
 
 	if (offset == 0) {
 		struct usb_device_request request;
-		size_t wLength = 18;
 
 		memset(&request, 0, sizeof(request));
 
@@ -156,14 +155,13 @@ static int n_read(struct vfs_node *node,
 		request.bRequest      = 6;
 		request.wValue        = 0x0100;
 		request.wIndex        = 0;
-		request.wLength       = (uint16_t)wLength;
+		request.wLength       = 18;
 
-		r = dev->u_write_request(dev, &request, &wLength, buffer);
+		r = dev->u_write_request(dev, &request, buffer);
 		*size = (size_t)((r == 0) ? 0x100 : 0);
 
 	} else if (offset == 0x100) {
 		struct usb_device_request request;
-		size_t wLength = 9;
 
 		memset(&request, 0, sizeof(request));
 
@@ -174,9 +172,9 @@ static int n_read(struct vfs_node *node,
 		request.bRequest      = 6;
 		request.wValue        = 0x0200;
 		request.wIndex        = 0;
-		request.wLength       = (uint16_t)wLength;
+		request.wLength       = 9;
 
-		r = dev->u_write_request(dev, &request, &wLength, buffer);
+		r = dev->u_write_request(dev, &request, buffer);
 		*size = (size_t)((r == 0) ? 0x100 : 0);
 	}
 
