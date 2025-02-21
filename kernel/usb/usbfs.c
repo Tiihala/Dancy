@@ -118,6 +118,42 @@ static int n_open(struct vfs_node *node, const char *name,
 	return r;
 }
 
+static int descriptor(struct dancy_usb_device *dev_locked, size_t buffer_size,
+	struct usb_device_request *request, size_t *size, uint8_t *buffer)
+{
+	int r;
+
+	if (*size + request->wLength > buffer_size)
+		return DE_BUFFER;
+
+	r = dev_locked->u_write_request(dev_locked, request, buffer);
+
+	if (r != 0)
+		return r;
+
+	if (buffer[0] < request->wLength)
+		return DE_UNEXPECTED;
+
+	if (buffer[0] > request->wLength) {
+		request->wLength = (uint16_t)buffer[0];
+
+		if (*size + request->wLength > buffer_size)
+			return DE_BUFFER;
+
+		r = dev_locked->u_write_request(dev_locked, request, buffer);
+
+		if (r != 0)
+			return r;
+
+		if (buffer[0] != request->wLength)
+			return DE_UNEXPECTED;
+	}
+
+	*size += (size_t)request->wLength;
+
+	return 0;
+}
+
 static int n_read(struct vfs_node *node,
 	uint64_t offset, size_t *size, void *buffer)
 {
@@ -135,9 +171,9 @@ static int n_read(struct vfs_node *node,
 		return DE_MEDIA_CHANGED;
 	}
 
-	while (offset == 0) {
-		unsigned char *b = buffer;
+	if (offset == 0) {
 		struct usb_device_request request;
+		uint8_t *b = buffer;
 
 		memset(&request, 0, sizeof(request));
 
@@ -150,11 +186,10 @@ static int n_read(struct vfs_node *node,
 		request.wIndex        = 0;
 		request.wLength       = 18;
 
-		if (*size + (size_t)request.wLength > buffer_size)
-			break;
-		if ((r = dev->u_write_request(dev, &request, b + *size)) != 0)
-			break;
-		*size += (size_t)request.wLength;
+		r = descriptor(dev, buffer_size, &request, size, b + *size);
+
+		if (r != 0)
+			return spin_unlock(&dev->lock), r;
 
 		/*
 		 * Get the CONFIGURATION descriptor.
@@ -165,13 +200,10 @@ static int n_read(struct vfs_node *node,
 		request.wIndex        = 0;
 		request.wLength       = 9;
 
-		if (*size + (size_t)request.wLength > buffer_size)
-			break;
-		if ((r = dev->u_write_request(dev, &request, b + *size)) != 0)
-			break;
-		*size += (size_t)request.wLength;
+		r = descriptor(dev, buffer_size, &request, size, b + *size);
 
-		break;
+		if (r != 0)
+			return spin_unlock(&dev->lock), r;
 	}
 
 	spin_unlock(&dev->lock);
