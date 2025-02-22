@@ -173,6 +173,7 @@ static int n_read(struct vfs_node *node,
 
 	if (offset == 0) {
 		struct usb_device_request request;
+		unsigned int i, max_string_index = 0, lang_id = 0;
 		uint8_t *b = buffer;
 
 		memset(&request, 0, sizeof(request));
@@ -204,6 +205,110 @@ static int n_read(struct vfs_node *node,
 
 		if (r != 0)
 			return spin_unlock(&dev->lock), r;
+
+		/*
+		 * Check the maximum string index.
+		 */
+		{
+			/*
+			 * The iManufacturer string.
+			 */
+			if (max_string_index < b[14])
+				max_string_index = b[14];
+
+			/*
+			 * The iProduct string.
+			 */
+			if (max_string_index < b[15])
+				max_string_index = b[15];
+
+			/*
+			 * The iSerialNumber string.
+			 */
+			if (max_string_index < b[16])
+				max_string_index = b[16];
+		}
+
+		if (max_string_index != 0) {
+			uint8_t *sb = b + *size;
+
+			/*
+			 * Get the STRING descriptor (Zero).
+			 */
+			request.bmRequestType = 0x80;
+			request.bRequest      = 6;
+			request.wValue        = (uint16_t)(0x0300 + 0);
+			request.wIndex        = 0;
+			request.wLength       = 2;
+
+			r = descriptor(dev, buffer_size, &request, size, sb);
+
+			if (r == DE_BUFFER)
+				return spin_unlock(&dev->lock), r;
+
+			if (r != 0) {
+				sb[0] = 0x02, sb[1] = 0x03;
+
+				request.wLength = 2;
+				*size += 2;
+				r = 0;
+			}
+
+			for (i = 2; i + 1 < request.wLength; i += 2) {
+				/*
+				 * Language: English (United States).
+				 */
+				if (sb[i + 0] == 0x09 && sb[i + 1] == 0x04) {
+					lang_id = 0x0409;
+					break;
+				}
+			}
+		}
+
+		for (i = 1; i <= max_string_index; i++) {
+			uint8_t *sb = b + *size;
+			int question_mark = 0;
+
+			if (*size + 4 > buffer_size)
+				return spin_unlock(&dev->lock), DE_BUFFER;
+
+			/*
+			 * Use a question mark if the language ID is not set.
+			 */
+			if (lang_id == 0)
+				question_mark = 1;
+
+			/*
+			 * Use a question mark if indices are not sequential.
+			 */
+			if (i != b[14] && i != b[15] && i != b[16])
+				question_mark = 1;
+
+			/*
+			 * The UTF-16LE encoding.
+			 */
+			if (question_mark) {
+				sb[0] = 0x04, sb[1] = 0x03;
+				sb[2] = 0x3F, sb[3] = 0x00;
+
+				*size += 4;
+				continue;
+			}
+
+			/*
+			 * Get the STRING descriptor (Index).
+			 */
+			request.bmRequestType = 0x80;
+			request.bRequest      = 6;
+			request.wValue        = (uint16_t)(0x0300 + i);
+			request.wIndex        = (uint16_t)lang_id;
+			request.wLength       = 2;
+
+			r = descriptor(dev, buffer_size, &request, size, sb);
+
+			if (r != 0)
+				return spin_unlock(&dev->lock), r;
+		}
 	}
 
 	spin_unlock(&dev->lock);
