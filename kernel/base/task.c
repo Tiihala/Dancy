@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022, 2023, 2024 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023, 2024, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -118,9 +118,12 @@ static int task_null_func(uint64_t *data)
 static int task_caretaker(void *arg)
 {
 	void *lock_local = &task_lock;
+	int max_stack_state[2] = { 0, 0 };
 
 	task_current()->sched.priority = sched_priority_low;
 	task_set_cmdline(task_current(), NULL, "[caretaker]");
+
+	task_sleep(10000);
 
 	while (arg == NULL) {
 		struct task *t = task_head;
@@ -134,6 +137,26 @@ static int task_caretaker(void *arg)
 			int error_assumption;
 			unsigned char *p;
 			size_t offset, size;
+
+			/*
+			 * Check the maximum kernel stack usage.
+			 */
+			{
+				int stack_state = 0x1000;
+
+				p = (void *)((addr_t)t + 0x1000);
+
+				while (stack_state > 0) {
+					if (p[0x1000 - stack_state] != 0)
+						break;
+					stack_state -= 1;
+				}
+
+				stack_state = (stack_state + 0x0F) & 0x1FF0;
+
+				if (max_stack_state[1] < stack_state)
+					max_stack_state[1] = stack_state;
+			}
 
 			/*
 			 * Check that the owner task is still available. If
@@ -253,6 +276,11 @@ static int task_caretaker(void *arg)
 			 * The next structure for the while loop.
 			 */
 			t = t2;
+		}
+
+		if (max_stack_state[0] != max_stack_state[1]) {
+			printk("[KERNEL] Maximum Stack Usage: %d\n",
+				(max_stack_state[0] = max_stack_state[1]));
 		}
 
 		task_sleep(1000);
