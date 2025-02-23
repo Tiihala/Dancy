@@ -964,6 +964,16 @@
     $(ARCTIC_PROGRAMS_LS_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/ls/operate.c
 
+./o32/arctic/programs/lsusb/main.o: \
+    ./arctic/programs/lsusb/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_LSUSB_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/lsusb/main.c
+
+./o32/arctic/programs/lsusb/operate.o: \
+    ./arctic/programs/lsusb/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_LSUSB_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/lsusb/operate.c
+
 ./o32/arctic/programs/mkdir/main.o: \
     ./arctic/programs/mkdir/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_MKDIR_HEADERS)
@@ -2535,6 +2545,16 @@
     ./arctic/programs/ls/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_LS_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/ls/operate.c
+
+./o64/arctic/programs/lsusb/main.o: \
+    ./arctic/programs/lsusb/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_LSUSB_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/lsusb/main.c
+
+./o64/arctic/programs/lsusb/operate.o: \
+    ./arctic/programs/lsusb/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_LSUSB_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/lsusb/operate.c
 
 ./o64/arctic/programs/mkdir/main.o: \
     ./arctic/programs/mkdir/main.c $(DANCY_DEPS) \
