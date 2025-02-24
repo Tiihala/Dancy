@@ -76,12 +76,125 @@ static void print_string_descriptor(void *buffer)
 	}
 }
 
+static void print_configuration_descriptor(void *buffer)
+{
+	unsigned char *p = buffer;
+
+	if (p[0] < 9 || p[1] != 2)
+		return;
+
+	printf("  Configuration Descriptor:\n");
+
+	printf("    bLength             %6d\n",      (int)p[0]);
+	printf("    bDescriptorType     %6d\n",      (int)p[1]);
+	printf("    wTotalLength        0x%04X\n",  LE16(&p[2]));
+	printf("    bNumInterfaces      %6d\n",      (int)p[4]);
+	printf("    bConfigurationValue %6d\n",      (int)p[5]);
+	printf("    iConfiguration      %6d\n",      (int)p[6]);
+	printf("    bmAttributes          0x%02X\n", (int)p[7]);
+	printf("    bMaxPower           %6d\n",      (int)p[8]);
+
+	printf("\n");
+}
+
+static void print_interface_descriptor(void *buffer)
+{
+	unsigned char *p = buffer;
+
+	if (p[0] < 9 || p[1] != 4)
+		return;
+
+	printf("    Interface Descriptor:\n");
+
+	printf("      bLength            %3d\n", (int)p[0]);
+	printf("      bDescriptorType    %3d\n", (int)p[1]);
+	printf("      bInterfaceNumber   %3d\n", (int)p[2]);
+	printf("      bAlternateSetting  %3d\n", (int)p[3]);
+	printf("      bNumEndpoints      %3d\n", (int)p[4]);
+
+	printf("      bInterfaceClass    %3d",   (int)p[5]);
+	switch ((int)p[5]) {
+		case 0x01:
+			printf(" Audio");
+			break;
+		case 0x03:
+			printf(" Human Interface Device");
+			break;
+		case 0x08:
+			printf(" Mass Storage");
+			break;
+		default:
+			break;
+	}
+	printf("\n");
+
+	printf("      bInterfaceSubClass %3d\n", (int)p[6]);
+
+	printf("      bInterfaceProtocol %3d",   (int)p[7]);
+	switch ((int)p[5]) {
+		case 0x03:
+			if ((int)p[7] == 0x01)
+				printf(" Keyboard");
+			if ((int)p[7] == 0x02)
+				printf(" Mouse");
+			break;
+		default:
+			break;
+	}
+	printf("\n");
+
+	printf("      iInterface         %3d\n", (int)p[8]);
+
+	printf("\n");
+}
+
+static void print_endpoint_descriptor(void *buffer)
+{
+	unsigned char *p = buffer;
+
+	if (p[0] < 7 || p[1] != 5)
+		return;
+
+	printf("      Endpoint Descriptor:\n");
+
+	printf("        bLength          %6d\n",      (int)p[0]);
+	printf("        bDescriptorType  %6d\n",      (int)p[1]);
+
+	printf("        bEndpointAddress   0x%02X EP %d %s\n",
+		(int)p[2], (int)p[2] & 0x0F,
+		(p[2] & 0x80) ? "IN" : "OUT");
+
+	printf("        bmAttributes       0x%02X\n", (int)p[3]);
+	printf("        wMaxPacketSize   0x%04X\n",  LE16(&p[4]));
+	printf("        bInterval        %6d\n",      (int)p[6]);
+
+	printf("\n");
+}
+
+static void print_hid_descriptor(void *buffer)
+{
+	unsigned char *p = buffer;
+
+	if (p[0] < 6 || p[1] != 33)
+		return;
+
+	printf("      HID Device Descriptor:\n");
+
+	printf("        bLength         %6d\n",   (int)p[0]);
+	printf("        bDescriptorType %6d\n",   (int)p[1]);
+	printf("        bcdHID       %6d.%02d\n", (int)p[3], (int)p[2]);
+	printf("        bCountryCode    %6d\n",   (int)p[4]);
+	printf("        bNumDescriptors %6d\n",   (int)p[5]);
+
+	printf("\n");
+}
+
 static int print_device(struct options *opt, struct lsusb_record *r)
 {
 	const char *path = &r->path[0];
 	unsigned char buffer[4096], *p, *s;
 	int fd = open(path, O_RDONLY);
-	ssize_t size;
+	ssize_t offset = 0, size;
 
 	if (fd < 0) {
 		fprintf(stderr, "lsusb: \'%s\': %s\n", path, strerror(errno));
@@ -118,6 +231,8 @@ static int print_device(struct options *opt, struct lsusb_record *r)
 		}
 
 		printf("\n");
+
+		offset = (ssize_t)bLength;
 
 		if (opt->verbose) {
 			printf("Device Descriptor:\n");
@@ -183,24 +298,29 @@ static int print_device(struct options *opt, struct lsusb_record *r)
 	if (!opt->verbose)
 		return 0;
 
-	if ((p = find_descriptor(&buffer[0], (size_t)size, 2, 0)) != NULL) {
-		int bLength = (int)p[0];
+	while (offset + 2 < size) {
+		int bLength = (int)buffer[offset + 0];
+		int bDescriptorType = (int)buffer[offset + 1];
 
-		if (bLength < 9)
-			return 0;
+		if (offset + bLength > size)
+			break;
 
-		printf("  Configuration Descriptor:\n");
+		if (bDescriptorType == 1)
+			break;
 
-		printf("    bLength             %6d\n",      (int)p[0]);
-		printf("    bDescriptorType     %6d\n",      (int)p[1]);
-		printf("    wTotalLength        0x%04X\n",  LE16(&p[2]));
-		printf("    bNumInterfaces      %6d\n",      (int)p[4]);
-		printf("    bConfigurationValue %6d\n",      (int)p[5]);
-		printf("    iConfiguration      %6d\n",      (int)p[6]);
-		printf("    bmAttributes          0x%2X\n",  (int)p[7]);
-		printf("    bMaxPower           %6d\n",      (int)p[8]);
+		if (bDescriptorType == 2)
+			print_configuration_descriptor(&buffer[offset + 0]);
 
-		printf("\n");
+		if (bDescriptorType == 4)
+			print_interface_descriptor(&buffer[offset + 0]);
+
+		if (bDescriptorType == 5)
+			print_endpoint_descriptor(&buffer[offset + 0]);
+
+		if (bDescriptorType == 33)
+			print_hid_descriptor(&buffer[offset + 0]);
+
+		offset += (ssize_t)bLength;
 	}
 
 	return 0;
