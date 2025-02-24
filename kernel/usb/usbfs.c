@@ -131,9 +131,6 @@ static int descriptor(struct dancy_usb_device *dev_locked, size_t buffer_size,
 	if (r != 0)
 		return r;
 
-	if (buffer[0] < request->wLength)
-		return DE_UNEXPECTED;
-
 	if (buffer[0] > request->wLength) {
 		request->wLength = (uint16_t)buffer[0];
 
@@ -193,20 +190,6 @@ static int n_read(struct vfs_node *node,
 			return spin_unlock(&dev->lock), r;
 
 		/*
-		 * Get the CONFIGURATION descriptor.
-		 */
-		request.bmRequestType = 0x80;
-		request.bRequest      = 6;
-		request.wValue        = 0x0200;
-		request.wIndex        = 0;
-		request.wLength       = 9;
-
-		r = descriptor(dev, buffer_size, &request, size, b + *size);
-
-		if (r != 0)
-			return spin_unlock(&dev->lock), r;
-
-		/*
 		 * Check the maximum string index.
 		 */
 		{
@@ -227,6 +210,47 @@ static int n_read(struct vfs_node *node,
 			 */
 			if (max_string_index < b[16])
 				max_string_index = b[16];
+		}
+
+		/*
+		 * Get all the bNumConfigurations.
+		 */
+		for (i = 0; i < b[17]; i++) {
+			size_t original_size = *size;
+			uint8_t *sb = b + *size;
+
+			/*
+			 * Get the CONFIGURATION descriptor.
+			 */
+			request.bmRequestType = 0x80;
+			request.bRequest      = 6;
+			request.wValue        = (uint16_t)(0x0200 + i);
+			request.wIndex        = 0;
+			request.wLength       = 9;
+
+			r = descriptor(dev, buffer_size, &request, size, sb);
+
+			if (r != 0)
+				return spin_unlock(&dev->lock), r;
+
+			*size = original_size;
+
+			/*
+			 * Get the CONFIGURATION descriptor (wTotalLength).
+			 */
+			request.bmRequestType = 0x80;
+			request.bRequest      = 6;
+			request.wValue        = (uint16_t)(0x0200 + i);
+			request.wIndex        = 0;
+
+			request.wLength       = 0;
+			request.wLength      |= (uint16_t)((int)sb[2] << 0);
+			request.wLength      |= (uint16_t)((int)sb[3] << 8);
+
+			r = descriptor(dev, buffer_size, &request, size, sb);
+
+			if (r != 0)
+				return spin_unlock(&dev->lock), r;
 		}
 
 		if (max_string_index != 0) {
