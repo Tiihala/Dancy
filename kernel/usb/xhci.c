@@ -538,7 +538,7 @@ static int xhci_port_task(void *arg)
 	task_set_cmdline(task_current(), NULL, &cline[0]);
 
 	if (port->dev != NULL)
-		usbfs_device(port->dev, 0);
+		usb_remove_device(port->dev);
 
 	if (port->slot_id != 0) {
 		uint32_t in[4], out[4];
@@ -962,7 +962,7 @@ static int xhci_port_task(void *arg)
 				dev->u_write_request = u_write_request;
 			}
 
-			if (usbfs_device((port->dev = dev), 1))
+			if (usb_attach_device((port->dev = dev)))
 				break;
 
 			printk("[xHCI] Device Node Created, "
@@ -1611,7 +1611,7 @@ static int usb_xhci_init(struct pci_id *pci)
 			hci->pci = pci;
 			hci->hci = xhci;
 
-			r = usbfs_create(hci);
+			r = usb_register_controller(hci);
 
 			pci_write(pci, 0x04, cmd | 4);
 
