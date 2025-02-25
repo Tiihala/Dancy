@@ -59,6 +59,13 @@ struct dancy_usb_device {
 };
 
 /*
+ * Declarations of generic.c
+ */
+int usb_register_controller(struct dancy_usb_controller *hci);
+int usb_attach_device(struct dancy_usb_device *dev);
+int usb_remove_device(struct dancy_usb_device *dev);
+
+/*
  * Declarations of usbfs.c
  */
 int usbfs_create(struct dancy_usb_controller *hci);

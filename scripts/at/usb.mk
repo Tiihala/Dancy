@@ -3,10 +3,12 @@
 ##############################################################################
 
 DANCY_USB_OBJECTS_32= \
+ ./o32/kernel/usb/generic.o \
  ./o32/kernel/usb/usbfs.o \
  ./o32/kernel/usb/xhci.o \
 
 DANCY_USB_OBJECTS_64= \
+ ./o64/kernel/usb/generic.o \
  ./o64/kernel/usb/usbfs.o \
  ./o64/kernel/usb/xhci.o \
 
