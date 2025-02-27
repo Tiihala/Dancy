@@ -30,6 +30,15 @@ struct usb_device_request {
 	uint16_t wLength;
 };
 
+struct usb_endpoint_descriptor {
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	uint8_t bEndpointAddress;
+	uint8_t bmAttributes;
+	uint16_t wMaxPacketSize;
+	uint8_t bInterval;
+};
+
 #define DANCY_USB_CONTROLLER_XHCI 1
 #define DANCY_USB_CONTROLLER_EHCI 2
 #define DANCY_USB_CONTROLLER_OHCI 3
@@ -56,6 +65,17 @@ struct dancy_usb_device {
 
 	int (*u_write_request)(struct dancy_usb_device *dev_locked,
 		const struct usb_device_request *request, void *buffer);
+
+	int (*u_configure_endpoint)(struct dancy_usb_device *dev_locked,
+		const struct usb_endpoint_descriptor *endpoint);
+};
+
+struct dancy_usb_node {
+	struct dancy_usb_controller *hci;
+	struct dancy_usb_device *dev;
+
+	int port;
+	int device;
 };
 
 /*
