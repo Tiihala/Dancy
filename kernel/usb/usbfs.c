@@ -19,14 +19,6 @@
 
 #include <dancy.h>
 
-struct usbfs_node_data {
-	struct dancy_usb_controller *hci;
-	struct dancy_usb_device *dev;
-
-	int port;
-	int device;
-};
-
 static void n_release(struct vfs_node **node)
 {
 	struct vfs_node *n = *node;
@@ -45,7 +37,7 @@ static void n_release(struct vfs_node **node)
 static int n_open(struct vfs_node *node, const char *name,
 	struct vfs_node **new_node, int type, int mode)
 {
-	struct usbfs_node_data *data = node->internal_data;
+	struct dancy_usb_node *data = node->internal_data;
 	struct dancy_usb_controller *hci = data->hci;
 
 	int r = DE_NAME, port = 0, device = 0;
@@ -154,7 +146,7 @@ static int descriptor(struct dancy_usb_device *dev_locked, size_t buffer_size,
 static int n_read(struct vfs_node *node,
 	uint64_t offset, size_t *size, void *buffer)
 {
-	struct usbfs_node_data *data = node->internal_data;
+	struct dancy_usb_node *data = node->internal_data;
 	struct dancy_usb_device *dev = data->dev;
 	size_t buffer_size = *size;
 	int r = 0;
@@ -343,7 +335,7 @@ static int n_read(struct vfs_node *node,
 static int n_readdir(struct vfs_node *node,
 	uint32_t offset, struct vfs_dent *dent)
 {
-	struct usbfs_node_data *data = node->internal_data;
+	struct dancy_usb_node *data = node->internal_data;
 	struct dancy_usb_controller *hci = data->hci;
 	int port, r = DE_PLACEHOLDER;
 
@@ -367,7 +359,7 @@ static int n_readdir(struct vfs_node *node,
 	spin_lock_yield(&hci->lock);
 
 	if (hci->ports[port] != NULL) {
-		struct usbfs_node_data *n = hci->ports[port]->internal_data;
+		struct dancy_usb_node *n = hci->ports[port]->internal_data;
 		char buffer[32];
 
 		int t = snprintf(&buffer[0], sizeof(buffer),
@@ -430,7 +422,7 @@ static int controller_monotonic_lock;
 
 int usbfs_create(struct dancy_usb_controller *hci)
 {
-	struct usbfs_node_data *data;
+	struct dancy_usb_node *data;
 	struct vfs_node *node;
 	char buffer[32];
 	int r = 0;
@@ -480,7 +472,7 @@ int usbfs_create(struct dancy_usb_controller *hci)
 static int usbfs_device_locked(struct dancy_usb_device *dev, int attached)
 {
 	struct dancy_usb_controller *hci = dev->hci;
-	struct usbfs_node_data *data;
+	struct dancy_usb_node *data;
 	struct vfs_node *node;
 
 	if (dev->port <= 0)
