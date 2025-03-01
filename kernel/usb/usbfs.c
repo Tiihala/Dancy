@@ -22,11 +22,26 @@
 static void n_release(struct vfs_node **node)
 {
 	struct vfs_node *n = *node;
+	struct dancy_usb_node *data = n->internal_data;
 
 	*node = NULL;
 
 	if (vfs_decrement_count(n) > 0)
 		return;
+
+	for (;;) {
+		struct dancy_usb_driver *driver = data->_driver;
+
+		if (driver == NULL)
+			break;
+
+		data->_driver = driver->next;
+
+		memset(driver, 0, sizeof(*driver));
+		free(driver);
+	}
+
+	free(data->_driver_buffer);
 
 	n->internal_data = NULL;
 	memset(n, 0, sizeof(*n));

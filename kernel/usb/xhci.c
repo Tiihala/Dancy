@@ -524,6 +524,163 @@ static int u_write_request(struct dancy_usb_device *dev_locked,
 	return r;
 }
 
+int u_configure_ep(struct dancy_usb_device *dev_locked,
+	const struct usb_endpoint_descriptor *endpoint)
+{
+	struct xhci *xhci = dev_locked->hci->hci;
+	struct xhci_port *port = NULL;
+	struct xhci_slot *slot = NULL;
+	int r = 0;
+
+	if (dev_locked->port >= 0 && dev_locked->port <= xhci->max_ports)
+		port = &xhci->ports[dev_locked->port - 1];
+
+	if (port == NULL)
+		return DE_UNEXPECTED;
+
+	spin_lock_yield(&port->lock);
+
+	if (port->slot_id > 0)
+		slot = &xhci->slots[port->slot_id - 1];
+
+	while (slot != NULL && slot->state > 1) {
+		uint32_t *m = slot->io_buffer;
+		uint32_t in[4], out[4];
+
+		int ep_number = (int)(endpoint->bEndpointAddress & 0x0F);
+		int ep_in = ((endpoint->bEndpointAddress & 0x80) != 0);
+		int i = (ep_number << 1) + ep_in;
+
+		if (ep_number == 0) {
+			r = DE_UNEXPECTED;
+			break;
+		}
+
+		/*
+		 * Allocate the transfer ring.
+		 */
+		if ((m = slot->endpoints[i].tr) == NULL) {
+			if ((m = xhci_mm_page(NULL)) == NULL) {
+				r = DE_MEMORY;
+				break;
+			}
+			slot->endpoints[i].tr = m;
+		}
+
+		memset(m, 0, 0x1000);
+		slot->endpoints[i].cycle = 0;
+		slot->endpoints[i].enqueue = 0;
+
+		m = slot->io_buffer;
+		memset(m, 0, 0x1000);
+
+		/*
+		 * Initialize the input context.
+		 */
+		{
+			int csz = (xhci->hcc_params[0] & (1u << 2)) ? 1 : 0;
+			int ici = i + 1;
+
+			/*
+			 * Initialize the input control context.
+			 */
+			{
+				uint32_t *c = &m[(0 * (8 << csz))];
+
+				/*
+				 * Set the "add context" flags.
+				 */
+				c[1] |= (1u << 0) | (1u << ici);
+			}
+
+			/*
+			 * Initialize the slot context.
+			 */
+			{
+				uint32_t *c = &m[(1 * (8 << csz))];
+
+				c[0] = 0;
+
+			}
+
+			/*
+			 * Initialize the endpoint context.
+			 */
+			{
+				uint32_t *c = &m[(ici * (8 << csz))];
+
+				uint32_t error_count = 3;
+				uint32_t ep_type, max_packet_size;
+				void *tr;
+
+				ep_type = endpoint->bmAttributes & 0x03;
+				max_packet_size = endpoint->wMaxPacketSize;
+
+				if ((ep_type <<= ep_in) == 0) {
+					r = DE_UNSUPPORTED;
+					break;
+				}
+
+				/*
+				 * Set the error count.
+				 */
+				c[1] |= (error_count << 1);
+
+				/*
+				 * Set the endpoint type.
+				 */
+				c[1] |= (ep_type << 3);
+
+				/*
+				 * Set the maximum packet size.
+				 */
+				c[1] |= (max_packet_size << 16);
+
+				/*
+				 * Set the transfer ring dequeue pointer.
+				 */
+				tr = slot->endpoints[i].tr;
+				c[2] |= ((uint32_t)((addr_t)tr) | 1u);
+			}
+		}
+
+		/*
+		 * Write the configure endpoint command.
+		 */
+		in[0] = (uint32_t)((addr_t)m);
+		in[1] = 0;
+		in[2] = 0;
+		in[3] = (uint32_t)((port->slot_id << 24) | (12 << 10));
+
+		printk("[xHCI] Configure Endpoint Command, Context %d, "
+			"Port ID %d, Slot ID %d\n",
+			ep_number, port->port_id, port->slot_id);
+
+		if (write_command(xhci, &in[0], &out[0])) {
+			r = DE_UNEXPECTED;
+			break;
+		}
+
+		/*
+		 * Check the completion code (Success).
+		 */
+		if (((out[2] >> 24) & 0xFF) != 1) {
+			r = DE_UNEXPECTED;
+			break;
+		}
+
+		printk("[xHCI] Configure Endpoint OK, Context %d, "
+			"Port ID %d, Slot ID %d\n",
+			ep_number, port->port_id, port->slot_id);
+
+		break;
+	}
+
+	spin_unlock(&port->lock);
+
+	return r;
+}
+
 static int xhci_port_task(void *arg)
 {
 	struct xhci_port *port = arg;
@@ -960,6 +1117,7 @@ static int xhci_port_task(void *arg)
 				dev->hci = xhci->hci;
 				dev->port = port->port_id;
 				dev->u_write_request = u_write_request;
+				dev->u_configure_endpoint = u_configure_ep;
 			}
 
 			if (usb_attach_device((port->dev = dev)))
