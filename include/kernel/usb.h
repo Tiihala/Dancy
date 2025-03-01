@@ -110,22 +110,26 @@ struct dancy_usb_device {
 		const struct usb_endpoint_descriptor *endpoint);
 };
 
-struct dancy_usb_node {
-	struct dancy_usb_controller *hci;
-	struct dancy_usb_device *dev;
-
-	int port;
-	int device;
-};
-
 struct dancy_usb_driver {
+	struct dancy_usb_driver *next;
+
 	struct {
-		void *_buffer;
 		struct usb_device_descriptor *device;
 		struct usb_configuration_descriptor *configuration;
 		struct usb_interface_descriptor *interface;
 		struct usb_endpoint_descriptor *endpoints[32];
 	} descriptor;
+};
+
+struct dancy_usb_node {
+	struct dancy_usb_controller *hci;
+	struct dancy_usb_device *dev;
+
+	struct dancy_usb_driver *_driver;
+	void *_driver_buffer;
+
+	int port;
+	int device;
 };
 
 /*
