@@ -486,6 +486,9 @@ static int u_write_request(struct dancy_usb_device *dev_locked,
 	if (wLength > 1024)
 		return DE_OVERFLOW;
 
+	if (buffer == NULL)
+		buffer = (void *)((addr_t)16);
+
 	if (dev_locked->port >= 0 && dev_locked->port <= xhci->max_ports)
 		port = &xhci->ports[dev_locked->port - 1];
 
@@ -568,7 +571,7 @@ int u_configure_ep(struct dancy_usb_device *dev_locked,
 		}
 
 		memset(m, 0, 0x1000);
-		slot->endpoints[i].cycle = 0;
+		slot->endpoints[i].cycle = 1;
 		slot->endpoints[i].enqueue = 0;
 
 		m = slot->io_buffer;
@@ -838,7 +841,7 @@ static int xhci_port_task(void *arg)
 
 		memset(m, 0, 0x1000);
 
-		xhci->slots[slot_id - 1].endpoints[0].cycle= 1;
+		xhci->slots[slot_id - 1].endpoints[0].cycle = 1;
 		xhci->slots[slot_id - 1].endpoints[0].enqueue = 0;
 
 		/*
