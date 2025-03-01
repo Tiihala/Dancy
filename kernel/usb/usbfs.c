@@ -41,7 +41,8 @@ static void n_release(struct vfs_node **node)
 		free(driver);
 	}
 
-	free(data->_driver_buffer);
+	if (data->_driver_buffer != NULL)
+		mm_free_pages((phys_addr_t)data->_driver_buffer, 0);
 
 	n->internal_data = NULL;
 	memset(n, 0, sizeof(*n));
