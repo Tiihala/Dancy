@@ -91,6 +91,7 @@ static void start_driver(struct vfs_node *node,
 	struct dancy_usb_driver *driver)
 {
 	struct dancy_usb_node *data = node->internal_data;
+	uint8_t bInterfaceClass, bInterfaceProtocol;
 
 	/*
 	 * Create a copy of the driver structure.
@@ -109,8 +110,18 @@ static void start_driver(struct vfs_node *node,
 		data->_driver = new_driver;
 	}
 
-	if (configure_endpoints(node))
-		return;
+	bInterfaceClass = driver->descriptor.interface->bInterfaceClass;
+	bInterfaceProtocol = driver->descriptor.interface->bInterfaceProtocol;
+
+	/*
+	 * Check the keyboard interface.
+	 */
+	if (bInterfaceClass == 3 && bInterfaceProtocol == 1) {
+		if (configure_endpoints(node))
+			return;
+
+		printk("[USB] Human Interface Device (Keyboard) Found\n");
+	}
 }
 
 static void reset_interface(struct dancy_usb_driver *driver)
