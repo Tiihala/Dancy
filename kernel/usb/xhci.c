@@ -32,7 +32,7 @@ struct xhci_slot {
 	uint32_t trb[4];
 
 	int max_packet_size;
-	int descriptor_length;
+	int context_entries;
 	int state;
 };
 
@@ -593,7 +593,7 @@ int u_configure_ep(struct dancy_usb_device *dev_locked,
 				/*
 				 * Set the "add context" flags.
 				 */
-				c[1] |= (1u << 0) | (1u << ici);
+				c[1] |= (1u << 0) | (1u << i);
 			}
 
 			/*
@@ -602,8 +602,13 @@ int u_configure_ep(struct dancy_usb_device *dev_locked,
 			{
 				uint32_t *c = &m[(1 * (8 << csz))];
 
-				c[0] = 0;
-
+				/*
+				 * Set the context entries.
+				 */
+				if (slot->context_entries < i) {
+					c[0] |= ((uint32_t)i << 27);
+					slot->context_entries = i;
+				}
 			}
 
 			/*
@@ -704,6 +709,7 @@ static int xhci_port_task(void *arg)
 		uint32_t in[4], out[4];
 
 		xhci->slots[port->slot_id - 1].max_packet_size = 0;
+		xhci->slots[port->slot_id - 1].context_entries = 0;
 		xhci->slots[port->slot_id - 1].state = 0;
 
 		/*
@@ -810,6 +816,8 @@ static int xhci_port_task(void *arg)
 		int slot_id = port->slot_id;
 		uint32_t *m;
 
+		xhci->slots[slot_id - 1].max_packet_size = 0;
+		xhci->slots[slot_id - 1].context_entries = 0;
 		xhci->slots[slot_id - 1].state = 0;
 
 		/*
@@ -975,7 +983,7 @@ static int xhci_port_task(void *arg)
 		struct xhci_slot *slot = &xhci->slots[port->slot_id - 1];
 		struct usb_device_request request;
 
-		uint32_t in[4], out[4], val;
+		uint32_t in[4], out[4];
 		uint32_t *m, max_packet_size;
 
 		memset(&request, 0, sizeof(request));
@@ -1004,9 +1012,6 @@ static int xhci_port_task(void *arg)
 
 		m = slot->io_buffer;
 		max_packet_size = (cpu_read32(&m[1]) >> 24) & 0xFF;
-
-		val = cpu_read32(&m[0]) & 0xFF;
-		slot->descriptor_length = (int)val;
 
 		if (port->rev_major > 2)
 			max_packet_size = (1u << max_packet_size);
