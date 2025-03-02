@@ -858,9 +858,11 @@ static int xhci_port_task(void *arg)
 	char cline[16];
 
 	if (snprintf(&cline[0], sizeof(cline), "[xhci-port%d]", port_id) <= 0)
-		return spin_unlock(&port->lock), EXIT_FAILURE;
+		return EXIT_FAILURE;
 
 	task_set_cmdline(task_current(), NULL, &cline[0]);
+
+	spin_lock_yield(&port->lock);
 
 	if (port->dev != NULL)
 		usb_remove_device(port->dev);
@@ -1418,12 +1420,13 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 				create_port_task = 1;
 
 			/*
-			 * Acquire the lock if starting the port task.
+			 * Sleep a little bit before starting the port task.
 			 */
-			if (create_port_task && spin_trylock(&port->lock)) {
+			if (create_port_task) {
 				const int t = task_detached;
-				if (!task_create(xhci_port_task, port, t))
-					spin_unlock(&port->lock);
+
+				task_sleep(100);
+				task_create(xhci_port_task, port, t);
 			}
 		}
 
