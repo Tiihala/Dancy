@@ -48,6 +48,7 @@ struct xhci_port {
 	int slot_id;
 
 	uint32_t *portsc;
+	uint32_t _task;
 
 	void *xhci;
 	int port_id;
@@ -864,6 +865,9 @@ static int xhci_port_task(void *arg)
 
 	spin_lock_yield(&port->lock);
 
+	if (cpu_btr32(&port->_task, 0) == 0)
+		return spin_unlock(&port->lock), 0;
+
 	if (port->dev != NULL)
 		usb_remove_device(port->dev);
 
@@ -1420,12 +1424,12 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 				create_port_task = 1;
 
 			/*
-			 * Sleep a little bit before starting the port task.
+			 * Set the sync bit before starting the port task.
 			 */
 			if (create_port_task) {
 				const int t = task_detached;
 
-				task_sleep(100);
+				cpu_bts32(&port->_task, 0);
 				task_create(xhci_port_task, port, t);
 			}
 		}
