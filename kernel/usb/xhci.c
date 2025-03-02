@@ -473,6 +473,105 @@ static int write_request_locked(struct xhci_port *port,
 	return r;
 }
 
+static int write_ep_locked(struct xhci_port *port, struct xhci_slot *slot,
+	int i, size_t *size, void *buffer)
+{
+	struct xhci *xhci = port->xhci;
+	size_t buffer_size = *size;
+	int r = DE_WRITE;
+
+	*size = 0;
+
+	/*
+	 * Write the normal TRB.
+	 */
+	{
+		int offset = slot->endpoints[i].enqueue * 4;
+		uint32_t *p = &slot->endpoints[i].tr[offset];
+
+		uint32_t transfer_length = (uint32_t)buffer_size;
+		uint32_t td_size = 0;
+
+		if (transfer_length > 0x10000)
+			transfer_length = 0x10000;
+
+		p[0] = (uint32_t)((addr_t)buffer);
+		p[1] = 0;
+
+		p[2] = 0;
+		p[2] |= (transfer_length << 0);
+		p[2] |= (td_size << 17);
+
+		{
+			const uint32_t trb_type = 1;
+			const uint32_t interrupt_on_short_packet = 1;
+			const uint32_t interrupt_on_completion = 1;
+
+			uint32_t ctrl = 0;
+
+			ctrl |= ((slot->endpoints[i].cycle ? 1u : 0u) << 0);
+			ctrl |= (interrupt_on_short_packet << 2);
+			ctrl |= (interrupt_on_completion << 5);
+			ctrl |= (trb_type << 10);
+
+			p[3] = ctrl;
+		}
+
+		advance_enqueue_locked(slot, i, 0);
+	}
+
+	cpu_write32(&slot->trb[0], 0);
+	cpu_write32(&slot->trb[1], 0);
+	cpu_write32(&slot->trb[2], 0);
+	cpu_write32(&slot->trb[3], 0);
+
+	/*
+	 * Ring the doorbell.
+	 */
+	{
+		uint32_t *db = (void *)((addr_t)(xhci->base + xhci->db_off));
+		uint64_t val = (uint64_t)i;
+
+		pg_write_memory((phys_addr_t)(db + port->slot_id), val, 4);
+	}
+
+	/*
+	 * Wait for the transfer event.
+	 */
+	for (i = 0; i < 400; i++) {
+		uint32_t trb[4];
+
+		trb[3] = cpu_read32(&slot->trb[3]);
+		trb[2] = cpu_read32(&slot->trb[2]);
+		trb[1] = cpu_read32(&slot->trb[1]);
+		trb[0] = cpu_read32(&slot->trb[0]);
+
+		if ((int)((trb[3] >> 24) & 0xFF) == port->slot_id) {
+			int completion_code = (int)((trb[2] >> 24) & 0xFF);
+
+			if (completion_code != 1 && completion_code != 13)
+				break;
+
+			*size += (buffer_size - (size_t)(trb[2] & 0xFFFFFF));
+			r = 0;
+
+			if (*size > buffer_size) {
+				*size = buffer_size;
+				r = DE_UNEXPECTED;
+			}
+
+			break;
+		}
+
+		if (i < 100)
+			cpu_halt(1);
+		else
+			task_sleep(10);
+	}
+
+	return r;
+}
+
 static int u_write_request(struct dancy_usb_device *dev_locked,
 	const struct usb_device_request *request, void *buffer)
 {
@@ -518,6 +617,67 @@ static int u_write_request(struct dancy_usb_device *dev_locked,
 
 		if (device_to_host)
 			memcpy(buffer, slot->io_buffer, wLength);
+
+		break;
+	}
+
+	spin_unlock(&port->lock);
+
+	return r;
+}
+
+static int u_write_ep(struct dancy_usb_device *dev_locked,
+	const struct usb_endpoint_descriptor *endpoint,
+	size_t *size, void *buffer)
+{
+	struct xhci *xhci = dev_locked->hci->hci;
+	struct xhci_port *port = NULL;
+	struct xhci_slot *slot = NULL;
+
+	size_t buffer_size = *size;
+	int r = 0;
+
+	*size = 0;
+
+	if (dev_locked->port >= 0 && dev_locked->port <= xhci->max_ports)
+		port = &xhci->ports[dev_locked->port - 1];
+
+	if (port == NULL)
+		return DE_UNEXPECTED;
+
+	spin_lock_yield(&port->lock);
+
+	if (port->slot_id > 0)
+		slot = &xhci->slots[port->slot_id - 1];
+
+	while (slot != NULL && slot->state > 1 && buffer_size > 0) {
+		int ep_number = (int)(endpoint->bEndpointAddress & 0x0F);
+		int ep_in = ((endpoint->bEndpointAddress & 0x80) != 0);
+		int i = (ep_number << 1) + ep_in;
+
+		if (ep_number == 0) {
+			r = DE_UNEXPECTED;
+			break;
+		}
+
+		if (slot->endpoints[i].tr == NULL) {
+			r = DE_UNINITIALIZED;
+			break;
+		}
+
+		if (buffer_size > 0x1000)
+			buffer_size = 0x1000;
+
+		if (ep_in != 0)
+			memset(slot->io_buffer, 0, buffer_size);
+		else
+			memcpy(slot->io_buffer, buffer, buffer_size);
+
+		*size = buffer_size;
+		r = write_ep_locked(port, slot, i, size, slot->io_buffer);
+
+		if (ep_in != 0)
+			memcpy(buffer, slot->io_buffer, *size);
 
 		break;
 	}
@@ -1125,6 +1285,7 @@ static int xhci_port_task(void *arg)
 				dev->hci = xhci->hci;
 				dev->port = port->port_id;
 				dev->u_write_request = u_write_request;
+				dev->u_write_endpoint = u_write_ep;
 				dev->u_configure_endpoint = u_configure_ep;
 			}
 
