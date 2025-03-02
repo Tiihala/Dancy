@@ -527,7 +527,7 @@ static int u_write_request(struct dancy_usb_device *dev_locked,
 	return r;
 }
 
-int u_configure_ep(struct dancy_usb_device *dev_locked,
+static int u_configure_ep(struct dancy_usb_device *dev_locked,
 	const struct usb_endpoint_descriptor *endpoint)
 {
 	struct xhci *xhci = dev_locked->hci->hci;
