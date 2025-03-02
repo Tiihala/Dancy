@@ -106,6 +106,10 @@ struct dancy_usb_device {
 	int (*u_write_request)(struct dancy_usb_device *dev_locked,
 		const struct usb_device_request *request, void *buffer);
 
+	int (*u_write_endpoint)(struct dancy_usb_device *dev_locked,
+		const struct usb_endpoint_descriptor *endpoint,
+		size_t *size, void *buffer);
+
 	int (*u_configure_endpoint)(struct dancy_usb_device *dev_locked,
 		const struct usb_endpoint_descriptor *endpoint);
 };
