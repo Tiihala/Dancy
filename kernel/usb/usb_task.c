@@ -19,6 +19,173 @@
 
 #include <dancy.h>
 
+static void start_driver_1(struct vfs_node *node,
+	struct dancy_usb_driver *driver)
+{
+	struct dancy_usb_node *data = node->internal_data;
+	uint8_t iClass, iSubClass, iProtocol;
+
+	/*
+	 * Create a copy of the driver structure.
+	 */
+	{
+		struct dancy_usb_driver *new_driver;
+
+		if ((new_driver = malloc(sizeof(*new_driver))) == NULL) {
+			printk("[USB] Out of Memory\n");
+			return;
+		}
+
+		memcpy(new_driver, driver, sizeof(*new_driver));
+
+		new_driver->next = data->_driver;
+		data->_driver = new_driver;
+
+		driver = new_driver;
+	}
+
+	iClass = driver->descriptor.interface->bInterfaceClass;
+	iSubClass = driver->descriptor.interface->bInterfaceSubClass;
+	iProtocol = driver->descriptor.interface->bInterfaceProtocol;
+
+	{
+		int i, count = 0;
+
+		for (i = 0; i < 32; i++)
+			count += (driver->descriptor.endpoints[i] != NULL);
+
+		if (count != driver->descriptor.interface->bNumEndpoints) {
+			printk("[USB] Erroneous bNumEndpoints\n");
+			return;
+		}
+	}
+
+	printk("[USB] Interface Found, Class %d, SubClass %d, Protocol %d\n",
+		(int)iClass, (int)iSubClass, (int)iProtocol);
+}
+
+static void start_driver_0(struct vfs_node *node,
+	struct dancy_usb_driver *driver)
+{
+	struct dancy_usb_node *data = node->internal_data;
+	uint8_t *buffer = data->_driver_buffer;
+
+	int i, offset = 0;
+
+	/*
+	 * Check the descriptors and collect enough information.
+	 */
+	for (;;) {
+		addr_t addr = (addr_t)((void *)(&buffer[offset + 0]));
+
+		int bLength = (int)buffer[offset + 0];
+		int bDescriptorType = (int)buffer[offset + 1];
+
+		offset = ((offset + bLength) + 0x0F) & 0x1FF0;
+
+		if (bLength < 2) {
+			if (driver->descriptor.interface != NULL)
+				start_driver_1(node, driver);
+
+			memset(driver, 0, sizeof(*driver));
+			break;
+		}
+
+		/*
+		 * The device descriptor.
+		 */
+		if (bDescriptorType == 1 && bLength >= 18) {
+			if (driver->descriptor.device != NULL)
+				break;
+
+			driver->descriptor.device = (void *)addr;
+			continue;
+		}
+
+		/*
+		 * The configuration descriptor.
+		 */
+		if (bDescriptorType == 2 && bLength >= 9) {
+			if (driver->descriptor.device == NULL)
+				continue;
+
+			if (driver->descriptor.interface != NULL)
+				start_driver_1(node, driver);
+
+			driver->descriptor.interface = NULL;
+
+			for (i = 0; i < 32; i++)
+				driver->descriptor.endpoints[i] = NULL;
+
+			/*
+			 * Only the first configuration is used.
+			 */
+			if (driver->descriptor.configuration != NULL)
+				break;
+
+			driver->descriptor.configuration = (void *)addr;
+			continue;
+		}
+
+		/*
+		 * The interface descriptor.
+		 */
+		if (bDescriptorType == 4 && bLength >= 9) {
+			struct usb_interface_descriptor *interface;
+
+			if (driver->descriptor.device == NULL)
+				continue;
+
+			if (driver->descriptor.configuration == NULL)
+				continue;
+
+			if (driver->descriptor.interface != NULL)
+				start_driver_1(node, driver);
+
+			driver->descriptor.interface = NULL;
+
+			for (i = 0; i < 32; i++)
+				driver->descriptor.endpoints[i] = NULL;
+
+			interface = (void *)addr;
+
+			if (interface->bAlternateSetting != 0)
+				continue;
+
+			if (interface->bNumEndpoints == 0)
+				continue;
+
+			driver->descriptor.interface = interface;
+			continue;
+		}
+
+		/*
+		 * The endpoint descriptor.
+		 */
+		if (bDescriptorType == 5 && bLength >= 7) {
+			struct usb_endpoint_descriptor *ep = (void *)addr;
+
+			int ep_number = (int)(ep->bEndpointAddress & 0x0F);
+			int ep_in = ((ep->bEndpointAddress & 0x80) != 0);
+
+			if (driver->descriptor.device == NULL)
+				continue;
+
+			if (driver->descriptor.configuration == NULL)
+				continue;
+
+			if (driver->descriptor.interface == NULL)
+				continue;
+
+			if (ep_number != 0) {
+				i = (ep_number << 1) | ep_in;
+				driver->descriptor.endpoints[i] = ep;
+			}
+			continue;
+		}
+	}
+}
+
 int usb_attach_device_task(void *arg)
 {
 	struct dancy_usb_device *dev = arg;
@@ -37,6 +204,8 @@ int usb_attach_device_task(void *arg)
 
 	if (node != NULL) {
 		struct dancy_usb_node *data = node->internal_data;
+		struct dancy_usb_driver *driver;
+		uint8_t *p[2];
 
 		data->_driver_buffer = (void *)mm_alloc_pages(mm_kernel, 0);
 
@@ -45,6 +214,59 @@ int usb_attach_device_task(void *arg)
 			node->n_release(&node);
 			return EXIT_FAILURE;
 		}
+
+		p[0] = data->_driver_buffer;
+		p[1] = (void *)mm_alloc_pages(mm_kernel, 0);
+
+		if (p[1] == NULL) {
+			/*
+			 * The n_release function releases _driver_buffer.
+			 */
+			printk("[USB] Out of Memory\n");
+			node->n_release(&node);
+			return EXIT_FAILURE;
+		}
+
+		memset(p[0], 0, 0x1000);
+		memset(p[1], 0, 0x1000);
+
+		/*
+		 * Read all relevant descriptors and force 16-byte alignments.
+		 */
+		{
+			size_t size = 0x1000;
+			int i = 0, j = 0;
+
+			node->n_read(node, 0, &size, p[1]);
+
+			while (i + 2 < (int)size) {
+				int bLength = (int)p[1][i];
+
+				if (bLength < 2)
+					break;
+
+				j = (j + 0x0F) & 0x1FF0;
+
+				if (j + bLength >= 0x0FF0)
+					break;
+
+				memcpy(p[0] + j, p[1] + i, (size_t)bLength);
+				i += bLength, j += bLength;
+			}
+		}
+
+		mm_free_pages((phys_addr_t)p[1], 0), p[1] = NULL;
+
+		if ((driver = malloc(sizeof(*driver))) == NULL) {
+			printk("[USB] Out of Memory\n");
+			node->n_release(&node);
+			return EXIT_FAILURE;
+		}
+
+		memset(driver, 0, sizeof(*driver));
+
+		start_driver_0(node, driver);
+		free(driver);
 
 		node->n_release(&node);
 	}
