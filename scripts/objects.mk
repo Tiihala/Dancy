@@ -1546,6 +1546,10 @@
     ./kernel/usb/usb_node.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/usb/usb_node.c
 
+./o32/kernel/usb/usb_task.o: \
+    ./kernel/usb/usb_task.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/usb/usb_task.c
+
 ./o32/kernel/usb/xhci.o: \
     ./kernel/usb/xhci.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/usb/xhci.c
@@ -3199,6 +3203,10 @@
 ./o64/kernel/usb/usb_node.o: \
     ./kernel/usb/usb_node.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/usb/usb_node.c
+
+./o64/kernel/usb/usb_task.o: \
+    ./kernel/usb/usb_task.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/usb/usb_task.c
 
 ./o64/kernel/usb/xhci.o: \
     ./kernel/usb/xhci.c $(DANCY_DEPS)

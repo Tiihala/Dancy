@@ -541,6 +541,9 @@ int usb_attach_device(struct dancy_usb_device *dev)
 	spin_unlock(&dev->hci->lock);
 	spin_unlock(&dev->lock);
 
+	if (!r && !task_create(usb_attach_device_task, dev, task_detached))
+		r = DE_MEMORY;
+
 	return r;
 }
 

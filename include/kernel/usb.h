@@ -143,4 +143,9 @@ int usb_register_controller(struct dancy_usb_controller *hci);
 int usb_attach_device(struct dancy_usb_device *dev);
 int usb_remove_device(struct dancy_usb_device *dev);
 
+/*
+ * Declarations of usb_task.c
+ */
+int usb_attach_device_task(void *arg);
+
 #endif
