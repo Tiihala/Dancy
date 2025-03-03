@@ -137,7 +137,7 @@ struct dancy_usb_node {
 };
 
 /*
- * Declarations of usbfs.c
+ * Declarations of usb_node.c
  */
 int usb_register_controller(struct dancy_usb_controller *hci);
 int usb_attach_device(struct dancy_usb_device *dev);
