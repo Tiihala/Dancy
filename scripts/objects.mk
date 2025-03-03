@@ -1542,10 +1542,6 @@
     ./kernel/syscall/syscall.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/syscall.c
 
-./o32/kernel/usb/generic.o: \
-    ./kernel/usb/generic.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/usb/generic.c
-
 ./o32/kernel/usb/usbfs.o: \
     ./kernel/usb/usbfs.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/usb/usbfs.c
@@ -3199,10 +3195,6 @@
 ./o64/kernel/syscall/syscall.o: \
     ./kernel/syscall/syscall.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/syscall.c
-
-./o64/kernel/usb/generic.o: \
-    ./kernel/usb/generic.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/usb/generic.c
 
 ./o64/kernel/usb/usbfs.o: \
     ./kernel/usb/usbfs.c $(DANCY_DEPS)
