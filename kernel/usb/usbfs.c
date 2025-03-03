@@ -436,7 +436,7 @@ static struct vfs_node *alloc_node(size_t data_size)
 static int controller_monotonic;
 static int controller_monotonic_lock;
 
-int usbfs_create(struct dancy_usb_controller *hci)
+int usb_register_controller(struct dancy_usb_controller *hci)
 {
 	struct dancy_usb_node *data;
 	struct vfs_node *node;
@@ -485,7 +485,7 @@ int usbfs_create(struct dancy_usb_controller *hci)
 	return r;
 }
 
-static int usbfs_device_locked(struct dancy_usb_device *dev, int attached)
+static int handle_device_locked(struct dancy_usb_device *dev, int attached)
 {
 	struct dancy_usb_controller *hci = dev->hci;
 	struct dancy_usb_node *data;
@@ -529,14 +529,29 @@ static int usbfs_device_locked(struct dancy_usb_device *dev, int attached)
 	return 0;
 }
 
-int usbfs_device(struct dancy_usb_device *dev, int attached)
+int usb_attach_device(struct dancy_usb_device *dev)
 {
 	int r;
 
 	spin_lock_yield(&dev->lock);
 	spin_lock_yield(&dev->hci->lock);
 
-	r = usbfs_device_locked(dev, attached);
+	r = handle_device_locked(dev, 1);
+
+	spin_unlock(&dev->hci->lock);
+	spin_unlock(&dev->lock);
+
+	return r;
+}
+
+int usb_remove_device(struct dancy_usb_device *dev)
+{
+	int r;
+
+	spin_lock_yield(&dev->lock);
+	spin_lock_yield(&dev->hci->lock);
+
+	r = handle_device_locked(dev, 0);
 
 	spin_unlock(&dev->hci->lock);
 	spin_unlock(&dev->lock);
