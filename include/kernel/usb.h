@@ -137,6 +137,12 @@ struct dancy_usb_node {
 };
 
 /*
+ * Declarations of usb_ep.c
+ */
+int usb_configure_endpoints(struct vfs_node *node,
+	struct dancy_usb_driver *driver);
+
+/*
  * Declarations of usb_node.c
  */
 int usb_register_controller(struct dancy_usb_controller *hci);
