@@ -207,7 +207,17 @@ int usb_attach_device_task(void *arg)
 		struct dancy_usb_driver *driver;
 		uint8_t *p[2];
 
+		spin_lock_yield(&node->lock);
+
+		if (data->_driver_buffer != NULL) {
+			printk("[USB] Unexpected Node Access\n");
+			spin_unlock(&node->lock);
+			node->n_release(&node);
+			return EXIT_FAILURE;
+		}
+
 		data->_driver_buffer = (void *)mm_alloc_pages(mm_kernel, 0);
+		spin_unlock(&node->lock);
 
 		if (data->_driver_buffer == NULL) {
 			printk("[USB] Out of Memory\n");
