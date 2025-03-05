@@ -35,6 +35,7 @@ static int start_driver_3(void *driver_arg)
 	free(driver_arg);
 
 	arg.driver_task(arg.node, arg.driver);
+	arg.node->n_release(&arg.node);
 
 	return 0;
 }
@@ -53,8 +54,10 @@ static void start_driver_2(struct vfs_node *n, struct dancy_usb_driver *d,
 	arg->driver = d;
 	arg->driver_task = driver_task;
 
+	vfs_increment_count(arg->node);
+
 	if (!task_create(start_driver_3, arg, task_detached))
-		free(arg);
+		arg->node->n_release(&arg->node), free(arg);
 }
 
 static void start_driver_1(struct vfs_node *node,
