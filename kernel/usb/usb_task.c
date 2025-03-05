@@ -19,6 +19,44 @@
 
 #include <dancy.h>
 
+struct driver_arg {
+	struct vfs_node *node;
+	struct dancy_usb_driver *driver;
+	void (*driver_task)(struct vfs_node *, struct dancy_usb_driver *);
+};
+
+static int start_driver_3(void *driver_arg)
+{
+	struct driver_arg arg;
+
+	task_set_cmdline(task_current(), NULL, "[usb-driver]");
+
+	memcpy(&arg, driver_arg, sizeof(arg));
+	free(driver_arg);
+
+	arg.driver_task(arg.node, arg.driver);
+
+	return 0;
+}
+
+static void start_driver_2(struct vfs_node *n, struct dancy_usb_driver *d,
+	void (*driver_task)(struct vfs_node *, struct dancy_usb_driver *))
+{
+	struct driver_arg *arg;
+
+	if ((arg = malloc(sizeof(*arg))) == NULL) {
+		printk("[USB] Out of Memory\n");
+		return;
+	}
+
+	arg->node = n;
+	arg->driver = d;
+	arg->driver_task = driver_task;
+
+	if (!task_create(start_driver_3, arg, task_detached))
+		free(arg);
+}
+
 static void start_driver_1(struct vfs_node *node,
 	struct dancy_usb_driver *driver)
 {
@@ -62,6 +100,16 @@ static void start_driver_1(struct vfs_node *node,
 
 	printk("[USB] Interface Found, Class %d, SubClass %d, Protocol %d\n",
 		(int)iClass, (int)iSubClass, (int)iProtocol);
+
+	/*
+	 * The driver for human interface devices.
+	 */
+	if (iClass == 3) {
+		if (usb_configure_endpoints(node, driver))
+			return;
+		start_driver_2(node, driver, usb_hid_driver);
+		return;
+	}
 }
 
 static void start_driver_0(struct vfs_node *node,
@@ -113,6 +161,7 @@ static void start_driver_0(struct vfs_node *node,
 				start_driver_1(node, driver);
 
 			driver->descriptor.interface = NULL;
+			driver->descriptor.hid = NULL;
 
 			for (i = 0; i < 32; i++)
 				driver->descriptor.endpoints[i] = NULL;
@@ -143,6 +192,7 @@ static void start_driver_0(struct vfs_node *node,
 				start_driver_1(node, driver);
 
 			driver->descriptor.interface = NULL;
+			driver->descriptor.hid = NULL;
 
 			for (i = 0; i < 32; i++)
 				driver->descriptor.endpoints[i] = NULL;
@@ -156,6 +206,23 @@ static void start_driver_0(struct vfs_node *node,
 				continue;
 
 			driver->descriptor.interface = interface;
+			continue;
+		}
+
+		/*
+		 * The HID descriptor.
+		 */
+		if (bDescriptorType == 33 && bLength >= 6) {
+			if (driver->descriptor.device == NULL)
+				continue;
+
+			if (driver->descriptor.configuration == NULL)
+				continue;
+
+			if (driver->descriptor.interface == NULL)
+				continue;
+
+			driver->descriptor.hid = (void *)addr;
 			continue;
 		}
 

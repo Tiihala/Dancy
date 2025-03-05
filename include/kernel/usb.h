@@ -70,6 +70,14 @@ struct usb_interface_descriptor {
 	uint8_t iInterface;
 };
 
+struct usb_hid_descriptor {
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	uint16_t bcdHID;
+	uint8_t bCountryCode;
+	uint8_t bNumDescriptors;
+};
+
 struct usb_endpoint_descriptor {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
@@ -121,6 +129,7 @@ struct dancy_usb_driver {
 		struct usb_device_descriptor *device;
 		struct usb_configuration_descriptor *configuration;
 		struct usb_interface_descriptor *interface;
+		struct usb_hid_descriptor *hid;
 		struct usb_endpoint_descriptor *endpoints[32];
 	} descriptor;
 };
@@ -141,6 +150,11 @@ struct dancy_usb_node {
  */
 int usb_configure_endpoints(struct vfs_node *node,
 	struct dancy_usb_driver *driver);
+
+/*
+ * Declarations of usb_hid.c
+ */
+void usb_hid_driver(struct vfs_node *node, struct dancy_usb_driver *driver);
 
 /*
  * Declarations of usb_node.c
