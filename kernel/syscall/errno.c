@@ -96,7 +96,7 @@ static struct { int e; const char *name; const char *description; } data[] = {
 { EPROTOTYPE       , "EPROTOTYPE"      ,  NULL                              },
 { EROFS            , "EROFS"           ,  NULL                              },
 { ESPIPE           , "ESPIPE"          ,  NULL                              },
-{ ESRCH            , "ESRCH"           ,  NULL                              },
+{ ESRCH            , "ESRCH"           , "No such process"                  },
 { ESTALE           , "ESTALE"          ,  NULL                              },
 { ETIME            , "ETIME"           ,  NULL                              },
 { ETIMEDOUT        , "ETIMEDOUT"       ,  NULL                              },
