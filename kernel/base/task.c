@@ -591,6 +591,8 @@ void task_foreach(int (*func)(struct task *, void *), void *arg)
 		panic("Enumerating task structs while interrupts disabled.");
 
 	if (t != NULL) {
+		int r = 0;
+
 		/*
 		 * Do not disable interrupts. Task switching must be
 		 * temporarily suspended.
@@ -604,7 +606,7 @@ void task_foreach(int (*func)(struct task *, void *), void *arg)
 		 * structure identifications or the linked list.
 		 */
 		do {
-			if (t != current && func(t, arg) != 0)
+			if (t != current && (r = func(t, arg)) != 0)
 				break;
 
 			t = task_read_next(t);
@@ -615,7 +617,8 @@ void task_foreach(int (*func)(struct task *, void *), void *arg)
 		 * The current task structure is always the last one
 		 * to be processed by the input function.
 		 */
-		func(current, arg);
+		if (r == 0)
+			func(current, arg);
 
 		spin_unlock(&task_lock);
 		task_switch_enable();
