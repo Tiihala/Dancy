@@ -88,6 +88,55 @@ static int cmd_exit(int argc, char *argv[])
 	return 0;
 }
 
+static int cmd_kill(int argc, char *argv[])
+{
+	const char *usage = "Usage: kill [-SIGNAL_NUMBER] PID...\n";
+	int i = 1, signal_number = SIGTERM;
+
+	if (argc < 2)
+		return fputs(usage, stderr), EXIT_FAILURE;
+
+	if (argv[1][0] == '-') {
+		signal_number = 0;
+
+		while (argv[1][i] != '\0') {
+			char c = argv[1][i];
+
+			if (c < '0' || c > '9')
+				return fputs(usage, stderr), EXIT_FAILURE;
+
+			signal_number *= 10;
+			signal_number += ((int)c - '0');
+
+			if (signal_number >= 128)
+				return fputs(usage, stderr), EXIT_FAILURE;
+
+			i += 1;
+		}
+
+		i = 2;
+	}
+
+	while (argv[i] != NULL) {
+		long long pid = (errno = 0, strtoll(argv[i], NULL, 10));
+
+		i += 1;
+
+		if (errno != 0) {
+			fprintf(stderr, "kill: %s\n", strerror(errno));
+			return EXIT_FAILURE;
+		}
+
+		if (kill((pid_t)pid, signal_number) == 0)
+			continue;
+
+		fprintf(stderr, "kill(%lld, %d): %s\n",
+			pid, signal_number, strerror(errno));
+	}
+
+	return 0;
+}
+
 static int cmd_rename(int argc, char *argv[])
 {
 	const char *usage = "Usage: rename OLD_FILE NEW_FILE\n";
@@ -134,6 +183,7 @@ struct dsh_builtin dsh_builtin_array[] = {
 	{ cmd_clear, "reset" },
 	{ cmd_echo, "echo" },
 	{ cmd_exit, "exit" },
+	{ cmd_kill, "kill" },
 	{ cmd_rename, "rename" },
 	{ cmd_unlink, "unlink" },
 	{ cmd_default, NULL }
