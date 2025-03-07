@@ -32,20 +32,6 @@ static int data_led_state[2] = { 0x02, 0x02 };
 static int data_scan_code = 0x02;
 static int data_typematic = 0x00;
 
-struct kbd_device {
-	struct vfs_node *pipe[2];
-	struct vfs_node node;
-	int state;
-	const char *name;
-};
-
-static struct kbd_device kbd_devices[] = {
-	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-ps2-keyboard" },
-	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-ps2-keyboard-gui" }
-};
-
-#define KBD_DEVICE_COUNT ((int)(sizeof(kbd_devices) / sizeof(kbd_devices[0])))
-
 static int keymod_lctrl = 0;
 static int keymod_lshift = 0;
 static int keymod_lalt = 0;
@@ -54,50 +40,6 @@ static int keymod_rctrl = 0;
 static int keymod_rshift = 0;
 static int keymod_ralt = 0;
 static int keymod_rgui = 0;
-
-static int create_and_mount_devices(void);
-
-static struct vfs_node **get_pipe_nodes(struct vfs_node *node)
-{
-	uint32_t i = 0;
-
-	if (node == NULL) {
-		i = (kernel->keyboard.console_switch_data & 0xFF) - 1;
-
-	} else {
-		while (i < KBD_DEVICE_COUNT) {
-			if (&kbd_devices[i].node == node)
-				break;
-			i += 1;
-		}
-	}
-
-	if (i >= (uint32_t)KBD_DEVICE_COUNT)
-		i = 0;
-
-	if (kbd_devices[i].state == 0)
-		return kernel->panic("PS/2: unexpected node state"), NULL;
-
-	return &kbd_devices[i].pipe[0];
-}
-
-static void remove_unused_input(void)
-{
-	int i;
-
-	for (i = 0; i < KBD_DEVICE_COUNT; i++) {
-		while (kbd_devices[i].node.count == 1) {
-			size_t size = sizeof(int);
-			struct vfs_node *pn = kbd_devices[i].pipe[0];
-			int read_data;
-
-			(void)pn->n_read(pn, 0, &size, &read_data);
-
-			if (size != sizeof(int))
-				break;
-		}
-	}
-}
 
 static int send_command(int command, int data, int count, int *response)
 {
@@ -146,54 +88,6 @@ static int send_command(int command, int data, int count, int *response)
 	while (ps2_receive_port1() >= 0) { /* void */ }
 
 	return 0;
-}
-
-static int n_read(struct vfs_node *node,
-	uint64_t offset, size_t *size, void *buffer)
-{
-	struct vfs_node *pn = get_pipe_nodes(node)[0];
-
-	(void)offset;
-
-	if ((*size % sizeof(int)) != 0)
-		return *size = 0, DE_ALIGNMENT;
-
-	if (((size_t)((addr_t)buffer) % sizeof(int)) != 0)
-		return *size = 0, DE_ALIGNMENT;
-
-	return pn->n_read(pn, 0, size, buffer);
-}
-
-static int n_write(struct vfs_node *node,
-	uint64_t offset, size_t *size, const void *buffer)
-{
-	(void)node;
-	(void)offset;
-
-	if ((*size % sizeof(int)) != 0)
-		return *size = 0, DE_ALIGNMENT;
-
-	if (((size_t)((addr_t)buffer) % sizeof(int)) != 0)
-		return *size = 0, DE_ALIGNMENT;
-
-	return *size = 0, DE_FULL;
-}
-
-static int n_poll(struct vfs_node *node, int events, int *revents)
-{
-	struct vfs_node *pn = get_pipe_nodes(node)[0];
-	int r;
-
-	*revents = 0;
-
-	if ((r = pn->n_poll(pn, events, revents)) == 0) {
-		if ((events & POLLOUT) != 0)
-			*revents |= POLLOUT;
-		if ((events & POLLWRNORM) != 0)
-			*revents |= POLLWRNORM;
-	}
-
-	return r;
 }
 
 int ps2_kbd_init(void)
@@ -246,12 +140,6 @@ int ps2_kbd_init(void)
 	 * Enable keyboard scanning.
 	 */
 	(void)send_command(0xF4, data_none, 0, NULL);
-
-	/*
-	 * Create and mount the keyboard devices.
-	 */
-	if (create_and_mount_devices())
-		return 1;
 
 	kbd_ready = 1;
 
@@ -353,7 +241,6 @@ static int kbd_table[128] = {
 
 static void process_keycode(int keycode, int release)
 {
-	struct vfs_node *pn = get_pipe_nodes(NULL)[1];
 	int data = keycode;
 	int r;
 
@@ -415,7 +302,7 @@ static void process_keycode(int keycode, int release)
 		}
 		if (keycode >= DANCY_KEY_F1 && keycode <= DANCY_KEY_F12) {
 			uint32_t f = (uint32_t)(keycode - DANCY_KEY_F1) + 1;
-			if (release || f > (uint32_t)KBD_DEVICE_COUNT)
+			if (release || f > 2)
 				return;
 			cpu_write32(&kernel->keyboard.console_switch_data, f);
 			event_signal(kernel->keyboard.console_switch_event);
@@ -452,7 +339,7 @@ static void process_keycode(int keycode, int release)
 		size_t size = sizeof(int);
 		void *buffer = &data;
 
-		r = pn->n_write(pn, 0, &size, buffer);
+		r = dancy_kbd_write(&size, buffer);
 
 		if (size == sizeof(int) || r != DE_RETRY)
 			break;
@@ -477,7 +364,7 @@ void ps2_kbd_handler(void)
 			return;
 	}
 
-	remove_unused_input();
+	dancy_kbd_clear();
 
 	while ((b = ps2_receive_port1()) >= 0) {
 		int keycode = 0;
@@ -586,7 +473,7 @@ void ps2_kbd_handler(void)
 		send_command(0xED, data_led_state[0], 0, NULL);
 	}
 
-	remove_unused_input();
+	dancy_kbd_clear();
 }
 
 void ps2_kbd_probe(void)
@@ -621,44 +508,4 @@ void ps2_kbd_probe(void)
 	}
 
 	probe_state = 0;
-}
-
-static int create_and_mount_devices(void)
-{
-	static int run_once;
-	static int r = 1;
-
-	int i;
-
-	if (!spin_trylock(&run_once))
-		return r;
-
-	for (i = 0; i < KBD_DEVICE_COUNT; i++)  {
-		const char *name = kbd_devices[i].name;
-		struct vfs_node *node;
-
-		if (vfs_pipe(kbd_devices[i].pipe) != 0)
-			return kernel->panic("PS/2: vfs_pipe error"), r;
-
-		if (vfs_open(name, &node, 0, vfs_mode_create) != 0)
-			return kernel->panic("PS/2: vfs_open error"), r;
-
-		node->n_release(&node);
-		node = &kbd_devices[i].node;
-
-		vfs_init_node(node, 0);
-		node->type = vfs_type_character;
-		node->mode = vfs_mode_exclusive;
-		node->internal_event = kbd_devices[i].pipe[0]->internal_event;
-		node->n_read = n_read;
-		node->n_write = n_write;
-		node->n_poll = n_poll;
-
-		if (vfs_mount(name, node) != 0)
-			return kernel->panic("PS/2: vfs_mount error"), r;
-
-		spin_trylock(&kbd_devices[i].state);
-	}
-
-	return (r = 0);
 }
