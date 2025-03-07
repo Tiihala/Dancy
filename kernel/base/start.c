@@ -44,6 +44,7 @@ static struct {
 	{ 0, 0, SYMBOL_PREFIX "bin_init", "Bin Mount" },
 	{ 0, 0, SYMBOL_PREFIX "devfs_init", "Devfs Mount" },
 	{ 0, 0, SYMBOL_PREFIX "zero_init", "Devfs Zero" },
+	{ 0, 0, SYMBOL_PREFIX "dancy_kbd_init", "Dancy Keyboard" },
 	{ 0, 0, SYMBOL_PREFIX "console_init", "Devfs Console" },
 	{ 0, 0, SYMBOL_PREFIX "fb_user_init", "Devfs Framebuffer" },
 	{ 0, 0, SYMBOL_PREFIX "kmsg_init", "Kernel Messages" },

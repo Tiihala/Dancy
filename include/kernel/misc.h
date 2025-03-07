@@ -77,6 +77,13 @@ int hdd_fat_init(void);
 int hdd_part_init(void);
 
 /*
+ * Declarations of keyboard.c
+ */
+int dancy_kbd_init(void);
+void dancy_kbd_clear(void);
+int dancy_kbd_write(size_t *size, void *buffer);
+
+/*
  * Declarations of kmsg.c
  */
 int kmsg_init(void);
