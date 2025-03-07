@@ -14,6 +14,7 @@ DANCY_MISC_OBJECTS_32= \
  ./o32/kernel/misc/hdd_part.o \
  ./o32/kernel/misc/keyboard.o \
  ./o32/kernel/misc/kmsg.o \
+ ./o32/kernel/misc/mouse.o \
  ./o32/kernel/misc/rtc.o \
  ./o32/kernel/misc/serial.o \
  ./o32/kernel/misc/zero.o \
@@ -30,6 +31,7 @@ DANCY_MISC_OBJECTS_64= \
  ./o64/kernel/misc/hdd_part.o \
  ./o64/kernel/misc/keyboard.o \
  ./o64/kernel/misc/kmsg.o \
+ ./o64/kernel/misc/mouse.o \
  ./o64/kernel/misc/rtc.o \
  ./o64/kernel/misc/serial.o \
  ./o64/kernel/misc/zero.o \

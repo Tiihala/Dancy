@@ -89,6 +89,13 @@ int dancy_kbd_write(size_t *size, void *buffer);
 int kmsg_init(void);
 
 /*
+ * Declarations of mouse.c
+ */
+int dancy_mse_init(void);
+void dancy_mse_clear(void);
+int dancy_mse_write(size_t *size, void *buffer);
+
+/*
  * Declarations of rtc.c
  */
 struct rtc_time {
