@@ -132,6 +132,11 @@ struct dancy_usb_driver {
 		struct usb_hid_descriptor *hid;
 		struct usb_endpoint_descriptor *endpoints[32];
 	} descriptor;
+
+	struct {
+		size_t length;
+		uint8_t *data;
+	} hid_report;
 };
 
 struct dancy_usb_node {
