@@ -780,15 +780,22 @@ static int u_configure_ep(struct dancy_usb_device *dev_locked,
 
 				uint32_t error_count = 3;
 				uint32_t ep_type, max_packet_size;
+				uint32_t average_trb_length, max_esit_payload;
 				void *tr;
 
 				ep_type = endpoint->bmAttributes & 0x03;
 				max_packet_size = endpoint->wMaxPacketSize;
 
-				if ((ep_type <<= ep_in) == 0) {
+				if (ep_type == 0) {
 					r = DE_UNSUPPORTED;
 					break;
 				}
+
+				if (ep_in)
+					ep_type += 4;
+
+				average_trb_length = endpoint->wMaxPacketSize;
+				max_esit_payload = endpoint->wMaxPacketSize;
 
 				/*
 				 * Set the error count.
@@ -810,6 +817,16 @@ static int u_configure_ep(struct dancy_usb_device *dev_locked,
 				 */
 				tr = slot->endpoints[i].tr;
 				c[2] |= ((uint32_t)((addr_t)tr) | 1u);
+
+				/*
+				 * Set the average TRB length.
+				 */
+				c[4] |= (average_trb_length << 0);
+
+				/*
+				 * Set the maximum ESIT payload (low).
+				 */
+				c[4] |= (max_esit_payload << 16);
 			}
 		}
 
