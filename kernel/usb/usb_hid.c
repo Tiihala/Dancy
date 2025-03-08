@@ -19,9 +19,111 @@
 
 #include <dancy.h>
 
+static int read_report_descriptor(struct vfs_node *node,
+	struct dancy_usb_driver *driver)
+{
+	struct dancy_usb_node *data = node->internal_data;
+	struct dancy_usb_device *dev = data->dev;
+	struct usb_hid_descriptor *hid = driver->descriptor.hid;
+
+	int i, wDescriptorLength = 0;
+
+	if (hid == NULL)
+		return DE_UNSUPPORTED;
+
+	for (i = 0; i < (int)hid->bNumDescriptors; i++) {
+		const uint8_t *p = (const void *)((addr_t)hid);
+		int bDescriptorType;
+
+		if (((3 * i) + 9) > (int)hid->bLength)
+			return DE_UNEXPECTED;
+
+		p += ((3 * i) + 6);
+		bDescriptorType = (int)p[0];
+
+		if (bDescriptorType == 0x22) {
+			wDescriptorLength = (int)p[1] | ((int)p[2] << 8);
+			break;
+		}
+	}
+
+	if (wDescriptorLength == 0)
+		return DE_UNSUPPORTED;
+
+	/*
+	 * Allocate the data buffer.
+	 */
+	{
+		if (driver->hid_report.data != NULL)
+			free(driver->hid_report.data);
+
+		driver->hid_report.length = (size_t)wDescriptorLength;
+		driver->hid_report.data = malloc(driver->hid_report.length);
+
+		if (driver->hid_report.data == NULL)
+			return DE_MEMORY;
+
+		memset(driver->hid_report.data, 0, driver->hid_report.length);
+	}
+
+	spin_lock_yield(&dev->lock);
+
+	if (data->port != dev->port || data->device != dev->device)
+		return spin_unlock(&dev->lock), DE_MEDIA_CHANGED;
+
+	/*
+	 * Set the report protocol (only for boot devices).
+	 */
+	if (driver->descriptor.interface->bInterfaceSubClass == 1) {
+		struct usb_device_request request;
+
+		i = (int)driver->descriptor.interface->bInterfaceNumber;
+		memset(&request, 0, sizeof(request));
+
+		request.bmRequestType = 0x21;
+		request.bRequest      = 0x0B;
+		request.wValue        = 0x0001;
+		request.wIndex        = (uint16_t)i;
+		request.wLength       = 0;
+
+		if (dev->u_write_request(dev, &request, NULL))
+			return spin_unlock(&dev->lock), DE_UNSUPPORTED;
+	}
+
+	/*
+	 * Read the first report descriptor.
+	 */
+	{
+		struct usb_device_request request;
+		void *buffer = driver->hid_report.data;
+
+		i = (int)driver->descriptor.interface->bInterfaceNumber;
+		memset(&request, 0, sizeof(request));
+
+		request.bmRequestType = 0x81;
+		request.bRequest      = 0x06;
+		request.wValue        = 0x2200;
+		request.wIndex        = (uint16_t)i;
+		request.wLength       = (uint16_t)driver->hid_report.length;
+
+		if (dev->u_write_request(dev, &request, buffer))
+			return spin_unlock(&dev->lock), DE_UNSUPPORTED;
+	}
+
+	printk("[USB] HID Report Descriptor, Length %d, Port %d, Device %d\n",
+		wDescriptorLength, dev->port, dev->device);
+
+	spin_unlock(&dev->lock);
+
+	return 0;
+}
+
 void usb_hid_driver(struct vfs_node *node, struct dancy_usb_driver *driver)
 {
 	printk("[USB] Driver Started, Human Interface Devices (HID)\n");
+
+	if (read_report_descriptor(node, driver))
+		return;
 
 	(void)node, (void)driver, task_sleep(10000);
 }
