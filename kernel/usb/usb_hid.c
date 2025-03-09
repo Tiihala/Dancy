@@ -119,6 +119,28 @@ static int read_report_descriptor(struct vfs_node *node,
 
 	spin_unlock(&dev->lock);
 
+	/*
+	 * Check the short and long item sizes.
+	 */
+	for (i = 0; i < wDescriptorLength; /* void */) {
+		const uint8_t *p = driver->descriptor.hid_report;
+
+		int b = (int)p[i++];
+		int bSize = ((b >> 0) & 0x03);
+
+		i += (bSize + (bSize == 3));
+
+		if (b == 0xFE && i <= wDescriptorLength) {
+			int bDataSize = (int)p[i - 2];
+			i += bDataSize;
+		}
+
+		if (i > wDescriptorLength) {
+			printk("[USB] HID Report Descriptor, Overflow\n");
+			return DE_OVERFLOW;
+		}
+	}
+
 	return 0;
 }
 
