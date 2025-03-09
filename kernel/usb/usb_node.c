@@ -37,8 +37,8 @@ static void n_release(struct vfs_node **node)
 
 		data->_driver = driver->next;
 
-		if (driver->hid_report.data != NULL)
-			free(driver->hid_report.data);
+		if (driver->descriptor.hid_report != NULL)
+			free(driver->descriptor.hid_report);
 
 		memset(driver, 0, sizeof(*driver));
 		free(driver);

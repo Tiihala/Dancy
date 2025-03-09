@@ -54,16 +54,20 @@ static int read_report_descriptor(struct vfs_node *node,
 	 * Allocate the data buffer.
 	 */
 	{
-		if (driver->hid_report.data != NULL)
-			free(driver->hid_report.data);
+		size_t size = (size_t)wDescriptorLength;
 
-		driver->hid_report.length = (size_t)wDescriptorLength;
-		driver->hid_report.data = malloc(driver->hid_report.length);
+		if (driver->descriptor.hid_report != NULL)
+			free(driver->descriptor.hid_report);
 
-		if (driver->hid_report.data == NULL)
+		driver->descriptor.hid_report_size = size;
+		driver->descriptor.hid_report = malloc(size);
+
+		if (driver->descriptor.hid_report == NULL) {
+			driver->descriptor.hid_report_size = 0;
 			return DE_MEMORY;
+		}
 
-		memset(driver->hid_report.data, 0, driver->hid_report.length);
+		memset(driver->descriptor.hid_report, 0, size);
 	}
 
 	spin_lock_yield(&dev->lock);
@@ -95,7 +99,7 @@ static int read_report_descriptor(struct vfs_node *node,
 	 */
 	{
 		struct usb_device_request request;
-		void *buffer = driver->hid_report.data;
+		void *buffer = driver->descriptor.hid_report;
 
 		i = (int)driver->descriptor.interface->bInterfaceNumber;
 		memset(&request, 0, sizeof(request));
@@ -104,7 +108,7 @@ static int read_report_descriptor(struct vfs_node *node,
 		request.bRequest      = 0x06;
 		request.wValue        = 0x2200;
 		request.wIndex        = (uint16_t)i;
-		request.wLength       = (uint16_t)driver->hid_report.length;
+		request.wLength       = (uint16_t)wDescriptorLength;
 
 		if (dev->u_write_request(dev, &request, buffer))
 			return spin_unlock(&dev->lock), DE_UNSUPPORTED;
