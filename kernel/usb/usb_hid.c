@@ -146,10 +146,50 @@ static int read_report_descriptor(struct vfs_node *node,
 
 void usb_hid_driver(struct vfs_node *node, struct dancy_usb_driver *driver)
 {
+	struct dancy_usb_node *data = node->internal_data;
+	struct dancy_usb_device *dev = data->dev;
+
+	uint8_t iSubClass = driver->descriptor.interface->bInterfaceSubClass;
+	uint8_t iProtocol = driver->descriptor.interface->bInterfaceProtocol;
+
 	printk("[USB] Driver Started, Human Interface Devices (HID)\n");
 
 	if (read_report_descriptor(node, driver))
 		return;
 
-	(void)node, (void)driver, task_sleep(10000);
+	/*
+	 * The boot interface subclass (keyboard or mouse).
+	 */
+	if (iSubClass == 1 && (iProtocol == 1 || iProtocol == 2)) {
+		struct usb_device_request request;
+		int i = (int)driver->descriptor.interface->bInterfaceNumber;
+
+		spin_lock_yield(&dev->lock);
+
+		if (data->port != dev->port || data->device != dev->device) {
+			spin_unlock(&dev->lock);
+			return;
+		}
+
+		memset(&request, 0, sizeof(request));
+
+		request.bmRequestType = 0x21;
+		request.bRequest      = 0x0B;
+		request.wValue        = 0x0000;
+		request.wIndex        = (uint16_t)i;
+		request.wLength       = 0;
+
+		i = dev->u_write_request(dev, &request, NULL);
+		spin_unlock(&dev->lock);
+
+		if (i == 0 && iProtocol == 1) {
+			usb_boot_keyboard_driver(node, driver);
+			return;
+		}
+
+		if (i == 0 && iProtocol == 2) {
+			usb_boot_mouse_driver(node, driver);
+			return;
+		}
+	}
 }

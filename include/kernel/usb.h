@@ -149,6 +149,18 @@ struct dancy_usb_node {
 };
 
 /*
+ * Declarations of boot_kbd.c
+ */
+void usb_boot_keyboard_driver(struct vfs_node *node,
+	struct dancy_usb_driver *driver);
+
+/*
+ * Declarations of boot_mse.c
+ */
+void usb_boot_mouse_driver(struct vfs_node *node,
+	struct dancy_usb_driver *driver);
+
+/*
  * Declarations of usb_ep.c
  */
 int usb_configure_endpoints(struct vfs_node *node,

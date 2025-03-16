@@ -1550,6 +1550,14 @@
     ./kernel/syscall/syscall.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/syscall/syscall.c
 
+./o32/kernel/usb/boot_kbd.o: \
+    ./kernel/usb/boot_kbd.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/usb/boot_kbd.c
+
+./o32/kernel/usb/boot_mse.o: \
+    ./kernel/usb/boot_mse.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/usb/boot_mse.c
+
 ./o32/kernel/usb/usb_ep.o: \
     ./kernel/usb/usb_ep.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/usb/usb_ep.c
@@ -3223,6 +3231,14 @@
 ./o64/kernel/syscall/syscall.o: \
     ./kernel/syscall/syscall.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/syscall/syscall.c
+
+./o64/kernel/usb/boot_kbd.o: \
+    ./kernel/usb/boot_kbd.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/usb/boot_kbd.c
+
+./o64/kernel/usb/boot_mse.o: \
+    ./kernel/usb/boot_mse.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/usb/boot_mse.c
 
 ./o64/kernel/usb/usb_ep.o: \
     ./kernel/usb/usb_ep.c $(DANCY_DEPS)
