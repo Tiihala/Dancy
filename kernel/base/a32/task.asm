@@ -126,7 +126,7 @@ _task_switch_asm:
         mov eax, esp                    ; eax = stack pointer
         mov ecx, [esp+28]               ; ecx = (struct task *)next
         mov edx, [esp+32]               ; edx = (void *)tss
-        test eax, 0x1000                ; test stack pointer
+        test eax, 0x1800                ; test stack pointer
         jz short _stack_error
 
         and eax, 0xFFFFE000             ; eax = address of current task
@@ -141,7 +141,7 @@ _task_switch_asm_esp0:
         lea ebx, [ecx+0x1FF0]           ; ebx = value of esp0
         mov [edx+4], ebx                ; update esp0 (task-state segment)
 
-        lea ebx, [eax+0x0C00]           ; ebx = address of fxsave area
+        lea ebx, [eax+0x0400]           ; ebx = address of fxsave area
         mov [eax], esp                  ; save stack pointer
 
         ; uint8_t task_patch_fxsave[3]
@@ -150,7 +150,7 @@ _task_patch_fxsave:
 
         mov esp, [ecx]                  ; esp = next->sp
         mov edx, [ecx+8]                ; edx = next->cr3
-        lea ebx, [ecx+0x0C00]           ; ebx = address of fxrstor area
+        lea ebx, [ecx+0x0400]           ; ebx = address of fxrstor area
 
         ; uint8_t task_patch_fxrstor[3]
 _task_patch_fxrstor:

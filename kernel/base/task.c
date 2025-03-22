@@ -142,12 +142,12 @@ static int task_caretaker(void *arg)
 			 * Check the maximum kernel stack usage.
 			 */
 			{
-				int stack_state = 0x1000;
+				int stack_state = 0x1800;
 
-				p = (void *)((addr_t)t + 0x1000);
+				p = (void *)((addr_t)t + 0x0800);
 
 				while (stack_state > 0) {
-					if (p[0x1000 - stack_state] != 0)
+					if (p[0x1800 - stack_state] != 0)
 						break;
 					stack_state -= 1;
 				}
@@ -359,7 +359,7 @@ int task_init(void)
 	task_switch_asm(current, gdt_get_tss());
 	current->active = 1;
 
-	fstate = (const uint8_t *)current + 0x0C00;
+	fstate = (const uint8_t *)current + 0x0400;
 	memcpy(&task_default_fstate[0], fstate, 512);
 
 	task_head = (task_tail = current);
@@ -551,7 +551,7 @@ uint64_t task_create(int (*func)(void *), void *arg, int type)
 	new_task->cr3 = (uint64_t)pg_kernel;
 	new_task->event.func = task_null_func;
 
-	fstate = (uint8_t *)new_task + 0x0C00;
+	fstate = (uint8_t *)new_task + 0x0400;
 	memcpy(fstate, &task_default_fstate[0], 512);
 
 	if ((type & task_detached) != 0)

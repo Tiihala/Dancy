@@ -131,7 +131,7 @@ task_switch_asm:
         push gs                         ; save segment register gs
 
         mov rax, rsp                    ; rax = stack pointer
-        test eax, 0x1000                ; test stack pointer
+        test eax, 0x1800                ; test stack pointer
         jz short stack_error
 
         and rax, -8192                  ; rax = address of current task
@@ -147,11 +147,11 @@ task_switch_asm_rsp0:
         mov [rdx+4], rbx                ; update rsp0 (task-state segment)
 
         mov [rax], rsp                  ; save stack pointer
-        fxsave [rax+0x0C00]             ; save fpu, mmx, and sse state
+        fxsave [rax+0x0400]             ; save fpu, mmx, and sse state
 
         mov rsp, [rcx]                  ; rsp = next->sp
         mov rdx, [rcx+8]                ; rdx = next->cr3
-        fxrstor [rcx+0x0C00]            ; restore fpu, mmx, and sse state
+        fxrstor [rcx+0x0400]            ; restore fpu, mmx, and sse state
 
         mov cr3, rdx                    ; change virtual address space
         mov dword [rax+16], 0           ; clear active flag (previous task)
