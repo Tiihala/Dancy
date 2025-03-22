@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022, 2023, 2024 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023, 2024, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,6 +24,109 @@ static struct vfs_node *root_node;
 
 static void n_release(struct vfs_node **node);
 static void n_release_panic(struct vfs_node **node);
+
+#define VFS_PATH_COUNT  32
+#define VFS_PATH_BUFFER 1024
+
+static struct {
+	char *components[VFS_PATH_COUNT];
+	int type;
+
+	char wd[VFS_PATH_BUFFER];
+	char b[VFS_PATH_BUFFER];
+} vname;
+
+static int build_vname_locked(const char *name)
+{
+	char *b = &vname.b[0];
+	int i, r, count = 0;
+
+	for (i = 0; i < VFS_PATH_COUNT; i++)
+		vname.components[i] = NULL;
+
+	vname.type = 0;
+
+	if (name[0] == '\0')
+		return DE_PATH;
+
+	if (name[0] != '/') {
+		struct vfs_node *wd_node = task_current()->fd.wd_node;
+		size_t wd_size = VFS_PATH_BUFFER - 16;
+		char *w = &vname.wd[0];
+
+		if ((r = vfs_realpath(wd_node, &vname.wd[0], wd_size)) != 0)
+			return r;
+
+		for (i = 0; /* void */; i++) {
+			char c = vname.wd[i];
+
+			if (c == '/' || c == '\0') {
+				if (count + 4 >= VFS_PATH_COUNT)
+					return DE_PATH;
+
+				vname.wd[i] = '\0';
+
+				if (w != &vname.wd[i])
+					vname.components[count++] = w;
+
+				w = &vname.wd[i + 1];
+			}
+
+			if (c == '\0')
+				break;
+		}
+	}
+
+	for (i = 0; /* void */; i++) {
+		char c = name[i];
+
+		if (i + 16 >= VFS_PATH_BUFFER)
+			return DE_PATH;
+
+		vname.b[i] = c;
+
+		if (c == '/' || c == '\0') {
+			if (count + 4 >= VFS_PATH_COUNT)
+				return DE_PATH;
+
+			vname.b[i] = '\0';
+
+			if (b != &vname.b[i])
+				vname.components[count++] = b;
+
+			b = &vname.b[i + 1];
+		}
+
+		while (count > 0) {
+			char *p = vname.components[count - 1];
+
+			if (p[0] == '.' && p[1] == '\0') {
+				vname.components[--count] = NULL;
+				vname.type = vfs_type_directory;
+				break;
+			}
+
+			if (p[0] == '.' && p[1] == '.' && p[2] == '\0') {
+				vname.components[--count] = NULL;
+				if (count > 0)
+					vname.components[--count] = NULL;
+				vname.type = vfs_type_directory;
+				break;
+			}
+
+			vname.type = 0;
+			break;
+		}
+
+		if (c == '\0') {
+			if (i > 0 && name[i - 1] == '/')
+				vname.type = vfs_type_directory;
+			break;
+		}
+	}
+
+	return 0;
+}
 
 int vfs_init(void)
 {
@@ -378,35 +481,34 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 {
 	struct vfs_node *owner = root_node;
 	struct vfs_node *new_node = NULL;
-	struct vfs_name vname;
 	int i, r;
 
 	*node = NULL;
 
-	if ((r = vfs_build_path(name, &vname)) != 0)
-		return r;
+	vfs_lock_tree();
+
+	if ((r = build_vname_locked(name)) != 0)
+		return vfs_unlock_tree(), r;
 
 	if (vname.type == vfs_type_directory) {
 		if (type == vfs_type_unknown)
 			type = vfs_type_directory;
 
 		if (type != vfs_type_directory)
-			return DE_TYPE;
+			return vfs_unlock_tree(), DE_TYPE;
 	}
 
 	if ((mode & vfs_mode_write) != 0 && type == vfs_type_directory)
-		return DE_DIRECTORY;
+		return vfs_unlock_tree(), DE_DIRECTORY;
 
 	if ((mode & vfs_mode_exclusive) != 0 && type == vfs_type_directory) {
 		if ((mode & vfs_mode_create) == 0)
-			return DE_ARGUMENT;
+			return vfs_unlock_tree(), DE_ARGUMENT;
 	}
 
 	if (vname.components[0] == NULL) {
 		if (type != vfs_type_unknown && type != vfs_type_directory)
-			return DE_TYPE;
-
-		vfs_lock_tree();
+			return vfs_unlock_tree(), DE_TYPE;
 
 		vfs_increment_count(root_node);
 		set_tree_state(root_node);
@@ -415,8 +517,6 @@ int vfs_open(const char *name, struct vfs_node **node, int type, int mode)
 
 		return *node = root_node, 0;
 	}
-
-	vfs_lock_tree();
 
 	for (i = 0; vname.components[i] != NULL; i++) {
 		const char *n = vname.components[i];
@@ -540,6 +640,9 @@ int vfs_realpath(struct vfs_node *node, void *buffer, size_t size)
 		return DE_OVERFLOW;
 	}
 
+	if (node == NULL)
+		return b[s] = '\0', 0;
+
 	while (n->tree[0] != NULL)
 		n = n->tree[0], depth += 1;
 
@@ -576,19 +679,18 @@ int vfs_realpath(struct vfs_node *node, void *buffer, size_t size)
 int vfs_remove(const char *name, int dir)
 {
 	struct vfs_node *owner = root_node;
-	struct vfs_name vname;
 	int i, r;
 
-	if ((r = vfs_build_path(name, &vname)) != 0)
-		return r;
+	vfs_lock_tree();
+
+	if ((r = build_vname_locked(name)) != 0)
+		return vfs_unlock_tree(), r;
 
 	if (!dir && vname.type == vfs_type_directory)
-		return DE_TYPE;
+		return vfs_unlock_tree(), DE_TYPE;
 
 	if (vname.components[0] == NULL)
-		return DE_BUSY;
-
-	vfs_lock_tree();
+		return vfs_unlock_tree(), DE_BUSY;
 
 	for (i = 0; vname.components[i] != NULL; i++) {
 		const char *n = vname.components[i];
