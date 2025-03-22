@@ -65,8 +65,6 @@ static void fd_clone_func(struct task *task, struct task *new_task)
 	if (task->fd.wd_node) {
 		vfs_increment_count(task->fd.wd_node);
 		new_task->fd.wd_node = task->fd.wd_node;
-
-		vfs_clone_path(task, new_task);
 	}
 
 	for (i = 0; i < (int)task->fd.state; i++) {
@@ -810,11 +808,6 @@ int file_chdir(const char *name)
 	if ((r = vfs_open(name, &node, vfs_type_directory, 0)) != 0)
 		return r;
 
-	if ((r = vfs_chdir(name)) != 0) {
-		node->n_release(&node);
-		return r;
-	}
-
 	if (task->fd.wd_node) {
 		struct vfs_node *wd_node = task->fd.wd_node;
 		wd_node->n_release(&wd_node);
@@ -937,11 +930,9 @@ int file_getdents(int fd, void *buffer, size_t size, int *count, int flags)
 
 int file_realpath(const char *name, void *buffer, size_t size)
 {
-	struct vfs_name vname;
 	struct vfs_node *node;
 	char *p = buffer;
-	size_t s = 0;
-	int i, r;
+	int r;
 
 	if (size != 0)
 		p[0] = '\0';
@@ -954,50 +945,9 @@ int file_realpath(const char *name, void *buffer, size_t size)
 	if (r == 0) {
 		r = vfs_realpath(node, buffer, size);
 		node->n_release(&node);
-		return r;
 	}
 
-	if (r != 0 && r != DE_BUSY)
-		return r;
-
-	r = vfs_build_path(name, &vname);
-
-	if (node != NULL)
-		node->n_release(&node);
-
-	if (r != 0)
-		return r;
-
-	p[0] = '/';
-
-	for (i = 0; /* void */; i++) {
-		char *component = vname.components[i];
-
-		if (!component || (*component == '\0'))
-			break;
-
-		if ((s + 1) >= size) {
-			memset(buffer, 0, size);
-			return DE_OVERFLOW;
-		}
-
-		p[s++] = '/';
-
-		while (*component != '\0') {
-			if ((s + 1) >= size) {
-				memset(buffer, 0, size);
-				return DE_OVERFLOW;
-			}
-			p[s++] = *component++;
-		}
-	}
-
-	if (s != 0)
-		p[s] = '\0';
-	else
-		p[1] = '\0';
-
-	return 0;
+	return r;
 }
 
 int file_poll(struct pollfd fds[], int nfds, int timeout, int *retval)
