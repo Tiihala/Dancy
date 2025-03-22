@@ -46,7 +46,6 @@ enum vfs_mode {
 	vfs_mode_last
 };
 
-struct vfs_name;
 struct vfs_dent;
 struct vfs_stat;
 
@@ -95,11 +94,6 @@ struct vfs_node {
 	char name[256];
 };
 
-struct vfs_name {
-	char **components;
-	int type;
-};
-
 struct vfs_timespec {
 	dancy_time_t tv_sec;
 	long tv_nsec;
@@ -131,13 +125,6 @@ int devfs_init(void);
  * Declarations of fat_io.c
  */
 int fat_io_create(struct vfs_node **new_node, struct vfs_node *dev_node);
-
-/*
- * Declarations of path.c
- */
-void vfs_clone_path(void *task, void *new_task);
-int vfs_build_path(const char *name, struct vfs_name *vname);
-int vfs_chdir(const char *name);
 
 /*
  * Declarations of pipe.c

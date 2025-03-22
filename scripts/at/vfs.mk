@@ -7,7 +7,6 @@ DANCY_VFS_OBJECTS_32= \
  ./o32/kernel/vfs/default.o \
  ./o32/kernel/vfs/devfs.o \
  ./o32/kernel/vfs/fat_io.o \
- ./o32/kernel/vfs/path.o \
  ./o32/kernel/vfs/pipe.o \
  ./o32/kernel/vfs/pty.o \
  ./o32/kernel/vfs/root.o \
@@ -18,7 +17,6 @@ DANCY_VFS_OBJECTS_64= \
  ./o64/kernel/vfs/default.o \
  ./o64/kernel/vfs/devfs.o \
  ./o64/kernel/vfs/fat_io.o \
- ./o64/kernel/vfs/path.o \
  ./o64/kernel/vfs/pipe.o \
  ./o64/kernel/vfs/pty.o \
  ./o64/kernel/vfs/root.o \
