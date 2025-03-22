@@ -30,7 +30,7 @@ static int response_type[2] = { 0, 0 };
 static const int data_none = -1;
 static int data_led_state[2] = { 0x02, 0x02 };
 static int data_scan_code = 0x02;
-static int data_typematic = 0x00;
+static int data_typematic = 0x20;
 
 static int keymod_lctrl = 0;
 static int keymod_lshift = 0;
