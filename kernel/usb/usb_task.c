@@ -108,8 +108,6 @@ static void start_driver_1(struct vfs_node *node,
 	 * The driver for human interface devices.
 	 */
 	if (iClass == 3) {
-		if (usb_configure_endpoints(node, driver))
-			return;
 		start_driver_2(node, driver, usb_hid_driver);
 		return;
 	}

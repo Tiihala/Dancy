@@ -154,15 +154,18 @@ void usb_hid_driver(struct vfs_node *node, struct dancy_usb_driver *driver)
 
 	printk("[USB] Driver Started, Human Interface Devices (HID)\n");
 
-	if (read_report_descriptor(node, driver))
-		return;
-
 	/*
 	 * The boot interface subclass (keyboard or mouse).
 	 */
 	if (iSubClass == 1 && (iProtocol == 1 || iProtocol == 2)) {
 		struct usb_device_request request;
 		int i = (int)driver->descriptor.interface->bInterfaceNumber;
+
+		if (usb_configure_endpoints(node, driver))
+			return;
+
+		if (read_report_descriptor(node, driver))
+			return;
 
 		spin_lock_yield(&dev->lock);
 
