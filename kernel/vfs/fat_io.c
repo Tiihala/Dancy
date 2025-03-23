@@ -1007,6 +1007,7 @@ int fat_io_read(int id, size_t lba, size_t *size, void *buf)
 	size_t requested_size = *size;
 	struct fat_io *io;
 	struct vfs_node *node;
+	struct vfs_stat stat;
 	uint64_t offset;
 	int r;
 
@@ -1018,7 +1019,13 @@ int fat_io_read(int id, size_t lba, size_t *size, void *buf)
 
 	node = io->dev_node;
 
-	offset = (uint64_t)(lba * 512);
+	if (node->n_stat(node, &stat))
+		return 1;
+
+	if (stat.block_size == 0)
+		stat.block_size = 512;
+
+	offset = (uint64_t)lba * (uint64_t)stat.block_size;
 	r = node->n_read(node, offset, size, buf);
 
 	if (r == DE_MEDIA_CHANGED)
@@ -1035,6 +1042,7 @@ int fat_io_write(int id, size_t lba, size_t *size, const void *buf)
 	size_t requested_size = *size;
 	struct fat_io *io;
 	struct vfs_node *node;
+	struct vfs_stat stat;
 	uint64_t offset;
 	int r;
 
@@ -1046,7 +1054,13 @@ int fat_io_write(int id, size_t lba, size_t *size, const void *buf)
 
 	node = io->dev_node;
 
-	offset = (uint64_t)(lba * 512);
+	if (node->n_stat(node, &stat))
+		return 1;
+
+	if (stat.block_size == 0)
+		stat.block_size = 512;
+
+	offset = (uint64_t)lba * (uint64_t)stat.block_size;
 	r = node->n_write(node, offset, size, buf);
 
 	if (r == DE_MEDIA_CHANGED)
