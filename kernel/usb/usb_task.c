@@ -101,6 +101,24 @@ static void start_driver_1(struct vfs_node *node,
 		}
 	}
 
+	/*
+	 * Make the USB procedures more deterministic.
+	 */
+	{
+		static uint64_t state[2];
+		static int lock;
+
+		spin_lock_yield(&lock);
+
+		do {
+			task_sleep(100);
+
+		} while ((state[1] = timer_read()) - state[0] < 300);
+
+		state[0] = state[1];
+		spin_unlock(&lock);
+	}
+
 	printk("[USB] Interface Found, Class %d, SubClass %d, Protocol %d\n",
 		(int)iClass, (int)iSubClass, (int)iProtocol);
 
