@@ -81,11 +81,6 @@ int usb_configure_endpoints(struct vfs_node *node,
 
 			return spin_unlock(&dev->lock), DE_UNEXPECTED;
 		}
-
-		printk("[USB] Completed SET_CONFIGURATION, Value %d, "
-			"Port %d, Device %d\n",
-			configuration->bConfigurationValue,
-			dev->port, dev->device);
 	}
 
 	spin_unlock(&dev->lock);
