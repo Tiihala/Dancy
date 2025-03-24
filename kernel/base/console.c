@@ -252,6 +252,11 @@ int con_init(void)
 		con_columns -= 1;
 	}
 
+	while (con_columns > 128) {
+		offset += (kernel->glyph_width / 2);
+		con_columns -= 1;
+	}
+
 	con_fb_start = (uint32_t *)kernel->fb_standard_addr + offset;
 	offset = (((int)kernel->fb_height % kernel->glyph_height) / 2);
 	con_fb_start += (offset * (int)kernel->fb_width);
