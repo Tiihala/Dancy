@@ -152,8 +152,6 @@ void usb_hid_driver(struct vfs_node *node, struct dancy_usb_driver *driver)
 	uint8_t iSubClass = driver->descriptor.interface->bInterfaceSubClass;
 	uint8_t iProtocol = driver->descriptor.interface->bInterfaceProtocol;
 
-	printk("[USB] Driver Started, Human Interface Devices (HID)\n");
-
 	/*
 	 * The boot interface subclass (keyboard or mouse).
 	 */
