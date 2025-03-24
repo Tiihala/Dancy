@@ -965,10 +965,6 @@ static int xhci_port_task(void *arg)
 		in[2] = 0;
 		in[3] = (uint32_t)((port->slot_type << 16) | (9 << 10));
 
-		printk("[xHCI] Enable Slot Command, "
-			"Port ID %d, Slot Type %d\n",
-			port->port_id, port->slot_type);
-
 		if (write_command(xhci, &in[0], &out[0]))
 			break;
 
@@ -987,9 +983,6 @@ static int xhci_port_task(void *arg)
 			break;
 
 		port->slot_id = slot_id;
-
-		printk("[xHCI] Port ID %d, Slot ID %d\n",
-			port->port_id, port->slot_id);
 
 		break;
 	}
@@ -1182,16 +1175,8 @@ static int xhci_port_task(void *arg)
 
 		memset(slot->io_buffer, 0, (size_t)request.wLength);
 
-		printk("[xHCI] Request GET_DESCRIPTOR, Length 8, "
-			"Port ID %d, Slot ID %d\n",
-			port->port_id, port->slot_id);
-
 		if (write_request_locked(port, &request, slot->io_buffer))
 			break;
-
-		printk("[xHCI] Completed GET_DESCRIPTOR, Length 8, "
-			"Port ID %d, Slot ID %d\n",
-			port->port_id, port->slot_id);
 
 		m = slot->io_buffer;
 		max_packet_size = (cpu_read32(&m[1]) >> 24) & 0xFF;
@@ -1356,9 +1341,6 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 	 */
 	if (type == 33) {
 		addr_t a = (addr_t)xhci->buffer_crcr;
-
-		printk("[xHCI] Event Ring, Command Completion, "
-			"Address %08X\n", (unsigned int)trb[0]);
 
 		if (trb[0] == 0 || (trb[0] & 3) != 0 || trb[1] != 0)
 			return;
