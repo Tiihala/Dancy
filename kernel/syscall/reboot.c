@@ -23,6 +23,8 @@ static int f_send(struct task *task, void *arg)
 {
 	int sig = *((int *)arg);
 
+	task->uniproc = 1;
+
 	if (sig > 0 && sig < 32) {
 		void *address = &task->asm_data3;
 		uint32_t value = (uint32_t)(sig - 1);
@@ -36,6 +38,8 @@ static int f_send(struct task *task, void *arg)
 static int f_check(struct task *task, void *arg)
 {
 	int *count = (int *)arg;
+
+	task->uniproc = 1;
 
 	if (!task->stopped) {
 		uint8_t *line = task->cmd.line;
