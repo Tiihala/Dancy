@@ -125,7 +125,7 @@ static int task_caretaker(void *arg)
 
 	task_sleep(10000);
 
-	while (arg == NULL) {
+	while (arg == NULL && kernel->rebooting == 0) {
 		struct task *t = task_head;
 
 		while (t != NULL) {
@@ -371,7 +371,7 @@ int task_init(void)
 	while (cpu_read32((const uint32_t *)&task_ap_count) != ap_count)
 		delay(1000000);
 
-	if (!task_create(task_caretaker, NULL, task_normal))
+	if (!task_create(task_caretaker, NULL, task_detached))
 		return DE_MEMORY;
 
 	kernel->scheduler.task_lock = &task_lock;
