@@ -1407,6 +1407,7 @@ static void event_ring_handler(struct xhci *xhci, uint32_t *trb)
 				port_reset &= portsc_mask;
 				port_reset |= (1u << 4);
 
+				task_sleep(100);
 				cpu_write32(port->portsc, port_reset);
 			}
 
