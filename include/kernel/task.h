@@ -25,8 +25,7 @@
 enum task_type {
 	task_normal   = 0x00,
 	task_detached = 0x01,
-	task_uniproc  = 0x02,
-	task_reboot   = 0x04
+	task_uniproc  = 0x02
 };
 
 #define TASK_CMD_STATIC_SIZE 32
