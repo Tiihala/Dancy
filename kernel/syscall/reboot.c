@@ -67,10 +67,12 @@ static uint32_t ap_halt_count = 0;
 
 static int ap_halt_task(void *arg)
 {
+	(void)arg;
+
 	task_set_cmdline(task_current(), NULL, "[cpu-halt]");
 	task_sleep(2000);
 
-	while (arg == NULL) {
+	while (cpu_read32(&ap_halt_count) != (uint32_t)kernel->smp_ap_count) {
 		int r = cpu_ints(0);
 		void *tss = gdt_get_tss();
 
@@ -115,7 +117,7 @@ static void operate(int power_off)
 	task_foreach(f_send, &sig);
 	check_all_tasks();
 
-	if (ap_halt_count != (uint32_t)kernel->smp_ap_count)
+	if (cpu_read32(&ap_halt_count) != (uint32_t)kernel->smp_ap_count)
 		task_yield();
 
 	runlevel_send_request((power_off) ? 0 : 6);
