@@ -96,6 +96,8 @@ struct task {
 	} sig;
 };
 
+extern void *task_uniproc_tss;
+
 struct task *task_read_next(const struct task *task);
 struct task *task_write_next(struct task *task, struct task *next);
 

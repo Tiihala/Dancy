@@ -21,13 +21,13 @@
 
 void task_create_asm(struct task *new_task, int (*func)(void *), void *arg);
 void task_switch_asm(struct task *next, void *tss);
+void *task_uniproc_tss;
 
 static int task_ready;
 static int task_ap_count;
 static int task_ap_sync;
 
 static uint8_t task_default_fstate[512];
-static void *task_uniproc_tss;
 
 static int task_lock;
 static struct task *task_head;
