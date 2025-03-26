@@ -209,11 +209,15 @@ static int runlevel_task(void *arg)
 		cpu_write32(&runlevel_id[0], id);
 
 		if (id == 0) {
+			kernel->print("\033[97mPowering off!\033[0m\n");
+			task_sleep(2000);
 			runlevel_prepare_shutdown();
 			runlevel_shutdown();
 		}
 
 		if (id == 6) {
+			kernel->print("\033[97mRebooting!\033[0m\n");
+			task_sleep(2000);
 			runlevel_prepare_shutdown();
 			runlevel_reset();
 		}
