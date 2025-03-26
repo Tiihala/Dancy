@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022, 2023, 2024 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023, 2024, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,7 +25,8 @@
 enum task_type {
 	task_normal   = 0x00,
 	task_detached = 0x01,
-	task_uniproc  = 0x02
+	task_uniproc  = 0x02,
+	task_reboot   = 0x04
 };
 
 #define TASK_CMD_STATIC_SIZE 32
