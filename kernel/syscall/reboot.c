@@ -21,10 +21,7 @@
 
 static int f_send(struct task *task, void *arg)
 {
-	int sig = *((int *)arg) & 127;
-
-	if ((*((int *)arg) & 128) == 0)
-		task->uniproc = 1;
+	int sig = *((int *)arg);
 
 	if (sig > 0 && sig < 32) {
 		void *address = &task->asm_data3;
@@ -39,8 +36,6 @@ static int f_send(struct task *task, void *arg)
 static int f_check(struct task *task, void *arg)
 {
 	int *count = (int *)arg;
-
-	task->uniproc = 1;
 
 	if (!task->stopped) {
 		uint8_t *line = task->cmd.line;
@@ -73,6 +68,7 @@ static uint32_t ap_halt_count = 0;
 static int ap_halt_task(void *arg)
 {
 	task_set_cmdline(task_current(), NULL, "[cpu-halt]");
+	task_sleep(2000);
 
 	while (arg == NULL) {
 		int r = cpu_ints(0);
@@ -84,6 +80,7 @@ static int ap_halt_task(void *arg)
 		}
 
 		cpu_ints(r);
+		task_yield();
 	}
 
 	return 0;
@@ -95,17 +92,11 @@ static void operate(int power_off)
 
 	for (i = 0; i < (kernel->smp_ap_count * 4); i++) {
 		while (!task_create(ap_halt_task, NULL, task_detached)) {
-			sig = SIGTERM | 128;
+			sig = SIGTERM;
 			task_foreach(f_send, &sig);
-			sig = SIGKILL | 128;
+			sig = SIGKILL;
 			task_foreach(f_send, &sig);
 		}
-	}
-
-	for (i = 0; i < 1000; i++) {
-		if (ap_halt_count == (uint32_t)kernel->smp_ap_count)
-			break;
-		task_sleep(20);
 	}
 
 	task_sleep(250);
@@ -124,17 +115,8 @@ static void operate(int power_off)
 	task_foreach(f_send, &sig);
 	check_all_tasks();
 
-	if (kernel->smp_ap_count != 0) {
-		if (ap_halt_count == (uint32_t)kernel->smp_ap_count) {
-			kernel->print("\033[97m%s!\033[0m\n",
-				"All application processors halted");
-		}
-	}
-
-	kernel->print("\033[97m%s!\033[0m\n",
-		(power_off) ? "Powering off" : "Rebooting");
-
-	task_sleep(3000);
+	if (ap_halt_count != (uint32_t)kernel->smp_ap_count)
+		task_yield();
 
 	runlevel_send_request((power_off) ? 0 : 6);
 	cpu_halt(0);
