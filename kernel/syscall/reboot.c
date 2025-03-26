@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Antti Tiihala
+ * Copyright (c) 2024, 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,9 +21,10 @@
 
 static int f_send(struct task *task, void *arg)
 {
-	int sig = *((int *)arg);
+	int sig = *((int *)arg) & 127;
 
-	task->uniproc = 1;
+	if ((*((int *)arg) & 128) == 0)
+		task->uniproc = 1;
 
 	if (sig > 0 && sig < 32) {
 		void *address = &task->asm_data3;
@@ -67,9 +68,45 @@ static void check_all_tasks(void)
 	}
 }
 
+static uint32_t ap_halt_count = 0;
+
+static int ap_halt_task(void *arg)
+{
+	task_set_cmdline(task_current(), NULL, "[cpu-halt]");
+
+	while (arg == NULL) {
+		int r = cpu_ints(0);
+		void *tss = gdt_get_tss();
+
+		if (tss != task_uniproc_tss) {
+			cpu_add32(&ap_halt_count, 1);
+			cpu_halt(0);
+		}
+
+		cpu_ints(r);
+	}
+
+	return 0;
+}
+
 static void operate(int power_off)
 {
-	int sig;
+	int i, sig;
+
+	for (i = 0; i < (kernel->smp_ap_count * 4); i++) {
+		while (!task_create(ap_halt_task, NULL, task_detached)) {
+			sig = SIGTERM | 128;
+			task_foreach(f_send, &sig);
+			sig = SIGKILL | 128;
+			task_foreach(f_send, &sig);
+		}
+	}
+
+	for (i = 0; i < 1000; i++) {
+		if (ap_halt_count == (uint32_t)kernel->smp_ap_count)
+			break;
+		task_sleep(20);
+	}
 
 	task_sleep(250);
 	task_prepare_rebooting();
@@ -86,6 +123,13 @@ static void operate(int power_off)
 	sig = SIGKILL;
 	task_foreach(f_send, &sig);
 	check_all_tasks();
+
+	if (kernel->smp_ap_count != 0) {
+		if (ap_halt_count == (uint32_t)kernel->smp_ap_count) {
+			kernel->print("\033[97m%s!\033[0m\n",
+				"All application processors halted");
+		}
+	}
 
 	kernel->print("\033[97m%s!\033[0m\n",
 		(power_off) ? "Powering off" : "Rebooting");
