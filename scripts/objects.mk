@@ -1558,6 +1558,18 @@
     ./kernel/usb/boot_mse.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/usb/boot_mse.c
 
+./o32/kernel/usb/ehci.o: \
+    ./kernel/usb/ehci.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/usb/ehci.c
+
+./o32/kernel/usb/ohci.o: \
+    ./kernel/usb/ohci.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/usb/ohci.c
+
+./o32/kernel/usb/uhci.o: \
+    ./kernel/usb/uhci.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/usb/uhci.c
+
 ./o32/kernel/usb/usb_ep.o: \
     ./kernel/usb/usb_ep.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/usb/usb_ep.c
@@ -3235,6 +3247,18 @@
 ./o64/kernel/usb/boot_mse.o: \
     ./kernel/usb/boot_mse.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/usb/boot_mse.c
+
+./o64/kernel/usb/ehci.o: \
+    ./kernel/usb/ehci.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/usb/ehci.c
+
+./o64/kernel/usb/ohci.o: \
+    ./kernel/usb/ohci.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/usb/ohci.c
+
+./o64/kernel/usb/uhci.o: \
+    ./kernel/usb/uhci.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/usb/uhci.c
 
 ./o64/kernel/usb/usb_ep.o: \
     ./kernel/usb/usb_ep.c $(DANCY_DEPS)
