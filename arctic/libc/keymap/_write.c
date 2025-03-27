@@ -103,6 +103,11 @@ void __dancy_keymap_write(int fd, int key,
 	map_i |= ((mod_altgr) ? __DANCY_KEYMAP_ALTGR : 0);
 	map_i |= ((mod_alt) ? __DANCY_KEYMAP_ALT : 0);
 
+	if ((key & 127) == __DANCY_KEY_HASH) {
+		if (map->map[map_i][__DANCY_KEY_HASH] == 0)
+			key |= 127, key ^= 127, key |= __DANCY_KEY_BACKSLASH;
+	}
+
 	if ((value = map->map[map_i][key & 127]) == 0)
 		return;
 
