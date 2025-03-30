@@ -23,12 +23,120 @@ struct ahci {
 	struct pci_id *pci;
 	uint8_t *base;
 	size_t size;
+
+	uint32_t hba_cap[2];
+	uint32_t hba_pi;
+	uint32_t hba_vs;
+
+	void *hba_ghc;
+	void *hba_is;
 };
 
 static int ahci_init_0(struct ahci *ahci)
 {
+	uint8_t *base = ahci->base;
+	int i, ports = 0;
+	uint32_t val;
+
 	printk("[AHCI] Base Address %08X, Size %08X\n",
 		(unsigned int)((addr_t)ahci->base), (unsigned int)ahci->size);
+
+	if (ahci->size < 0x180)
+		return DE_UNSUPPORTED;
+
+	ahci->hba_cap[0] = cpu_read32(base + 0x00);
+	ahci->hba_cap[1] = cpu_read32(base + 0x24);
+
+	/*
+	 * Handle the BIOS/OS handoff control and status register.
+	 */
+	for (i = 0; /* void */; i++) {
+		if ((ahci->hba_cap[1] & 1) == 0)
+			break;
+
+		val = cpu_read32(base + 0x28);
+
+		/*
+		 * If OOS == 1 && BOS == 0, ownership is obtained.
+		 */
+		if ((val & 3) == 2)
+			break;
+
+		if (i == 0) {
+			printk("[AHCI] Request Ownership\n");
+			val |= ((1u << 1) | (1u << 3));
+			cpu_write32(base + 0x28, val);
+		}
+
+		if (i == 250) {
+			const char *e = "[AHCI] Semaphore Error";
+			kernel->print("\033[91m[WARNING]\033[m %s\n", e);
+			printk("%s\n", e);
+			return DE_UNSUPPORTED;
+		}
+
+		task_sleep(10);
+	}
+
+	ahci->hba_ghc  = (void *)(base + 0x04);
+	ahci->hba_is   = (void *)(base + 0x08);
+
+	/*
+	 * Set the AHCI enable (AE) bit.
+	 */
+	{
+		uint32_t ae_bit = (1u << 31);
+
+		val = cpu_read32(ahci->hba_ghc);
+		cpu_write32(ahci->hba_ghc, val | ae_bit);
+	}
+
+	ahci->hba_pi = cpu_read32(base + 0x0C);
+	ahci->hba_vs = cpu_read32(base + 0x10);
+
+	/*
+	 * Get the number of available/implemented ports.
+	 */
+	for (i = 0; i < 32; i++) {
+		unsigned int shl = (unsigned int)i;
+
+		if ((ahci->hba_pi & (1u << shl)) == 0)
+			continue;
+
+		if ((size_t)(0x180 + (i * 0x80)) > ahci->size) {
+			printk("[AHCI] Port %d, Register Overflow\n", i);
+			return DE_UNSUPPORTED;
+		}
+
+		ports += 1;
+	}
+
+	printk("[AHCI] Version %d.%d%d, Number of Ports %d, Available %d\n",
+		(int)((ahci->hba_vs >> 16) & 0xFFFF),
+		(int)((ahci->hba_vs >>  8) & 0xFF),
+		(int)((ahci->hba_vs >>  0) & 0xFF),
+		(int)(ahci->hba_cap[0] & 0x1F) + 1, (int)ports);
+
+	if (ports == 0 || ports > (int)(ahci->hba_cap[0] & 0x1F) + 1)
+		return DE_UNSUPPORTED;
+
+	/*
+	 * Check the port registers.
+	 */
+	for (i = 0; i < 32; i++) {
+		unsigned int shl = (unsigned int)i;
+		uint8_t *port = base + 0x100;
+
+		if ((ahci->hba_pi & (1u << shl)) == 0)
+			continue;
+
+		port += (i * 0x80);
+
+		printk("[AHCI] Port %d, Command and Status %08X, "
+			"Signature %08X\n", i,
+			(unsigned int)cpu_read32(port + 0x18),
+			(unsigned int)cpu_read32(port + 0x24));
+	}
 
 	return 0;
 }
