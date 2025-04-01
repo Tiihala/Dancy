@@ -246,6 +246,11 @@ void *pci_install_handler(struct pci_id *pci,
 	void *arg, void (*func)(int irq, void *arg))
 {
 	void *r = NULL;
+	uint32_t val;
+
+	val = pci_read(pci, 0x04);
+	val |= (1u << 10);
+	pci_write(pci, 0x04, val);
 
 	if (kernel->io_apic_enabled) {
 		uint32_t msi_addr = 0xFEE00000;
@@ -259,10 +264,6 @@ void *pci_install_handler(struct pci_id *pci,
 
 		if (pci->cap_msi) {
 			int i, c = pci->cap_msi;
-
-			uint32_t val = pci_read(pci, 0x04);
-			val = val | (1u << 10);
-			pci_write(pci, 0x04, val);
 
 			if ((entry = get_handler_entry(&i)) == NULL)
 				return NULL;
@@ -308,8 +309,13 @@ void *pci_install_handler(struct pci_id *pci,
 		if (irq == 0 || irq == 2 || irq > 15)
 			return r;
 
-		if ((r = irq_install(irq, arg, func)) != NULL)
+		if ((r = irq_install(irq, arg, func)) != NULL) {
 			irq_enable(irq);
+
+			val = pci_read(pci, 0x04);
+			val &= (~(1u << 10));
+			pci_write(pci, 0x04, val);
+		}
 	}
 
 	return r;
