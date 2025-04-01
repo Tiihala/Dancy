@@ -364,11 +364,6 @@ static int ahci_init_0(struct ahci *ahci)
 
 		port += (i * 0x80);
 
-		printk("[AHCI] Port %d, Command and Status %08X, "
-			"Signature %08X\n", i,
-			(unsigned int)cpu_read32(port + 0x18),
-			(unsigned int)cpu_read32(port + 0x24));
-
 		ahci->ports[i].base = port;
 		ahci->ports[i].signature = cpu_read32(port + 0x24);
 
@@ -430,7 +425,7 @@ static int ahci_init_0(struct ahci *ahci)
 	}
 
 	/*
-	 * Allocate command list and FIS buffers.
+	 * Initialize the Serial ATA ports.
 	 */
 	for (i = 0; i < 32; i++) {
 		struct ahci_port *port = &ahci->ports[i];
