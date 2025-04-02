@@ -31,7 +31,7 @@ struct irq_entry {
 	int lock;
 };
 
-static struct irq_entry *irq_array[16];
+static struct irq_entry *irq_array[24];
 
 static void irq_empty_func(int irq, void *arg)
 {
@@ -41,8 +41,7 @@ static void irq_empty_func(int irq, void *arg)
 
 static void irq_apic(int irq)
 {
-	int offset = (int)((unsigned int)irq & 15u);
-	struct irq_entry *entry = irq_array[offset];
+	struct irq_entry *entry = irq_array[irq];
 
 	task_switch_disable();
 
@@ -61,8 +60,7 @@ static void irq_apic(int irq)
 
 static void irq_pic(int irq)
 {
-	int offset = (int)((unsigned int)irq & 15u);
-	struct irq_entry *entry = irq_array[offset];
+	struct irq_entry *entry = irq_array[irq];
 
 	/*
 	 * Detect spurious interrupt requests.
@@ -211,7 +209,7 @@ void *irq_install(int irq, void *arg, void (*func)(int irq, void *arg))
 	struct irq_entry *entry, *last = NULL;
 	int irq_sync = 0;
 
-	if (irq <= 0 || irq == 2 || irq > 15)
+	if (irq <= 0 || irq == 2 || irq > 23)
 		return NULL;
 
 	if (mtx_lock(&irq_mtx) != thrd_success)
@@ -262,7 +260,7 @@ void irq_uninstall(void *irq)
 	if (mtx_lock(&irq_mtx) != thrd_success)
 		return;
 
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i < 24; i++) {
 		struct irq_entry *entry = irq_array[i];
 
 		while (entry) {

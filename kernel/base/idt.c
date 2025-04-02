@@ -497,9 +497,9 @@ void idt_handler(int num, void *stack)
 	}
 
 	/*
-	 * IRQ 0 - 15 (I/O APIC).
+	 * IRQ 0 - 23 (I/O APIC).
 	 */
-	if (num >= 0x40 && num <= 0x4F) {
+	if (num >= 0x40 && num <= 0x57) {
 		irq_handler_apic(num - 0x40);
 		event_yield();
 		return;

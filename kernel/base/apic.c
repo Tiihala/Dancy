@@ -90,8 +90,13 @@ static void ioapic_access(int irq, int interrupt_mask, uint64_t *redtbl)
 		uint32_t global_int, flags, ioapicver, max_redir;
 		uint32_t j;
 
-		global_int = kernel->io_apic_override[irq].global_int;
-		flags = kernel->io_apic_override[irq].flags;
+		if (irq < 16) {
+			global_int = kernel->io_apic_override[irq].global_int;
+			flags = kernel->io_apic_override[irq].flags;
+		} else {
+			global_int = (uint32_t)irq;
+			flags = 0;
+		}
 
 		/*
 		 * MPS INTI Flags
@@ -167,7 +172,7 @@ void ioapic_disable(int irq)
 	if (!kernel->io_apic_enabled)
 		return;
 
-	if (irq < 0 || irq == 2 || irq > 15)
+	if (irq < 0 || irq == 2 || irq > 23)
 		return;
 
 	pg_enter_kernel();
@@ -186,7 +191,7 @@ void ioapic_enable(int irq)
 	if (!kernel->io_apic_enabled)
 		return;
 
-	if (irq < 0 || irq == 2 || irq > 15)
+	if (irq < 0 || irq == 2 || irq > 23)
 		return;
 
 	pg_enter_kernel();
@@ -206,7 +211,7 @@ uint64_t ioapic_redtbl(int irq)
 	if (!kernel->io_apic_enabled)
 		return redtbl;
 
-	if (irq < 0 || irq == 2 || irq > 15)
+	if (irq < 0 || irq == 2 || irq > 23)
 		return redtbl;
 
 	pg_enter_kernel();
