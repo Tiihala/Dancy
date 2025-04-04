@@ -140,7 +140,7 @@ static uint64_t ahci_get_disk_size(const void *identify_data)
 static int ahci_identify(struct ahci *ahci, struct ahci_port *port)
 {
 	uint32_t val, *ch, *ct;
-	int i, slot;
+	int i, slot, r = 0;
 
 	if ((slot = ahci_get_slot(ahci, port, &ch, &ct)) < 0)
 		return DE_BUSY;
@@ -148,7 +148,12 @@ static int ahci_identify(struct ahci *ahci, struct ahci_port *port)
 	/*
 	 * Clear the port interrupt status bits (RWC).
 	 */
-	cpu_write32(port->base + 0x10, 0xFFFFFFFFu);
+	cpu_write32(port->base + 0x10, cpu_read32(port->base + 0x10));
+
+	/*
+	 * Clear the interrupt status bits (RWC).
+	 */
+	cpu_write32(ahci->hba_is, cpu_read32(ahci->hba_is));
 
 	/*
 	 * Modify the first command header.
@@ -234,7 +239,8 @@ static int ahci_identify(struct ahci *ahci, struct ahci_port *port)
 
 		if ((is & (1u << 30)) != 0) {
 			printk("[AHCI] SATA Identify Error (TFEE)\n");
-			return DE_UNSUPPORTED;
+			r = DE_UNSUPPORTED;
+			break;
 		}
 
 		if ((ci & (1u << shl)) == 0)
@@ -242,13 +248,24 @@ static int ahci_identify(struct ahci *ahci, struct ahci_port *port)
 
 		if (i == 250) {
 			printk("[AHCI] SATA Identify Error (Timeout)\n");
-			return DE_UNSUPPORTED;
+			r = DE_UNSUPPORTED;
+			break;
 		}
 
 		task_sleep(10);
 	}
 
-	return 0;
+	/*
+	 * Clear the port interrupt status bits (RWC).
+	 */
+	cpu_write32(port->base + 0x10, cpu_read32(port->base + 0x10));
+
+	/*
+	 * Clear the interrupt status bits (RWC).
+	 */
+	cpu_write32(ahci->hba_is, cpu_read32(ahci->hba_is));
+
+	return r;
 }
 
 static int ahci_init_0(struct ahci *ahci)
