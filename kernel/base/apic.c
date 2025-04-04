@@ -95,7 +95,7 @@ static void ioapic_access(int irq, int interrupt_mask, uint64_t *redtbl)
 			flags = kernel->io_apic_override[irq].flags;
 		} else {
 			global_int = (uint32_t)irq;
-			flags = 0;
+			flags = 0x03;
 		}
 
 		/*
