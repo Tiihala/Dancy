@@ -298,6 +298,28 @@ void *pci_install_handler(struct pci_id *pci,
 
 			return (void *)entry;
 		}
+
+		/*
+		 * If using I/O APIC, but Message Signaled Interrupts
+		 * are not supported, use a "brute force" method.
+		 *
+		 * This is not a good solution.
+		 */
+		{
+			int irq;
+
+			for (irq = 5; irq < 24; irq++) {
+				if (irq == 12 || !irq_install(irq, arg, func))
+					continue;
+				irq_enable(irq);
+			}
+
+			val = pci_read(pci, 0x04);
+			val &= (~(1u << 10));
+			pci_write(pci, 0x04, val);
+		}
+
+		return (void *)((addr_t)16);
 	}
 
 	/*
