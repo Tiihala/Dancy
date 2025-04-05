@@ -31,6 +31,7 @@ struct ahci_port {
 
 	int lock;
 	int sata_available;
+	void *ahci;
 };
 
 struct ahci {
@@ -48,6 +49,8 @@ struct ahci {
 	struct ahci_port ports[32];
 	event_t event;
 };
+
+static int mount_drive(struct ahci_port *port);
 
 static void *ahci_alloc(size_t size)
 {
@@ -220,12 +223,11 @@ static int ahci_identify(struct ahci *ahci, struct ahci_port *port)
 	}
 
 	/*
-	 * Write the device status and command issue registers.
+	 * Write the command issue register.
 	 */
 	{
 		uint32_t shl = (uint32_t)slot;
 
-		cpu_write32(port->base + 0x34, (1u << shl));
 		cpu_write32(port->base + 0x38, (1u << shl));
 	}
 
@@ -253,6 +255,151 @@ static int ahci_identify(struct ahci *ahci, struct ahci_port *port)
 		}
 
 		task_sleep(10);
+	}
+
+	/*
+	 * Clear the port interrupt status bits (RWC).
+	 */
+	cpu_write32(port->base + 0x10, cpu_read32(port->base + 0x10));
+
+	/*
+	 * Clear the interrupt status bits (RWC).
+	 */
+	cpu_write32(ahci->hba_is, cpu_read32(ahci->hba_is));
+
+	return r;
+}
+
+static int ahci_read_write(struct ahci *ahci, struct ahci_port *port,
+	uint64_t lba, unsigned int count, int write_mode)
+{
+	uint32_t val, *ch, *ct;
+	int i, slot, r = 0;
+
+	if (lba > 0x0000FFFFFFFFFFFFull || count == 0)
+		return write_mode ? DE_BLOCK_WRITE : DE_BLOCK_READ;
+
+	if ((slot = ahci_get_slot(ahci, port, &ch, &ct)) < 0)
+		return write_mode ? DE_BLOCK_WRITE : DE_BLOCK_READ;
+
+	/*
+	 * Clear the port interrupt status bits (RWC).
+	 */
+	cpu_write32(port->base + 0x10, cpu_read32(port->base + 0x10));
+
+	/*
+	 * Clear the interrupt status bits (RWC).
+	 */
+	cpu_write32(ahci->hba_is, cpu_read32(ahci->hba_is));
+
+	/*
+	 * Modify the first command header.
+	 */
+	{
+		const uint32_t cfl = 5;
+		const uint32_t w = (write_mode ? 1 : 0);
+
+		val = ch[0] & 0xFFFFFFB0u;
+
+		val |= (cfl << 0);
+		val |= (w << 6);
+
+		ch[0] = val;
+	}
+
+	/*
+	 * Modify the "Command FIS" structure.
+	 */
+	{
+		uint8_t *cfis = (void *)((addr_t)(&ct[0]));
+
+		memset(cfis, 0, 64);
+
+		cfis[ 0] = 0x27;
+		cfis[ 1] = 0x80;
+		cfis[ 2] = (uint8_t)(write_mode ? 0x35 : 0x25);
+
+		cfis[ 4] = (uint8_t)((lba  >>  0) & 0xFF);
+		cfis[ 5] = (uint8_t)((lba  >>  8) & 0xFF);
+		cfis[ 6] = (uint8_t)((lba  >> 16) & 0xFF);
+		cfis[ 7] = 0x40;
+		cfis[ 8] = (uint8_t)((lba  >> 24) & 0xFF);
+		cfis[ 9] = (uint8_t)((lba  >> 32) & 0xFF);
+		cfis[10] = (uint8_t)((lba  >> 40) & 0xFF);
+
+		cfis[12] = (uint8_t)((count >> 0) & 0xFF);
+		cfis[13] = (uint8_t)((count >> 8) & 0xFF);
+	}
+
+	/*
+	 * Modify the first physical region descriptor.
+	 */
+	{
+		uint32_t *prdt = &ct[32];
+		const uint32_t dbc = (uint32_t)((count * 512) - 1);
+
+		prdt[0] = (uint32_t)((phys_addr_t)port->buffer_io);
+		prdt[1] = 0;
+
+		val = prdt[3] & 0x7FC00000u;
+
+		val |= (dbc << 0);
+		val |= (1u << 31);
+
+		prdt[3] = val;
+	}
+
+	/*
+	 * Check the task file data register.
+	 */
+	for (i = 0; /* void */; i++) {
+		const uint32_t sts_drq = (1u << 3);
+		const uint32_t sts_bsy = (1u << 7);
+
+		val = cpu_read32(port->base + 0x20);
+
+		if ((val & sts_drq) == 0 && (val & sts_bsy) == 0)
+			break;
+
+		if (i == 250)
+			return write_mode ? DE_BLOCK_WRITE : DE_BLOCK_READ;
+
+		task_sleep(10);
+	}
+
+	/*
+	 * Write the command issue register.
+	 */
+	{
+		uint32_t shl = (uint32_t)slot;
+
+		cpu_write32(port->base + 0x38, (1u << shl));
+	}
+
+	/*
+	 * Wait for the command.
+	 */
+	for (i = 0; /* void */; i++) {
+		uint32_t shl = (uint32_t)slot;
+		uint32_t ci = cpu_read32(port->base + 0x38);
+		uint32_t is = cpu_read32(port->base + 0x10);
+
+		if ((is & (1u << 30)) != 0) {
+			printk("[AHCI] SATA I/O Error (TFEE)\n");
+			r = write_mode ? DE_BLOCK_WRITE : DE_BLOCK_READ;
+			break;
+		}
+
+		if ((ci & (1u << shl)) == 0)
+			break;
+
+		if (i == 250) {
+			printk("[AHCI] SATA I/O Error (Timeout)\n");
+			r = write_mode ? DE_BLOCK_WRITE : DE_BLOCK_READ;
+			break;
+		}
+
+		event_wait(ahci->event, 10);
 	}
 
 	/*
@@ -574,9 +721,178 @@ static int ahci_init_0(struct ahci *ahci)
 			((unsigned long long)port->disk_size / 1024) / 1024);
 
 		port->sata_available = 1;
+		port->ahci = ahci;
+
+		mount_drive(port);
 	}
 
 	return 0;
+}
+
+static int read_write_locked(struct ahci *ahci, struct ahci_port *port,
+	uint64_t offset, size_t *size, addr_t buffer, int write_mode)
+{
+	size_t requested_size = *size;
+	size_t transfer_size = 0;
+
+	uint64_t sector_count = (port->disk_size / 512);
+	uint64_t lba = (offset / 512);
+	int r = 0;
+
+	*size = 0;
+
+	if ((offset & 0x1FF) != 0 || (requested_size & 0x1FF) != 0)
+		return DE_ALIGNMENT;
+
+	while (transfer_size < requested_size) {
+		unsigned int unit_size = 0xFE00;
+		uint64_t size_diff = requested_size - transfer_size;
+		void *dst, *src;
+
+		if (unit_size > size_diff)
+			unit_size = (unsigned int)size_diff;
+
+		if (lba + (unit_size / 512) > sector_count) {
+			if (lba >= sector_count)
+				break;
+			unit_size = 512;
+			unit_size *= (unsigned int)(sector_count - lba);
+		}
+
+		if (write_mode) {
+			dst = (void *)port->buffer_io;
+			src = (void *)((addr_t)(buffer + transfer_size));
+			memcpy(dst, src, (size_t)unit_size);
+		}
+
+		pg_enter_kernel();
+
+		r = ahci_read_write(ahci, port,
+			lba, (unit_size / 512), write_mode);
+
+		if (r) {
+			unit_size = 512;
+			r = ahci_read_write(ahci, port, lba, 1, write_mode);
+		}
+
+		pg_leave_kernel();
+
+		if (r)
+			break;
+
+		if (!write_mode) {
+			dst = (void *)((addr_t)(buffer + transfer_size));
+			src = (void *)port->buffer_io;
+			memcpy(dst, src, (size_t)unit_size);
+		}
+
+		lba += (unit_size / 512);
+		transfer_size += unit_size;
+	}
+
+	return *size = transfer_size, r;
+}
+
+static void n_release(struct vfs_node **node)
+{
+	struct vfs_node *n = *node;
+
+	*node = NULL;
+
+	if (vfs_decrement_count(n) == 0) {
+		memset(n, 0, sizeof(*n));
+		free(n);
+	}
+}
+
+static int n_read(struct vfs_node *node,
+	uint64_t offset, size_t *size, void *buffer)
+{
+	struct ahci_port *port = node->internal_data;
+	struct ahci *ahci = port->ahci;
+	int r;
+
+	spin_lock_yield(&port->lock);
+
+	r = read_write_locked(ahci, port, offset, size, (addr_t)buffer, 0);
+
+	spin_unlock(&port->lock);
+
+	return r;
+}
+
+static int n_write(struct vfs_node *node,
+	uint64_t offset, size_t *size, const void *buffer)
+{
+	struct ahci_port *port = node->internal_data;
+	struct ahci *ahci = port->ahci;
+	int r;
+
+	spin_lock_yield(&port->lock);
+
+	r = read_write_locked(ahci, port, offset, size, (addr_t)buffer, 1);
+
+	spin_unlock(&port->lock);
+
+	return r;
+}
+
+static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
+{
+	struct ahci_port *port = node->internal_data;
+
+	memset(stat, 0, sizeof(*stat));
+
+	spin_lock_yield(&port->lock);
+
+	stat->size = port->disk_size;
+	stat->block_size = 512;
+
+	spin_unlock(&port->lock);
+
+	return 0;
+}
+
+static int mount_drive(struct ahci_port *port)
+{
+	static int drive = 'a';
+
+	char name[12];
+	struct vfs_node *node;
+	int r;
+
+	if (drive < 'a' || drive > 'z')
+		return DE_OVERFLOW;
+
+	if (snprintf(&name[0], sizeof(name), "/dev/sd%c", drive) != 8)
+		return DE_UNEXPECTED;
+
+	drive += 1;
+
+	if ((r = vfs_open(&name[0], &node, 0, vfs_mode_create)) != 0)
+		return r;
+
+	node->n_release(&node);
+
+	if ((node = malloc(sizeof(*node))) == NULL)
+		return DE_MEMORY;
+
+	vfs_init_node(node, 0);
+
+	node->count = 1;
+	node->type = vfs_type_block;
+
+	node->internal_data = port;
+	node->n_release = n_release;
+
+	node->n_read  = n_read;
+	node->n_write = n_write;
+	node->n_stat  = n_stat;
+
+	r = vfs_mount(name, node);
+	node->n_release(&node);
+
+	return r;
 }
 
 static phys_addr_t get_base(struct pci_id *pci)
