@@ -89,33 +89,26 @@ static int ahci_get_slot(struct ahci *ahci, struct ahci_port *port,
 	uint32_t ds = cpu_read32(port->base + 0x34);
 	uint32_t ci = cpu_read32(port->base + 0x38);
 
-	if (command_header)
-		*command_header = NULL;
-
-	if (command_table)
-		*command_table = NULL;
-
 	for (i = 0; i < ncs; i++) {
 		unsigned int shl = (unsigned int)i;
 
 		if ((ds & (1u << shl)) == 0 && (ci & (1u << shl)) == 0) {
 			uint32_t *p;
 
-			if (command_header) {
-				p = port->buffer_cmd;
-				p += (i * 8);
-				*command_header = p;
-			}
+			p = port->buffer_cmd;
+			p += (i * 8);
+			*command_header = p;
 
-			if (command_table) {
-				p = port->buffer_ct;
-				p += (i * 64);
-				*command_table = p;
-			}
+			p = port->buffer_ct;
+			p += (i * 64);
+			*command_table = p;
 
 			return i;
 		}
 	}
+
+	*command_header = NULL;
+	*command_table = NULL;
 
 	return -1;
 }
@@ -240,7 +233,7 @@ static int ahci_identify(struct ahci *ahci, struct ahci_port *port)
 		uint32_t is = cpu_read32(port->base + 0x10);
 
 		if ((is & (1u << 30)) != 0) {
-			printk("[AHCI] SATA Identify Error (TFEE)\n");
+			printk("[AHCI] SATA Identify Error (TFES)\n");
 			r = DE_UNSUPPORTED;
 			break;
 		}
@@ -254,7 +247,7 @@ static int ahci_identify(struct ahci *ahci, struct ahci_port *port)
 			break;
 		}
 
-		task_sleep(10);
+		event_wait(ahci->event, 10);
 	}
 
 	/*
@@ -385,7 +378,7 @@ static int ahci_read_write(struct ahci *ahci, struct ahci_port *port,
 		uint32_t is = cpu_read32(port->base + 0x10);
 
 		if ((is & (1u << 30)) != 0) {
-			printk("[AHCI] SATA I/O Error (TFEE)\n");
+			printk("[AHCI] SATA I/O Error (TFES)\n");
 			r = write_mode ? DE_BLOCK_WRITE : DE_BLOCK_READ;
 			break;
 		}
