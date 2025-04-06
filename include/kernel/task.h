@@ -52,6 +52,7 @@ struct task {
 	int uniproc;
 
 	struct {
+		uint32_t state;
 		int (*func)(uint64_t *data);
 		uint64_t data[2];
 	} event;
