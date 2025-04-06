@@ -734,9 +734,11 @@ int task_read_event(void)
 	r0 = cpu_ints(0);
 
 	if ((r1 = current->event.func(&current->event.data[0])) == 0) {
+		current->event.func = task_null_func;
+		cpu_btr32(&current->event.state, 0);
+
 		current->event.data[0] = 0;
 		current->event.data[1] = 0;
-		current->event.func = task_null_func;
 	}
 
 	cpu_ints(r0);
@@ -753,6 +755,8 @@ void task_write_event(int (*func)(uint64_t *data), uint64_t d0, uint64_t d1)
 
 	current->event.data[0] = d0;
 	current->event.data[1] = d1;
+
+	cpu_bts32(&current->event.state, 0);
 	current->event.func = func;
 
 	cpu_ints(r);
@@ -902,9 +906,11 @@ int task_switch(struct task *next)
 			return 1;
 		}
 
+		next->event.func = task_null_func;
+		cpu_btr32(&next->event.state, 0);
+
 		next->event.data[0] = 0;
 		next->event.data[1] = 0;
-		next->event.func = task_null_func;
 	}
 
 	/*
