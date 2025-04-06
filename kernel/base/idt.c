@@ -36,6 +36,30 @@ static void *idt_ptr = NULL;
 uint32_t idt_nmi_panic[3] = { 0, 0, 0 };
 uint32_t idt_nmi_unknown = 0;
 
+static void idt_print_symbol(cpu_native_t ip, char *out, int *off)
+{
+	int state[2] = { -1, 0 };
+	int i, add;
+
+	for (i = 0; i < kernel->symbol_count; i++) {
+		cpu_native_t value = (cpu_native_t)kernel->symbol[i].value;
+
+		if (ip < value || (ip - value) > 0x7FFF)
+			continue;
+
+		if (state[0] < 0 || state[1] > (int)(ip - value))
+			state[0] = i, state[1] = (int)(ip - value);
+	}
+
+	if (state[0] >= 0) {
+		add = snprintf(&out[*off], 128,
+			"symbol=%s+%04X\n",
+			&kernel->symbol[state[0]].name[0],
+			(unsigned int)state[1]);
+		*off += (add > 0 ? add : 0);
+	}
+}
+
 #ifdef DANCY_32
 
 struct idt_context {
@@ -79,6 +103,7 @@ static void idt_print_context(const struct idt_context *context, char *out)
 		current->iret_frame[2]);
 	off += (add > 0 ? add : 0);
 
+	idt_print_symbol(current->iret_frame[0], out, &off);
 	snprintf(&out[off], n, "\033[1A");
 }
 
@@ -210,6 +235,7 @@ static void idt_print_context(const struct idt_context *context, char *out)
 		current->iret_frame[2]);
 	off += (add > 0 ? add : 0);
 
+	idt_print_symbol(current->iret_frame[0], out, &off);
 	snprintf(&out[off], n, "\033[1A");
 }
 
