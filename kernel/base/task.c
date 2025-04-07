@@ -701,31 +701,6 @@ void task_identify(uint64_t *id, uint64_t *id_owner,
 	spin_leave(&lock_local);
 }
 
-int task_check_event(struct task *task)
-{
-	struct task *current = task_current();
-	int r = 0;
-
-	if (!task || task == current) {
-		if (current->event.func != task_null_func)
-			r = current->event.func(&current->event.data[0]);
-		return r;
-	}
-
-	if (task->active)
-		return 1;
-
-	if (task->event.func != task_null_func) {
-		if (!spin_trylock(&task->active))
-			return 1;
-
-		r = task->event.func(&task->event.data[0]);
-		spin_unlock(&task->active);
-	}
-
-	return r;
-}
-
 int task_read_event(void)
 {
 	struct task *current = task_current();
