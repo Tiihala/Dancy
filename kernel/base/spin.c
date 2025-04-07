@@ -35,5 +35,15 @@ void spin_lock_yield(int *lock)
 		}
 
 		cpu_halt(1);
+
+		if (i < 10000) {
+			const char *warning = "Spin Deadlock Warning";
+
+			if ((i += 1) < 10000)
+				continue;
+
+			printk("[KERNEL] %s, PID %llu, Address %p\n", warning,
+				(unsigned long long)task_current()->id, lock);
+		}
 	}
 }
