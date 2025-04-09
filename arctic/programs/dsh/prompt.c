@@ -71,6 +71,11 @@ static void restore_termios(struct dsh_prompt *state)
 	if (!state->default_termios)
 		return;
 
+	state->default_termios->c_lflag |= (tcflag_t)ECHO;
+	state->default_termios->c_lflag |= (tcflag_t)ECHONL;
+	state->default_termios->c_lflag |= (tcflag_t)ICANON;
+	state->default_termios->c_lflag |= (tcflag_t)IEXTEN;
+
 	if ((errno = 0, tcsetattr(1, TCSAFLUSH, state->default_termios)) != 0)
 		perror("tcsetattr");
 
