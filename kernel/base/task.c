@@ -717,12 +717,15 @@ int task_check_event(struct task *task)
 		r1 = task->event.func(&task->event.data[0]);
 		cpu_ints(r0);
 
-	} else if (!task->active && spin_trylock(&task->active)) {
+	} else if (!task->active) {
 		r0 = cpu_ints(0);
-		r1 = task->event.func(&task->event.data[0]);
-		cpu_ints(r0);
 
-		spin_unlock(&task->active);
+		if (spin_trylock(&task->active)) {
+			r1 = task->event.func(&task->event.data[0]);
+			spin_unlock(&task->active);
+		}
+
+		cpu_ints(r0);
 	}
 
 	return r1;
