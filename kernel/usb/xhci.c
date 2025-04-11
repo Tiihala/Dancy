@@ -838,10 +838,6 @@ static int u_configure_ep(struct dancy_usb_device *dev_locked,
 		in[2] = 0;
 		in[3] = (uint32_t)((port->slot_id << 24) | (12 << 10));
 
-		printk("[xHCI] Configure Endpoint Command, Context %d, "
-			"Port ID %d, Slot ID %d\n",
-			ep_number, port->port_id, port->slot_id);
-
 		if (write_command(xhci, &in[0], &out[0])) {
 			r = DE_UNEXPECTED;
 			break;
@@ -902,10 +898,6 @@ static int xhci_port_task(void *arg)
 		in[1] = 0;
 		in[2] = 0;
 		in[3] = (uint32_t)((port->slot_id << 24) | (10 << 10));
-
-		printk("[xHCI] Disable Slot Command, "
-			"Port ID %d, Slot ID %d\n",
-			port->port_id, port->slot_id);
 
 		if (write_command(xhci, &in[0], &out[0]))
 			return spin_unlock(&port->lock), EXIT_FAILURE;
@@ -1136,10 +1128,6 @@ static int xhci_port_task(void *arg)
 		in[3] = (uint32_t)(port->slot_id << 24);
 		in[3] |= (uint32_t)((11 << 10) | (0 << 9));
 
-		printk("[xHCI] Address Device Command, BSR 0, "
-			"Port ID %d, Slot ID %d\n",
-			port->port_id, port->slot_id);
-
 		if (write_command(xhci, &in[0], &out[0]))
 			break;
 
@@ -1235,10 +1223,6 @@ static int xhci_port_task(void *arg)
 
 		in[3] = (uint32_t)(port->slot_id << 24);
 		in[3] |= (uint32_t)((13 << 10) | (0 << 9));
-
-		printk("[xHCI] Evaluate Context Command, "
-			"Port ID %d, Slot ID %d\n",
-			port->port_id, port->slot_id);
 
 		if (write_command(xhci, &in[0], &out[0]))
 			break;
