@@ -177,6 +177,11 @@ void usb_hid_driver(struct vfs_node *node, struct dancy_usb_driver *driver);
 void usb_mnt_update(void);
 
 /*
+ * Declarations of usb_msc.c
+ */
+void usb_msc_driver(struct vfs_node *node, struct dancy_usb_driver *driver);
+
+/*
  * Declarations of usb_node.c
  */
 int usb_register_controller(struct dancy_usb_controller *hci);
