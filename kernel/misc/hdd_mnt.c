@@ -13,8 +13,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * misc/hdd_fat.c
- *      Mount FAT12/16/32 hard disk drive partitions
+ * misc/hdd_mnt.c
+ *      Mount hard disk drive partitions
  */
 
 #include <dancy.h>
@@ -236,7 +236,7 @@ static int find_drives(void)
 	return free(partitions), 0;
 }
 
-int hdd_fat_init(void)
+int hdd_mnt_init(void)
 {
 	static int run_once;
 	int r;

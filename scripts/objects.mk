@@ -1442,9 +1442,9 @@
     ./kernel/misc/floppy.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/floppy.c
 
-./o32/kernel/misc/hdd_fat.o: \
-    ./kernel/misc/hdd_fat.c $(DANCY_DEPS)
-	$(DANCY_O32)$@ ./kernel/misc/hdd_fat.c
+./o32/kernel/misc/hdd_mnt.o: \
+    ./kernel/misc/hdd_mnt.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/misc/hdd_mnt.c
 
 ./o32/kernel/misc/hdd_part.o: \
     ./kernel/misc/hdd_part.c $(DANCY_DEPS)
@@ -3136,9 +3136,9 @@
     ./kernel/misc/floppy.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/floppy.c
 
-./o64/kernel/misc/hdd_fat.o: \
-    ./kernel/misc/hdd_fat.c $(DANCY_DEPS)
-	$(DANCY_O64)$@ ./kernel/misc/hdd_fat.c
+./o64/kernel/misc/hdd_mnt.o: \
+    ./kernel/misc/hdd_mnt.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/misc/hdd_mnt.c
 
 ./o64/kernel/misc/hdd_part.o: \
     ./kernel/misc/hdd_part.c $(DANCY_DEPS)
