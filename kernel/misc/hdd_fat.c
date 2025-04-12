@@ -209,7 +209,7 @@ static int find_drives(void)
 
 	qsort(partitions, (size_t)count, sizeof(*partitions), qsort_func);
 
-	for (i = 0; i < count && letter <= 'z'; i++) {
+	for (i = 0; i < count && letter <= 't'; i++) {
 		char *name = &buf[0];
 
 		snprintf(name, 16, "/dev/%s", &partitions[i].name[0]);
