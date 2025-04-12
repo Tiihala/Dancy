@@ -129,6 +129,14 @@ static void start_driver_1(struct vfs_node *node,
 		start_driver_2(node, driver, usb_hid_driver);
 		return;
 	}
+
+	/*
+	 * The driver for mass storage class devices.
+	 */
+	if (iClass == 8) {
+		start_driver_2(node, driver, usb_msc_driver);
+		return;
+	}
 }
 
 static void start_driver_0(struct vfs_node *node,
