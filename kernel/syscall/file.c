@@ -886,6 +886,12 @@ int file_getdents(int fd, void *buffer, size_t size, int *count, int flags)
 				r = n->n_readdir(n, (uint32_t)offset, &dent);
 				offset += 1;
 
+				if (r == DE_MEDIA_CHANGED) {
+					offset = (uint64_t)(ULLONG_MAX);
+					r = 0;
+					break;
+				}
+
 				if (r != 0) {
 					if (r == DE_PLACEHOLDER)
 						r = 0;
