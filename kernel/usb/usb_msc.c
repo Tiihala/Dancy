@@ -502,6 +502,23 @@ static int n_readdir(struct vfs_node *node,
 	return r;
 }
 
+static int n_sync(struct vfs_node *node)
+{
+	struct bulk_only *state = get_state(node);
+	struct dancy_usb_node *data = state->data;
+	struct dancy_usb_device *dev = state->dev;
+	int r = 0;
+
+	spin_lock_yield(&dev->lock);
+
+	if (data->port != dev->port || data->device != dev->device)
+		r = DE_MEDIA_CHANGED;
+
+	spin_unlock(&dev->lock);
+
+	return r;
+}
+
 static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
 {
 	struct bulk_only *state = get_state(node);
@@ -598,6 +615,7 @@ static void bulk_only_driver(struct bulk_only *state)
 		msc_node->n_release = n_release;
 		msc_node->n_read = n_read;
 		msc_node->n_write = n_write;
+		msc_node->n_sync = n_sync;
 		msc_node->n_stat = n_stat;
 
 		vfs_increment_count(state->usb_node);
