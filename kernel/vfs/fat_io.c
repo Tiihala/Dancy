@@ -625,8 +625,19 @@ static int n_readdir(struct vfs_node *node,
 	if (offset > 0x10000)
 		return 0;
 
-	if ((r = enter_fat(node)) != 0)
-		return r;
+	if ((r = enter_fat(node)) != 0) {
+		if (r != DE_MEDIA_CHANGED)
+			return r;
+		if ((r = enter_fat(node)) != 0)
+			return r;
+	}
+
+	r = data->io->dev_node->n_sync(data->io->dev_node);
+
+	if (r == DE_MEDIA_CHANGED) {
+		data->io->media_changed = 1;
+		return leave_fat(node), DE_MEDIA_CHANGED;
+	}
 
 	if (!strcmp(&data->path[0], "/."))
 		read_offset = (int)(offset - 2) * 32;
