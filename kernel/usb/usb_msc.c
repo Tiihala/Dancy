@@ -116,10 +116,11 @@ static int write_cbw(struct bulk_only *state,
 			r = DE_UNEXPECTED;
 	}
 
-	if (!r && device_to_host) {
-		struct usb_endpoint_descriptor *ep = state->in;
+	if (r == 0) {
+		struct usb_endpoint_descriptor *ep;
 		size_t size = buffer_size;
 
+		ep = (device_to_host) ? state->in : state->out;
 		r = dev->u_write_endpoint(dev, ep, &size, buffer);
 
 		if (r != 0) {
