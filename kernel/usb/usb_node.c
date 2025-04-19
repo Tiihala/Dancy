@@ -40,6 +40,9 @@ static void n_release(struct vfs_node **node)
 		if (driver->descriptor.hid_report != NULL)
 			free(driver->descriptor.hid_report);
 
+		if (driver->mass_storage_class != NULL)
+			free(driver->mass_storage_class);
+
 		memset(driver, 0, sizeof(*driver));
 		free(driver);
 	}

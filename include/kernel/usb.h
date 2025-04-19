@@ -135,6 +135,8 @@ struct dancy_usb_driver {
 		size_t hid_report_size;
 		uint8_t *hid_report;
 	} descriptor;
+
+	void *mass_storage_class;
 };
 
 struct dancy_usb_node {
