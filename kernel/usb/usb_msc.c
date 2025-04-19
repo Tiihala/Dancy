@@ -378,6 +378,9 @@ static int read_write_locked(struct bulk_only *state,
 				(size_t)unit_size);
 		}
 
+		if (r != 0)
+			break;
+
 		lba += (unit_size / disk_block_size);
 		transfer_size += unit_size;
 	}
