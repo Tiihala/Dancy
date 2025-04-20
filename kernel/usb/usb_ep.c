@@ -74,6 +74,11 @@ int usb_configure_endpoints(struct vfs_node *node,
 
 		r = dev->u_write_request(dev, &request, NULL);
 
+		if (r == DE_USB_STALL) {
+			printk("[USB] Stall Error, Port %d, Device %d\n",
+				dev->port, dev->device);
+		}
+
 		if (r != 0) {
 			printk("[USB] SET_CONFIGURATION Error, "
 				"Port %d, Device %d\n",
