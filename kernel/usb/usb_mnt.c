@@ -177,6 +177,8 @@ void usb_mnt_update(void)
 		if (usb_mnt_nodes[i] == NULL)
 			continue;
 
+		usb_mnt_nodes[i]->n_sync(usb_mnt_nodes[i]);
+
 		data = usb_mnt_nodes[i]->internal_data;
 		msc_node = data->msc_node;
 
