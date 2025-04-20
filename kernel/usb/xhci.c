@@ -391,9 +391,12 @@ static int write_request_locked(struct xhci_port *port,
 
 		{
 			const uint32_t trb_type = 3;
-			const uint32_t direction = 1;
+			uint32_t direction = 0;
 
 			uint32_t ctrl = 0;
+
+			if ((request->bmRequestType & 0x80) != 0)
+				direction = 1;
 
 			ctrl |= ((slot->endpoints[0].cycle ? 1u : 0u) << 0);
 			ctrl |= ((chained ? 1u : 0u) << 4);
@@ -421,12 +424,19 @@ static int write_request_locked(struct xhci_port *port,
 		{
 			const uint32_t trb_type = 4;
 			const uint32_t interrupt_on_completion = 1;
+			uint32_t direction = 1;
 
 			uint32_t ctrl = 0;
+
+			if (request->wLength > 0) {
+				if ((request->bmRequestType & 0x80) != 0)
+					direction = 0;
+			}
 
 			ctrl |= ((slot->endpoints[0].cycle ? 1u : 0u) << 0);
 			ctrl |= (interrupt_on_completion << 5);
 			ctrl |= (trb_type << 10);
+			ctrl |= (direction << 16);
 
 			p[3] = ctrl;
 		}
