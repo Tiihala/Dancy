@@ -460,8 +460,13 @@ static int write_request_locked(struct xhci_port *port,
 		trb[0] = cpu_read32(&slot->trb[0]);
 
 		if ((int)((trb[3] >> 24) & 0xFF) == port->slot_id) {
-			if (((trb[2] >> 24) & 0xFF) == 1)
+			int completion_code = (int)((trb[2] >> 24) & 0xFF);
+
+			if (completion_code == 1)
 				r = 0;
+			if (completion_code == 6)
+				r = DE_USB_STALL;
+
 			break;
 		}
 
@@ -608,13 +613,10 @@ static int u_write_request(struct dancy_usb_device *dev_locked,
 		else
 			memcpy(slot->io_buffer, buffer, wLength);
 
-		if (write_request_locked(port, request, slot->io_buffer)) {
-			if (device_to_host)
-				r = DE_READ;
-			else
-				r = DE_WRITE;
+		r = write_request_locked(port, request, slot->io_buffer);
+
+		if (r != 0)
 			break;
-		}
 
 		if (device_to_host)
 			memcpy(buffer, slot->io_buffer, wLength);
