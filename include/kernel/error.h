@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2024 Antti Tiihala
+ * Copyright (c) 2020-2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,9 +20,10 @@
 #ifdef DANCY_X
 
 /*
- * Value of DE_SUCCESS must be zero.
+ * Value of DE_SUCCESS must be zero. Value of DE_FAILURE must be one.
  */
 DANCY_X(DE_SUCCESS                   , "success"                         )
+DANCY_X(DE_FAILURE                   , "failure"                         )
 
 DANCY_X(DE_UNEXPECTED                , "unexpected behavior"             )
 DANCY_X(DE_MEMORY                    , "not enough memory"               )
@@ -70,6 +71,7 @@ DANCY_X(DE_COFF_EXTERNAL             , "unresolved external symbols"     )
 DANCY_X(DE_COFF_RELOCATION           , "incompatible object relocations" )
 DANCY_X(DE_COFF_START                , "missing valid start symbol"      )
 DANCY_X(DE_COFF_FORMAT               , "unsupported or corrupted format" )
+DANCY_X(DE_USB_STALL                 , "stall error"                     )
 
 #endif
 
