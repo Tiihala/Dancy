@@ -165,6 +165,23 @@ static struct vfs_node *alloc_node(void)
 	return node;
 }
 
+static void sync_fat_io(void)
+{
+	struct vfs_node *node;
+	int i;
+
+	for (i = 0; i < 6; i++) {
+		char name[] = "/mnt/?";
+		name[5] = (char)('u' + i);
+
+		if (vfs_open(&name[0], &node, vfs_type_directory, 0))
+			continue;
+
+		node->n_sync(node);
+		node->n_release(&node);
+	}
+}
+
 void usb_mnt_update(void)
 {
 	struct usb_mnt_internal_data *data;
@@ -173,11 +190,11 @@ void usb_mnt_update(void)
 
 	spin_lock_yield(&usb_mnt_lock);
 
+	sync_fat_io();
+
 	for (i = 0; i < 6; i++) {
 		if (usb_mnt_nodes[i] == NULL)
 			continue;
-
-		usb_mnt_nodes[i]->n_sync(usb_mnt_nodes[i]);
 
 		data = usb_mnt_nodes[i]->internal_data;
 		msc_node = data->msc_node;
