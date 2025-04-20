@@ -37,6 +37,7 @@ struct bulk_only {
 	struct usb_endpoint_descriptor *out;
 
 	uint8_t inquiry_data[36];
+	uint8_t sense_data[252];
 
 	uint64_t disk_size;
 	uint32_t disk_block_size;
@@ -187,6 +188,40 @@ static int scsi_inquiry(struct bulk_only *state)
 	return 0;
 }
 
+static int scsi_test_unit_ready(struct bulk_only *state)
+{
+	static const uint8_t c[6] = { 0x00, 0, 0, 0, 0, 0 };
+
+	return write_cbw(state, 0, &c[0], 6, NULL, 0);;
+}
+
+static int scsi_request_sense(struct bulk_only *state)
+{
+	static const uint8_t c[6] = { 0x03, 0, 0, 0, 252, 0 };
+
+	void *buffer = &state->sense_data[0];
+	size_t buffer_size = sizeof(state->sense_data);
+	int r, response_code;
+
+	if ((r = write_cbw(state, 1, &c[0], 6, buffer, buffer_size)) != 0)
+		return r;
+
+	response_code = (int)(state->sense_data[ 0] & 0x7F);
+
+	if (response_code == 0x70 || response_code == 0x71) {
+		printk("[USB] Mass Storage, Response Code %02X, "
+			"Sense Key %02X, Additional Sense Code %02X\n",
+			(int)(state->sense_data[ 0] & 0x7F),
+			(int)(state->sense_data[ 2] & 0x0F),
+			(int)(state->sense_data[12] & 0xFF));
+		return 0;
+	}
+
+	printk("[USB] Mass Storage, Response Code %02X\n", response_code);
+
+	return 0;
+}
+
 static int scsi_read_capacity(struct bulk_only *state)
 {
 	static const uint8_t c[10] = { 0x25, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -196,7 +231,10 @@ static int scsi_read_capacity(struct bulk_only *state)
 	uint32_t lba, val;
 	int r;
 
-	if ((r = write_cbw(state, 1, &c[0], 10, buffer, buffer_size)) != 0) {
+	if ((r = write_cbw(state, 1, &c[0], 10, buffer, buffer_size)) != 0)
+		r = write_cbw(state, 1, &c[0], 10, buffer, buffer_size);
+
+	if (r != 0) {
 		printk("[USB] Mass Storage, Read Capacity Error\n");
 		return r;
 	}
@@ -584,6 +622,9 @@ static void bulk_only_driver(struct bulk_only *state)
 
 	if (scsi_inquiry(state))
 		return;
+
+	(void)scsi_test_unit_ready(state);
+	(void)scsi_request_sense(state);
 
 	if (scsi_read_capacity(state))
 		return;
