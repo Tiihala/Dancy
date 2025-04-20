@@ -31,7 +31,6 @@ struct bulk_only {
 	struct dancy_usb_device *dev;
 
 	int lun;
-	int max_lun;
 	int lock;
 
 	struct usb_endpoint_descriptor *in;
@@ -644,34 +643,8 @@ void usb_msc_driver(struct vfs_node *node, struct dancy_usb_driver *driver)
 	 * The SCSI with Bulk-Only (BBB).
 	 */
 	if (iSubClass == 0x06 && iProtocol == 0x50) {
-		struct usb_device_request request;
-		int i = (int)driver->descriptor.interface->bInterfaceNumber;
 		struct bulk_only *state;
-		uint8_t max_lun = 0;
-
-		if (usb_configure_endpoints(node, driver))
-			return;
-
-		spin_lock_yield(&dev->lock);
-
-		if (data->port != dev->port || data->device != dev->device) {
-			spin_unlock(&dev->lock);
-			return;
-		}
-
-		memset(&request, 0, sizeof(request));
-
-		/*
-		 * Get the Max LUN.
-		 */
-		request.bmRequestType = 0xA1;
-		request.bRequest      = 0xFE;
-		request.wValue        = 0x0000;
-		request.wIndex        = (uint16_t)i;
-		request.wLength       = 1;
-
-		i = dev->u_write_request(dev, &request, &max_lun);
-		spin_unlock(&dev->lock);
+		int i;
 
 		if ((state = malloc(sizeof(*state))) == NULL)
 			return;
@@ -682,12 +655,8 @@ void usb_msc_driver(struct vfs_node *node, struct dancy_usb_driver *driver)
 		state->driver = driver;
 		state->data = data;
 		state->dev = dev;
-		state->max_lun = (int)max_lun;
 
 		driver->mass_storage_class = state;
-
-		printk("[USB] Mass Storage, Bulk-Only Driver, %sMax LUN %d\n",
-			(i == 0) ? "" : "Default ", state->max_lun);
 
 		for (i = 0; i < 32; i++) {
 			struct usb_endpoint_descriptor *e;
@@ -707,7 +676,12 @@ void usb_msc_driver(struct vfs_node *node, struct dancy_usb_driver *driver)
 			}
 		}
 
-		if (state->in != NULL && state->out != NULL)
-			bulk_only_driver(state);
+		if (state->in == NULL || state->out == NULL)
+			return;
+
+		if (usb_configure_endpoints(node, driver))
+			return;
+
+		bulk_only_driver(state);
 	}
 }
