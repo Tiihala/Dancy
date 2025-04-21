@@ -534,6 +534,9 @@ static int n_readdir(struct vfs_node *node,
 		}
 
 		spin_unlock(&msc_dev_lock);
+
+		if (dent->name[0] == '\0')
+			r = DE_PLACEHOLDER;
 	}
 
 	return r;
