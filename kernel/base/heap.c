@@ -60,6 +60,37 @@ int heap_init(void)
 	return 0;
 }
 
+void heap_usage(size_t *allocated, size_t *unallocated)
+{
+	const uint32_t used_bit = 1;
+	int i;
+
+	if (allocated != NULL)
+		*allocated = 0;
+
+	if (unallocated != NULL)
+		*unallocated = 0;
+
+	if (mtx_lock(&heap_mtx) != thrd_success)
+		return;
+
+	for (i = heap_map_entries - 1; i > 0; i--) {
+		uint32_t b = heap_map[i - 1];
+		uint32_t e = heap_map[i] & (~used_bit);
+
+		if ((b & used_bit) != 0) {
+			b &= (~used_bit);
+			if (b < e && allocated != NULL)
+				*allocated += (size_t)(e - b);
+		} else {
+			if (b < e && unallocated != NULL)
+				*unallocated += (size_t)(e - b);
+		}
+	}
+
+	mtx_unlock(&heap_mtx);
+}
+
 static void *heap_aligned_alloc(size_t alignment, size_t size)
 {
 	const uint32_t used_bit = 1;

@@ -117,6 +117,7 @@ uint32_t gdt_read_segment(int sel, size_t offset);
  * Declarations of heap.c
  */
 int heap_init(void);
+void heap_usage(size_t *allocated, size_t *unallocated);
 void *heap_alloc_static_page(void);
 
 /*

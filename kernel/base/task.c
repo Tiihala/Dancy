@@ -119,6 +119,7 @@ static int task_caretaker(void *arg)
 {
 	void *lock_local = &task_lock;
 	int max_stack_state[2] = { 0, 0 };
+	size_t heap_state[2] = { SIZE_MAX, 0 };
 
 	task_current()->sched.priority = sched_priority_low;
 	task_set_cmdline(task_current(), NULL, "[caretaker]");
@@ -281,6 +282,13 @@ static int task_caretaker(void *arg)
 		if (max_stack_state[0] != max_stack_state[1]) {
 			printk("[KERNEL] Maximum Stack Usage: %d\n",
 				(max_stack_state[0] = max_stack_state[1]));
+		}
+
+		heap_usage(NULL, &heap_state[1]);
+
+		if (heap_state[0] > heap_state[1]) {
+			printk("[KERNEL] Minimum Unallocated Heap: %zu\n",
+				(heap_state[0] = heap_state[1]));
 		}
 
 		task_sleep(1000);
