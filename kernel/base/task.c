@@ -118,8 +118,10 @@ static int task_null_func(uint64_t *data)
 static int task_caretaker(void *arg)
 {
 	void *lock_local = &task_lock;
+
 	int max_stack_state[2] = { 0, 0 };
 	size_t heap_state[3] = { 0, SIZE_MAX, 0 };
+	size_t mm_state[3] = { 0, SIZE_MAX, 0 };
 
 	task_current()->sched.priority = sched_priority_low;
 	task_set_cmdline(task_current(), NULL, "[caretaker]");
@@ -290,6 +292,17 @@ static int task_caretaker(void *arg)
 			if (heap_state[1] > heap_state[2]) {
 				printk("[KERNEL] Unallocated Heap: %zu\n",
 					(heap_state[1] = heap_state[2]));
+			}
+		}
+
+		if (((mm_state[0]++) & 0x1FF) == 0) {
+			mm_state[2] = mm_available_pages(mm_addr28);
+
+			if (mm_state[1] > mm_state[2]) {
+				printk("[KERNEL] Unallocated Pages: "
+					"%zu (28-bit) %zu (Total)\n",
+					(mm_state[1] = mm_state[2]),
+					mm_available_pages(mm_normal));
 			}
 		}
 
