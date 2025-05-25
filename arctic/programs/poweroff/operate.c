@@ -33,7 +33,7 @@ int operate(struct options *opt)
 	if (!opt->poweroff && opt->reboot)
 		request = __DANCY_REQUEST_RESTART;
 
-	r = (int)__dancy_syscall2(__dancy_syscall_reboot, request, arg);
+	r = (int)__dancy_syscall2e(__dancy_syscall_reboot, request, arg);
 
 	if (r < 0)
 		errno = -r;
