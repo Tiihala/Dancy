@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2024 Antti Tiihala
+ * Copyright (c) 2017-2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -68,6 +68,7 @@ enum dancy_error {
 #include <kernel/base.h>
 #include <kernel/debug.h>
 #include <kernel/misc.h>
+#include <kernel/network.h>
 #include <kernel/pci.h>
 #include <kernel/ps2.h>
 #include <kernel/run.h>

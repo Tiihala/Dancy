@@ -1474,6 +1474,10 @@
     ./kernel/misc/zero.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/misc/zero.c
 
+./o32/kernel/network/e1000.o: \
+    ./kernel/network/e1000.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/network/e1000.c
+
 ./o32/kernel/pci/ahci.o: \
     ./kernel/pci/ahci.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/pci/ahci.c
@@ -3175,6 +3179,10 @@
 ./o64/kernel/misc/zero.o: \
     ./kernel/misc/zero.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/misc/zero.c
+
+./o64/kernel/network/e1000.o: \
+    ./kernel/network/e1000.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/network/e1000.c
 
 ./o64/kernel/pci/ahci.o: \
     ./kernel/pci/ahci.c $(DANCY_DEPS)

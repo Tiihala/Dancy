@@ -47,6 +47,7 @@ static struct kernel_object kernel_objects[] = {
 	{ 0, NULL, NULL, OBJECT_PREFIX "ps2.at" },
 	{ 0, NULL, NULL, OBJECT_PREFIX "pci.at" },
 	{ 0, NULL, NULL, OBJECT_PREFIX "usb.at" },
+	{ 0, NULL, NULL, OBJECT_PREFIX "network.at" },
 	{ 0, NULL, NULL, OBJECT_PREFIX "syscall.at" },
 	{ 1, NULL, NULL, OBJECT_PREFIX "acpica.at" },
 	{ 1, NULL, NULL, OBJECT_PREFIX "debug.at" },

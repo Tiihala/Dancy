@@ -15,6 +15,7 @@ DANCY_DB_100_FILES= \
  ./o32/base.at \
  ./o32/debug.at \
  ./o32/misc.at \
+ ./o32/network.at \
  ./o32/pci.at \
  ./o32/ps2.at \
  ./o32/run.at \
@@ -30,6 +31,7 @@ DANCY_DB_200_FILES= \
  ./o64/base.at \
  ./o64/debug.at \
  ./o64/misc.at \
+ ./o64/network.at \
  ./o64/pci.at \
  ./o64/ps2.at \
  ./o64/run.at \

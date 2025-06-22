@@ -71,6 +71,7 @@ DANCY_HEADERS= \
  ./include/kernel/debug.h \
  ./include/kernel/error.h \
  ./include/kernel/misc.h \
+ ./include/kernel/network.h \
  ./include/kernel/pci.h \
  ./include/kernel/ps2.h \
  ./include/kernel/run.h \

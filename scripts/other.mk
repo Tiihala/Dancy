@@ -51,6 +51,7 @@ distclean: clean
 !include .\scripts\at\debug.mk
 !include .\scripts\at\lib.mk
 !include .\scripts\at\misc.mk
+!include .\scripts\at\network.mk
 !include .\scripts\at\pci.mk
 !include .\scripts\at\ps2.mk
 !include .\scripts\at\run.mk
