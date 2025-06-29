@@ -31,6 +31,7 @@ struct e1000 {
 	int mac_available;
 
 	uint8_t mac[6];
+	uint32_t irq_count;
 };
 
 static void *e1000_alloc(size_t size)
@@ -86,6 +87,15 @@ static uint32_t e1000_read_eeprom(struct e1000 *e1000, int offset)
 	return 0;
 }
 
+static void e1000_irq_func(int irq, void *arg)
+{
+	struct e1000 *e1000 = arg;
+
+	cpu_add32(&e1000->irq_count, 1);
+
+	(void)irq;
+}
+
 static int e1000_init(struct e1000 *e1000)
 {
 	uint32_t val;
@@ -96,6 +106,46 @@ static int e1000_init(struct e1000 *e1000)
 
 	if (e1000->base == NULL || e1000->size < 0x1000)
 		return DE_UNSUPPORTED;
+
+	/*
+	 * Install the IRQ handler.
+	 */
+	if (pci_install_handler(e1000->pci, e1000, e1000_irq_func) == NULL) {
+		kernel->print("\033[91m[ERROR]\033[m E1000 IRQ Handling\n");
+		return DE_UNSUPPORTED;
+	}
+
+	/*
+	 * Reset the device.
+	 */
+	{
+		const int ctrl_reg   = 0x00;
+		const int status_reg = 0x04;
+
+		const int icr_reg  = 0x00C0;
+		const int imc_reg  = 0x00D8;
+
+		const int rctl_reg = 0x0100;
+		const int tctl_reg = 0x0400;
+
+		const uint32_t rst_bit = (1u << 26);
+
+		e1000_write32(e1000, rctl_reg, 0);
+		e1000_write32(e1000, tctl_reg, 0);
+		(void)e1000_read32(e1000, status_reg);
+
+		e1000_write32(e1000, imc_reg, 0xFFFFFFFFu);
+		e1000_write32(e1000, icr_reg, 0xFFFFFFFFu);
+		(void)e1000_read32(e1000, status_reg);
+
+		val = e1000_read32(e1000, ctrl_reg);
+		e1000_write32(e1000, ctrl_reg, val | rst_bit);
+		(void)e1000_read32(e1000, status_reg);
+
+		e1000_write32(e1000, imc_reg, 0xFFFFFFFFu);
+		e1000_write32(e1000, icr_reg, 0xFFFFFFFFu);
+		(void)e1000_read32(e1000, status_reg);
+	}
 
 	/*
 	 * Allocate the buffers.
