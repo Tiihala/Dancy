@@ -107,6 +107,9 @@ static int e1000_init(struct e1000 *e1000)
 	if (e1000->base == NULL || e1000->size < 0x1000)
 		return DE_UNSUPPORTED;
 
+	val = pci_read(e1000->pci, 0x04) & 0xFFFF;
+	pci_write(e1000->pci, 0x04, (val | (1u << 1) | (1u << 2)));
+
 	/*
 	 * Install the IRQ handler.
 	 */
@@ -251,8 +254,71 @@ static int e1000_init(struct e1000 *e1000)
 			(unsigned int)mac[4], (unsigned int)mac[5]);
 	}
 
-	val = pci_read(e1000->pci, 0x04) & 0xFFFF;
-	pci_write(e1000->pci, 0x04, (val | (1u << 1) | (1u << 2)));
+	/*
+	 * Set the FCAL, FCAH and FCT registers using recommended values.
+	 */
+	{
+		const int fcal_reg = 0x28;
+		const int fcah_reg = 0x2C;
+		const int fct_reg  = 0x30;
+
+		e1000_write32(e1000, fcal_reg, 0x00C28001);
+		e1000_write32(e1000, fcah_reg, 0x00000100);
+		e1000_write32(e1000, fct_reg,  0x00008808);
+	}
+
+	/*
+	 * Set the FCTTV register.
+	 */
+	{
+		const int fcttv_reg = 0x0170;
+
+		e1000_write32(e1000, fcttv_reg, 0x0000FFFF);
+	}
+
+	/*
+	 * Set the CTRL register.
+	 */
+	{
+		const int ctrl_reg   = 0x00;
+		const int status_reg = 0x04;
+
+		const uint32_t slu_bit   = (1u << 6);
+		const uint32_t speed_val = 0;
+
+		val = e1000_read32(e1000, ctrl_reg);
+
+		val |= slu_bit;
+		val |= (speed_val << 8);
+		val &= (0x7FFFFFF7u);
+
+		e1000_write32(e1000, ctrl_reg, val);
+		(void)e1000_read32(e1000, status_reg);
+	}
+
+	/*
+	 * Clear the multicast table array.
+	 */
+	{
+		const int mta_beg = 0x5200;
+		const int mta_end = 0x53FC;
+
+		for (i = mta_beg; i <= mta_end; i += 4)
+			e1000_write32(e1000, i, 0);
+	}
+
+	/*
+	 * Read the statistical registers to clear them.
+	 */
+	{
+		const int stat_beg = 0x4000;
+		const int stat_end = 0x4124;
+
+		for (i = stat_beg; i <= stat_end; i += 4)
+			(void)e1000_read32(e1000, i);
+	}
+
+	printk("[NETWORK] E1000 Initialization Completed\n");
 
 	return 0;
 }
