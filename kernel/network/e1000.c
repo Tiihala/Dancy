@@ -362,7 +362,7 @@ static size_t get_size(struct pci_id *pci, int offset)
 
 static int network_e1000_init(struct pci_id *pci)
 {
-	struct e1000 e1000;
+	struct e1000 *e1000;
 	int r = DE_UNSUPPORTED;
 
 	phys_addr_t addr = 0;
@@ -382,12 +382,16 @@ static int network_e1000_init(struct pci_id *pci)
 	}
 
 	if (r == 0) {
-		memset(&e1000, 0, sizeof(e1000));
-		e1000.pci = pci;
-		e1000.base = pg_map_kernel(addr, size, pg_uncached);
-		e1000.size = size;
+		if ((e1000 = malloc(sizeof(*e1000))) == NULL)
+			return DE_MEMORY;
 
-		r = e1000_init(&e1000);
+		memset(e1000, 0, sizeof(*e1000));
+
+		e1000->pci = pci;
+		e1000->base = pg_map_kernel(addr, size, pg_uncached);
+		e1000->size = size;
+
+		r = e1000_init(e1000);
 	}
 
 	return (r != DE_UNSUPPORTED) ? r : 0;
