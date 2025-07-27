@@ -318,6 +318,94 @@ static int e1000_init(struct e1000 *e1000)
 			(void)e1000_read32(e1000, i);
 	}
 
+	/*
+	 * Set the receive registers.
+	 */
+	{
+		const int rctl_reg   = 0x0100;
+		const int rdbal0_reg = 0x2800;
+		const int rdbah0_reg = 0x2804;
+		const int rdlen0_reg = 0x2808;
+
+		const int rdh0_reg = 0x2810;
+		const int rdt0_reg = 0x2818;
+
+		val = (uint32_t)((addr_t)((void *)e1000->rx));
+
+		e1000_write32(e1000, rdbal0_reg, val);
+		e1000_write32(e1000, rdbah0_reg, 0);
+		e1000_write32(e1000, rdlen0_reg, 0x2000);
+
+		e1000_write32(e1000, rdh0_reg, 0);
+		e1000_write32(e1000, rdt0_reg, 511);
+
+		val = 0;
+
+		{
+			const uint32_t en_bit  = (1u << 1);
+			const uint32_t sbp_bit = (1u << 2);
+			const uint32_t mpe_bit = (1u << 4);
+			const uint32_t bam_bit = (1u << 15);
+
+			const uint32_t bsex_bit  = (1u << 25);
+			const uint32_t secrc_bit = (1u << 26);
+
+			const uint32_t bsize = 3;
+
+			val |= en_bit;
+			val |= sbp_bit;
+			val |= mpe_bit;
+			val |= bam_bit;
+			val |= (bsize << 16);
+			val |= bsex_bit;
+			val |= secrc_bit;
+		}
+
+		e1000_write32(e1000, rctl_reg, val);
+	}
+
+	/*
+	 * Set the transmit registers.
+	 */
+	{
+		const int tctl_reg  = 0x0400;
+		const int tdbal_reg = 0x3800;
+		const int tdbah_reg = 0x3804;
+		const int tdlen_reg = 0x3808;
+
+		const int tdh_reg = 0x3810;
+		const int tdt_reg = 0x3818;
+
+		val = (uint32_t)((addr_t)((void *)e1000->tx));
+
+		e1000_write32(e1000, tdbal_reg, val);
+		e1000_write32(e1000, tdbah_reg, 0);
+		e1000_write32(e1000, tdlen_reg, 0x2000);
+
+		e1000_write32(e1000, tdh_reg, 0);
+		e1000_write32(e1000, tdt_reg, 0);
+
+		val = e1000_read32(e1000, tctl_reg);
+
+		{
+			const uint32_t en_bit   = (1u << 1);
+			const uint32_t psp_bit  = (1u << 3);
+			const uint32_t rtlc_bit = (1u << 24);
+
+			const uint32_t ct_mask = (0xFFu << 4);
+			const uint32_t ct_val  = (0x0Fu << 4);
+
+			val |= en_bit;
+			val |= psp_bit;
+			val |= rtlc_bit;
+
+			val &= (~ct_mask);
+			val |= (ct_val);
+		}
+
+		e1000_write32(e1000, tctl_reg, val);
+	}
+
 	printk("[NETWORK] E1000 Initialization Completed\n");
 
 	return 0;
