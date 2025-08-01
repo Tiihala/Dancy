@@ -22,4 +22,14 @@
 
 #include <common/types.h>
 
+struct dancy_net_controller {
+	struct vfs_node *node;
+	void *controller;
+};
+
+/*
+ * Declarations of net_node.c
+ */
+int net_register_controller(struct dancy_net_controller *dnc);
+
 #endif
