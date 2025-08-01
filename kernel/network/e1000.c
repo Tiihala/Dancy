@@ -32,6 +32,8 @@ struct e1000 {
 
 	uint8_t mac[6];
 	uint32_t irq_count;
+
+	int lock;
 };
 
 static void *e1000_alloc(size_t size)
@@ -448,9 +450,45 @@ static size_t get_size(struct pci_id *pci, int offset)
 	return (size_t)((~(val & 0xFFFFFFF0u)) + 1u);
 }
 
+static struct e1000 *get_e1000(struct vfs_node *node)
+{
+	struct dancy_net_controller *dnc = node->internal_data;
+	return dnc->controller;
+}
+
+static int n_ioctl(struct vfs_node *node,
+	int request, long long arg)
+{
+	struct e1000 *e1000 = get_e1000(node);
+
+	spin_lock_yield(&e1000->lock);
+
+	(void)request;
+	(void)arg;
+
+	spin_unlock(&e1000->lock);
+
+	return DE_UNSUPPORTED;
+}
+
+static int n_stat(struct vfs_node *node, struct vfs_stat *stat)
+{
+	struct e1000 *e1000 = get_e1000(node);
+
+	spin_lock_yield(&e1000->lock);
+
+	memset(stat, 0, sizeof(*stat));
+
+	spin_unlock(&e1000->lock);
+
+	return 0;
+}
+
 static int network_e1000_init(struct pci_id *pci)
 {
 	struct e1000 *e1000;
+	struct dancy_net_controller *dnc;
+
 	int r = DE_UNSUPPORTED;
 
 	phys_addr_t addr = 0;
@@ -480,6 +518,21 @@ static int network_e1000_init(struct pci_id *pci)
 		e1000->size = size;
 
 		r = e1000_init(e1000);
+	}
+
+	if (r == 0) {
+		if ((dnc = malloc(sizeof(*dnc))) == NULL)
+			return DE_MEMORY;
+
+		memset(dnc, 0, sizeof(*dnc));
+
+		dnc->node = NULL;
+		dnc->controller = e1000;
+
+		if ((r = net_register_controller(dnc)) == 0) {
+			dnc->node->n_ioctl = n_ioctl;
+			dnc->node->n_stat = n_stat;
+		}
 	}
 
 	return (r != DE_UNSUPPORTED) ? r : 0;
