@@ -92,7 +92,7 @@ static uint32_t e1000_read_eeprom(struct e1000 *e1000, int offset)
 	return 0;
 }
 
-static void e1000_rx_frame(struct e1000 *e1000, const void *data)
+static void e1000_rx_frame(struct e1000 *e1000, const void *data, size_t size)
 {
 	const uint8_t *p = data;
 
@@ -105,6 +105,7 @@ static void e1000_rx_frame(struct e1000 *e1000, const void *data)
 		p[12], p[13]);
 
 	(void)e1000;
+	(void)size;
 }
 
 static void e1000_irq_func(int irq, void *arg)
@@ -149,8 +150,20 @@ static int e1000_task(void *arg)
 		{
 			phys_addr_t *rx = (void *)(&e1000->rx[i * 16]);
 
-			e1000_rx_frame(e1000, (void *)(rx[0]));
-			memset((void *)(rx[0]), 0, 0x1000);
+			int size_0 = (int)e1000->rx[(i * 16) + 8];
+			int size_1 = (int)e1000->rx[(i * 16) + 9];
+			int status = (int)e1000->rx[(i * 16) + 12];
+			int errors = (int)e1000->rx[(i * 16) + 13];
+
+			size_t size = (size_t)((size_0 << 0) | (size_1 << 8));
+
+			if ((status & 0x01) == 0 || (errors & 0x87) != 0)
+				size = 0;
+
+			if (size >= 14 && size <= 0x1000) {
+				e1000_rx_frame(e1000, (void *)(rx[0]), size);
+				memset((void *)(rx[0]), 0, size);
+			}
 		}
 
 		e1000_write32(e1000, rdt0_reg, (uint32_t)i);
