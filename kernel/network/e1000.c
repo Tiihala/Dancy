@@ -27,6 +27,9 @@ struct e1000 {
 	uint8_t *rx;
 	uint8_t *tx;
 
+	int rx_head;
+	int tx_tail;
+
 	int eeprom_available;
 	int mac_available;
 
@@ -89,13 +92,71 @@ static uint32_t e1000_read_eeprom(struct e1000 *e1000, int offset)
 	return 0;
 }
 
+static void e1000_rx_frame(struct e1000 *e1000, const void *data)
+{
+	const uint8_t *p = data;
+
+	printk("[NETWORK] E1000 RX | "
+		"%02X %02X %02X %02X %02X %02X | "
+		"%02X %02X %02X %02X %02X %02X | "
+		"%02X %02X\n",
+		p[ 0], p[ 1], p[ 2], p[ 3], p[ 4], p[ 5],
+		p[ 6], p[ 7], p[ 8], p[ 9], p[10], p[11],
+		p[12], p[13]);
+
+	(void)e1000;
+}
+
 static void e1000_irq_func(int irq, void *arg)
 {
 	struct e1000 *e1000 = arg;
+	const int icr_reg = 0xC0;
+	uint32_t val;
+
+	pg_enter_kernel();
+
+	if ((val = e1000_read32(e1000, icr_reg)) != 0)
+		e1000_write32(e1000, icr_reg, val);
 
 	cpu_add32(&e1000->irq_count, 1);
 
+	pg_leave_kernel();
 	(void)irq;
+}
+
+static int e1000_task(void *arg)
+{
+	struct e1000 *e1000 = arg;
+
+	task_set_cmdline(task_current(), NULL, "[e1000]");
+
+	while (e1000) {
+		const int rdh0_reg = 0x2810;
+		const int rdt0_reg = 0x2818;
+
+		int i = (int)(e1000_read32(e1000, rdh0_reg) & 0xFFFF);
+
+		if (i == e1000->rx_head) {
+			task_sleep(20);
+			continue;
+		}
+
+		i = e1000->rx_head++;
+
+		if (e1000->rx_head > 511)
+			e1000->rx_head = 0;
+
+		{
+			phys_addr_t *rx = (void *)(&e1000->rx[i * 16]);
+
+			e1000_rx_frame(e1000, (void *)(rx[0]));
+			memset((void *)(rx[0]), 0, 0x1000);
+		}
+
+		e1000_write32(e1000, rdt0_reg, (uint32_t)i);
+	}
+
+	return 0;
 }
 
 static int e1000_init(struct e1000 *e1000)
@@ -406,6 +467,37 @@ static int e1000_init(struct e1000 *e1000)
 		}
 
 		e1000_write32(e1000, tctl_reg, val);
+	}
+
+	/*
+	 * Create a kernel task for this device.
+	 */
+	if (!task_create(e1000_task, e1000, task_detached))
+		return DE_MEMORY;
+
+	/*
+	 * Set the interrupt mask set/read register.
+	 */
+	{
+		const int status_reg = 0x04;
+		const int ims_reg = 0xD0;
+
+		val = 0;
+
+		{
+			const uint32_t txdw_bit = (1u << 0);
+			const uint32_t txqe_bit = (1u << 1);
+			const uint32_t lsc_bit  = (1u << 2);
+			const uint32_t rxt0_bit = (1u << 7);
+
+			val |= txdw_bit;
+			val |= txqe_bit;
+			val |= lsc_bit;
+			val |= rxt0_bit;
+		}
+
+		e1000_write32(e1000, ims_reg, val);
+		(void)e1000_read32(e1000, status_reg);
 	}
 
 	printk("[NETWORK] E1000 Initialization Completed\n");
