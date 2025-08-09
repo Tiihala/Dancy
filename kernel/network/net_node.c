@@ -58,7 +58,8 @@ int net_register_controller(struct dancy_net_controller *dnc)
 
 	vfs_init_node(node, 0);
 
-	node->type = vfs_type_block;
+	node->type = vfs_type_character;
+	node->mode = vfs_mode_exclusive;
 	node->count = 1;
 
 	node->internal_data = dnc;
