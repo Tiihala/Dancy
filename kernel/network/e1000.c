@@ -36,6 +36,9 @@ struct e1000 {
 	uint8_t mac[6];
 	uint32_t irq_count;
 
+	event_t rx_event[2];
+	void *rx_frame;
+
 	int lock;
 };
 
@@ -92,20 +95,24 @@ static uint32_t e1000_read_eeprom(struct e1000 *e1000, int offset)
 	return 0;
 }
 
-static void e1000_rx_frame(struct e1000 *e1000, const void *data, size_t size)
+static void e1000_rx_frame(struct e1000 *e1000, uint8_t *data, size_t size)
 {
-	const uint8_t *p = data;
+	int r = DE_RETRY;
 
-	printk("[NETWORK] E1000 RX | "
-		"%02X %02X %02X %02X %02X %02X | "
-		"%02X %02X %02X %02X %02X %02X | "
-		"%02X %02X\n",
-		p[ 0], p[ 1], p[ 2], p[ 3], p[ 4], p[ 5],
-		p[ 6], p[ 7], p[ 8], p[ 9], p[10], p[11],
-		p[12], p[13]);
+	data[2048-2] = (uint8_t)((size >> 8) & 0xFF);
+	data[2048-1] = (uint8_t)((size >> 0) & 0xFF);
 
-	(void)e1000;
-	(void)size;
+	while (r == DE_RETRY) {
+		spin_lock_yield(&e1000->lock);
+
+		if (e1000->rx_frame == NULL)
+			e1000->rx_frame = data, r = 0;
+
+		spin_unlock(&e1000->lock);
+
+		event_signal(e1000->rx_event[1]);
+		event_wait(e1000->rx_event[0], 0xFFFF);
+	}
 }
 
 static void e1000_irq_func(int irq, void *arg)
@@ -160,10 +167,11 @@ static int e1000_task(void *arg)
 			if ((status & 0x01) == 0 || (errors & 0x87) != 0)
 				size = 0;
 
-			if (size >= 14 && size <= 0x1000) {
+			if (size >= 14 && size <= 1984)
 				e1000_rx_frame(e1000, (void *)(rx[0]), size);
-				memset((void *)(rx[0]), 0, size);
-			}
+
+			memset((void *)(rx[0]), 0, 2048);
+			memset(&e1000->rx[(i * 16) + 8], 0, 8);
 		}
 
 		e1000_write32(e1000, rdt0_reg, (uint32_t)i);
@@ -561,6 +569,38 @@ static struct e1000 *get_e1000(struct vfs_node *node)
 	return dnc->controller;
 }
 
+static int n_read(struct vfs_node *node,
+	uint64_t offset, size_t *size, void *buffer)
+{
+	struct e1000 *e1000 = get_e1000(node);
+	size_t buffer_size = *size;
+	int r = DE_RETRY;
+
+	(void)offset;
+	*size = 0;
+
+	if (buffer_size == 0 || (buffer_size % 2048) != 0)
+		return DE_ALIGNMENT;
+
+	if (((size_t)((addr_t)buffer) % 2048) != 0)
+		return DE_ALIGNMENT;
+
+	spin_lock_yield(&e1000->lock);
+
+	if (e1000->rx_frame != NULL) {
+		memcpy(buffer, e1000->rx_frame, 2048);
+
+		e1000->rx_frame = NULL;
+		event_signal(e1000->rx_event[0]);
+
+		*size = 2048, r = 0;
+	}
+
+	spin_unlock(&e1000->lock);
+
+	return r;
+}
+
 static int n_ioctl(struct vfs_node *node,
 	int request, long long arg)
 {
@@ -622,6 +662,12 @@ static int network_e1000_init(struct pci_id *pci)
 		e1000->base = pg_map_kernel(addr, size, pg_uncached);
 		e1000->size = size;
 
+		if (!(e1000->rx_event[0] = event_create(0)))
+			return DE_MEMORY;
+
+		if (!(e1000->rx_event[1] = event_create(0)))
+			return DE_MEMORY;
+
 		r = e1000_init(e1000);
 	}
 
@@ -635,6 +681,10 @@ static int network_e1000_init(struct pci_id *pci)
 		dnc->controller = e1000;
 
 		if ((r = net_register_controller(dnc)) == 0) {
+			void *internal_event = &e1000->rx_event[1];
+			dnc->node->internal_event = internal_event;
+
+			dnc->node->n_read = n_read;
 			dnc->node->n_ioctl = n_ioctl;
 			dnc->node->n_stat = n_stat;
 		}
