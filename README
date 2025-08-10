@@ -4,7 +4,14 @@ Copyright (c) 2018-2025 Antti Tiihala
 
 Introduction
 
-  An operating system for x86 and x86_64 platforms.
+  An operating system for x86 and x86_64 platforms. This is a personal
+  project written from scratch, and pull requests are not preferred at
+  the moment. Collaboration may be possible in the future.
+
+  If you like to discuss operating systems or contact me about other
+  topics, my email address is below. Feedback on this OS is welcome.
+
+    antti.tiihala@dancy.fi
 
 
 Build Instructions (Unix/Linux)
