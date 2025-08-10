@@ -70,13 +70,6 @@ Disk Images
   ./release/usbtiny.img
 
 
-Build with ACPICA
-
-  The "make" or "nmake" commands need the following options
-
-    make ACPICA_O32_AT=./o32/acpica.at ACPICA_O64_AT=./o64/acpica.at
-
-
 Disclaimer
 
   THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
