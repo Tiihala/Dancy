@@ -37,6 +37,7 @@ struct e1000 {
 	uint32_t irq_count;
 
 	event_t rx_event[2];
+	size_t rx_frame_size;
 	void *rx_frame;
 
 	int lock;
@@ -99,14 +100,13 @@ static void e1000_rx_frame(struct e1000 *e1000, uint8_t *data, size_t size)
 {
 	int r = DE_RETRY;
 
-	data[2048-2] = (uint8_t)((size >> 8) & 0xFF);
-	data[2048-1] = (uint8_t)((size >> 0) & 0xFF);
-
 	while (r == DE_RETRY) {
 		spin_lock_yield(&e1000->lock);
 
-		if (e1000->rx_frame == NULL)
+		if (e1000->rx_frame == NULL) {
+			e1000->rx_frame_size = size;
 			e1000->rx_frame = data, r = 0;
+		}
 
 		spin_unlock(&e1000->lock);
 
@@ -588,12 +588,14 @@ static int n_read(struct vfs_node *node,
 	spin_lock_yield(&e1000->lock);
 
 	if (e1000->rx_frame != NULL) {
-		memcpy(buffer, e1000->rx_frame, 2048);
+		memcpy(buffer, e1000->rx_frame, e1000->rx_frame_size);
 
+		*size = e1000->rx_frame_size;
+		e1000->rx_frame_size = 0;
 		e1000->rx_frame = NULL;
-		event_signal(e1000->rx_event[0]);
 
-		*size = 2048, r = 0;
+		event_signal(e1000->rx_event[0]);
+		r = 0;
 	}
 
 	spin_unlock(&e1000->lock);
