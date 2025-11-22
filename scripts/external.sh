@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-ASM_VERSION=2.16.03
-BIN_VERSION=2.43.1
-GCC_VERSION=14.2.0
+ASM_VERSION=3.01
+BIN_VERSION=2.45.1
+GCC_VERSION=15.2.0
 
 ASM_ADDR=https://www.nasm.us/pub/nasm
 GNU_ADDR=https://ftp.gnu.org/gnu
