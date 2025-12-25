@@ -37,6 +37,9 @@ typedef struct {
 } mbstate_t;
 #endif
 
+#undef WEOF
+#define WEOF (0x7FFFFFFFu)
+
 int mbsinit(const mbstate_t *ps);
 size_t mbrtowc(wchar_t *pwc, const char *s, size_t n, mbstate_t *ps);
 
