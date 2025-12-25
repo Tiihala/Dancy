@@ -212,6 +212,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/unistd/tcpgrp.o \
  ./o32/arctic/libc/unistd/unlink.o \
  ./o32/arctic/libc/unistd/write.o \
+ ./o32/arctic/libc/wchar/mbsinit.o \
  ./o32/arctic/libc/wchar/wcwidth.o \
  ./o32/arctic/libc/wctype/iswalnum.o \
  ./o32/arctic/libc/wctype/iswalpha.o \
@@ -439,6 +440,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/unistd/tcpgrp.o \
  ./o64/arctic/libc/unistd/unlink.o \
  ./o64/arctic/libc/unistd/write.o \
+ ./o64/arctic/libc/wchar/mbsinit.o \
  ./o64/arctic/libc/wchar/wcwidth.o \
  ./o64/arctic/libc/wctype/iswalnum.o \
  ./o64/arctic/libc/wctype/iswalpha.o \

@@ -848,6 +848,10 @@
     ./arctic/libc/unistd/write.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/write.c
 
+./o32/arctic/libc/wchar/mbsinit.o: \
+    ./arctic/libc/wchar/mbsinit.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wchar/mbsinit.c
+
 ./o32/arctic/libc/wchar/wcwidth.o: \
     ./arctic/libc/wchar/wcwidth.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wcwidth.c
@@ -2549,6 +2553,10 @@
 ./o64/arctic/libc/unistd/write.o: \
     ./arctic/libc/unistd/write.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/write.c
+
+./o64/arctic/libc/wchar/mbsinit.o: \
+    ./arctic/libc/wchar/mbsinit.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wchar/mbsinit.c
 
 ./o64/arctic/libc/wchar/wcwidth.o: \
     ./arctic/libc/wchar/wcwidth.c $(DANCY_DEPS)
