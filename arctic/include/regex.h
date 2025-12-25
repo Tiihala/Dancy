@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,40 +13,47 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * wchar.h
- *      The C Standard Library
+ * regex.h
+ *      Regular expression matching types
  */
 
-#ifndef __DANCY_WCHAR_H
-#define __DANCY_WCHAR_H
+#ifndef __DANCY_REGEX_H
+#define __DANCY_REGEX_H
 
 #include <__dancy/core.h>
-#include <stddef.h>
+#include <__dancy/ssize.h>
 
 __Dancy_Header_Begin
 
-#ifndef __DANCY_TYPEDEF_WINT_T
-#define __DANCY_TYPEDEF_WINT_T
-typedef unsigned int wint_t;
-#endif
+#define REG_EXTENDED    (1 << 0)
+#define REG_ICASE       (1 << 1)
+#define REG_NOSUB       (1 << 2)
+#define REG_NEWLINE     (1 << 3)
+#define REG_MINIMAL     (1 << 4)
 
-#ifndef __DANCY_TYPEDEF_MBSTATE_T
-#define __DANCY_TYPEDEF_MBSTATE_T
+#define REG_NOTBOL      (1 << 0)
+#define REG_NOTEOL      (1 << 1)
+#define REG_STARTEND    (1 << 6)
+
+typedef ssize_t regoff_t;
+
 typedef struct {
-	unsigned int _state[4];
-} mbstate_t;
-#endif
+	regoff_t rm_so;
+	regoff_t rm_eo;
+} regmatch_t;
 
-int mbsinit(const mbstate_t *ps);
-size_t mbrtowc(wchar_t *pwc, const char *s, size_t n, mbstate_t *ps);
+typedef struct {
+	size_t re_nsub;
+} regex_t;
 
-size_t wcslen(const wchar_t *ws);
-size_t wcrtomb(char *s, wchar_t w, mbstate_t *ps);
+int regcomp(regex_t *preg, const char *pattern, int cflags);
+void regfree(regex_t *preg);
 
-wint_t btowc(int c);
-int wcwidth(wchar_t w);
+size_t regerror(int errcode, const regex_t *preg,
+	char *errbuf, size_t errbuf_size);
 
-int wcsncmp(const wchar_t *ws1, const wchar_t *ws2, size_t n);
+int regexec(const regex_t *preg, const char *string,
+	size_t nmatch, regmatch_t pmatch[], int eflags);
 
 __Dancy_Header_End
 

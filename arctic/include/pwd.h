@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,39 +13,16 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * wctype.h
- *      The C Standard Library
+ * pwd.h
+ *      Password structure
  */
 
-#ifndef __DANCY_WCTYPE_H
-#define __DANCY_WCTYPE_H
+#ifndef __DANCY_PWD_H
+#define __DANCY_PWD_H
 
 #include <__dancy/core.h>
 
 __Dancy_Header_Begin
-
-#ifndef __DANCY_TYPEDEF_WINT_T
-#define __DANCY_TYPEDEF_WINT_T
-typedef unsigned int wint_t;
-#endif
-
-int iswalnum(wint_t wc);
-int iswalpha(wint_t wc);
-int iswblank(wint_t wc);
-int iswcntrl(wint_t wc);
-
-int iswdigit(wint_t wc);
-int iswgraph(wint_t wc);
-int iswlower(wint_t wc);
-int iswprint(wint_t wc);
-
-int iswpunct(wint_t wc);
-int iswspace(wint_t wc);
-int iswupper(wint_t wc);
-int iswxdigit(wint_t wc);
-
-wint_t towlower(wint_t wc);
-wint_t towupper(wint_t wc);
 
 __Dancy_Header_End
 

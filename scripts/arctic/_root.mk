@@ -13,6 +13,7 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/__dancy/reboot.h \
  ./arctic/include/__dancy/sched.h \
  ./arctic/include/__dancy/seek.h \
+ ./arctic/include/__dancy/sig.h \
  ./arctic/include/__dancy/signum.h \
  ./arctic/include/__dancy/spawn.h \
  ./arctic/include/__dancy/spin.h \
@@ -29,6 +30,7 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/complex.h \
  ./arctic/include/ctype.h \
  ./arctic/include/dirent.h \
+ ./arctic/include/err.h \
  ./arctic/include/errno.h \
  ./arctic/include/fcntl.h \
  ./arctic/include/fenv.h \
@@ -38,6 +40,8 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/math.h \
  ./arctic/include/poll.h \
  ./arctic/include/pty.h \
+ ./arctic/include/pwd.h \
+ ./arctic/include/regex.h \
  ./arctic/include/setjmp.h \
  ./arctic/include/signal.h \
  ./arctic/include/spawn.h \
@@ -97,6 +101,9 @@ ARCTIC_ROOT_FILES= \
 		./arctic/include/__dancy/seek.h \
 		::include/__dancy/seek.h
 	$(DY_MCOPY) -i $@ \
+		./arctic/include/__dancy/sig.h \
+		::include/__dancy/sig.h
+	$(DY_MCOPY) -i $@ \
 		./arctic/include/__dancy/signum.h \
 		::include/__dancy/signum.h
 	$(DY_MCOPY) -i $@ \
@@ -145,6 +152,9 @@ ARCTIC_ROOT_FILES= \
 		./arctic/include/dirent.h \
 		::include/dirent.h
 	$(DY_MCOPY) -i $@ \
+		./arctic/include/err.h \
+		::include/err.h
+	$(DY_MCOPY) -i $@ \
 		./arctic/include/errno.h \
 		::include/errno.h
 	$(DY_MCOPY) -i $@ \
@@ -171,6 +181,12 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/pty.h \
 		::include/pty.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/pwd.h \
+		::include/pwd.h
+	$(DY_MCOPY) -i $@ \
+		./arctic/include/regex.h \
+		::include/regex.h
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/setjmp.h \
 		::include/setjmp.h

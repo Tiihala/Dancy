@@ -134,6 +134,12 @@ int snprintf(char *s, size_t n, const char *format, ...);
 int vsprintf(char *s, const char *format, va_list arg);
 int vsnprintf(char *s, size_t n, const char *format, va_list arg);
 
+int asprintf(char **ptr, const char *format, ...);
+int vasprintf(char **ptr, const char *format, va_list arg);
+
+FILE *popen(const char *command, const char *mode);
+int pclose(FILE *stream);
+
 int remove(const char *path);
 int rename(const char *old_path, const char *new_path);
 void perror(const char *s);
@@ -153,6 +159,9 @@ int ungetc(int c, FILE *stream);
 int scanf(const char *format, ...);
 int fscanf(FILE *stream, const char *format, ...);
 int sscanf(const char *s, const char *format, ...);
+
+ssize_t getdelim(char **lineptr, size_t *n, int delimiter, FILE *stream);
+ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 __Dancy_Header_End
 

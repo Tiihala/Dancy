@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,39 +13,23 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * wctype.h
- *      The C Standard Library
+ * err.h
+ *      Error functions
  */
 
-#ifndef __DANCY_WCTYPE_H
-#define __DANCY_WCTYPE_H
+#ifndef __DANCY_ERR_H
+#define __DANCY_ERR_H
 
 #include <__dancy/core.h>
+#include <stdarg.h>
 
 __Dancy_Header_Begin
 
-#ifndef __DANCY_TYPEDEF_WINT_T
-#define __DANCY_TYPEDEF_WINT_T
-typedef unsigned int wint_t;
-#endif
+void err(int status, const char *format, ...);
+void verr(int status, const char *format, va_list arg);
 
-int iswalnum(wint_t wc);
-int iswalpha(wint_t wc);
-int iswblank(wint_t wc);
-int iswcntrl(wint_t wc);
-
-int iswdigit(wint_t wc);
-int iswgraph(wint_t wc);
-int iswlower(wint_t wc);
-int iswprint(wint_t wc);
-
-int iswpunct(wint_t wc);
-int iswspace(wint_t wc);
-int iswupper(wint_t wc);
-int iswxdigit(wint_t wc);
-
-wint_t towlower(wint_t wc);
-wint_t towupper(wint_t wc);
+void warn(const char *format, ...);
+void vwarn(const char *format, va_list arg);
 
 __Dancy_Header_End
 

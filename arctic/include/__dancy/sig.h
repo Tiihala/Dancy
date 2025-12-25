@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2025 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,16 +13,14 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * signal.h
- *      The C Standard Library
+ * include/__dancy/sig.h
+ *      The Arctic Dancy Header
  */
 
-#ifndef __DANCY_SIGNAL_H
-#define __DANCY_SIGNAL_H
+#ifndef __DANCY_INTERNAL_SIG_H
+#define __DANCY_INTERNAL_SIG_H
 
 #include <__dancy/core.h>
-#include <__dancy/sig.h>
-#include <__dancy/signum.h>
 
 __Dancy_Header_Begin
 
@@ -31,9 +29,9 @@ __Dancy_Header_Begin
 typedef __dancy_pid_t pid_t;
 #endif
 
-#ifndef __DANCY_TYPEDEF_SIG_ATOMIC_T
-#define __DANCY_TYPEDEF_SIG_ATOMIC_T
-typedef __dancy_sig_atomic_t sig_atomic_t;
+#ifndef __DANCY_TYPEDEF_UID_T
+#define __DANCY_TYPEDEF_UID_T
+typedef __dancy_uid_t uid_t;
 #endif
 
 #ifndef __DANCY_TYPEDEF_SIGSET_T
@@ -41,22 +39,31 @@ typedef __dancy_sig_atomic_t sig_atomic_t;
 typedef __dancy_sigset_t sigset_t;
 #endif
 
-void (*signal(int sig, void (*func)(int)))(int);
-int raise(int sig);
+union sigval {
+	int sival_int;
+	void *sival_ptr;
+};
 
-int kill(pid_t pid, int sig);
+typedef struct {
+	int si_signo;
+	int si_code;
+	int si_errno;
+	int si_status;
 
-int sigemptyset(sigset_t *set);
-int sigfillset(sigset_t *set);
+	pid_t si_pid;
+	uid_t si_uid;
 
-int sigaddset(sigset_t *set, int sig);
-int sigdelset(sigset_t *set, int sig);
+	void *si_addr;
+	union sigval si_value;
+} siginfo_t;
 
-int sigpending(sigset_t *out);
-int sigprocmask(int how, const sigset_t *set, sigset_t *out);
-int sigismember(const sigset_t *set, int sig);
+struct sigaction {
+	sigset_t sa_mask;
+	int sa_flags;
 
-int sigaction(int sig, const struct sigaction *act, struct sigaction *out);
+	void (*sa_handler)(int);
+	void (*sa_sigaction)(int, siginfo_t *, void *);
+};
 
 __Dancy_Header_End
 

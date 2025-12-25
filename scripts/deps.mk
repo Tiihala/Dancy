@@ -13,6 +13,7 @@ DANCY_HEADERS= \
  ./arctic/include/__dancy/reboot.h \
  ./arctic/include/__dancy/sched.h \
  ./arctic/include/__dancy/seek.h \
+ ./arctic/include/__dancy/sig.h \
  ./arctic/include/__dancy/signum.h \
  ./arctic/include/__dancy/spawn.h \
  ./arctic/include/__dancy/spin.h \
@@ -29,6 +30,7 @@ DANCY_HEADERS= \
  ./arctic/include/complex.h \
  ./arctic/include/ctype.h \
  ./arctic/include/dirent.h \
+ ./arctic/include/err.h \
  ./arctic/include/errno.h \
  ./arctic/include/fcntl.h \
  ./arctic/include/fenv.h \
@@ -38,6 +40,8 @@ DANCY_HEADERS= \
  ./arctic/include/math.h \
  ./arctic/include/poll.h \
  ./arctic/include/pty.h \
+ ./arctic/include/pwd.h \
+ ./arctic/include/regex.h \
  ./arctic/include/setjmp.h \
  ./arctic/include/signal.h \
  ./arctic/include/spawn.h \
