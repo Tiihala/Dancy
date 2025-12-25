@@ -848,6 +848,62 @@
     ./arctic/libc/wchar/wcwidth.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wcwidth.c
 
+./o32/arctic/libc/wctype/iswalnum.o: \
+    ./arctic/libc/wctype/iswalnum.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswalnum.c
+
+./o32/arctic/libc/wctype/iswalpha.o: \
+    ./arctic/libc/wctype/iswalpha.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswalpha.c
+
+./o32/arctic/libc/wctype/iswblank.o: \
+    ./arctic/libc/wctype/iswblank.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswblank.c
+
+./o32/arctic/libc/wctype/iswcntrl.o: \
+    ./arctic/libc/wctype/iswcntrl.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswcntrl.c
+
+./o32/arctic/libc/wctype/iswdigit.o: \
+    ./arctic/libc/wctype/iswdigit.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswdigit.c
+
+./o32/arctic/libc/wctype/iswgraph.o: \
+    ./arctic/libc/wctype/iswgraph.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswgraph.c
+
+./o32/arctic/libc/wctype/iswlower.o: \
+    ./arctic/libc/wctype/iswlower.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswlower.c
+
+./o32/arctic/libc/wctype/iswprint.o: \
+    ./arctic/libc/wctype/iswprint.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswprint.c
+
+./o32/arctic/libc/wctype/iswpunct.o: \
+    ./arctic/libc/wctype/iswpunct.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswpunct.c
+
+./o32/arctic/libc/wctype/iswspace.o: \
+    ./arctic/libc/wctype/iswspace.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswspace.c
+
+./o32/arctic/libc/wctype/iswupper.o: \
+    ./arctic/libc/wctype/iswupper.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswupper.c
+
+./o32/arctic/libc/wctype/iswxdigi.o: \
+    ./arctic/libc/wctype/iswxdigi.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswxdigi.c
+
+./o32/arctic/libc/wctype/towlower.o: \
+    ./arctic/libc/wctype/towlower.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/towlower.c
+
+./o32/arctic/libc/wctype/towupper.o: \
+    ./arctic/libc/wctype/towupper.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wctype/towupper.c
+
 ./o32/arctic/programs/cat/main.o: \
     ./arctic/programs/cat/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_CAT_HEADERS)
@@ -2489,6 +2545,62 @@
 ./o64/arctic/libc/wchar/wcwidth.o: \
     ./arctic/libc/wchar/wcwidth.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/wchar/wcwidth.c
+
+./o64/arctic/libc/wctype/iswalnum.o: \
+    ./arctic/libc/wctype/iswalnum.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswalnum.c
+
+./o64/arctic/libc/wctype/iswalpha.o: \
+    ./arctic/libc/wctype/iswalpha.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswalpha.c
+
+./o64/arctic/libc/wctype/iswblank.o: \
+    ./arctic/libc/wctype/iswblank.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswblank.c
+
+./o64/arctic/libc/wctype/iswcntrl.o: \
+    ./arctic/libc/wctype/iswcntrl.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswcntrl.c
+
+./o64/arctic/libc/wctype/iswdigit.o: \
+    ./arctic/libc/wctype/iswdigit.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswdigit.c
+
+./o64/arctic/libc/wctype/iswgraph.o: \
+    ./arctic/libc/wctype/iswgraph.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswgraph.c
+
+./o64/arctic/libc/wctype/iswlower.o: \
+    ./arctic/libc/wctype/iswlower.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswlower.c
+
+./o64/arctic/libc/wctype/iswprint.o: \
+    ./arctic/libc/wctype/iswprint.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswprint.c
+
+./o64/arctic/libc/wctype/iswpunct.o: \
+    ./arctic/libc/wctype/iswpunct.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswpunct.c
+
+./o64/arctic/libc/wctype/iswspace.o: \
+    ./arctic/libc/wctype/iswspace.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswspace.c
+
+./o64/arctic/libc/wctype/iswupper.o: \
+    ./arctic/libc/wctype/iswupper.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswupper.c
+
+./o64/arctic/libc/wctype/iswxdigi.o: \
+    ./arctic/libc/wctype/iswxdigi.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/iswxdigi.c
+
+./o64/arctic/libc/wctype/towlower.o: \
+    ./arctic/libc/wctype/towlower.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/towlower.c
+
+./o64/arctic/libc/wctype/towupper.o: \
+    ./arctic/libc/wctype/towupper.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wctype/towupper.c
 
 ./o64/arctic/programs/cat/main.o: \
     ./arctic/programs/cat/main.c $(DANCY_DEPS) \

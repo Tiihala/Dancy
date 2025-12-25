@@ -212,6 +212,20 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/unistd/unlink.o \
  ./o32/arctic/libc/unistd/write.o \
  ./o32/arctic/libc/wchar/wcwidth.o \
+ ./o32/arctic/libc/wctype/iswalnum.o \
+ ./o32/arctic/libc/wctype/iswalpha.o \
+ ./o32/arctic/libc/wctype/iswblank.o \
+ ./o32/arctic/libc/wctype/iswcntrl.o \
+ ./o32/arctic/libc/wctype/iswdigit.o \
+ ./o32/arctic/libc/wctype/iswgraph.o \
+ ./o32/arctic/libc/wctype/iswlower.o \
+ ./o32/arctic/libc/wctype/iswprint.o \
+ ./o32/arctic/libc/wctype/iswpunct.o \
+ ./o32/arctic/libc/wctype/iswspace.o \
+ ./o32/arctic/libc/wctype/iswupper.o \
+ ./o32/arctic/libc/wctype/iswxdigi.o \
+ ./o32/arctic/libc/wctype/towlower.o \
+ ./o32/arctic/libc/wctype/towupper.o \
  ./o32/common/a32/dark.o \
 
 ARCTIC_LIBC_OBJECTS_64= \
@@ -424,6 +438,20 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/unistd/unlink.o \
  ./o64/arctic/libc/unistd/write.o \
  ./o64/arctic/libc/wchar/wcwidth.o \
+ ./o64/arctic/libc/wctype/iswalnum.o \
+ ./o64/arctic/libc/wctype/iswalpha.o \
+ ./o64/arctic/libc/wctype/iswblank.o \
+ ./o64/arctic/libc/wctype/iswcntrl.o \
+ ./o64/arctic/libc/wctype/iswdigit.o \
+ ./o64/arctic/libc/wctype/iswgraph.o \
+ ./o64/arctic/libc/wctype/iswlower.o \
+ ./o64/arctic/libc/wctype/iswprint.o \
+ ./o64/arctic/libc/wctype/iswpunct.o \
+ ./o64/arctic/libc/wctype/iswspace.o \
+ ./o64/arctic/libc/wctype/iswupper.o \
+ ./o64/arctic/libc/wctype/iswxdigi.o \
+ ./o64/arctic/libc/wctype/towlower.o \
+ ./o64/arctic/libc/wctype/towupper.o \
  ./o64/common/a64/dark.o \
 
 ##############################################################################
