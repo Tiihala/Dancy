@@ -86,6 +86,8 @@ typedef unsigned long long __dancy_sigset_t;
 typedef struct { void *_m; } __dancy_mtx_t;
 typedef struct { void *_t; } __dancy_thrd_t;
 
+extern char __dancy_program_name[];
+
 extern void (*__dancy_free)(void *pointer);
 void __dancy_free_default(void *pointer);
 

@@ -24,10 +24,28 @@
 
 void __dancy_libc_start(int argc, char *argv[]);
 
+char __dancy_program_name[16];
+
 void __dancy_libc_start(int argc, char *argv[])
 {
 	extern int main(int argc, char *argv[]);
 	int retval;
+
+	{
+		char c, *name = argv[0];
+		size_t i = 0;
+
+		while ((c = argv[0][i++]) != '\0') {
+			if (c == '/')
+				name = &argv[0][i];
+		}
+
+		for (i = 0; i < sizeof(__dancy_program_name) - 1; i++) {
+			if ((c = name[i]) == '\0')
+				break;
+			__dancy_program_name[i] = c;
+		}
+	}
 
 	__dancy_free = __dancy_free_default;
 	__dancy_stdio_init();
