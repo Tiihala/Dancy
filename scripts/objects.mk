@@ -864,6 +864,10 @@
     ./arctic/libc/wchar/wcrtomb.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wcrtomb.c
 
+./o32/arctic/libc/wchar/wcslen.o: \
+    ./arctic/libc/wchar/wcslen.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wcslen.c
+
 ./o32/arctic/libc/wchar/wcwidth.o: \
     ./arctic/libc/wchar/wcwidth.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wcwidth.c
@@ -2581,6 +2585,10 @@
 ./o64/arctic/libc/wchar/wcrtomb.o: \
     ./arctic/libc/wchar/wcrtomb.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/wchar/wcrtomb.c
+
+./o64/arctic/libc/wchar/wcslen.o: \
+    ./arctic/libc/wchar/wcslen.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wchar/wcslen.c
 
 ./o64/arctic/libc/wchar/wcwidth.o: \
     ./arctic/libc/wchar/wcwidth.c $(DANCY_DEPS)
