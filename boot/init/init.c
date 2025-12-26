@@ -450,7 +450,7 @@ void init(void)
 					usb_xhci_count);
 			}
 
-			b_print("\b device%s\n",
+			b_print("\b controller%s\n",
 				(usb_controllers > 1) ? "s" : "");
 		}
 
