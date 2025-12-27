@@ -25,7 +25,8 @@ int poll(struct pollfd fds[], nfds_t nfds, int timeout)
 {
 	int r;
 
-	r = (int)__dancy_syscall3(__dancy_syscall_poll, fds, nfds, timeout);
+	r = (int)__dancy_syscall4(__dancy_syscall_poll,
+		fds, nfds, timeout, NULL);
 
 	if (r < 0)
 		errno = -r, r = -1;

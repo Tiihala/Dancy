@@ -924,6 +924,10 @@ static long long dancy_syscall_poll(va_list va)
 	struct pollfd *fds = va_arg(va, struct pollfd *);
 	nfds_t nfds = va_arg(va, nfds_t);
 	int timeout = va_arg(va, int);
+	const __dancy_sigset_t *sigmask = va_arg(va, const void *);
+
+	struct task *current = task_current();
+	uint32_t mask = current->sig.mask;
 	size_t size;
 	int r, retval;
 
@@ -938,7 +942,27 @@ static long long dancy_syscall_poll(va_list va)
 	if (pg_check_user_write(fds, size))
 		return -EFAULT;
 
-	if ((r = file_poll(&fds[0], (int)nfds, timeout, &retval)) != 0) {
+	if (sigmask) {
+		uint32_t s;
+
+		if (((addr_t)sigmask % (addr_t)sizeof(void *)) != 0)
+			return -EFAULT;
+
+		if (pg_check_user_read(sigmask, sizeof(__dancy_sigset_t)))
+			return -EFAULT;
+
+		s = (uint32_t)(*sigmask);
+
+		s &= ~(((uint32_t)1) << (SIGKILL - 1));
+		s &= ~(((uint32_t)1) << (SIGSTOP - 1));
+
+		current->sig.mask = s;
+	}
+
+	r = file_poll(&fds[0], (int)nfds, timeout, &retval);
+	current->sig.mask = mask;
+
+	if (r != 0) {
 		if (r == DE_INTERRUPT)
 			return -EINTR;
 		if (r == DE_MEMORY)
