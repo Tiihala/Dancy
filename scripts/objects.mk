@@ -244,6 +244,10 @@
     ./arctic/libc/pty/openpty.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/pty/openpty.c
 
+./o32/arctic/libc/signal/action.o: \
+    ./arctic/libc/signal/action.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/signal/action.c
+
 ./o32/arctic/libc/signal/kill.o: \
     ./arctic/libc/signal/kill.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/signal/kill.c
@@ -1981,6 +1985,10 @@
 ./o64/arctic/libc/pty/openpty.o: \
     ./arctic/libc/pty/openpty.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/pty/openpty.c
+
+./o64/arctic/libc/signal/action.o: \
+    ./arctic/libc/signal/action.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/signal/action.c
 
 ./o64/arctic/libc/signal/kill.o: \
     ./arctic/libc/signal/kill.c $(DANCY_DEPS)
