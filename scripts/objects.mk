@@ -444,6 +444,10 @@
     ./arctic/libc/stdio/perror.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/perror.c
 
+./o32/arctic/libc/stdio/popen.o: \
+    ./arctic/libc/stdio/popen.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/popen.c
+
 ./o32/arctic/libc/stdio/printf.o: \
     ./arctic/libc/stdio/printf.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/printf.c
@@ -2185,6 +2189,10 @@
 ./o64/arctic/libc/stdio/perror.o: \
     ./arctic/libc/stdio/perror.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/perror.c
+
+./o64/arctic/libc/stdio/popen.o: \
+    ./arctic/libc/stdio/popen.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/popen.c
 
 ./o64/arctic/libc/stdio/printf.o: \
     ./arctic/libc/stdio/printf.c $(DANCY_DEPS)
