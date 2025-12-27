@@ -59,6 +59,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/misc/procinfo.o \
  ./o32/arctic/libc/misc/proclist.o \
  ./o32/arctic/libc/poll/poll.o \
+ ./o32/arctic/libc/poll/ppoll.o \
  ./o32/arctic/libc/pty/openpty.o \
  ./o32/arctic/libc/signal/kill.o \
  ./o32/arctic/libc/signal/pending.o \
@@ -294,6 +295,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/misc/procinfo.o \
  ./o64/arctic/libc/misc/proclist.o \
  ./o64/arctic/libc/poll/poll.o \
+ ./o64/arctic/libc/poll/ppoll.o \
  ./o64/arctic/libc/pty/openpty.o \
  ./o64/arctic/libc/signal/kill.o \
  ./o64/arctic/libc/signal/pending.o \
