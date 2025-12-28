@@ -110,6 +110,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdio/fwrite.o \
  ./o32/arctic/libc/stdio/getc.o \
  ./o32/arctic/libc/stdio/getchar.o \
+ ./o32/arctic/libc/stdio/getdelim.o \
  ./o32/arctic/libc/stdio/pclose.o \
  ./o32/arctic/libc/stdio/perror.o \
  ./o32/arctic/libc/stdio/popen.o \
@@ -349,6 +350,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdio/fwrite.o \
  ./o64/arctic/libc/stdio/getc.o \
  ./o64/arctic/libc/stdio/getchar.o \
+ ./o64/arctic/libc/stdio/getdelim.o \
  ./o64/arctic/libc/stdio/pclose.o \
  ./o64/arctic/libc/stdio/perror.o \
  ./o64/arctic/libc/stdio/popen.o \
