@@ -252,6 +252,10 @@
     ./arctic/libc/regex/regerror.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/regex/regerror.c
 
+./o32/arctic/libc/regex/regfree.o: \
+    ./arctic/libc/regex/regfree.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/regex/regfree.c
+
 ./o32/arctic/libc/signal/action.o: \
     ./arctic/libc/signal/action.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/signal/action.c
@@ -2017,6 +2021,10 @@
 ./o64/arctic/libc/regex/regerror.o: \
     ./arctic/libc/regex/regerror.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/regex/regerror.c
+
+./o64/arctic/libc/regex/regfree.o: \
+    ./arctic/libc/regex/regfree.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/regex/regfree.c
 
 ./o64/arctic/libc/signal/action.o: \
     ./arctic/libc/signal/action.c $(DANCY_DEPS)
