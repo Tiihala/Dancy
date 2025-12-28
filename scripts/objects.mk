@@ -244,6 +244,10 @@
     ./arctic/libc/pty/openpty.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/pty/openpty.c
 
+./o32/arctic/libc/regex/regcomp.o: \
+    ./arctic/libc/regex/regcomp.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/regex/regcomp.c
+
 ./o32/arctic/libc/regex/regerror.o: \
     ./arctic/libc/regex/regerror.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/regex/regerror.c
@@ -2005,6 +2009,10 @@
 ./o64/arctic/libc/pty/openpty.o: \
     ./arctic/libc/pty/openpty.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/pty/openpty.c
+
+./o64/arctic/libc/regex/regcomp.o: \
+    ./arctic/libc/regex/regcomp.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/regex/regcomp.c
 
 ./o64/arctic/libc/regex/regerror.o: \
     ./arctic/libc/regex/regerror.c $(DANCY_DEPS)
