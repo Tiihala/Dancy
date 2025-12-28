@@ -444,6 +444,10 @@
     ./arctic/libc/stdio/getdelim.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/getdelim.c
 
+./o32/arctic/libc/stdio/getline.o: \
+    ./arctic/libc/stdio/getline.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/getline.c
+
 ./o32/arctic/libc/stdio/pclose.o: \
     ./arctic/libc/stdio/pclose.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/pclose.c
@@ -2197,6 +2201,10 @@
 ./o64/arctic/libc/stdio/getdelim.o: \
     ./arctic/libc/stdio/getdelim.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/getdelim.c
+
+./o64/arctic/libc/stdio/getline.o: \
+    ./arctic/libc/stdio/getline.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/getline.c
 
 ./o64/arctic/libc/stdio/pclose.o: \
     ./arctic/libc/stdio/pclose.c $(DANCY_DEPS)
