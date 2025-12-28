@@ -37,6 +37,20 @@ __Dancy_Header_Begin
 
 typedef ssize_t regoff_t;
 
+#define REG_BADBR       (101)
+#define REG_BADPAT      (102)
+#define REG_BADRPT      (103)
+#define REG_EBRACE      (104)
+#define REG_EBRACK      (105)
+#define REG_ECOLLATE    (106)
+#define REG_ECTYPE      (107)
+#define REG_EESCAPE     (108)
+#define REG_EPAREN      (109)
+#define REG_ERANGE      (110)
+#define REG_ESPACE      (111)
+#define REG_ESUBREG     (112)
+#define REG_NOMATCH     (113)
+
 typedef struct {
 	regoff_t rm_so;
 	regoff_t rm_eo;
