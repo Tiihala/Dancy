@@ -52,10 +52,8 @@ static int my_puts(const char *s, FILE *stream)
 
 		while (put_size <= size) {
 			if (stream->_buffer_end >= buffer_size) {
-				if ( __dancy_internal_fflush(stream)) {
-					stream->_error = 1;
-					return EOF;
-				}
+				stream->_error = 1;
+				return (errno = EBADF), EOF;
 			}
 
 			if (put_size < size)
@@ -67,6 +65,13 @@ static int my_puts(const char *s, FILE *stream)
 			stream->_state |= __DANCY_FILE_WRITTEN_BYTES;
 
 			if (buffer_mode == _IOLBF && c == 0x0A) {
+				if ( __dancy_internal_fflush(stream)) {
+					stream->_error = 1;
+					return EOF;
+				}
+			}
+
+			if (stream->_buffer_end >= buffer_size) {
 				if ( __dancy_internal_fflush(stream)) {
 					stream->_error = 1;
 					return EOF;
