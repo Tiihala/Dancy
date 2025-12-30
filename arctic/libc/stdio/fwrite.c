@@ -48,16 +48,21 @@ static size_t my_write(const unsigned char *buffer, size_t size, FILE *stream)
 			unsigned char c;
 
 			if (stream->_buffer_end >= buffer_size) {
-				if ( __dancy_internal_fflush(stream)) {
-					stream->_error = 1;
-					return ret_size;
-				}
+				stream->_error = 1;
+				return (errno = EBADF), ret_size;
 			}
 
 			p[stream->_buffer_end++] = (c = buffer[ret_size++]);
 			stream->_state |= __DANCY_FILE_WRITTEN_BYTES;
 
 			if (buffer_mode == _IOLBF && c == 0x0A) {
+				if ( __dancy_internal_fflush(stream)) {
+					stream->_error = 1;
+					return ret_size;
+				}
+			}
+
+			if (stream->_buffer_end >= buffer_size) {
 				if ( __dancy_internal_fflush(stream)) {
 					stream->_error = 1;
 					return ret_size;
