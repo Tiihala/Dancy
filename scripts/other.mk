@@ -4,32 +4,25 @@ DANCY_DY=bin\dy
 DANCY_EXE=.exe
 DANCY_EXT=
 
+DANCY_AS=nasm.exe
+DANCY_A32=$(DANCY_AS) -fwin32 -o
+DANCY_A64=$(DANCY_AS) -fwin64 -o
+
+DANCY_CC=clang.exe
+DANCY_C32=$(DANCY_CC) -m32
+DANCY_C64=$(DANCY_CC) -m64
+
+ACPICA_SOURCE=call scripts\acpica.cmd
+DANCY_MK=copy NUL scripts\dancy.mk
+
 !include .\VERSION
 !include .\scripts\header.mk
 !include .\scripts\deps.mk
-
-DANCY_MK=copy NUL scripts\dancy.mk
 
 HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
 HOST_CFLAGS=/O2 /nologo
 DANCY_HOST_BINARY=link.exe /NOLOGO /MANIFEST:EMBED /OUT:
 DANCY_HOST_OBJECT=cl.exe /c $(HOST_CPPFLAGS) $(HOST_CFLAGS) /Fo
-
-DANCY_AS=nasm.exe
-DANCY_A32=nasm.exe -fwin32 -o
-DANCY_A64=nasm.exe -fwin64 -o
-
-DANCY_C32=clang.exe -m32
-DANCY_C64=clang.exe -m64
-DANCY_O32=$(DANCY_C32) $(DANCY_CPPFLAGS_32) $(DANCY_CFLAGS_32) -c -o
-DANCY_O64=$(DANCY_C64) $(DANCY_CPPFLAGS_64) $(DANCY_CFLAGS_64) -c -o
-
-ACPICA_SOURCE=call scripts\acpica.cmd
-ACPICA_O32=$(DANCY_C32) $(ACPICA_CPPFLAGS_32) $(ACPICA_CFLAGS_32) -c -o
-ACPICA_O64=$(DANCY_C64) $(ACPICA_CPPFLAGS_64) $(ACPICA_CFLAGS_64) -c -o
-
-ARCTIC_O32=$(DANCY_C32) $(ARCTIC_CPPFLAGS_32) $(ARCTIC_CFLAGS_32) -c -o
-ARCTIC_O64=$(DANCY_C64) $(ARCTIC_CPPFLAGS_64) $(ARCTIC_CFLAGS_64) -c -o
 
 all: all-release
 
