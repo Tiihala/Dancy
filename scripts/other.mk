@@ -12,7 +12,7 @@ DANCY_CC=clang.exe
 DANCY_C32=$(DANCY_CC) -m32
 DANCY_C64=$(DANCY_CC) -m64
 
-ACPICA_SOURCE=call scripts\acpica.cmd
+ACPICA_SOURCE=call scripts\git\acpica.cmd
 DANCY_MK=copy NUL scripts\dancy.mk
 
 !include .\VERSION

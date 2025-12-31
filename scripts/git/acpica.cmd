@@ -4,7 +4,7 @@ SETLOCAL
 SET ACPICA_TAG=R03_31_21
 SET ACPICA_GIT=https://github.com/acpica/acpica.git
 
-IF NOT EXIST "scripts\acpica.cmd" (
+IF NOT EXIST "scripts\git\acpica.cmd" (
     ECHO Error: does not look like a root of Dancy source tree 1>&2
     EXIT /B 1
 )

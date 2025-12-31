@@ -12,7 +12,7 @@ DANCY_CC=bash ./scripts/cc.sh
 DANCY_C32=$(DANCY_CC) -m32
 DANCY_C64=$(DANCY_CC) -m64
 
-ACPICA_SOURCE=bash ./scripts/acpica.sh
+ACPICA_SOURCE=bash ./scripts/git/acpica.sh
 DANCY_MK=touch ./scripts/dancy.mk
 
 include ./VERSION

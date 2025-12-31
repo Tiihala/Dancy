@@ -4,7 +4,7 @@ set -e
 ACPICA_TAG=R03_31_21
 ACPICA_GIT=https://github.com/acpica/acpica.git
 
-if [ ! -f "scripts/acpica.sh" ]; then
+if [ ! -f "scripts/git/acpica.sh" ]; then
     echo "Error: does not look like a root of Dancy source tree" 1>&2
     exit 1
 fi
