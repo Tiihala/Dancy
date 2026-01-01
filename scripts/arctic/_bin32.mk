@@ -3,6 +3,7 @@
 ##############################################################################
 
 ARCTIC_BIN32_FILES= \
+ ./arctic/bin32/editor \
  ./arctic/bin32/hello \
  ./arctic/bin32/cat \
  ./arctic/bin32/cp \
@@ -31,6 +32,7 @@ ARCTIC_BIN32_FILES= \
 
 ./arctic/bin32.img: $(ARCTIC_BIN32_FILES)
 	$(DY_VBR) -t ramfs $@ 2880
+	$(DY_MCOPY) -i $@ ./arctic/bin32/editor ::editor
 	$(DY_MCOPY) -i $@ ./arctic/bin32/hello ::hello
 	$(DY_MCOPY) -i $@ ./arctic/bin32/cat ::cat
 	$(DY_MCOPY) -i $@ ./arctic/bin32/cp ::cp

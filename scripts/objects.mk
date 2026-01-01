@@ -2,6 +2,11 @@
 
 ##############################################################################
 
+./o32/arctic/apps/editor/__dancy.o: \
+    ./arctic/apps/editor/__dancy.c $(DANCY_DEPS) \
+    $(ARCTIC_APPS_EDITOR_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/apps/editor/__dancy.c
+
 ./o32/arctic/apps/hello/main.o: \
     ./arctic/apps/hello/main.c $(DANCY_DEPS) \
     $(ARCTIC_APPS_HELLO_HEADERS)
@@ -1775,6 +1780,11 @@
 	$(DANCY_O32)$@ ./kernel/vfs/vfs.c
 
 ##############################################################################
+
+./o64/arctic/apps/editor/__dancy.o: \
+    ./arctic/apps/editor/__dancy.c $(DANCY_DEPS) \
+    $(ARCTIC_APPS_EDITOR_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/apps/editor/__dancy.c
 
 ./o64/arctic/apps/hello/main.o: \
     ./arctic/apps/hello/main.c $(DANCY_DEPS) \
