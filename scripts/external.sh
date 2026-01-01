@@ -143,7 +143,7 @@ then
     popd
 fi
 
-rm -rf external/src/*
+rm -rf external/src
 echo "External Tools" > external/VERSION
 
 if [ $ASM_AVAILABLE -eq 0 ]
