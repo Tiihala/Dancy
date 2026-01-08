@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Antti Tiihala
+ * Copyright (c) 2021, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,6 +21,13 @@
 
 static mtx_t con_mtx;
 static int con_ready;
+
+struct con_state {
+	int cmd[8];
+};
+
+static struct con_state con_array[6];
+static struct con_state *con;
 
 static int con_column;
 static int con_columns;
@@ -138,37 +145,36 @@ static void con_build_lookup_table(void)
 
 static void con_handle_state(int cmd)
 {
-	static int state[8];
 	int i;
 
 	if (cmd == con_clear_state) {
 		for (i = 0; i < 8; i++)
-			state[i] = 0;
+			con->cmd[i] = 0;
 
 	} else if (cmd == con_save_cursor) {
-		state[0] = (int)(con_attribute & 0x7FFFFFFF);
-		state[1] = con_column;
-		state[2] = con_row;
+		con->cmd[0] = (int)(con_attribute & 0x7FFFFFFF);
+		con->cmd[1] = con_column;
+		con->cmd[2] = con_row;
 
 	} else if (cmd == con_save_main_state) {
-		state[3] = (int)(con_attribute & 0x7FFFFFFF);
-		state[4] = con_column;
-		state[5] = con_row;
-		state[6] = con_row_scroll_first;
-		state[7] = con_row_scroll_last;
+		con->cmd[3] = (int)(con_attribute & 0x7FFFFFFF);
+		con->cmd[4] = con_column;
+		con->cmd[5] = con_row;
+		con->cmd[6] = con_row_scroll_first;
+		con->cmd[7] = con_row_scroll_last;
 
 	} else if (cmd == con_restore_cursor) {
-		con_attribute = (uint32_t)state[0];
-		con_column = state[1];
-		con_row = state[2];
+		con_attribute = (uint32_t)con->cmd[0];
+		con_column = con->cmd[1];
+		con_row = con->cmd[2];
 		con_wrap_delay = 0;
 
 	} else if (cmd == con_restore_main_state) {
-		con_attribute = (uint32_t)state[3];
-		con_column = state[4];
-		con_row = state[5];
-		con_row_scroll_first = state[6];
-		con_row_scroll_last = state[7];
+		con_attribute = (uint32_t)con->cmd[3];
+		con_column = con->cmd[4];
+		con_row = con->cmd[5];
+		con_row_scroll_first = con->cmd[6];
+		con_row_scroll_last = con->cmd[7];
 		con_wrap_delay = 0;
 	}
 }
@@ -232,6 +238,8 @@ int con_init(void)
 
 	if (mtx_init(&con_mtx, mtx_plain) != thrd_success)
 		return DE_UNEXPECTED;
+
+	con = &con_array[0];
 
 	if (kernel->fb_width < 640 || kernel->fb_height < 480)
 		return 0;
