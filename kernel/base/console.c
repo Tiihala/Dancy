@@ -231,15 +231,13 @@ int con_init(void)
 	static int run_once;
 	size_t size;
 	uint8_t *buffer;
-	int i, offset;
+	int i, j, offset;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
 
 	if (mtx_init(&con_mtx, mtx_plain) != thrd_success)
 		return DE_UNEXPECTED;
-
-	con = &con_array[0];
 
 	if (kernel->fb_width < 640 || kernel->fb_height < 480)
 		return 0;
@@ -269,30 +267,37 @@ int con_init(void)
 	offset = (((int)kernel->fb_height % kernel->glyph_height) / 2);
 	con_fb_start += (offset * (int)kernel->fb_width);
 
-	size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
-	size *= 2;
-	size += (size_t)con_columns * sizeof(con_tabs_array[0]);
-
-	size = (size + 0x0FFF) & 0xFFFFF000;
-	buffer = aligned_alloc(0x1000, size);
-
-	if (!buffer)
-		return DE_MEMORY;
-
-	size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
-
-	con_buffer_main = (void *)(buffer);
-	con_buffer_alt = (void *)(buffer + size);
-	con_tabs_array = (void *)(buffer + size + size);
-
-	con_buffer = con_buffer_main;
+	con_build_lookup_table();
 	con_cells = con_columns * con_rows;
 
-	for (i = 0; i < con_cells; i++)
-		con_buffer[i] = 0;
+	for (i = 0; i < 1; i++) {
+		con = &con_array[0];
 
-	con_build_lookup_table();
-	con_init_variables();
+		size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
+		size *= 2;
+		size += (size_t)con_columns * sizeof(con_tabs_array[0]);
+
+		size = (size + 0x0FFF) & 0xFFFFF000;
+		buffer = aligned_alloc(0x1000, size);
+
+		if (!buffer)
+			return DE_MEMORY;
+
+		size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
+
+		con_buffer_main = (void *)(buffer);
+		con_buffer_alt = (void *)(buffer + size);
+		con_tabs_array = (void *)(buffer + size + size);
+
+		con_buffer = con_buffer_main;
+
+		for (j = 0; j < con_cells; j++)
+			con_buffer[j] = 0;
+
+		con_init_variables();
+	}
+
+	con = &con_array[0];
 
 	kernel->con_columns = con_columns;
 	kernel->con_rows = con_rows;
