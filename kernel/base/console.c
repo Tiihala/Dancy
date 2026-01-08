@@ -26,6 +26,11 @@ struct con_state {
 	int x;
 	int y;
 
+	int scroll_first;
+	int scroll_last;
+	int utf8_state;
+	int wrap_delay;
+
 	int cmd[8];
 };
 
@@ -34,11 +39,6 @@ static struct con_state *con;
 
 static int con_columns;
 static int con_rows;
-
-static int con_row_scroll_first;
-static int con_row_scroll_last;
-static int con_utf8_state;
-static int con_wrap_delay;
 
 static int con_cells;
 static int con_cursor_visible;
@@ -160,22 +160,22 @@ static void con_handle_state(int cmd)
 		con->cmd[3] = (int)(con_attribute & 0x7FFFFFFF);
 		con->cmd[4] = con->x;
 		con->cmd[5] = con->y;
-		con->cmd[6] = con_row_scroll_first;
-		con->cmd[7] = con_row_scroll_last;
+		con->cmd[6] = con->scroll_first;
+		con->cmd[7] = con->scroll_last;
 
 	} else if (cmd == con_restore_cursor) {
 		con_attribute = (uint32_t)con->cmd[0];
 		con->x = con->cmd[1];
 		con->y = con->cmd[2];
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 
 	} else if (cmd == con_restore_main_state) {
 		con_attribute = (uint32_t)con->cmd[3];
 		con->x = con->cmd[4];
 		con->y = con->cmd[5];
-		con_row_scroll_first = con->cmd[6];
-		con_row_scroll_last = con->cmd[7];
-		con_wrap_delay = 0;
+		con->scroll_first = con->cmd[6];
+		con->scroll_last = con->cmd[7];
+		con->wrap_delay = 0;
 	}
 }
 
@@ -189,11 +189,11 @@ static void con_init_variables(void)
 	con->x = 0;
 	con->y = 0;
 
-	con_row_scroll_first = 0;
-	con_row_scroll_last = con_rows - 1;
+	con->scroll_first = 0;
+	con->scroll_last = con_rows - 1;
 
-	con_utf8_state = 0;
-	con_wrap_delay = 0;
+	con->utf8_state = 0;
+	con->wrap_delay = 0;
 	con_cursor_visible = 1;
 
 	for (i = 0; i < con_columns; i++)
@@ -465,9 +465,9 @@ static void con_render(void)
 
 static void con_scroll_up(void)
 {
-	uint32_t *dst = &con_buffer[con_row_scroll_first * con_columns];
+	uint32_t *dst = &con_buffer[con->scroll_first * con_columns];
 	uint32_t *src = dst + con_columns;
-	int movs = (con_row_scroll_last - con_row_scroll_first) * con_columns;
+	int movs = (con->scroll_last - con->scroll_first) * con_columns;
 	int i;
 
 	for (i = 0; i < movs; i++) {
@@ -490,9 +490,9 @@ static void con_scroll_up(void)
 
 static void con_scroll_down(void)
 {
-	uint32_t *dst = &con_buffer[con_row_scroll_last * con_columns];
+	uint32_t *dst = &con_buffer[con->scroll_last * con_columns];
 	uint32_t *src = dst - con_columns;
-	int movs = (con_row_scroll_last - con_row_scroll_first) * con_columns;
+	int movs = (con->scroll_last - con->scroll_first) * con_columns;
 	int i;
 
 	dst += (con_columns - 1);
@@ -507,7 +507,7 @@ static void con_scroll_down(void)
 		dst -= 1, src -= 1;
 	}
 
-	dst = &con_buffer[con_row_scroll_first * con_columns];
+	dst = &con_buffer[con->scroll_first * con_columns];
 
 	for (i = 0; i < con_columns; i++) {
 		uint32_t t = *dst & (~con_rendered_bit);
@@ -689,7 +689,7 @@ static void con_handle_escape(void)
 		 * ESC M - Reverse Index.
 		 */
 		if (type == 'M') {
-			if (con->y == con_row_scroll_first)
+			if (con->y == con->scroll_first)
 				con_scroll_down();
 			else if (con->y > 0)
 				con->y -= 1;
@@ -756,7 +756,7 @@ static void con_handle_escape(void)
 	case 'A': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 
 		if (con->y - n >= 0)
 			con->y -= n;
@@ -770,7 +770,7 @@ static void con_handle_escape(void)
 	case 'B': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 
 		if (con->y + n < con_rows)
 			con->y += n;
@@ -784,7 +784,7 @@ static void con_handle_escape(void)
 	case 'C': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 
 		if (con->x + n < con_columns)
 			con->x += n;
@@ -798,7 +798,7 @@ static void con_handle_escape(void)
 	case 'D': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 
 		if (con->x - n >= 0)
 			con->x -= n;
@@ -813,7 +813,7 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
 		con->x = 0;
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 
 		if (con->y + n < con_rows)
 			con->y += n;
@@ -828,7 +828,7 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
 		con->x = 0;
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 
 		if (con->y - n >= 0)
 			con->y -= n;
@@ -843,7 +843,7 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
 		con->x = (n - 1 < con_columns) ? n - 1 : con_columns - 1;
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 	} break;
 
 	/*
@@ -855,7 +855,7 @@ static void con_handle_escape(void)
 
 		con->y = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
 		con->x = (m - 1 < con_columns) ? m - 1 : con_columns - 1;
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 	} break;
 
 	/*
@@ -870,7 +870,7 @@ static void con_handle_escape(void)
 				t = i, n -= 1;
 		}
 		con->x = t;
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 	} break;
 
 	/*
@@ -924,22 +924,22 @@ static void con_handle_escape(void)
 	 */
 	case 'L': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
-		int saved_val = con_row_scroll_first;
+		int saved_val = con->scroll_first;
 
 		if (n > con_rows)
 			n = con_rows;
 
-		if (con->y < con_row_scroll_first)
+		if (con->y < con->scroll_first)
 			n = 0;
-		if (con->y > con_row_scroll_last)
+		if (con->y > con->scroll_last)
 			n = 0;
 
-		con_row_scroll_first = con->y;
+		con->scroll_first = con->y;
 
 		for (i = 0; i < n; i++)
 			con_scroll_down();
 
-		con_row_scroll_first = saved_val;
+		con->scroll_first = saved_val;
 	} break;
 
 	/*
@@ -947,22 +947,22 @@ static void con_handle_escape(void)
 	 */
 	case 'M': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
-		int saved_val = con_row_scroll_first;
+		int saved_val = con->scroll_first;
 
 		if (n > con_rows)
 			n = con_rows;
 
-		if (con->y < con_row_scroll_first)
+		if (con->y < con->scroll_first)
 			n = 0;
-		if (con->y > con_row_scroll_last)
+		if (con->y > con->scroll_last)
 			n = 0;
 
-		con_row_scroll_first = con->y;
+		con->scroll_first = con->y;
 
 		for (i = 0; i < n; i++)
 			con_scroll_up();
 
-		con_row_scroll_first = saved_val;
+		con->scroll_first = saved_val;
 	} break;
 
 	/*
@@ -1039,7 +1039,7 @@ static void con_handle_escape(void)
 	case 'Z': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 
 		for (i = con->x - 1; i >= 0 && n > 0; i--) {
 			if (i == 0 || con_tabs_array[i] != 0)
@@ -1054,7 +1054,7 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
 		con->y = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 	} break;
 
 	/*
@@ -1066,7 +1066,7 @@ static void con_handle_escape(void)
 
 		con->y = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
 		con->x = (m - 1 < con_columns) ? m - 1 : con_columns - 1;
-		con_wrap_delay = 0;
+		con->wrap_delay = 0;
 	} break;
 
 	/*
@@ -1146,8 +1146,8 @@ static void con_handle_escape(void)
 		m = (m <= con_rows) ? m : con_rows;
 		n = (n <= m) ? n : m;
 
-		con_row_scroll_first = n - 1;
-		con_row_scroll_last = m - 1;
+		con->scroll_first = n - 1;
+		con->scroll_last = m - 1;
 	} break;
 
 	/*
@@ -1178,7 +1178,7 @@ static void con_increment_row(void)
 {
 	con->y += 1;
 
-	if (con->y == con_row_scroll_last + 1) {
+	if (con->y == con->scroll_last + 1) {
 		con_scroll_up();
 		con->y -= 1;
 
@@ -1205,7 +1205,7 @@ static void con_write_locked(const unsigned char *data, int size)
 		if (c == '\0')
 			continue;
 
-		c = utf8_decode(&con_utf8_state, (unsigned char)c);
+		c = utf8_decode(&con->utf8_state, (unsigned char)c);
 
 		if (c == UTF8_WAITING_NEXT)
 			continue;
@@ -1314,7 +1314,7 @@ static void con_write_locked(const unsigned char *data, int size)
 		}
 
 		if (normal) {
-			if (con_wrap_delay && con->x == con_columns - 1) {
+			if (con->wrap_delay && con->x == con_columns - 1) {
 				con->x = 0;
 				con_increment_row();
 			}
@@ -1325,12 +1325,12 @@ static void con_write_locked(const unsigned char *data, int size)
 
 			if (con->x >= con_columns) {
 				con->x = con_columns - 1;
-				con_wrap_delay = 1;
+				con->wrap_delay = 1;
 			}
 		}
 
 		if (con->x != con_columns - 1)
-			con_wrap_delay = 0;
+			con->wrap_delay = 0;
 	}
 }
 
