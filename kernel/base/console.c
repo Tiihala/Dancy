@@ -1339,15 +1339,6 @@ static void con_write_locked(const unsigned char *data, int size)
 	}
 }
 
-void con_clear(void)
-{
-	if (!con_ready || mtx_lock(&con_mtx) != thrd_success)
-		return;
-
-	con_reset();
-	mtx_unlock(&con_mtx);
-}
-
 void con_panic(const char *message)
 {
 	static int run_once;

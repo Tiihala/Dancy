@@ -41,7 +41,6 @@ uint64_t ioapic_redtbl(int irq);
  */
 int con_init(void);
 int con_switch(int i);
-void con_clear(void);
 void con_panic(const char *message);
 void con_print(const char *format, ...);
 void con_write(const void *data, size_t size);
