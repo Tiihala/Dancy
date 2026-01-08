@@ -23,16 +23,16 @@ static mtx_t con_mtx;
 static int con_ready;
 
 struct con_state {
+	int x;
+	int y;
+
 	int cmd[8];
 };
 
 static struct con_state con_array[6];
 static struct con_state *con;
 
-static int con_column;
 static int con_columns;
-
-static int con_row;
 static int con_rows;
 
 static int con_row_scroll_first;
@@ -153,26 +153,26 @@ static void con_handle_state(int cmd)
 
 	} else if (cmd == con_save_cursor) {
 		con->cmd[0] = (int)(con_attribute & 0x7FFFFFFF);
-		con->cmd[1] = con_column;
-		con->cmd[2] = con_row;
+		con->cmd[1] = con->x;
+		con->cmd[2] = con->y;
 
 	} else if (cmd == con_save_main_state) {
 		con->cmd[3] = (int)(con_attribute & 0x7FFFFFFF);
-		con->cmd[4] = con_column;
-		con->cmd[5] = con_row;
+		con->cmd[4] = con->x;
+		con->cmd[5] = con->y;
 		con->cmd[6] = con_row_scroll_first;
 		con->cmd[7] = con_row_scroll_last;
 
 	} else if (cmd == con_restore_cursor) {
 		con_attribute = (uint32_t)con->cmd[0];
-		con_column = con->cmd[1];
-		con_row = con->cmd[2];
+		con->x = con->cmd[1];
+		con->y = con->cmd[2];
 		con_wrap_delay = 0;
 
 	} else if (cmd == con_restore_main_state) {
 		con_attribute = (uint32_t)con->cmd[3];
-		con_column = con->cmd[4];
-		con_row = con->cmd[5];
+		con->x = con->cmd[4];
+		con->y = con->cmd[5];
 		con_row_scroll_first = con->cmd[6];
 		con_row_scroll_last = con->cmd[7];
 		con_wrap_delay = 0;
@@ -186,8 +186,8 @@ static void con_init_variables(void)
 	con_attribute = 0x00800000;
 	con_escape_size = 0;
 
-	con_column = 0;
-	con_row = 0;
+	con->x = 0;
+	con->y = 0;
 
 	con_row_scroll_first = 0;
 	con_row_scroll_last = con_rows - 1;
@@ -445,10 +445,10 @@ static void con_render(void)
 		uint32_t pixel;
 
 		fb_ptr = (volatile uint32_t *)con_fb_start;
-		fb_off = con_column * kernel->glyph_width;
+		fb_off = con->x * kernel->glyph_width;
 		fb_ptr += fb_off;
 
-		fb_off = con_row * kernel->glyph_height;
+		fb_off = con->y * kernel->glyph_height;
 		fb_off *= (int)kernel->fb_width;
 		fb_ptr += fb_off;
 
@@ -681,7 +681,7 @@ static void con_handle_escape(void)
 		 * ESC H - Horizontal Tab Set.
 		 */
 		if (type == 'H') {
-			con_tabs_array[con_column] = 1;
+			con_tabs_array[con->x] = 1;
 			return;
 		}
 
@@ -689,10 +689,10 @@ static void con_handle_escape(void)
 		 * ESC M - Reverse Index.
 		 */
 		if (type == 'M') {
-			if (con_row == con_row_scroll_first)
+			if (con->y == con_row_scroll_first)
 				con_scroll_down();
-			else if (con_row > 0)
-				con_row -= 1;
+			else if (con->y > 0)
+				con->y -= 1;
 			return;
 		}
 
@@ -731,8 +731,8 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 		uint32_t *t0, *t1;
 
-		t0 = &con_buffer[con_column + (con_row * con_columns)];
-		t1 = &con_buffer[(con_columns - 1) + (con_row * con_columns)];
+		t0 = &con_buffer[con->x + (con->y * con_columns)];
+		t1 = &con_buffer[(con_columns - 1) + (con->y * con_columns)];
 
 		for (i = 0; i < n; i++) {
 			uint32_t *t3 = t1;
@@ -758,10 +758,10 @@ static void con_handle_escape(void)
 
 		con_wrap_delay = 0;
 
-		if (con_row - n >= 0)
-			con_row -= n;
+		if (con->y - n >= 0)
+			con->y -= n;
 		else
-			con_row = 0;
+			con->y = 0;
 	} break;
 
 	/*
@@ -772,10 +772,10 @@ static void con_handle_escape(void)
 
 		con_wrap_delay = 0;
 
-		if (con_row + n < con_rows)
-			con_row += n;
+		if (con->y + n < con_rows)
+			con->y += n;
 		else
-			con_row = con_rows - 1;
+			con->y = con_rows - 1;
 	} break;
 
 	/*
@@ -786,10 +786,10 @@ static void con_handle_escape(void)
 
 		con_wrap_delay = 0;
 
-		if (con_column + n < con_columns)
-			con_column += n;
+		if (con->x + n < con_columns)
+			con->x += n;
 		else
-			con_column = con_columns - 1;
+			con->x = con_columns - 1;
 	} break;
 
 	/*
@@ -800,10 +800,10 @@ static void con_handle_escape(void)
 
 		con_wrap_delay = 0;
 
-		if (con_column - n >= 0)
-			con_column -= n;
+		if (con->x - n >= 0)
+			con->x -= n;
 		else
-			con_column = 0;
+			con->x = 0;
 	} break;
 
 	/*
@@ -812,13 +812,13 @@ static void con_handle_escape(void)
 	case 'E': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
-		con_column = 0;
+		con->x = 0;
 		con_wrap_delay = 0;
 
-		if (con_row + n < con_rows)
-			con_row += n;
+		if (con->y + n < con_rows)
+			con->y += n;
 		else
-			con_row = con_rows - 1;
+			con->y = con_rows - 1;
 	} break;
 
 	/*
@@ -827,13 +827,13 @@ static void con_handle_escape(void)
 	case 'F': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
-		con_column = 0;
+		con->x = 0;
 		con_wrap_delay = 0;
 
-		if (con_row - n >= 0)
-			con_row -= n;
+		if (con->y - n >= 0)
+			con->y -= n;
 		else
-			con_row = 0;
+			con->y = 0;
 	} break;
 
 	/*
@@ -842,7 +842,7 @@ static void con_handle_escape(void)
 	case 'G': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
-		con_column = (n - 1 < con_columns) ? n - 1 : con_columns - 1;
+		con->x = (n - 1 < con_columns) ? n - 1 : con_columns - 1;
 		con_wrap_delay = 0;
 	} break;
 
@@ -853,8 +853,8 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 		int m = (count < 2 || parameters[1] < 1) ? 1 : parameters[1];
 
-		con_row = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
-		con_column = (m - 1 < con_columns) ? m - 1 : con_columns - 1;
+		con->y = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
+		con->x = (m - 1 < con_columns) ? m - 1 : con_columns - 1;
 		con_wrap_delay = 0;
 	} break;
 
@@ -865,11 +865,11 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 		int t = con_columns - 1;
 
-		for (i = con_column + 1; i < con_columns && n > 0; i++) {
+		for (i = con->x + 1; i < con_columns && n > 0; i++) {
 			if (con_tabs_array[i] != 0)
 				t = i, n -= 1;
 		}
-		con_column = t;
+		con->x = t;
 		con_wrap_delay = 0;
 	} break;
 
@@ -881,11 +881,11 @@ static void con_handle_escape(void)
 		int t0 = 0, t1 = 0;
 
 		if (n == 0) {
-			t0 = con_column + (con_row * con_columns);
+			t0 = con->x + (con->y * con_columns);
 			t1 = con_cells;
 
 		} else if (n == 1) {
-			t1 = con_column + (con_row * con_columns) + 1;
+			t1 = con->x + (con->y * con_columns) + 1;
 
 		} else if (n == 2 || n == 3) {
 			t1 = con_cells;
@@ -903,16 +903,16 @@ static void con_handle_escape(void)
 		int t0 = 0, t1 = 0;
 
 		if (n == 0) {
-			t0 = con_column + (con_row * con_columns);
-			t1 = con_columns + (con_row * con_columns);
+			t0 = con->x + (con->y * con_columns);
+			t1 = con_columns + (con->y * con_columns);
 
 		} else if (n == 1) {
-			t0 = con_row * con_columns;
-			t1 = con_column + (con_row * con_columns) + 1;
+			t0 = con->y * con_columns;
+			t1 = con->x + (con->y * con_columns) + 1;
 
 		} else if (n == 2) {
-			t0 = con_row * con_columns;
-			t1 = con_columns + (con_row * con_columns);
+			t0 = con->y * con_columns;
+			t1 = con_columns + (con->y * con_columns);
 		}
 
 		for (i = t0; i < t1; i++)
@@ -929,12 +929,12 @@ static void con_handle_escape(void)
 		if (n > con_rows)
 			n = con_rows;
 
-		if (con_row < con_row_scroll_first)
+		if (con->y < con_row_scroll_first)
 			n = 0;
-		if (con_row > con_row_scroll_last)
+		if (con->y > con_row_scroll_last)
 			n = 0;
 
-		con_row_scroll_first = con_row;
+		con_row_scroll_first = con->y;
 
 		for (i = 0; i < n; i++)
 			con_scroll_down();
@@ -952,12 +952,12 @@ static void con_handle_escape(void)
 		if (n > con_rows)
 			n = con_rows;
 
-		if (con_row < con_row_scroll_first)
+		if (con->y < con_row_scroll_first)
 			n = 0;
-		if (con_row > con_row_scroll_last)
+		if (con->y > con_row_scroll_last)
 			n = 0;
 
-		con_row_scroll_first = con_row;
+		con_row_scroll_first = con->y;
 
 		for (i = 0; i < n; i++)
 			con_scroll_up();
@@ -972,8 +972,8 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 		uint32_t *t0, *t1;
 
-		t0 = &con_buffer[con_column + (con_row * con_columns)];
-		t1 = &con_buffer[(con_columns - 1) + (con_row * con_columns)];
+		t0 = &con_buffer[con->x + (con->y * con_columns)];
+		t1 = &con_buffer[(con_columns - 1) + (con->y * con_columns)];
 
 		for (i = 0; i < n; i++) {
 			uint32_t *t3 = t0;
@@ -1024,8 +1024,8 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 		uint32_t *t0, *t1;
 
-		t0 = &con_buffer[con_column + (con_row * con_columns)];
-		t1 = &con_buffer[con_columns + (con_row * con_columns)];
+		t0 = &con_buffer[con->x + (con->y * con_columns)];
+		t1 = &con_buffer[con_columns + (con->y * con_columns)];
 
 		for (i = 0; i < n && t0 < t1; i++, t0++) {
 			if ((*t0 & (~con_rendered_bit)) != con_attribute)
@@ -1041,9 +1041,9 @@ static void con_handle_escape(void)
 
 		con_wrap_delay = 0;
 
-		for (i = con_column - 1; i >= 0 && n > 0; i--) {
+		for (i = con->x - 1; i >= 0 && n > 0; i--) {
 			if (i == 0 || con_tabs_array[i] != 0)
-				con_column = i, n -= 1;
+				con->x = i, n -= 1;
 		}
 	} break;
 
@@ -1053,7 +1053,7 @@ static void con_handle_escape(void)
 	case 'd': {
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 
-		con_row = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
+		con->y = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
 		con_wrap_delay = 0;
 	} break;
 
@@ -1064,8 +1064,8 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 		int m = (count < 2 || parameters[1] < 1) ? 1 : parameters[1];
 
-		con_row = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
-		con_column = (m - 1 < con_columns) ? m - 1 : con_columns - 1;
+		con->y = (n - 1 < con_rows) ? n - 1 : con_rows - 1;
+		con->x = (m - 1 < con_columns) ? m - 1 : con_columns - 1;
 		con_wrap_delay = 0;
 	} break;
 
@@ -1077,8 +1077,8 @@ static void con_handle_escape(void)
 		int t = con_columns - 1;
 
 		if (n == 0) {
-			if (con_column < t)
-				con_tabs_array[con_column] = 0;
+			if (con->x < t)
+				con_tabs_array[con->x] = 0;
 
 		} else if (n == 3) {
 			for (i = 0; i < t; i++)
@@ -1176,14 +1176,14 @@ static void con_handle_escape(void)
 
 static void con_increment_row(void)
 {
-	con_row += 1;
+	con->y += 1;
 
-	if (con_row == con_row_scroll_last + 1) {
+	if (con->y == con_row_scroll_last + 1) {
 		con_scroll_up();
-		con_row -= 1;
+		con->y -= 1;
 
-	} else if (con_row >= con_rows) {
-		con_row = con_rows - 1;
+	} else if (con->y >= con_rows) {
+		con->y = con_rows - 1;
 	}
 }
 
@@ -1192,7 +1192,7 @@ static void con_write_locked(const unsigned char *data, int size)
 	int i = 0, j;
 
 	if (con_cursor_visible) {
-		int offset = con_column + (con_row * con_columns);
+		int offset = con->x + (con->y * con_columns);
 
 		con_buffer[offset] &= (~con_rendered_bit);
 	}
@@ -1261,11 +1261,11 @@ static void con_write_locked(const unsigned char *data, int size)
 		case '\a':
 			break;
 		case '\b':
-			con_column -= ((con_column > 0) ? 1 : 0);
+			con->x -= ((con->x > 0) ? 1 : 0);
 			break;
 		case '\t':
 			offset = INT_MAX;
-			for (j = con_column + 1; j < con_columns; j++) {
+			for (j = con->x + 1; j < con_columns; j++) {
 				if (con_tabs_array[j] != 0) {
 					offset = j;
 					break;
@@ -1275,14 +1275,14 @@ static void con_write_locked(const unsigned char *data, int size)
 				con_increment_row();
 				offset = 0;
 			}
-			con_column = offset;
+			con->x = offset;
 			break;
 		case '\n':
-			con_column = 0;
+			con->x = 0;
 			con_increment_row();
 			break;
 		case '\r':
-			con_column = 0;
+			con->x = 0;
 			break;
 		case 0x0E:
 			break;
@@ -1314,22 +1314,22 @@ static void con_write_locked(const unsigned char *data, int size)
 		}
 
 		if (normal) {
-			if (con_wrap_delay && con_column == con_columns - 1) {
-				con_column = 0;
+			if (con_wrap_delay && con->x == con_columns - 1) {
+				con->x = 0;
 				con_increment_row();
 			}
 
-			offset = con_column + (con_row * con_columns);
+			offset = con->x + (con->y * con_columns);
 			con_buffer[offset] = (uint32_t)c | con_attribute;
-			con_column += 1;
+			con->x += 1;
 
-			if (con_column >= con_columns) {
-				con_column = con_columns - 1;
+			if (con->x >= con_columns) {
+				con->x = con_columns - 1;
 				con_wrap_delay = 1;
 			}
 		}
 
-		if (con_column != con_columns - 1)
+		if (con->x != con_columns - 1)
 			con_wrap_delay = 0;
 	}
 }
