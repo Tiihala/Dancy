@@ -37,6 +37,11 @@ struct con_state {
 	size_t esc_size;
 	char esc_buffer[128];
 
+	uint32_t *buffer;
+	uint32_t *buffer_main;
+	uint32_t *buffer_alt;
+	uint8_t *tabs_array;
+
 	int cmd[8];
 };
 
@@ -49,12 +54,7 @@ static int con_rows;
 static int con_cells;
 static int con_switch_state;
 
-static uint32_t *con_buffer;
-static uint32_t *con_buffer_main;
-static uint32_t *con_buffer_alt;
-
 static uint32_t *con_fb_start;
-static uint8_t *con_tabs_array;
 
 static const uint32_t con_rendered_bit  = 0x80000000;
 static const uint32_t con_intensity_bit = 0x40000000;
@@ -197,9 +197,9 @@ static void con_init_variables(void)
 	con->cursor_visible = 1;
 
 	for (i = 0; i < con_columns; i++)
-		con_tabs_array[i] = (uint8_t)(((i % 8) == 0) ? 1 : 0);
+		con->tabs_array[i] = (uint8_t)(((i % 8) == 0) ? 1 : 0);
 
-	con_tabs_array[con_columns - 1] = 1;
+	con->tabs_array[con_columns - 1] = 1;
 
 	con_handle_state(con_clear_state);
 }
@@ -215,13 +215,13 @@ static void con_reset(void)
 		fb_leave();
 	}
 
-	con_buffer = con_buffer_main;
+	con->buffer = con->buffer_main;
 
 	for (i = 0; i < con_cells; i++)
-		con_buffer[i] = con_rendered_bit;
+		con->buffer[i] = con_rendered_bit;
 
 	for (i = 0; i < con_cells; i++)
-		con_buffer_alt[i] = 0;
+		con->buffer_alt[i] = 0;
 
 	con_init_variables();
 }
@@ -275,7 +275,7 @@ int con_init(void)
 
 		size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
 		size *= 2;
-		size += (size_t)con_columns * sizeof(con_tabs_array[0]);
+		size += (size_t)con_columns * sizeof(con->tabs_array[0]);
 
 		size = (size + 0x0FFF) & 0xFFFFF000;
 		buffer = aligned_alloc(0x1000, size);
@@ -285,14 +285,14 @@ int con_init(void)
 
 		size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
 
-		con_buffer_main = (void *)(buffer);
-		con_buffer_alt = (void *)(buffer + size);
-		con_tabs_array = (void *)(buffer + size + size);
+		con->buffer_main = (void *)(buffer);
+		con->buffer_alt = (void *)(buffer + size);
+		con->tabs_array = (void *)(buffer + size + size);
 
-		con_buffer = con_buffer_main;
+		con->buffer = con->buffer_main;
 
 		for (j = 0; j < con_cells; j++)
-			con_buffer[j] = 0;
+			con->buffer[j] = 0;
 
 		con_init_variables();
 	}
@@ -325,10 +325,10 @@ int con_switch(int i)
 	con_switch_state = i;
 
 	for (i = 0; i < con_cells; i++)
-		con_buffer_main[i] &= (~con_rendered_bit);
+		con->buffer_main[i] &= (~con_rendered_bit);
 
 	for (i = 0; i < con_cells; i++)
-		con_buffer_alt[i] &= (~con_rendered_bit);
+		con->buffer_alt[i] &= (~con_rendered_bit);
 
 	fb_enter();
 	memset((void *)kernel->fb_standard_addr, 0, kernel->fb_standard_size);
@@ -348,7 +348,7 @@ static void con_render(void)
 	int i = 0, j;
 
 	while (i < con_cells) {
-		uint32_t c = con_buffer[i];
+		uint32_t c = con->buffer[i];
 		uint8_t *data = NULL;
 		int underline = 0;
 		int table_i;
@@ -393,7 +393,7 @@ static void con_render(void)
 		if (!data) {
 			if (c == 0x7F)
 				break;
-			con_buffer[i] = (con_buffer[i] & 0xFFF00000) | 0x7F;
+			con->buffer[i] = (con->buffer[i] & 0xFFF00000) | 0x7F;
 			continue;
 		}
 
@@ -441,7 +441,7 @@ static void con_render(void)
 			}
 		}
 
-		con_buffer[i] |= con_rendered_bit;
+		con->buffer[i] |= con_rendered_bit;
 		i += 1;
 	}
 
@@ -470,7 +470,7 @@ static void con_render(void)
 
 static void con_scroll_up(void)
 {
-	uint32_t *dst = &con_buffer[con->scroll_first * con_columns];
+	uint32_t *dst = &con->buffer[con->scroll_first * con_columns];
 	uint32_t *src = dst + con_columns;
 	int movs = (con->scroll_last - con->scroll_first) * con_columns;
 	int i;
@@ -495,7 +495,7 @@ static void con_scroll_up(void)
 
 static void con_scroll_down(void)
 {
-	uint32_t *dst = &con_buffer[con->scroll_last * con_columns];
+	uint32_t *dst = &con->buffer[con->scroll_last * con_columns];
 	uint32_t *src = dst - con_columns;
 	int movs = (con->scroll_last - con->scroll_first) * con_columns;
 	int i;
@@ -512,7 +512,7 @@ static void con_scroll_down(void)
 		dst -= 1, src -= 1;
 	}
 
-	dst = &con_buffer[con->scroll_first * con_columns];
+	dst = &con->buffer[con->scroll_first * con_columns];
 
 	for (i = 0; i < con_columns; i++) {
 		uint32_t t = *dst & (~con_rendered_bit);
@@ -686,7 +686,7 @@ static void con_handle_escape(void)
 		 * ESC H - Horizontal Tab Set.
 		 */
 		if (type == 'H') {
-			con_tabs_array[con->x] = 1;
+			con->tabs_array[con->x] = 1;
 			return;
 		}
 
@@ -736,8 +736,8 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 		uint32_t *t0, *t1;
 
-		t0 = &con_buffer[con->x + (con->y * con_columns)];
-		t1 = &con_buffer[(con_columns - 1) + (con->y * con_columns)];
+		t0 = &con->buffer[con->x + (con->y * con_columns)];
+		t1 = &con->buffer[(con_columns - 1) + (con->y * con_columns)];
 
 		for (i = 0; i < n; i++) {
 			uint32_t *t3 = t1;
@@ -871,7 +871,7 @@ static void con_handle_escape(void)
 		int t = con_columns - 1;
 
 		for (i = con->x + 1; i < con_columns && n > 0; i++) {
-			if (con_tabs_array[i] != 0)
+			if (con->tabs_array[i] != 0)
 				t = i, n -= 1;
 		}
 		con->x = t;
@@ -897,7 +897,7 @@ static void con_handle_escape(void)
 		}
 
 		for (i = t0; i < t1; i++)
-			con_buffer[i] = con->attribute;
+			con->buffer[i] = con->attribute;
 	} break;
 
 	/*
@@ -921,7 +921,7 @@ static void con_handle_escape(void)
 		}
 
 		for (i = t0; i < t1; i++)
-			con_buffer[i] = con->attribute;
+			con->buffer[i] = con->attribute;
 	} break;
 
 	/*
@@ -977,8 +977,8 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 		uint32_t *t0, *t1;
 
-		t0 = &con_buffer[con->x + (con->y * con_columns)];
-		t1 = &con_buffer[(con_columns - 1) + (con->y * con_columns)];
+		t0 = &con->buffer[con->x + (con->y * con_columns)];
+		t1 = &con->buffer[(con_columns - 1) + (con->y * con_columns)];
 
 		for (i = 0; i < n; i++) {
 			uint32_t *t3 = t0;
@@ -1029,8 +1029,8 @@ static void con_handle_escape(void)
 		int n = (count < 1 || parameters[0] < 1) ? 1 : parameters[0];
 		uint32_t *t0, *t1;
 
-		t0 = &con_buffer[con->x + (con->y * con_columns)];
-		t1 = &con_buffer[con_columns + (con->y * con_columns)];
+		t0 = &con->buffer[con->x + (con->y * con_columns)];
+		t1 = &con->buffer[con_columns + (con->y * con_columns)];
 
 		for (i = 0; i < n && t0 < t1; i++, t0++) {
 			if ((*t0 & (~con_rendered_bit)) != con->attribute)
@@ -1047,7 +1047,7 @@ static void con_handle_escape(void)
 		con->wrap_delay = 0;
 
 		for (i = con->x - 1; i >= 0 && n > 0; i--) {
-			if (i == 0 || con_tabs_array[i] != 0)
+			if (i == 0 || con->tabs_array[i] != 0)
 				con->x = i, n -= 1;
 		}
 	} break;
@@ -1083,11 +1083,11 @@ static void con_handle_escape(void)
 
 		if (n == 0) {
 			if (con->x < t)
-				con_tabs_array[con->x] = 0;
+				con->tabs_array[con->x] = 0;
 
 		} else if (n == 3) {
 			for (i = 0; i < t; i++)
-				con_tabs_array[i] = 0;
+				con->tabs_array[i] = 0;
 		}
 	} break;
 
@@ -1103,13 +1103,13 @@ static void con_handle_escape(void)
 				con->cursor_visible = 1;
 
 			if (n == 1049) {
-				if (con_buffer == con_buffer_main)
+				if (con->buffer == con->buffer_main)
 					con_handle_state(con_save_main_state);
 
-				con_buffer = con_buffer_alt;
+				con->buffer = con->buffer_alt;
 
 				for (i = 0; i < con_cells; i++)
-					con_buffer[i] = 0;
+					con->buffer[i] = 0;
 			}
 		}
 	} break;
@@ -1125,15 +1125,15 @@ static void con_handle_escape(void)
 			if (n == 25)
 				con->cursor_visible = 0;
 
-			if (n == 1049 && con_buffer == con_buffer_alt) {
+			if (n == 1049 && con->buffer == con->buffer_alt) {
 				for (i = 0; i < con_cells; i++)
-					con_buffer[i] = 0;
+					con->buffer[i] = 0;
 
-				con_buffer = con_buffer_main;
+				con->buffer = con->buffer_main;
 				con_handle_state(con_restore_main_state);
 
 				for (i = 0; i < con_cells; i++)
-					con_buffer[i] &= (~con_rendered_bit);
+					con->buffer[i] &= (~con_rendered_bit);
 			}
 		}
 	} break;
@@ -1199,7 +1199,7 @@ static void con_write_locked(const unsigned char *data, int size)
 	if (con->cursor_visible) {
 		int offset = con->x + (con->y * con_columns);
 
-		con_buffer[offset] &= (~con_rendered_bit);
+		con->buffer[offset] &= (~con_rendered_bit);
 	}
 
 	while (i < size) {
@@ -1271,7 +1271,7 @@ static void con_write_locked(const unsigned char *data, int size)
 		case '\t':
 			offset = INT_MAX;
 			for (j = con->x + 1; j < con_columns; j++) {
-				if (con_tabs_array[j] != 0) {
+				if (con->tabs_array[j] != 0) {
 					offset = j;
 					break;
 				}
@@ -1325,7 +1325,7 @@ static void con_write_locked(const unsigned char *data, int size)
 			}
 
 			offset = con->x + (con->y * con_columns);
-			con_buffer[offset] = (uint32_t)c | con->attribute;
+			con->buffer[offset] = (uint32_t)c | con->attribute;
 			con->x += 1;
 
 			if (con->x >= con_columns) {
@@ -1374,13 +1374,13 @@ void con_panic(const char *message)
 
 		memset(p, 0, kernel->fb_standard_size);
 
-		con_buffer = con_buffer_main;
+		con->buffer = con->buffer_main;
 
 		for (i = 0; i < con_cells; i++)
-			con_buffer[i] = con_rendered_bit;
+			con->buffer[i] = con_rendered_bit;
 
 		for (i = 0; i < con_cells; i++)
-			con_buffer_alt[i] = 0;
+			con->buffer_alt[i] = 0;
 
 		con_init_variables();
 	}
