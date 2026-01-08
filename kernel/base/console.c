@@ -52,7 +52,7 @@ static int con_columns;
 static int con_rows;
 
 static int con_cells;
-static int con_switch_state;
+static void *con_switch_state;
 
 static uint32_t *con_fb_start;
 
@@ -209,7 +209,7 @@ static void con_reset(void)
 	uint32_t *p = (uint32_t *)kernel->fb_standard_addr;
 	int i;
 
-	if (con_switch_state == 0) {
+	if (con_switch_state == con) {
 		fb_enter();
 		memset(p, 0, kernel->fb_standard_size);
 		fb_leave();
@@ -269,9 +269,10 @@ int con_init(void)
 
 	con_build_lookup_table();
 	con_cells = con_columns * con_rows;
+	con_switch_state = &con_array[0];
 
-	for (i = 0; i < 1; i++) {
-		con = &con_array[0];
+	for (i = 0; i < 6; i++) {
+		con = &con_array[i];
 
 		size = (size_t)(con_columns * con_rows) * sizeof(uint32_t);
 		size *= 2;
@@ -315,14 +316,17 @@ int con_switch(int i)
 	if (mtx_lock(&con_mtx) != thrd_success)
 		return DE_UNEXPECTED;
 
-	i = (i == 1) ? 0 : i;
+	if (i >= 1 && i <= 1) {
+		if (con_switch_state == con)
+			return mtx_unlock(&con_mtx), 0;
 
-	if (con_switch_state == i) {
-		mtx_unlock(&con_mtx);
-		return 0;
+		con_switch_state = (con = &con_array[i - 1]);
+	} else {
+		if (con_switch_state == NULL)
+			return mtx_unlock(&con_mtx), 0;
+
+		con_switch_state = NULL;
 	}
-
-	con_switch_state = i;
 
 	for (i = 0; i < con_cells; i++)
 		con->buffer_main[i] &= (~con_rendered_bit);
@@ -1356,6 +1360,8 @@ void con_panic(const char *message)
 	 */
 	(void)mtx_trylock(&con_mtx);
 
+	con_switch_state = (con = &con_array[0]);
+
 	/*
 	 * Reset the screen and console buffers.
 	 */
@@ -1399,18 +1405,22 @@ void con_print(const char *format, ...)
 
 	if (locked) {
 		void *data = &con_print_buffer[0];
+		void *current = con;
+
+		con = &con_array[0];
 
 		if (r > 0) {
 			con_write_locked(data, r);
 			memset(data, 0, (size_t)r);
 		}
 
-		if (con_switch_state == 0) {
+		if (con_switch_state == con) {
 			fb_enter();
 			con_render();
 			fb_leave();
 		}
 
+		con = current;
 		mtx_unlock(&con_mtx);
 	}
 }
@@ -1423,7 +1433,7 @@ void con_write(const void *data, size_t size)
 	if (size <= (size_t)(INT_MAX)) {
 		con_write_locked(data, (int)size);
 
-		if (con_switch_state == 0) {
+		if (con_switch_state == con) {
 			fb_enter();
 			con_render();
 			fb_leave();
