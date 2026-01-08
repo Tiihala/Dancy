@@ -30,6 +30,12 @@ struct con_state {
 	int scroll_last;
 	int utf8_state;
 	int wrap_delay;
+	int cursor_visible;
+
+	uint32_t attribute;
+
+	size_t esc_size;
+	char esc_buffer[128];
 
 	int cmd[8];
 };
@@ -41,7 +47,6 @@ static int con_columns;
 static int con_rows;
 
 static int con_cells;
-static int con_cursor_visible;
 static int con_switch_state;
 
 static uint32_t *con_buffer;
@@ -51,15 +56,10 @@ static uint32_t *con_buffer_alt;
 static uint32_t *con_fb_start;
 static uint8_t *con_tabs_array;
 
-static uint32_t con_attribute;
-
 static const uint32_t con_rendered_bit  = 0x80000000;
 static const uint32_t con_intensity_bit = 0x40000000;
 static const uint32_t con_reversed_bit  = 0x20000000;
 static const uint32_t con_underline_bit = 0x10000000;
-
-static size_t con_escape_size;
-static char con_escape_buffer[128];
 
 static char con_print_buffer[4096];
 
@@ -152,25 +152,25 @@ static void con_handle_state(int cmd)
 			con->cmd[i] = 0;
 
 	} else if (cmd == con_save_cursor) {
-		con->cmd[0] = (int)(con_attribute & 0x7FFFFFFF);
+		con->cmd[0] = (int)(con->attribute & 0x7FFFFFFF);
 		con->cmd[1] = con->x;
 		con->cmd[2] = con->y;
 
 	} else if (cmd == con_save_main_state) {
-		con->cmd[3] = (int)(con_attribute & 0x7FFFFFFF);
+		con->cmd[3] = (int)(con->attribute & 0x7FFFFFFF);
 		con->cmd[4] = con->x;
 		con->cmd[5] = con->y;
 		con->cmd[6] = con->scroll_first;
 		con->cmd[7] = con->scroll_last;
 
 	} else if (cmd == con_restore_cursor) {
-		con_attribute = (uint32_t)con->cmd[0];
+		con->attribute = (uint32_t)con->cmd[0];
 		con->x = con->cmd[1];
 		con->y = con->cmd[2];
 		con->wrap_delay = 0;
 
 	} else if (cmd == con_restore_main_state) {
-		con_attribute = (uint32_t)con->cmd[3];
+		con->attribute = (uint32_t)con->cmd[3];
 		con->x = con->cmd[4];
 		con->y = con->cmd[5];
 		con->scroll_first = con->cmd[6];
@@ -183,8 +183,8 @@ static void con_init_variables(void)
 {
 	int i;
 
-	con_attribute = 0x00800000;
-	con_escape_size = 0;
+	con->attribute = 0x00800000;
+	con->esc_size = 0;
 
 	con->x = 0;
 	con->y = 0;
@@ -194,7 +194,7 @@ static void con_init_variables(void)
 
 	con->utf8_state = 0;
 	con->wrap_delay = 0;
-	con_cursor_visible = 1;
+	con->cursor_visible = 1;
 
 	for (i = 0; i < con_columns; i++)
 		con_tabs_array[i] = (uint8_t)(((i % 8) == 0) ? 1 : 0);
@@ -440,7 +440,7 @@ static void con_render(void)
 		i += 1;
 	}
 
-	if (con_cursor_visible) {
+	if (con->cursor_visible) {
 		int bg, fg = 0x00FFFFFF;
 		uint32_t pixel;
 
@@ -482,8 +482,8 @@ static void con_scroll_up(void)
 	for (i = 0; i < con_columns; i++) {
 		uint32_t t = *dst & (~con_rendered_bit);
 
-		if (t != con_attribute)
-			*dst = con_attribute;
+		if (t != con->attribute)
+			*dst = con->attribute;
 		dst += 1;
 	}
 }
@@ -512,17 +512,17 @@ static void con_scroll_down(void)
 	for (i = 0; i < con_columns; i++) {
 		uint32_t t = *dst & (~con_rendered_bit);
 
-		if (t != con_attribute)
-			*dst = con_attribute;
+		if (t != con->attribute)
+			*dst = con->attribute;
 		dst += 1;
 	}
 }
 
 static void con_handle_escape(void)
 {
-	char *p = &con_escape_buffer[0];
-	char *e = &con_escape_buffer[con_escape_size];
-	int type = (con_escape_size > 1) ? (int)(*(e - 1)) : 0;
+	char *p = &con->esc_buffer[0];
+	char *e = &con->esc_buffer[con->esc_size];
+	int type = (con->esc_size > 1) ? (int)(*(e - 1)) : 0;
 	int csi = (p[1] == '['), csi_question = 0;
 
 	int parameters[16];
@@ -578,25 +578,25 @@ static void con_handle_escape(void)
 
 			switch (parameter) {
 			case 0:
-				con_attribute = 0x00800000;
+				con->attribute = 0x00800000;
 				break;
 			case 1:
-				con_attribute |= con_intensity_bit;
+				con->attribute |= con_intensity_bit;
 				break;
 			case 4:
-				con_attribute |= con_underline_bit;
+				con->attribute |= con_underline_bit;
 				break;
 			case 7:
-				con_attribute |= con_reversed_bit;
+				con->attribute |= con_reversed_bit;
 				break;
 			case 22:
-				con_attribute &= (~con_intensity_bit);
+				con->attribute &= (~con_intensity_bit);
 				break;
 			case 24:
-				con_attribute &= (~con_underline_bit);
+				con->attribute &= (~con_underline_bit);
 				break;
 			case 27:
-				con_attribute &= (~con_reversed_bit);
+				con->attribute &= (~con_reversed_bit);
 				break;
 			case 39:
 				fg_color = 7;
@@ -637,8 +637,8 @@ static void con_handle_escape(void)
 			 */
 			if (fg_color >= 0) {
 				fg_color = 15 - (fg_color & 15);
-				con_attribute &= 0xFF0FFFFF;
-				con_attribute |= (uint32_t)(fg_color << 20);
+				con->attribute &= 0xFF0FFFFF;
+				con->attribute |= (uint32_t)(fg_color << 20);
 			}
 
 			/*
@@ -646,8 +646,8 @@ static void con_handle_escape(void)
 			 */
 			if (bg_color >= 0) {
 				bg_color = (bg_color & 15);
-				con_attribute &= 0xF0FFFFFF;
-				con_attribute |= (uint32_t)(bg_color << 24);
+				con->attribute &= 0xF0FFFFFF;
+				con->attribute |= (uint32_t)(bg_color << 24);
 			}
 
 			/*
@@ -745,8 +745,8 @@ static void con_handle_escape(void)
 					*t3 = t5;
 				t3 -= 1;
 			}
-			if ((*t0 & (~con_rendered_bit)) != con_attribute)
-				*t0 = con_attribute;
+			if ((*t0 & (~con_rendered_bit)) != con->attribute)
+				*t0 = con->attribute;
 		}
 	} break;
 
@@ -892,7 +892,7 @@ static void con_handle_escape(void)
 		}
 
 		for (i = t0; i < t1; i++)
-			con_buffer[i] = con_attribute;
+			con_buffer[i] = con->attribute;
 	} break;
 
 	/*
@@ -916,7 +916,7 @@ static void con_handle_escape(void)
 		}
 
 		for (i = t0; i < t1; i++)
-			con_buffer[i] = con_attribute;
+			con_buffer[i] = con->attribute;
 	} break;
 
 	/*
@@ -986,8 +986,8 @@ static void con_handle_escape(void)
 					*t3 = t5;
 				t3 += 1;
 			}
-			if ((*t1 & (~con_rendered_bit)) != con_attribute)
-				*t1 = con_attribute;
+			if ((*t1 & (~con_rendered_bit)) != con->attribute)
+				*t1 = con->attribute;
 		}
 	} break;
 
@@ -1028,8 +1028,8 @@ static void con_handle_escape(void)
 		t1 = &con_buffer[con_columns + (con->y * con_columns)];
 
 		for (i = 0; i < n && t0 < t1; i++, t0++) {
-			if ((*t0 & (~con_rendered_bit)) != con_attribute)
-				*t0 = con_attribute;
+			if ((*t0 & (~con_rendered_bit)) != con->attribute)
+				*t0 = con->attribute;
 		}
 	} break;
 
@@ -1095,7 +1095,7 @@ static void con_handle_escape(void)
 			int n = parameters[i];
 
 			if (n == 25)
-				con_cursor_visible = 1;
+				con->cursor_visible = 1;
 
 			if (n == 1049) {
 				if (con_buffer == con_buffer_main)
@@ -1118,7 +1118,7 @@ static void con_handle_escape(void)
 			int n = parameters[i];
 
 			if (n == 25)
-				con_cursor_visible = 0;
+				con->cursor_visible = 0;
 
 			if (n == 1049 && con_buffer == con_buffer_alt) {
 				for (i = 0; i < con_cells; i++)
@@ -1191,7 +1191,7 @@ static void con_write_locked(const unsigned char *data, int size)
 {
 	int i = 0, j;
 
-	if (con_cursor_visible) {
+	if (con->cursor_visible) {
 		int offset = con->x + (con->y * con_columns);
 
 		con_buffer[offset] &= (~con_rendered_bit);
@@ -1220,39 +1220,39 @@ static void con_write_locked(const unsigned char *data, int size)
 			c = '\n';
 
 		if (c == 0x18 || c == 0x1A) {
-			char *p = &con_escape_buffer[0];
+			char *p = &con->esc_buffer[0];
 
-			memset(p, 0, sizeof(con_escape_buffer));
-			con_escape_size = 0;
+			memset(p, 0, sizeof(con->esc_buffer));
+			con->esc_size = 0;
 			continue;
 		}
 
-		if (con_escape_size) {
-			char *p = &con_escape_buffer[0];
+		if (con->esc_size) {
+			char *p = &con->esc_buffer[0];
 
-			if (con_escape_size == 1 && (c == '7' || c == '8')) {
-				p[con_escape_size++] = (char)c;
+			if (con->esc_size == 1 && (c == '7' || c == '8')) {
+				p[con->esc_size++] = (char)c;
 				con_handle_escape();
 
 				p[0] = 0, p[1] = 0;
-				con_escape_size = 0;
+				con->esc_size = 0;
 				continue;
 			}
 
-			if (con_escape_size + 2 > sizeof(con_escape_buffer)) {
-				memset(p, 0, sizeof(con_escape_buffer));
-				con_escape_size = 0;
+			if (con->esc_size + 2 > sizeof(con->esc_buffer)) {
+				memset(p, 0, sizeof(con->esc_buffer));
+				con->esc_size = 0;
 
 			} else if ((c >= 0x20 && c <= 0x3F) || c == '[') {
-				p[con_escape_size++] = (char)c;
+				p[con->esc_size++] = (char)c;
 				continue;
 
 			} else if (c >= 0x40 && c <= 0x7E) {
-				p[con_escape_size++] = (char)c;
+				p[con->esc_size++] = (char)c;
 				con_handle_escape();
 
-				memset(p, 0, sizeof(con_escape_buffer));
-				con_escape_size = 0;
+				memset(p, 0, sizeof(con->esc_buffer));
+				con->esc_size = 0;
 				continue;
 			}
 		}
@@ -1289,23 +1289,23 @@ static void con_write_locked(const unsigned char *data, int size)
 		case 0x0F:
 			break;
 		case 0x1B:
-			if (con_escape_size) {
-				char *p = &con_escape_buffer[0];
-				memset(p, 0, sizeof(con_escape_buffer));
-				con_escape_size = 0;
+			if (con->esc_size) {
+				char *p = &con->esc_buffer[0];
+				memset(p, 0, sizeof(con->esc_buffer));
+				con->esc_size = 0;
 			}
-			con_escape_buffer[con_escape_size++] = 0x1B;
+			con->esc_buffer[con->esc_size++] = 0x1B;
 			break;
 		case 0x7F:
 			break;
 		case 0x9B:
-			if (con_escape_size) {
-				char *p = &con_escape_buffer[0];
-				memset(p, 0, sizeof(con_escape_buffer));
-				con_escape_size = 0;
+			if (con->esc_size) {
+				char *p = &con->esc_buffer[0];
+				memset(p, 0, sizeof(con->esc_buffer));
+				con->esc_size = 0;
 			}
-			con_escape_buffer[con_escape_size++] = 0x1B;
-			con_escape_buffer[con_escape_size++] = '[';
+			con->esc_buffer[con->esc_size++] = 0x1B;
+			con->esc_buffer[con->esc_size++] = '[';
 			break;
 		default:
 			c = (c != ' ') ? c : 0;
@@ -1320,7 +1320,7 @@ static void con_write_locked(const unsigned char *data, int size)
 			}
 
 			offset = con->x + (con->y * con_columns);
-			con_buffer[offset] = (uint32_t)c | con_attribute;
+			con_buffer[offset] = (uint32_t)c | con->attribute;
 			con->x += 1;
 
 			if (con->x >= con_columns) {
