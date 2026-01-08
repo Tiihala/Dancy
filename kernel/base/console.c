@@ -339,7 +339,7 @@ int con_switch(int i)
 	fb_leave();
 
 	mtx_unlock(&con_mtx);
-	con_write("", 0);
+	con_write(1, "", 0);
 
 	return 0;
 }
@@ -1425,13 +1425,20 @@ void con_print(const char *format, ...)
 	}
 }
 
-void con_write(const void *data, size_t size)
+void con_write(int i, const void *data, size_t size)
 {
+	if (i < 1 || i > 6)
+		return;
+
 	if (!con_ready || mtx_lock(&con_mtx) != thrd_success)
 		return;
 
 	if (size <= (size_t)(INT_MAX)) {
+		void *current = con;
+
+		con = &con_array[i - 1];
 		con_write_locked(data, (int)size);
+		con = current;
 
 		if (con_switch_state == con) {
 			fb_enter();

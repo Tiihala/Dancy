@@ -43,7 +43,7 @@ int con_init(void);
 int con_switch(int i);
 void con_panic(const char *message);
 void con_print(const char *format, ...);
-void con_write(const void *data, size_t size);
+void con_write(int i, const void *data, size_t size);
 
 /*
  * Declarations of delay.c

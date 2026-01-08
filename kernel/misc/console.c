@@ -62,7 +62,7 @@ static int n_write(struct vfs_node *node,
 	if (kernel->rebooting)
 		return 0;
 
-	return con_write(buffer, *size), 0;
+	return con_write(1, buffer, *size), 0;
 }
 
 static int n_ioctl(struct vfs_node *node,
