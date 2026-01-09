@@ -164,10 +164,10 @@ int operate(struct options *opt)
 		return EXIT_FAILURE;
 	}
 
-	fd_keyboard = open("/dev/dancy-keyboard", O_RDONLY | O_NONBLOCK);
+	fd_keyboard = open("/dev/dancy-keyboard-1", O_RDONLY | O_NONBLOCK);
 
 	if (fd_keyboard < 0) {
-		perror("/dev/dancy-keyboard");
+		perror("/dev/dancy-keyboard-1");
 		return EXIT_FAILURE;
 	}
 
