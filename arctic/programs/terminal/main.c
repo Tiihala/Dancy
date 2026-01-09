@@ -21,7 +21,14 @@
 
 static const char *help_str =
 	"Usage: " MAIN_CMDNAME
-	" executable [args...]\n"
+	" [options] executable [args...]\n"
+	"\nOptions:\n"
+	"  --1           console 1 (default)\n"
+	"  --2           console 2\n"
+	"  --3           console 3\n"
+	"  --4           console 4\n"
+	"  --5           console 5\n"
+	"  --6           console 6\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
 	"  --verbose, -v additional information\n"
@@ -78,6 +85,30 @@ int main(int argc, char *argv[])
 			if (arg[2] == '\0') {
 				argv_i = &argv[argc];
 				break;
+			}
+			if (arg[2] == '1' && arg[3] == '\0') {
+				opts.keyboard = "/dev/dancy-keyboard-1";
+				continue;
+			}
+			if (arg[2] == '2' && arg[3] == '\0') {
+				opts.keyboard = "/dev/dancy-keyboard-2";
+				continue;
+			}
+			if (arg[2] == '3' && arg[3] == '\0') {
+				opts.keyboard = "/dev/dancy-keyboard-3";
+				continue;
+			}
+			if (arg[2] == '4' && arg[3] == '\0') {
+				opts.keyboard = "/dev/dancy-keyboard-4";
+				continue;
+			}
+			if (arg[2] == '5' && arg[3] == '\0') {
+				opts.keyboard = "/dev/dancy-keyboard-5";
+				continue;
+			}
+			if (arg[2] == '6' && arg[3] == '\0') {
+				opts.keyboard = "/dev/dancy-keyboard-6";
+				continue;
 			}
 			if (!strcmp(arg + 2, "help"))
 				help(NULL);

@@ -40,6 +40,7 @@
 struct options {
 	char **operands;
 	const char *error;
+	const char *keyboard;
 	int verbose;
 };
 
