@@ -55,7 +55,7 @@ static int fb_update(const struct __dancy_fb *fb)
 
 	fb_enter();
 
-	if (kernel->keyboard.console_switch_data != 0x102)
+	if (kernel->keyboard.console_switch_data != 0x107)
 		return fb_leave(), DE_READ_ONLY;
 
 	for (i = 0; i < h; i++) {
@@ -158,7 +158,7 @@ static int n_write(struct vfs_node *node,
 
 	fb_enter();
 
-	if (kernel->keyboard.console_switch_data != 0x102)
+	if (kernel->keyboard.console_switch_data != 0x107)
 		return fb_leave(), DE_READ_ONLY;
 
 	for (i = 0; i < pixels; i++) {
