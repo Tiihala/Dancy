@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2024 Antti Tiihala
+ * Copyright (c) 2022, 2024, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,12 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * misc/console.c
- *      Device /dev/console
+ *      Devices for consoles
  */
 
 #include <dancy.h>
 
 static struct vfs_node console_node;
+static struct vfs_node dancy_console_nodes[6];
 
 static int console_task(void *arg)
 {
@@ -56,19 +57,23 @@ static int n_read(struct vfs_node *node,
 static int n_write(struct vfs_node *node,
 	uint64_t offset, size_t *size, const void *buffer)
 {
-	(void)node;
+	int i = 1;
+
 	(void)offset;
 
 	if (kernel->rebooting)
 		return 0;
 
-	return con_write(1, buffer, *size), 0;
+	if (node->internal_data != NULL)
+		i = *((int *)node->internal_data);
+
+	return con_write(i, buffer, *size), 0;
 }
 
 static int n_ioctl(struct vfs_node *node,
 	int request, long long arg)
 {
-	const unsigned int count = 2;
+	const unsigned int count = 7;
 
 	(void)node;
 
@@ -149,7 +154,7 @@ int console_init(void)
 {
 	static int run_once;
 	struct vfs_node *node;
-	int r;
+	int i, r;
 
 	if (!spin_trylock(&run_once))
 		return DE_UNEXPECTED;
@@ -167,6 +172,35 @@ int console_init(void)
 
 	if ((r = vfs_mount("/dev/console", &console_node)) != 0)
 		return r;
+
+	for (i = 0; i < 6; i++) {
+		static int data[6] = { 1, 2, 3, 4, 5, 6 };
+		char buffer[24];
+
+		r = snprintf(&buffer[0], sizeof(buffer),
+			"/dev/dancy-console-%d", i + 1);
+
+		if (r != 20)
+			return DE_UNEXPECTED;
+
+		r = vfs_open(&buffer[0], &node, 0, vfs_mode_create);
+
+		if (r != 0)
+			return r;
+
+		node->n_release(&node);
+
+		vfs_init_node(&dancy_console_nodes[i], 0);
+		dancy_console_nodes[i].type = vfs_type_character;
+		dancy_console_nodes[i].n_read = n_read;
+		dancy_console_nodes[i].n_write = n_write;
+		dancy_console_nodes[i].n_ioctl = n_ioctl;
+
+		dancy_console_nodes[i].internal_data = &data[i];
+
+		if ((r = vfs_mount(&buffer[0], &dancy_console_nodes[i])) != 0)
+			return r;
+	}
 
 	if (!task_create(console_task, NULL, task_detached))
 		return DE_MEMORY;
