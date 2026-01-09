@@ -310,36 +310,48 @@ int con_init(void)
 
 int con_switch(int i)
 {
+	int j;
+
 	if (!con_ready)
 		return 0;
 
 	if (mtx_lock(&con_mtx) != thrd_success)
 		return DE_UNEXPECTED;
 
-	if (i >= 1 && i <= 1) {
-		if (con_switch_state == con)
+	if (i >= 1 && i <= 6) {
+		if (con_switch_state == (con = &con_array[i - 1]))
 			return mtx_unlock(&con_mtx), 0;
 
-		con_switch_state = (con = &con_array[i - 1]);
-	} else {
-		if (con_switch_state == NULL)
-			return mtx_unlock(&con_mtx), 0;
+		if (con_switch_state == NULL) {
+			fb_enter();
+			memset((void *)kernel->fb_standard_addr, 0,
+				kernel->fb_standard_size);
+			fb_leave();
+		}
 
-		con_switch_state = NULL;
+		con_switch_state = con;
+
+		for (j = 0; j < con_cells; j++)
+			con->buffer_main[j] &= (~con_rendered_bit);
+
+		for (j = 0; j < con_cells; j++)
+			con->buffer_alt[j] &= (~con_rendered_bit);
+
+		mtx_unlock(&con_mtx);
+		con_write(i, "", 0);
+
+		return 0;
 	}
 
-	for (i = 0; i < con_cells; i++)
-		con->buffer_main[i] &= (~con_rendered_bit);
+	if (con_switch_state != NULL) {
+		fb_enter();
+		memset((void *)kernel->fb_standard_addr, 0,
+			kernel->fb_standard_size);
+		fb_leave();
+	}
 
-	for (i = 0; i < con_cells; i++)
-		con->buffer_alt[i] &= (~con_rendered_bit);
-
-	fb_enter();
-	memset((void *)kernel->fb_standard_addr, 0, kernel->fb_standard_size);
-	fb_leave();
-
+	con_switch_state = NULL;
 	mtx_unlock(&con_mtx);
-	con_write(1, "", 0);
 
 	return 0;
 }
