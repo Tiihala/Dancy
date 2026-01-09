@@ -27,7 +27,12 @@ struct kbd_device {
 };
 
 static struct kbd_device kbd_devices[] = {
-	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-keyboard" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-keyboard-1" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-keyboard-2" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-keyboard-3" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-keyboard-4" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-keyboard-5" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-keyboard-6" },
 	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-keyboard-gui" }
 };
 
