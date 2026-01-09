@@ -177,7 +177,7 @@ static void process_keycode(int keycode, int release, struct state *state)
 		}
 		if (keycode >= DANCY_KEY_F1 && keycode <= DANCY_KEY_F12) {
 			uint32_t f = (uint32_t)(keycode - DANCY_KEY_F1) + 1;
-			if (release || f > 2)
+			if (release || f > 7)
 				return;
 			cpu_write32(&kernel->keyboard.console_switch_data, f);
 			event_signal(kernel->keyboard.console_switch_event);
