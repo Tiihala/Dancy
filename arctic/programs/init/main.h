@@ -21,6 +21,7 @@
 #define MAIN_CMDNAME "init"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <spawn.h>
 #include <stdarg.h>
