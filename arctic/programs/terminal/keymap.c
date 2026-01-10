@@ -104,6 +104,91 @@ const struct __dancy_keymap *select_keymap(int fd_keyboard)
 		visible_lines = count;
 
 	/*
+	 * Try to get the keyboard layout from the config file.
+	 */
+	{
+		FILE *stream = fopen("/etc/terminal", "r");
+		char *buffer = NULL;
+		size_t size = 0;
+		int state = 0;
+
+		while (stream != NULL) {
+			ssize_t r = getline(&buffer, &size, stream);
+			const char *p = NULL;
+
+			if (r <= 0 || r >= 4096)
+				break;
+
+			for (i = 0; i < (int)r; i++) {
+				char c = buffer[i];
+
+				if (c == '\t')
+					c = (buffer[i] = ' ');
+
+				if (c == '\r' || c == '\n' || c == '\0') {
+					buffer[i] = '\0';
+					while (i > 0) {
+						if (buffer[--i] != ' ')
+							break;
+						buffer[i] = '\0';
+					}
+					break;
+				}
+
+				if (p == NULL && c != ' ')
+					p = &buffer[i];
+			}
+
+			if (p == NULL)
+				continue;
+
+			if (!strcmp(p, "[keymap]")) {
+				state = 1;
+				continue;
+			}
+
+			if (state != 1)
+				continue;
+
+			if (p[0] == '[') {
+				state = 0;
+				continue;
+			}
+
+			if (strncmp(p, "name", 4))
+				continue;
+
+			{
+				p += 4;
+
+				while (p[0] == ' ')
+					p += 1;
+
+				if (p[0] != '=')
+					continue;
+
+				p += 1;
+
+				while (p[0] == ' ')
+					p += 1;
+			}
+
+			for (i = 0; i < count; i++) {
+				if (!strcmp(__dancy_keymaps[i]->name, p)) {
+					free(buffer), fclose(stream);
+					return __dancy_keymaps[i];
+				}
+			}
+		}
+
+		if (buffer != NULL)
+			free(buffer);
+
+		if (stream != NULL)
+			fclose(stream);
+	}
+
+	/*
 	 * The Finnish keyboard layout is the default for now.
 	 */
 	for (i = 0; i < count; i++) {
@@ -206,6 +291,29 @@ const struct __dancy_keymap *select_keymap(int fd_keyboard)
 	modify_tab_stops();
 	printf("\033[7A\033[%dM\033[?25h", visible_lines + 9);
 	fflush(stdout);
+
+	mkdir("/etc", 0777);
+
+	/*
+	 * Try to write the config file if it does not exist.
+	 */
+	{
+		int flags = O_WRONLY | O_CREAT | O_EXCL;
+		int fd = open("/etc/terminal", flags, 0777);
+		char buffer[512] = { 0 };
+
+		if (fd >= 0) {
+			int n = snprintf(&buffer[0], sizeof(buffer),
+				"[keymap]\nname = %s\ndescription = %s\n",
+				__dancy_keymaps[active]->name,
+				__dancy_keymaps[active]->description);
+
+			if (n > 0 && n < (int)(sizeof(buffer) / 2))
+				write(fd, &buffer[0], (size_t)n);
+
+			close(fd);
+		}
+	}
 
 	return __dancy_keymaps[active];
 }
