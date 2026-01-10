@@ -28,11 +28,6 @@ sigset_t dsh_sigmask;
 
 static struct dsh_prompt prompt_state;
 
-static void welcome(void)
-{
-	fputs("\tWelcome to the Dancy Operating System!\n\n", stdout);
-}
-
 static int check_standard_descriptors(void)
 {
 	int i, fl[3], mode[3];
@@ -151,9 +146,6 @@ int operate(struct options *opt)
 		fprintf(stderr, "dsh: %s\n", strerror(errno));
 		return EXIT_FAILURE;
 	}
-
-	if (dsh_interactive)
-		welcome();
 
 	dsh_prompt_init(&prompt_state);
 	opt->prompt_state = &prompt_state;
