@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, 2024 Antti Tiihala
+ * Copyright (c) 2023, 2024, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,22 +21,6 @@
 
 static const char *msg_begin = "\n\n\033[97m", *msg_end = "\033[0m\n\n";
 
-static int check_status(const char *path, int status)
-{
-	int exit_code = 0;
-
-	if (WIFEXITED(status))
-		exit_code = WEXITSTATUS(status);
-
-	if (WIFSIGNALED(status))
-		exit_code = 128 + WTERMSIG(status);
-
-	fprintf(stderr, "%sinit: \'%s\' exited with code %d\n%s",
-		msg_begin, path, exit_code, msg_end);
-
-	return exit_code;
-}
-
 int operate(struct options *opt)
 {
 	int r;
@@ -51,12 +35,10 @@ int operate(struct options *opt)
 		return EXIT_FAILURE;
 	}
 
-	for (;;) {
-		struct timespec sleep_request = { 1, 0 };
+	{
 		const char *path = "/bin/terminal";
 		const char *a[] = { path, "/bin/dsh", NULL };
 		pid_t new_pid = -1;
-		int status = -1;
 
 		posix_spawnattr_t at;
 		posix_spawnattr_init(&at);
@@ -67,11 +49,11 @@ int operate(struct options *opt)
 		if (r != 0 || new_pid < 0) {
 			fprintf(stderr, "%sinit: \'%s\' failed (%s)\n%s",
 				msg_begin, path, strerror(r), msg_end);
-			break;
+			return 0;
 		}
 
 		for (;;) {
-			pid_t pid = waitpid(-1, &status, 0);
+			pid_t pid = waitpid(-1, NULL, 0);
 
 			if (pid == new_pid)
 				break;
@@ -83,11 +65,6 @@ int operate(struct options *opt)
 			if (pid <= 0)
 				break;
 		}
-
-		if (check_status(path, status))
-			sleep_request.tv_sec = 4;
-
-		clock_nanosleep(CLOCK_MONOTONIC, 0, &sleep_request, NULL);
 	}
 
 	return 0;
