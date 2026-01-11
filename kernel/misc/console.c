@@ -95,6 +95,8 @@ static int n_ioctl(struct vfs_node *node,
 		unsigned int v_active = kernel->keyboard.console_switch_data;
 		unsigned int v_state = (((1U << count) - 1) << 1) + 1;
 
+		v_active &= 0xFF;
+
 		if (v_active < 1 || v_active > count)
 			v_active = 1;
 
