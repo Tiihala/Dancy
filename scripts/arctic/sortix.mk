@@ -118,24 +118,33 @@ SORTIX_TEMP=./external/sortix/Makefile
 ##############################################################################
 
 ./external/sortix/editor/command.c: $(SORTIX_TEMP)
+	$(DANCY_UP) "$@"
 
 ./external/sortix/editor/cursor.c: $(SORTIX_TEMP)
+	$(DANCY_UP) "$@"
 
 ./external/sortix/editor/display.c: $(SORTIX_TEMP)
+	$(DANCY_UP) "$@"
 
 ./external/sortix/editor/editor.c: $(SORTIX_TEMP)
+	$(DANCY_UP) "$@"
 
 ./external/sortix/editor/highlight.c: $(SORTIX_TEMP)
+	$(DANCY_UP) "$@"
 
 ./external/sortix/editor/input.c: $(SORTIX_TEMP)
+	$(DANCY_UP) "$@"
 
 ./external/sortix/editor/modal.c: $(SORTIX_TEMP)
+	$(DANCY_UP) "$@"
 
 ./external/sortix/editor/multibyte.c: $(SORTIX_TEMP)
+	$(DANCY_UP) "$@"
 
 ./external/sortix/editor/terminal.c: $(SORTIX_TEMP)
+	$(DANCY_UP) "$@"
 
 ##############################################################################
 
 $(SORTIX_TEMP): ./bin/dy-patch$(DANCY_EXE)
-	$(SORTIX_SOURCE)
+	$(SORTIX_SOURCE) && $(DANCY_UP) "$@"
