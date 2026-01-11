@@ -204,28 +204,6 @@ static void con_init_variables(void)
 	con_handle_state(con_clear_state);
 }
 
-static void con_reset(void)
-{
-	uint32_t *p = (uint32_t *)kernel->fb_standard_addr;
-	int i;
-
-	if (con_switch_state == con) {
-		fb_enter();
-		memset(p, 0, kernel->fb_standard_size);
-		fb_leave();
-	}
-
-	con->buffer = con->buffer_main;
-
-	for (i = 0; i < con_cells; i++)
-		con->buffer[i] = con_rendered_bit;
-
-	for (i = 0; i < con_cells; i++)
-		con->buffer_alt[i] = 0;
-
-	con_init_variables();
-}
-
 int con_init(void)
 {
 	static int run_once;
@@ -694,7 +672,14 @@ static void con_handle_escape(void)
 		 * ESC c - Reset.
 		 */
 		if (type == 'c') {
-			con_reset();
+			con->buffer = con->buffer_main;
+
+			for (i = 0; i < con_cells; i++) {
+				con->buffer[i] = 0;
+				con->buffer_alt[i] = 0;
+			}
+
+			con_init_variables();
 			return;
 		}
 
