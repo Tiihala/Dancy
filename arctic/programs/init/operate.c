@@ -19,11 +19,11 @@
 
 #include "main.h"
 
-static void write_console_messages(void)
+static void write_console_message(int i)
 {
-	int fd, i, r;
+	int fd, r;
 
-	for (i = 0; i < 6; i++) {
+	if (i >= 0 && i < 6) {
 		char console[24];
 		char message[32];
 
@@ -31,13 +31,13 @@ static void write_console_messages(void)
 			"/dev/dancy-console-%d", i + 1);
 
 		if (r != 20)
-			break;
+			return;
 
 		r = snprintf(&message[0], sizeof(message),
-			"\033[4mDancy Console #%d\033[0m\n\n", i + 1);
+			"\033c\033[4mDancy Console #%d\033[0m\n\n", i + 1);
 
-		if (r != 26)
-			break;
+		if (r != 28)
+			return;
 
 		if ((fd = open(&console[0], O_WRONLY)) >= 0) {
 			write(fd, &message[0], (size_t)r);
@@ -93,8 +93,10 @@ static void process_consoles(void)
 				break;
 
 			for (j = 0; j < 6; j++) {
-				if (state[j] == pid)
+				if (state[j] == pid) {
+					write_console_message(j);
 					state[j] = -1;
+				}
 			}
 		}
 
@@ -134,7 +136,7 @@ static const char *msg_begin = "\n\n\033[97m", *msg_end = "\033[0m\n\n";
 
 int operate(struct options *opt)
 {
-	int r;
+	int i, r;
 
 	if (opt->operands[0] != NULL) {
 		opt->error = "operands are not allowed";
@@ -178,7 +180,9 @@ int operate(struct options *opt)
 		}
 	}
 
-	write_console_messages();
+	for (i = 0; i < 6; i++)
+		write_console_message(i);
+
 	process_consoles();
 
 	return 0;
