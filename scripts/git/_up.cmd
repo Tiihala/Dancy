@@ -1,0 +1,14 @@
+@ECHO OFF
+SETLOCAL
+
+IF "%~1" == "" GOTO :END
+
+SET V=%~1
+SET V=%V:/=\%
+
+TYPE "%V%" > "%V%.DANCY_UP_TEMP"
+TYPE "%V%.DANCY_UP_TEMP" > "%V%"
+DEL "%V%.DANCY_UP_TEMP"
+
+:END
+ENDLOCAL

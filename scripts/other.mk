@@ -16,6 +16,7 @@ ACPICA_SOURCE=call scripts\git\acpica.cmd
 SORTIX_SOURCE=call scripts\git\sortix.cmd
 
 DANCY_MK=copy NUL scripts\dancy.mk
+DANCY_UP=call scripts\git\_up.cmd
 
 !include .\VERSION
 !include .\scripts\header.mk

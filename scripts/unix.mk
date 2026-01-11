@@ -16,6 +16,7 @@ ACPICA_SOURCE=bash ./scripts/git/acpica.sh
 SORTIX_SOURCE=bash ./scripts/git/sortix.sh
 
 DANCY_MK=touch ./scripts/dancy.mk
+DANCY_UP=bash ./scripts/git/_up.sh
 
 include ./VERSION
 include ./scripts/header.mk
