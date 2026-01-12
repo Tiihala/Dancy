@@ -37,6 +37,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/err/err.o \
  ./o32/arctic/libc/err/errx.o \
  ./o32/arctic/libc/err/warn.o \
+ ./o32/arctic/libc/err/warnx.o \
  ./o32/arctic/libc/errno/errno.o \
  ./o32/arctic/libc/fcntl/fcntl.o \
  ./o32/arctic/libc/fcntl/open.o \
@@ -283,6 +284,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/err/err.o \
  ./o64/arctic/libc/err/errx.o \
  ./o64/arctic/libc/err/warn.o \
+ ./o64/arctic/libc/err/warnx.o \
  ./o64/arctic/libc/errno/errno.o \
  ./o64/arctic/libc/fcntl/fcntl.o \
  ./o64/arctic/libc/fcntl/open.o \
