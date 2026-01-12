@@ -26,10 +26,16 @@
 __Dancy_Header_Begin
 
 void err(int status, const char *format, ...);
+void errx(int status, const char *format, ...);
+
 void verr(int status, const char *format, va_list arg);
+void verrx(int status, const char *format, va_list arg);
 
 void warn(const char *format, ...);
+void warnx(const char *format, ...);
+
 void vwarn(const char *format, va_list arg);
+void vwarnx(const char *format, va_list arg);
 
 __Dancy_Header_End
 
