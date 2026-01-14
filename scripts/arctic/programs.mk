@@ -108,6 +108,11 @@ ARCTIC_PROGRAMS_SLEEP_OBJECTS_32= \
  ./o32/arctic/programs/sleep/operate.o \
  ./o32/arctic/libc.a \
 
+ARCTIC_PROGRAMS_TEE_OBJECTS_32= \
+ ./o32/arctic/programs/tee/main.o \
+ ./o32/arctic/programs/tee/operate.o \
+ ./o32/arctic/libc.a \
+
 ARCTIC_PROGRAMS_TERMINAL_OBJECTS_32= \
  ./o32/arctic/programs/terminal/keymap.o \
  ./o32/arctic/programs/terminal/main.o \
@@ -224,6 +229,11 @@ ARCTIC_PROGRAMS_SLEEP_OBJECTS_64= \
  ./o64/arctic/programs/sleep/operate.o \
  ./o64/arctic/libc.a \
 
+ARCTIC_PROGRAMS_TEE_OBJECTS_64= \
+ ./o64/arctic/programs/tee/main.o \
+ ./o64/arctic/programs/tee/operate.o \
+ ./o64/arctic/libc.a \
+
 ARCTIC_PROGRAMS_TERMINAL_OBJECTS_64= \
  ./o64/arctic/programs/terminal/keymap.o \
  ./o64/arctic/programs/terminal/main.o \
@@ -295,6 +305,9 @@ ARCTIC_PROGRAMS_RMDIR_HEADERS= \
 ARCTIC_PROGRAMS_SLEEP_HEADERS= \
  ./arctic/programs/sleep/main.h \
 
+ARCTIC_PROGRAMS_TEE_HEADERS= \
+ ./arctic/programs/tee/main.h \
+
 ARCTIC_PROGRAMS_TERMINAL_HEADERS= \
  ./arctic/programs/terminal/main.h \
 
@@ -362,6 +375,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 ./arctic/bin32/sleep: $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_32)
 
+./arctic/bin32/tee: $(ARCTIC_PROGRAMS_TEE_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_TEE_OBJECTS_32)
+
 ./arctic/bin32/terminal: $(ARCTIC_PROGRAMS_TERMINAL_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_TERMINAL_OBJECTS_32)
 
@@ -427,6 +443,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 
 ./arctic/bin64/sleep: $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_SLEEP_OBJECTS_64)
+
+./arctic/bin64/tee: $(ARCTIC_PROGRAMS_TEE_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_TEE_OBJECTS_64)
 
 ./arctic/bin64/terminal: $(ARCTIC_PROGRAMS_TERMINAL_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_TERMINAL_OBJECTS_64)

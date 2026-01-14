@@ -1223,6 +1223,16 @@
     $(ARCTIC_PROGRAMS_SLEEP_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/sleep/operate.c
 
+./o32/arctic/programs/tee/main.o: \
+    ./arctic/programs/tee/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_TEE_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/tee/main.c
+
+./o32/arctic/programs/tee/operate.o: \
+    ./arctic/programs/tee/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_TEE_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/tee/operate.c
+
 ./o32/arctic/programs/terminal/keymap.o: \
     ./arctic/programs/terminal/keymap.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_TERMINAL_HEADERS)
@@ -3009,6 +3019,16 @@
     ./arctic/programs/sleep/operate.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_SLEEP_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/sleep/operate.c
+
+./o64/arctic/programs/tee/main.o: \
+    ./arctic/programs/tee/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_TEE_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/tee/main.c
+
+./o64/arctic/programs/tee/operate.o: \
+    ./arctic/programs/tee/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_TEE_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/tee/operate.c
 
 ./o64/arctic/programs/terminal/keymap.o: \
     ./arctic/programs/terminal/keymap.c $(DANCY_DEPS) \

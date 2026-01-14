@@ -25,6 +25,7 @@ ARCTIC_BIN32_FILES= \
  ./arctic/bin32/rm \
  ./arctic/bin32/rmdir \
  ./arctic/bin32/sleep \
+ ./arctic/bin32/tee \
  ./arctic/bin32/terminal \
  ./arctic/bin32/true \
 
@@ -54,5 +55,6 @@ ARCTIC_BIN32_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin32/rm ::rm
 	$(DY_MCOPY) -i $@ ./arctic/bin32/rmdir ::rmdir
 	$(DY_MCOPY) -i $@ ./arctic/bin32/sleep ::sleep
+	$(DY_MCOPY) -i $@ ./arctic/bin32/tee ::tee
 	$(DY_MCOPY) -i $@ ./arctic/bin32/terminal ::terminal
 	$(DY_MCOPY) -i $@ ./arctic/bin32/true ::true
