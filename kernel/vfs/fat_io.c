@@ -53,15 +53,26 @@ static void check_id(int id)
 
 static int check_name(const char *name)
 {
+	size_t periods = 0;
 	size_t i;
+
+	if (name[0] == '.') {
+		if (name[1] == '\0' || (name[1] == '.' && name[2] == '\0'))
+			return 0;
+
+		return 1;
+	}
 
 	for (i = 0; name[i] != '\0'; i++) {
 		char c = name[i];
 
+		if (c == '.' && (++periods > 1 || name[i + 1] == '\0'))
+			return 1;
+
 		if (c >= 'A' && c <= 'Z')
 			return 1;
 
-		if (c < 0x20 || c > 0x7E)
+		if (c <= 0x20 || c > 0x7E)
 			return 1;
 	}
 
