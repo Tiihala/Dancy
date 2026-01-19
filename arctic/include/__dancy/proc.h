@@ -35,6 +35,7 @@ typedef __dancy_pid_t pid_t;
 #define __DANCY_PROCINFO_SESSION_ID     (0x1002)
 #define __DANCY_PROCINFO_CMDLINE        (0x1003)
 #define __DANCY_PROCINFO_MEMORY         (0x1004)
+#define __DANCY_PROCINFO_SMP_AP_COUNT   (0x1005)
 
 ssize_t __dancy_proclist(pid_t *buffer, size_t size);
 ssize_t __dancy_procinfo(pid_t pid, int request, void *buffer, size_t size);

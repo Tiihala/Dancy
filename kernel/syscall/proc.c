@@ -181,6 +181,18 @@ static int f2(struct task *task, void *arg)
 		return (a->r = 0), 1;
 	}
 
+	if (a->request == __DANCY_PROCINFO_SMP_AP_COUNT) {
+		int smp_ap_count = kernel->smp_ap_count;
+
+		if (a->size[1] < sizeof(smp_ap_count))
+			return (a->r = DE_MEMORY), 1;
+
+		memcpy(a->out, &smp_ap_count, sizeof(smp_ap_count));
+		a->size[0] +=  sizeof(smp_ap_count);
+
+		return (a->r = 0), 1;
+	}
+
 	return (a->r = DE_ARGUMENT), 1;
 }
 
