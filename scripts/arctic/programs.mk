@@ -73,6 +73,11 @@ ARCTIC_PROGRAMS_MORE_OBJECTS_32= \
  ./o32/arctic/programs/more/term.o \
  ./o32/arctic/libc.a \
 
+ARCTIC_PROGRAMS_NPROC_OBJECTS_32= \
+ ./o32/arctic/programs/nproc/main.o \
+ ./o32/arctic/programs/nproc/operate.o \
+ ./o32/arctic/libc.a \
+
 ARCTIC_PROGRAMS_POWEROFF_OBJECTS_32= \
  ./o32/arctic/programs/poweroff/main.o \
  ./o32/arctic/programs/poweroff/operate.o \
@@ -194,6 +199,11 @@ ARCTIC_PROGRAMS_MORE_OBJECTS_64= \
  ./o64/arctic/programs/more/term.o \
  ./o64/arctic/libc.a \
 
+ARCTIC_PROGRAMS_NPROC_OBJECTS_64= \
+ ./o64/arctic/programs/nproc/main.o \
+ ./o64/arctic/programs/nproc/operate.o \
+ ./o64/arctic/libc.a \
+
 ARCTIC_PROGRAMS_POWEROFF_OBJECTS_64= \
  ./o64/arctic/programs/poweroff/main.o \
  ./o64/arctic/programs/poweroff/operate.o \
@@ -284,6 +294,9 @@ ARCTIC_PROGRAMS_MKDIR_HEADERS= \
 ARCTIC_PROGRAMS_MORE_HEADERS= \
  ./arctic/programs/more/main.h \
 
+ARCTIC_PROGRAMS_NPROC_HEADERS= \
+ ./arctic/programs/nproc/main.h \
+
 ARCTIC_PROGRAMS_POWEROFF_HEADERS= \
  ./arctic/programs/poweroff/main.h \
 
@@ -354,6 +367,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 ./arctic/bin32/more: $(ARCTIC_PROGRAMS_MORE_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_MORE_OBJECTS_32)
 
+./arctic/bin32/nproc: $(ARCTIC_PROGRAMS_NPROC_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_NPROC_OBJECTS_32)
+
 ./arctic/bin32/poweroff: $(ARCTIC_PROGRAMS_POWEROFF_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_POWEROFF_OBJECTS_32)
 
@@ -422,6 +438,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 
 ./arctic/bin64/more: $(ARCTIC_PROGRAMS_MORE_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_MORE_OBJECTS_64)
+
+./arctic/bin64/nproc: $(ARCTIC_PROGRAMS_NPROC_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_NPROC_OBJECTS_64)
 
 ./arctic/bin64/poweroff: $(ARCTIC_PROGRAMS_POWEROFF_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_POWEROFF_OBJECTS_64)

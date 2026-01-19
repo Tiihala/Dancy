@@ -1153,6 +1153,16 @@
     $(ARCTIC_PROGRAMS_MORE_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/more/term.c
 
+./o32/arctic/programs/nproc/main.o: \
+    ./arctic/programs/nproc/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_NPROC_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/nproc/main.c
+
+./o32/arctic/programs/nproc/operate.o: \
+    ./arctic/programs/nproc/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_NPROC_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/nproc/operate.c
+
 ./o32/arctic/programs/poweroff/main.o: \
     ./arctic/programs/poweroff/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_POWEROFF_HEADERS)
@@ -2949,6 +2959,16 @@
     ./arctic/programs/more/term.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_MORE_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/more/term.c
+
+./o64/arctic/programs/nproc/main.o: \
+    ./arctic/programs/nproc/main.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_NPROC_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/nproc/main.c
+
+./o64/arctic/programs/nproc/operate.o: \
+    ./arctic/programs/nproc/operate.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_NPROC_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/nproc/operate.c
 
 ./o64/arctic/programs/poweroff/main.o: \
     ./arctic/programs/poweroff/main.c $(DANCY_DEPS) \

@@ -18,6 +18,7 @@ ARCTIC_BIN32_FILES= \
  ./arctic/bin32/lsusb \
  ./arctic/bin32/mkdir \
  ./arctic/bin32/more \
+ ./arctic/bin32/nproc \
  ./arctic/bin32/poweroff \
  ./arctic/bin32/ps \
  ./arctic/bin32/pwd \
@@ -48,6 +49,7 @@ ARCTIC_BIN32_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin32/lsusb ::lsusb
 	$(DY_MCOPY) -i $@ ./arctic/bin32/mkdir ::mkdir
 	$(DY_MCOPY) -i $@ ./arctic/bin32/more ::more
+	$(DY_MCOPY) -i $@ ./arctic/bin32/nproc ::nproc
 	$(DY_MCOPY) -i $@ ./arctic/bin32/poweroff ::poweroff
 	$(DY_MCOPY) -i $@ ./arctic/bin32/ps ::ps
 	$(DY_MCOPY) -i $@ ./arctic/bin32/pwd ::pwd
