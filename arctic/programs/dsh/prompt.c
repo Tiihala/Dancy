@@ -253,7 +253,7 @@ static void add_char(struct dsh_prompt *state, int c)
 	int offset = state->buffer_state[0];
 	int i;
 
-	if (offset + 8 >= DSH_PROMPT_BUFFER_SIZE)
+	if (state->buffer_state[1] + 8 >= DSH_PROMPT_BUFFER_SIZE)
 		return;
 
 	if (c <= 0x1F) {
