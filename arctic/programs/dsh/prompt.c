@@ -466,6 +466,11 @@ static int prompt_read(struct dsh_prompt *state)
 			continue;
 		}
 
+		if (c == 0x09) {
+			state->tab_completion(state);
+			continue;
+		}
+
 		if (c == 0x1B) {
 			char *p = &state->escape[0];
 			p[state->escape_state++] = (char)c;
@@ -483,6 +488,11 @@ static int prompt_read(struct dsh_prompt *state)
 	}
 
 	return EXIT_FAILURE;
+}
+
+static void default_tab_completion(struct dsh_prompt *state)
+{
+	state->add_char(state, ' ');
 }
 
 int dsh_prompt_available(void)
@@ -504,6 +514,11 @@ void dsh_prompt_init(struct dsh_prompt *state)
 {
 	static struct dsh_prompt null_state;
 	memcpy(state, &null_state, sizeof(*state));
+
+	state->add_char = add_char;
+	state->del_char = del_char;
+
+	state->tab_completion = default_tab_completion;
 }
 
 void dsh_prompt_free(struct dsh_prompt *state)

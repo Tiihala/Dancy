@@ -42,6 +42,11 @@ struct dsh_prompt {
 
 	char *history[32];
 	int history_state;
+
+	void (*add_char)(struct dsh_prompt *state, int c);
+	void (*del_char)(struct dsh_prompt *state);
+
+	void (*tab_completion)(struct dsh_prompt *state);
 };
 
 int dsh_prompt_available(void);

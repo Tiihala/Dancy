@@ -106,6 +106,8 @@ void dsh_token_init(struct token *token, const char *input);
 void dsh_token_reset(struct token *token);
 int dsh_token_read(struct token *token);
 
+void dsh_tab_completion(struct dsh_prompt *state);
+
 #else
 #error "MAIN_CMDNAME"
 #endif

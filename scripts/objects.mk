@@ -1058,6 +1058,11 @@
     $(ARCTIC_PROGRAMS_DSH_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/dsh/prompt.c
 
+./o32/arctic/programs/dsh/tab.o: \
+    ./arctic/programs/dsh/tab.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_DSH_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/dsh/tab.c
+
 ./o32/arctic/programs/dsh/token.o: \
     ./arctic/programs/dsh/token.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_DSH_HEADERS)
@@ -2864,6 +2869,11 @@
     ./arctic/programs/dsh/prompt.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_DSH_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/dsh/prompt.c
+
+./o64/arctic/programs/dsh/tab.o: \
+    ./arctic/programs/dsh/tab.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_DSH_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/dsh/tab.c
 
 ./o64/arctic/programs/dsh/token.o: \
     ./arctic/programs/dsh/token.c $(DANCY_DEPS) \

@@ -149,6 +149,7 @@ int operate(struct options *opt)
 
 	dsh_prompt_init(&prompt_state);
 	opt->prompt_state = &prompt_state;
+	opt->prompt_state->tab_completion = dsh_tab_completion;
 
 	while (dsh_operate_state != 0) {
 		char prompt[2048];
