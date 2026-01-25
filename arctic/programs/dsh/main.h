@@ -20,6 +20,7 @@
 #ifndef MAIN_CMDNAME
 #define MAIN_CMDNAME "dsh"
 
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <glob.h>

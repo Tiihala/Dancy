@@ -47,6 +47,8 @@ struct dsh_prompt {
 	void (*del_char)(struct dsh_prompt *state);
 
 	void (*tab_completion)(struct dsh_prompt *state);
+
+	int c[2];
 };
 
 int dsh_prompt_available(void);
