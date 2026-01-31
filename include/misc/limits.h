@@ -13,12 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * common/limits.h
+ * misc/limits.h
  *      Header of Dancy Operating System
  */
 
-#ifndef COMMON_LIMITS_H
-#define COMMON_LIMITS_H
+#ifndef MISC_LIMITS_H
+#define MISC_LIMITS_H
 
 #include <limits.h>
 

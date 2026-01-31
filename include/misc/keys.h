@@ -13,12 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * common/keys.h
+ * misc/keys.h
  *      Header of Dancy Operating System
  */
 
-#ifndef COMMON_KEYS_H
-#define COMMON_KEYS_H
+#ifndef MISC_KEYS_H
+#define MISC_KEYS_H
 
 enum dancy_key {
 	DANCY_KEY_NULL,

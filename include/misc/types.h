@@ -13,12 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * common/types.h
+ * misc/types.h
  *      Header of Dancy Operating System
  */
 
-#ifndef COMMON_TYPES_H
-#define COMMON_TYPES_H
+#ifndef MISC_TYPES_H
+#define MISC_TYPES_H
 
 #include <limits.h>
 #include <stdint.h>

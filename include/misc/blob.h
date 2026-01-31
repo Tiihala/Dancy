@@ -13,12 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * common/blob.h
+ * misc/blob.h
  *      Header of Dancy Operating System
  */
 
-#ifndef COMMON_BLOB_H
-#define COMMON_BLOB_H
+#ifndef MISC_BLOB_H
+#define MISC_BLOB_H
 
 #define DANCY_BLOB(a,b,c,d,e,f,g,h) \
 (unsigned)(a) >> 8 & 0xFFu, (unsigned)(a) & 0xFFu, \
