@@ -333,51 +333,51 @@ ACPICA_OBJECTS_64= \
  ./o64/kernel/acpica/utxfmutex.o \
 
 ACPICA_HEADERS= \
- ./include/acpica/platform/acenv.h \
- ./include/acpica/platform/acenvex.h \
- ./include/acpica/acapps.h \
- ./include/acpica/acbuffer.h \
- ./include/acpica/acclib.h \
- ./include/acpica/accommon.h \
- ./include/acpica/acconfig.h \
- ./include/acpica/acconvert.h \
- ./include/acpica/acdebug.h \
- ./include/acpica/acdisasm.h \
- ./include/acpica/acdispat.h \
- ./include/acpica/acevents.h \
- ./include/acpica/acexcep.h \
- ./include/acpica/acglobal.h \
- ./include/acpica/achware.h \
- ./include/acpica/acinterp.h \
- ./include/acpica/aclocal.h \
- ./include/acpica/acmacros.h \
- ./include/acpica/acnames.h \
- ./include/acpica/acnamesp.h \
- ./include/acpica/acobject.h \
- ./include/acpica/acopcode.h \
- ./include/acpica/acoutput.h \
- ./include/acpica/acparser.h \
- ./include/acpica/acpiosxf.h \
- ./include/acpica/acpixf.h \
- ./include/acpica/acpredef.h \
- ./include/acpica/acresrc.h \
- ./include/acpica/acrestyp.h \
- ./include/acpica/acstruct.h \
- ./include/acpica/actables.h \
- ./include/acpica/actbinfo.h \
- ./include/acpica/actbl.h \
- ./include/acpica/actbl1.h \
- ./include/acpica/actbl2.h \
- ./include/acpica/actbl3.h \
- ./include/acpica/actypes.h \
- ./include/acpica/acutils.h \
- ./include/acpica/acuuid.h \
- ./include/acpica/amlcode.h \
- ./include/acpica/amlresrc.h \
- ./include/acpios/acdancy.h \
+ ./common/include/acpica/platform/acenv.h \
+ ./common/include/acpica/platform/acenvex.h \
+ ./common/include/acpica/acapps.h \
+ ./common/include/acpica/acbuffer.h \
+ ./common/include/acpica/acclib.h \
+ ./common/include/acpica/accommon.h \
+ ./common/include/acpica/acconfig.h \
+ ./common/include/acpica/acconvert.h \
+ ./common/include/acpica/acdebug.h \
+ ./common/include/acpica/acdisasm.h \
+ ./common/include/acpica/acdispat.h \
+ ./common/include/acpica/acevents.h \
+ ./common/include/acpica/acexcep.h \
+ ./common/include/acpica/acglobal.h \
+ ./common/include/acpica/achware.h \
+ ./common/include/acpica/acinterp.h \
+ ./common/include/acpica/aclocal.h \
+ ./common/include/acpica/acmacros.h \
+ ./common/include/acpica/acnames.h \
+ ./common/include/acpica/acnamesp.h \
+ ./common/include/acpica/acobject.h \
+ ./common/include/acpica/acopcode.h \
+ ./common/include/acpica/acoutput.h \
+ ./common/include/acpica/acparser.h \
+ ./common/include/acpica/acpiosxf.h \
+ ./common/include/acpica/acpixf.h \
+ ./common/include/acpica/acpredef.h \
+ ./common/include/acpica/acresrc.h \
+ ./common/include/acpica/acrestyp.h \
+ ./common/include/acpica/acstruct.h \
+ ./common/include/acpica/actables.h \
+ ./common/include/acpica/actbinfo.h \
+ ./common/include/acpica/actbl.h \
+ ./common/include/acpica/actbl1.h \
+ ./common/include/acpica/actbl2.h \
+ ./common/include/acpica/actbl3.h \
+ ./common/include/acpica/actypes.h \
+ ./common/include/acpica/acutils.h \
+ ./common/include/acpica/acuuid.h \
+ ./common/include/acpica/amlcode.h \
+ ./common/include/acpica/amlresrc.h \
+ ./common/include/acpios/acdancy.h \
 
 ACPICA_DEPS=$(DANCY_EXT) $(DANCY_HEADERS) $(ACPICA_HEADERS)
-ACPICA_TEMP=./include/acpica/acpi.h
+ACPICA_TEMP=./common/include/acpica/acpi.h
 
 ./o32/acpica.at: $(ACPICA_OBJECTS_32) ./o32/acpios.at
 	$(DY_LINK) -o$@ -fat $(ACPICA_OBJECTS_32) ./o32/acpios.at
@@ -1693,127 +1693,127 @@ ACPICA_TEMP=./include/acpica/acpi.h
 
 ##############################################################################
 
-./include/acpica/platform/acenv.h: $(ACPICA_TEMP)
+./common/include/acpica/platform/acenv.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/platform/acenvex.h: $(ACPICA_TEMP)
+./common/include/acpica/platform/acenvex.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acapps.h: $(ACPICA_TEMP)
+./common/include/acpica/acapps.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acbuffer.h: $(ACPICA_TEMP)
+./common/include/acpica/acbuffer.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acclib.h: $(ACPICA_TEMP)
+./common/include/acpica/acclib.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/accommon.h: $(ACPICA_TEMP)
+./common/include/acpica/accommon.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acconfig.h: $(ACPICA_TEMP)
+./common/include/acpica/acconfig.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acconvert.h: $(ACPICA_TEMP)
+./common/include/acpica/acconvert.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acdebug.h: $(ACPICA_TEMP)
+./common/include/acpica/acdebug.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acdisasm.h: $(ACPICA_TEMP)
+./common/include/acpica/acdisasm.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acdispat.h: $(ACPICA_TEMP)
+./common/include/acpica/acdispat.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acevents.h: $(ACPICA_TEMP)
+./common/include/acpica/acevents.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acexcep.h: $(ACPICA_TEMP)
+./common/include/acpica/acexcep.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acglobal.h: $(ACPICA_TEMP)
+./common/include/acpica/acglobal.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/achware.h: $(ACPICA_TEMP)
+./common/include/acpica/achware.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acinterp.h: $(ACPICA_TEMP)
+./common/include/acpica/acinterp.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/aclocal.h: $(ACPICA_TEMP)
+./common/include/acpica/aclocal.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acmacros.h: $(ACPICA_TEMP)
+./common/include/acpica/acmacros.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acnames.h: $(ACPICA_TEMP)
+./common/include/acpica/acnames.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acnamesp.h: $(ACPICA_TEMP)
+./common/include/acpica/acnamesp.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acobject.h: $(ACPICA_TEMP)
+./common/include/acpica/acobject.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acopcode.h: $(ACPICA_TEMP)
+./common/include/acpica/acopcode.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acoutput.h: $(ACPICA_TEMP)
+./common/include/acpica/acoutput.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acparser.h: $(ACPICA_TEMP)
+./common/include/acpica/acparser.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acpiosxf.h: $(ACPICA_TEMP)
+./common/include/acpica/acpiosxf.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acpixf.h: $(ACPICA_TEMP)
+./common/include/acpica/acpixf.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acpredef.h: $(ACPICA_TEMP)
+./common/include/acpica/acpredef.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acresrc.h: $(ACPICA_TEMP)
+./common/include/acpica/acresrc.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acrestyp.h: $(ACPICA_TEMP)
+./common/include/acpica/acrestyp.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acstruct.h: $(ACPICA_TEMP)
+./common/include/acpica/acstruct.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actables.h: $(ACPICA_TEMP)
+./common/include/acpica/actables.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actbinfo.h: $(ACPICA_TEMP)
+./common/include/acpica/actbinfo.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actbl.h: $(ACPICA_TEMP)
+./common/include/acpica/actbl.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actbl1.h: $(ACPICA_TEMP)
+./common/include/acpica/actbl1.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actbl2.h: $(ACPICA_TEMP)
+./common/include/acpica/actbl2.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actbl3.h: $(ACPICA_TEMP)
+./common/include/acpica/actbl3.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/actypes.h: $(ACPICA_TEMP)
+./common/include/acpica/actypes.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acutils.h: $(ACPICA_TEMP)
+./common/include/acpica/acutils.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/acuuid.h: $(ACPICA_TEMP)
+./common/include/acpica/acuuid.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/amlcode.h: $(ACPICA_TEMP)
+./common/include/acpica/amlcode.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
-./include/acpica/amlresrc.h: $(ACPICA_TEMP)
+./common/include/acpica/amlresrc.h: $(ACPICA_TEMP)
 	$(ACPICA_SOURCE) "$@"
 
 ##############################################################################

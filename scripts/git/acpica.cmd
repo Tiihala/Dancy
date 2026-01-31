@@ -10,8 +10,8 @@ IF NOT EXIST "scripts\git\acpica.cmd" (
 )
 
 MKDIR external > NUL 2>&1
-MKDIR include\acpica > NUL 2>&1
-MKDIR include\acpica\platform > NUL 2>&1
+MKDIR common\include\acpica > NUL 2>&1
+MKDIR common\include\acpica\platform > NUL 2>&1
 MKDIR kernel\acpica > NUL 2>&1
 
 IF NOT EXIST "external\acpica" (

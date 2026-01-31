@@ -10,8 +10,8 @@ if [ ! -f "scripts/git/acpica.sh" ]; then
 fi
 
 mkdir -p external
-mkdir -p include/acpica
-mkdir -p include/acpica/platform
+mkdir -p common/include/acpica
+mkdir -p common/include/acpica/platform
 mkdir -p kernel/acpica
 
 if [ ! -d "external/acpica" ]; then
