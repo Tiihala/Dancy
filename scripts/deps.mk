@@ -62,29 +62,29 @@ DANCY_HEADERS= \
  ./arctic/include/unistd.h \
  ./arctic/include/wchar.h \
  ./arctic/include/wctype.h \
- ./include/boot/init.h \
- ./include/boot/loader.h \
- ./include/boot/uefi.h \
- ./include/dancy.h \
- ./include/kernel/base.h \
- ./include/kernel/debug.h \
- ./include/kernel/error.h \
- ./include/kernel/misc.h \
- ./include/kernel/network.h \
- ./include/kernel/pci.h \
- ./include/kernel/ps2.h \
- ./include/kernel/run.h \
- ./include/kernel/sched.h \
- ./include/kernel/syscall.h \
- ./include/kernel/table.h \
- ./include/kernel/task.h \
- ./include/kernel/usb.h \
- ./include/kernel/vfs.h \
- ./include/misc/blob.h \
- ./include/misc/keys.h \
- ./include/misc/lib.h \
- ./include/misc/limits.h \
- ./include/misc/types.h \
+ ./common/include/boot/init.h \
+ ./common/include/boot/loader.h \
+ ./common/include/boot/uefi.h \
+ ./common/include/dancy.h \
+ ./common/include/kernel/base.h \
+ ./common/include/kernel/debug.h \
+ ./common/include/kernel/error.h \
+ ./common/include/kernel/misc.h \
+ ./common/include/kernel/network.h \
+ ./common/include/kernel/pci.h \
+ ./common/include/kernel/ps2.h \
+ ./common/include/kernel/run.h \
+ ./common/include/kernel/sched.h \
+ ./common/include/kernel/syscall.h \
+ ./common/include/kernel/table.h \
+ ./common/include/kernel/task.h \
+ ./common/include/kernel/usb.h \
+ ./common/include/kernel/vfs.h \
+ ./common/include/misc/blob.h \
+ ./common/include/misc/keys.h \
+ ./common/include/misc/lib.h \
+ ./common/include/misc/limits.h \
+ ./common/include/misc/types.h \
 
 ##############################################################################
 

@@ -22,7 +22,7 @@ DANCY_UP=call scripts\git\_up.cmd
 !include .\scripts\header.mk
 !include .\scripts\deps.mk
 
-HOST_CPPFLAGS=-I./include $(DANCY_VERSION)
+HOST_CPPFLAGS=-I./common/include $(DANCY_VERSION)
 HOST_CFLAGS=/O2 /nologo
 DANCY_HOST_BINARY=link.exe /NOLOGO /MANIFEST:EMBED /OUT:
 DANCY_HOST_OBJECT=cl.exe /c $(HOST_CPPFLAGS) $(HOST_CFLAGS) /Fo
