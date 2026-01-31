@@ -62,9 +62,6 @@ ARCTIC_ROOT_FILES= \
  ./arctic/include/unistd.h \
  ./arctic/include/wchar.h \
  ./arctic/include/wctype.h \
- ./share/fonts/dcysan.ttf \
- ./share/fonts/dcysanb.ttf \
- ./share/fonts/dcysanm.ttf \
 
 ##############################################################################
 
@@ -247,12 +244,3 @@ ARCTIC_ROOT_FILES= \
 	$(DY_MCOPY) -i $@ \
 		./arctic/include/wctype.h \
 		::include/wctype.h
-	$(DY_MCOPY) -i $@ \
-		./share/fonts/dcysan.ttf \
-		::share/fonts/dcysan.ttf
-	$(DY_MCOPY) -i $@ \
-		./share/fonts/dcysanb.ttf \
-		::share/fonts/dcysanb.ttf
-	$(DY_MCOPY) -i $@ \
-		./share/fonts/dcysanm.ttf \
-		::share/fonts/dcysanm.ttf
