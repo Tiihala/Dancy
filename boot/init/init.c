@@ -29,9 +29,9 @@ unsigned char *arctic_root_data;
 size_t arctic_root_size;
 
 static const char *ttf_names[3] = {
-	"share/fonts/dcysan.ttf",
-	"share/fonts/dcysanb.ttf",
-	"share/fonts/dcysanm.ttf"
+	"common/fonts/dcysan.ttf",
+	"common/fonts/dcysanb.ttf",
+	"common/fonts/dcysanm.ttf"
 };
 
 void init(void)

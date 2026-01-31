@@ -6,9 +6,9 @@ DANCY_DB_000_FILES= \
  ./o32/boot/init.at \
  ./o64/boot/init.at \
  ./arctic/root.img \
- ./share/fonts/dcysan.ttf \
- ./share/fonts/dcysanb.ttf \
- ./share/fonts/dcysanm.ttf \
+ ./common/fonts/dcysan.ttf \
+ ./common/fonts/dcysanb.ttf \
+ ./common/fonts/dcysanm.ttf \
 
 DANCY_DB_100_FILES= \
  ./o32/lib.at \
