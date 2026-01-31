@@ -4,9 +4,9 @@
 /arctic/bin64.img
 /arctic/root.img
 /bin/
+/common/include/acpica/
 /efi/
 /external/
-/include/acpica/
 /kernel/acpica/
 /o32/
 /o64/
