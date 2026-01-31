@@ -20,7 +20,7 @@
 #ifndef KERNEL_BASE_H
 #define KERNEL_BASE_H
 
-#include <common/types.h>
+#include <misc/types.h>
 #include <kernel/table.h>
 #include <kernel/task.h>
 

@@ -20,7 +20,7 @@
 #ifndef KERNEL_TABLE_H
 #define KERNEL_TABLE_H
 
-#include <common/types.h>
+#include <misc/types.h>
 
 struct kernel_table {
 	size_t table_size;

@@ -20,7 +20,7 @@
 #ifndef KERNEL_MISC_H
 #define KERNEL_MISC_H
 
-#include <common/types.h>
+#include <misc/types.h>
 #include <kernel/vfs.h>
 
 /*

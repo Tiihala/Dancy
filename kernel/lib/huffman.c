@@ -17,7 +17,7 @@
  *      Huffman coding scheme
  */
 
-#include <common/lib.h>
+#include <misc/lib.h>
 
 int huffman_init(struct huffman *h, unsigned *symbols, int n)
 {

@@ -20,7 +20,7 @@
 #ifndef KERNEL_USB_H
 #define KERNEL_USB_H
 
-#include <common/types.h>
+#include <misc/types.h>
 
 struct usb_device_request {
 	uint8_t bmRequestType;

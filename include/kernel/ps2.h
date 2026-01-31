@@ -20,7 +20,7 @@
 #ifndef KERNEL_PS2_H
 #define KERNEL_PS2_H
 
-#include <common/types.h>
+#include <misc/types.h>
 
 /*
  * Declarations of 8042.c

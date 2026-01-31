@@ -20,7 +20,7 @@
 #ifndef KERNEL_DEBUG_H
 #define KERNEL_DEBUG_H
 
-#include <common/types.h>
+#include <misc/types.h>
 
 /*
  * Declarations of debug.c

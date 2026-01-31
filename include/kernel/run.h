@@ -20,7 +20,7 @@
 #ifndef KERNEL_RUN_H
 #define KERNEL_RUN_H
 
-#include <common/types.h>
+#include <misc/types.h>
 
 /*
  * Declarations of run.c

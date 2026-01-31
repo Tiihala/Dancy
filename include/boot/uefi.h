@@ -34,10 +34,10 @@
 #include <arctic/include/stdlib.h>
 #include <arctic/include/string.h>
 
-#include <common/blob.h>
-#include <common/keys.h>
-#include <common/limits.h>
-#include <common/types.h>
+#include <misc/blob.h>
+#include <misc/keys.h>
+#include <misc/limits.h>
+#include <misc/types.h>
 
 #include <boot/loader.h>
 

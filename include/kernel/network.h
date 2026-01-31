@@ -20,7 +20,7 @@
 #ifndef KERNEL_NETWORK_H
 #define KERNEL_NETWORK_H
 
-#include <common/types.h>
+#include <misc/types.h>
 
 struct dancy_net_controller {
 	struct vfs_node *node;

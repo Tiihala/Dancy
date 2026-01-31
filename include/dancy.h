@@ -20,7 +20,7 @@
 #ifndef DANCY_H
 #define DANCY_H
 
-#include <common/blob.h>
+#include <misc/blob.h>
 
 #if defined(DANCY_32) || defined(DANCY_64)
 
@@ -51,10 +51,10 @@
 #include <arctic/include/stdlib.h>
 #include <arctic/include/string.h>
 
-#include <common/keys.h>
-#include <common/lib.h>
-#include <common/limits.h>
-#include <common/types.h>
+#include <misc/keys.h>
+#include <misc/lib.h>
+#include <misc/limits.h>
+#include <misc/types.h>
 
 enum dancy_error {
 

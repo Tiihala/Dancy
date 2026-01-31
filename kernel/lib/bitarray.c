@@ -17,7 +17,7 @@
  *      Handle bit arrays
  */
 
-#include <common/lib.h>
+#include <misc/lib.h>
 
 static int default_callback(struct bitarray *b)
 {

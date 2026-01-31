@@ -20,7 +20,7 @@
 #ifndef KERNEL_PCI_H
 #define KERNEL_PCI_H
 
-#include <common/types.h>
+#include <misc/types.h>
 #include <kernel/table.h>
 
 struct _pci_driver {

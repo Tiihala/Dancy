@@ -20,7 +20,7 @@
 #ifndef KERNEL_TASK_H
 #define KERNEL_TASK_H
 
-#include <common/types.h>
+#include <misc/types.h>
 
 enum task_type {
 	task_normal   = 0x00,

@@ -26,8 +26,8 @@
 #ifndef va_arg
 #include <stdarg.h>
 #endif
-#include <common/limits.h>
-#include <common/types.h>
+#include <misc/limits.h>
+#include <misc/types.h>
 
 #if defined (DANCY_32)
 #define ACPI_MACHINE_WIDTH 32

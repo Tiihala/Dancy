@@ -20,7 +20,7 @@
 #ifndef KERNEL_SYSCALL_H
 #define KERNEL_SYSCALL_H
 
-#include <common/types.h>
+#include <misc/types.h>
 
 /*
  * Declarations of arg.c

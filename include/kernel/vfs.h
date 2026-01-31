@@ -20,7 +20,7 @@
 #ifndef KERNEL_VFS_H
 #define KERNEL_VFS_H
 
-#include <common/types.h>
+#include <misc/types.h>
 
 enum vfs_type {
 	vfs_type_unknown   = 0,

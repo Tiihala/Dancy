@@ -65,11 +65,6 @@ DANCY_HEADERS= \
  ./include/boot/init.h \
  ./include/boot/loader.h \
  ./include/boot/uefi.h \
- ./include/common/blob.h \
- ./include/common/keys.h \
- ./include/common/lib.h \
- ./include/common/limits.h \
- ./include/common/types.h \
  ./include/dancy.h \
  ./include/kernel/base.h \
  ./include/kernel/debug.h \
@@ -85,6 +80,11 @@ DANCY_HEADERS= \
  ./include/kernel/task.h \
  ./include/kernel/usb.h \
  ./include/kernel/vfs.h \
+ ./include/misc/blob.h \
+ ./include/misc/keys.h \
+ ./include/misc/lib.h \
+ ./include/misc/limits.h \
+ ./include/misc/types.h \
 
 ##############################################################################
 
