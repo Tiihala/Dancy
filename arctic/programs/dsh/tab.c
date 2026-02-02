@@ -145,6 +145,30 @@ static void tab_command(struct dsh_prompt *state, const char *command)
 		}
 	}
 
+	for (i = 0; /* void */; i++) {
+		int c = 0, offset = 0;
+
+		while (c >= 0 && offset < array_i) {
+			if (array[offset++][0] != '\0') {
+				char a = array[offset - 1][i];
+
+				if (c == 0)
+					c = (int)((unsigned char)a);
+
+				if (c == 0 || c != (int)((unsigned char)a))
+					c = -1;
+			}
+		}
+
+		if (c <= 0)
+			break;
+
+		if ((size_t)i >= command_length) {
+			state->add_char(state, c);
+			state->c[0] = '\0', state->c[1] = '\0';
+		}
+	}
+
 	if (state->c[0] == '\t')
 		tab_list(state, &array[0], array_i);
 }
@@ -269,6 +293,30 @@ static void tab_path(struct dsh_prompt *state, char *path, int chdir_mode)
 			if (!strchr(array[offset], '/'))
 				state->add_char(state, ' ');
 			return;
+		}
+	}
+
+	for (i = 0; /* void */; i++) {
+		int c = 0, offset = 0;
+
+		while (c >= 0 && offset < array_i) {
+			if (array[offset++][0] != '\0') {
+				char a = array[offset - 1][i];
+
+				if (c == 0)
+					c = (int)((unsigned char)a);
+
+				if (c == 0 || c != (int)((unsigned char)a))
+					c = -1;
+			}
+		}
+
+		if (c <= 0)
+			break;
+
+		if ((size_t)i >= name_length) {
+			state->add_char(state, c);
+			state->c[0] = '\0', state->c[1] = '\0';
 		}
 	}
 
