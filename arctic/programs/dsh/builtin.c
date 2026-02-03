@@ -57,16 +57,6 @@ static int cmd_echo(int argc, char *argv[])
 		if (i > 1)
 			fputs(" ", stdout);
 
-		if (!strcmp(a, "$?")) {
-			fprintf(stdout, "%d", dsh_exit_code);
-			continue;
-		}
-
-		if (!strcmp(a, "$$")) {
-			fprintf(stdout, "%lld", (long long)getpid());
-			continue;
-		}
-
 		fputs(a, stdout);
 	}
 
