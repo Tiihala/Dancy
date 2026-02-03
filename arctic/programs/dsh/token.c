@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Antti Tiihala
+ * Copyright (c) 2024, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -48,6 +48,95 @@ void dsh_token_reset(struct token *token)
 	token->value = 0;
 }
 
+static int valid_variable_char(char c, int digit)
+{
+	if (c == '_' || (digit && (c >= '0' && c <= '9')))
+		return 1;
+
+	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+		return 1;
+
+	return 0;
+}
+
+static int expand(const char *input, size_t *new_i, char **b, char *e, char c)
+{
+	char next_c = input[*new_i];
+	int add_i = 0;
+
+	int buffer_i = 0;
+	char buffer[256];
+
+	do {
+		if (c == '$' && next_c == '?') {
+			int r = snprintf(&buffer[0], sizeof(buffer),
+				"%d", dsh_exit_code);
+
+			if (r <= 0 || r >= (int)sizeof(buffer))
+				return token_error("unexpected behavior");
+
+			buffer_i = r, add_i = 1;
+			break;
+		}
+
+		if (c == '$' && next_c == '$') {
+			int r = snprintf(&buffer[0], sizeof(buffer),
+				"%lld", (long long)getpid());
+
+			if (r <= 0 || r >= (int)sizeof(buffer))
+				return token_error("unexpected behavior");
+
+			buffer_i = r, add_i = 1;
+			break;
+		}
+
+		if (c == '$' && valid_variable_char(next_c, 0)) {
+			const char *p;
+
+			do {
+				buffer[buffer_i++] = next_c;
+				buffer[buffer_i] = '\0';
+
+				next_c = input[*new_i + (size_t)buffer_i];
+
+				if (buffer_i + 1 >= (int)sizeof(buffer))
+					return token_error("variable name");
+
+			} while (valid_variable_char(next_c, 1));
+
+			add_i = buffer_i;
+
+			if ((p = getenv(&buffer[0])) == NULL)
+				p = "";
+
+			buffer_i = (int)strlen(p);
+
+			if (buffer_i + 1 >= (int)sizeof(buffer))
+				return token_error("variable value");
+
+			memcpy(&buffer[0], p, (size_t)buffer_i);
+			break;
+		}
+
+	} while (0);
+
+	if (buffer_i > 0) {
+		if (*b >= e || (size_t)(e - *b) < (size_t)buffer_i)
+			return token_error("expand buffer overflow");
+
+		memcpy(*b, &buffer[0], (size_t)buffer_i);
+	}
+
+	(*new_i) += (size_t)add_i;
+	(*b) += buffer_i;
+	(*b)[0] = '\0';
+
+	if (add_i > 0 && buffer_i == 0)
+		return INT_MAX;
+
+	return add_i;
+}
+
 int dsh_token_read(struct token *token)
 {
 	const char *input = token->_input;
@@ -84,6 +173,15 @@ int dsh_token_read(struct token *token)
 				continue;
 			}
 
+			if (c == '$') {
+				int r = expand(input, &new_i, &b, e, c);
+
+				if (r < 0)
+					return r;
+				if (r > 0)
+					continue;
+			}
+
 			if (c == '\\') {
 				char next_c = input[new_i];
 
@@ -117,6 +215,18 @@ int dsh_token_read(struct token *token)
 
 			*b++ = c, *b = '\0';
 			continue;
+		}
+
+		if (c == '$') {
+			int r = expand(input, &new_i, &b, e, c);
+
+			if (r == INT_MAX)
+				token->type = token_max_type;
+
+			if (r < 0)
+				return r;
+			if (r > 0)
+				continue;
 		}
 
 		if (c == '\\') {
