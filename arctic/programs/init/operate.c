@@ -50,6 +50,15 @@ static pid_t start_dsh(char *console, char *number)
 {
 	const char *path = "/bin/terminal";
 	const char *a[] = { path, number, "/bin/dsh", NULL };
+	const char *e[] = {
+		"HOME=/root",
+		"LOGNAME=root",
+		"PATH=/bin",
+		"SHELL=/bin/dsh",
+		"TERM=dancy",
+		"USER=root",
+		NULL
+	};
 
 	pid_t new_pid = -1;
 	int r;
@@ -65,7 +74,7 @@ static pid_t start_dsh(char *console, char *number)
 	posix_spawnattr_init(&at);
 	posix_spawnattr_setflags(&at, POSIX_SPAWN_SETSID);
 
-	r = posix_spawn(&new_pid, path, &ac, &at, (char **)a, NULL);
+	r = posix_spawn(&new_pid, path, &ac, &at, (char **)a, (char **)e);
 
 	if (r != 0 || new_pid < 0)
 		return -1;
@@ -147,6 +156,8 @@ int operate(struct options *opt)
 		opt->error = "process ID is not 1";
 		return EXIT_FAILURE;
 	}
+
+	mkdir("/root", 0777);
 
 	{
 		const char *path = "/bin/terminal";
