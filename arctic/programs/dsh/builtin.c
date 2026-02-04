@@ -21,15 +21,16 @@
 
 static int cmd_chdir(int argc, char *argv[])
 {
-	const char *path = (argc > 1) ? argv[1] : "";
+	const char *path = (argc > 1) ? argv[1] : NULL;
 
-	if (path[0] == '\0')
-		return 1;
+	if (argc > 2)
+		return fputs("chdir: too many arguments\n", stderr), 1;
 
-	if ((errno = 0, chdir(path)) == -1) {
-		perror("chdir");
-		return 1;
-	}
+	if (path == NULL && (path = getenv("HOME")) == NULL)
+		return fputs("chdir: HOME not set\n", stderr), 1;
+
+	if (path[0] != '\0' && (errno = 0, chdir(path)) == -1)
+		return perror("chdir"), 1;
 
 	return 0;
 }
