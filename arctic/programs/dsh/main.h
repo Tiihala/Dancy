@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, 2024 Antti Tiihala
+ * Copyright (c) 2023, 2024, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -109,6 +109,8 @@ void dsh_token_reset(struct token *token);
 int dsh_token_read(struct token *token);
 
 void dsh_tab_completion(struct dsh_prompt *state);
+
+const char *dsh_var_read(const char *name);
 
 #else
 #error "MAIN_CMDNAME"

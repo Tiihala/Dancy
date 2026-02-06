@@ -106,7 +106,7 @@ static int expand(const char *input, size_t *new_i, char **b, char *e, char c)
 
 			add_i = buffer_i;
 
-			if ((p = getenv(&buffer[0])) == NULL)
+			if ((p = dsh_var_read(&buffer[0])) == NULL)
 				p = "";
 
 			buffer_i = (int)strlen(p);
@@ -154,7 +154,7 @@ static int expand(const char *input, size_t *new_i, char **b, char *e, char c)
 				break;
 			}
 
-			if ((p = getenv(&buffer[0])) == NULL)
+			if ((p = dsh_var_read(&buffer[0])) == NULL)
 				p = "";
 
 			buffer_i = (int)strlen(p);

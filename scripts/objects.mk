@@ -1068,6 +1068,11 @@
     $(ARCTIC_PROGRAMS_DSH_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/dsh/token.c
 
+./o32/arctic/programs/dsh/var.o: \
+    ./arctic/programs/dsh/var.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_DSH_HEADERS)
+	$(ARCTIC_O32)$@ ./arctic/programs/dsh/var.c
+
 ./o32/arctic/programs/env/main.o: \
     ./arctic/programs/env/main.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_ENV_HEADERS)
@@ -2879,6 +2884,11 @@
     ./arctic/programs/dsh/token.c $(DANCY_DEPS) \
     $(ARCTIC_PROGRAMS_DSH_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/dsh/token.c
+
+./o64/arctic/programs/dsh/var.o: \
+    ./arctic/programs/dsh/var.c $(DANCY_DEPS) \
+    $(ARCTIC_PROGRAMS_DSH_HEADERS)
+	$(ARCTIC_O64)$@ ./arctic/programs/dsh/var.c
 
 ./o64/arctic/programs/env/main.o: \
     ./arctic/programs/env/main.c $(DANCY_DEPS) \

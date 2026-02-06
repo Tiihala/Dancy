@@ -26,7 +26,7 @@ static int cmd_chdir(int argc, char *argv[])
 	if (argc > 2)
 		return fputs("chdir: too many arguments\n", stderr), 1;
 
-	if (path == NULL && (path = getenv("HOME")) == NULL)
+	if (path == NULL && (path = dsh_var_read("HOME")) == NULL)
 		return fputs("chdir: HOME not set\n", stderr), 1;
 
 	if (path[0] != '\0' && (errno = 0, chdir(path)) == -1)
