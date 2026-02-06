@@ -118,6 +118,66 @@ static int expand(const char *input, size_t *new_i, char **b, char *e, char c)
 			break;
 		}
 
+		if (c == '$' && next_c == '{') {
+			int n = -1;
+			const char *p;
+
+			for (;;) {
+				next_c = input[*new_i + (size_t)(++add_i)];
+
+				if (n == -1 && (n = (next_c == '#')) > 0)
+					continue;
+
+				if (next_c == '\0') {
+					add_i = 0, buffer_i = 0;
+					break;
+				}
+
+				if (next_c == '}') {
+					add_i += 1;
+					break;
+				}
+
+				if (!valid_variable_char(next_c, (add_i > 1)))
+					return token_error("unknown ${...}");
+
+				buffer[buffer_i++] = next_c;
+				buffer[buffer_i] = '\0';
+
+				if (buffer_i + 1 >= (int)sizeof(buffer))
+					return token_error("variable name");
+			}
+
+			if (buffer_i == 0) {
+				if (n > 0)
+					strcpy(&buffer[0], "0"), buffer_i = 1;
+				break;
+			}
+
+			if ((p = getenv(&buffer[0])) == NULL)
+				p = "";
+
+			buffer_i = (int)strlen(p);
+
+			if (n > 0) {
+				int r = snprintf(&buffer[0], sizeof(buffer),
+					"%d", buffer_i);
+
+				if (r > 0 && r < (int)sizeof(buffer)) {
+					buffer_i = r;
+					break;
+				}
+
+				return token_error("unexpected behavior");
+			}
+
+			if (buffer_i + 1 >= (int)sizeof(buffer))
+				return token_error("variable value");
+
+			memcpy(&buffer[0], p, (size_t)buffer_i);
+			break;
+		}
+
 	} while (0);
 
 	if (buffer_i > 0) {
