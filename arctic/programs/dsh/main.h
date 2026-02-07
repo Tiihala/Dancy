@@ -86,6 +86,7 @@ void dsh_parse_input(const char *input);
 
 enum token_type {
 	token_type_null,
+	token_type_var,
 	token_type_arg,
 	token_type_glob,
 	token_type_op,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Antti Tiihala
+ * Copyright (c) 2024, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -801,6 +801,23 @@ static void parse_input(struct token *token)
 			strcpy(&command->op[0], "\\n");
 			commands_count += 1;
 			break;
+		}
+
+		if (token->type == token_type_var) {
+			char *name = token->data;
+			char *value = strchr(token->data, '=');
+			const int flags = 0;
+
+			if (state == 0 && value != NULL) {
+				*value++ = '\0';
+				if (!dsh_var_write(name, value, flags)) {
+					parsing_error("shell variable");
+					state = -1;
+					break;
+				}
+				continue;
+			}
+			token->type = token_type_arg;
 		}
 
 		if (token->type == token_type_arg) {

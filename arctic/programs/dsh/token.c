@@ -201,7 +201,7 @@ int dsh_token_read(struct token *token)
 {
 	const char *input = token->_input;
 	size_t new_i = token->_i;
-	int size, empty_allowed = 0;
+	int size, empty_allowed = 0, var_allowed = 0;
 	int glob_mode = 0;
 	int quote_mode = 0;
 	char c;
@@ -215,6 +215,9 @@ int dsh_token_read(struct token *token)
 
 	while ((c = input[new_i]) == ' ' || c == '\t')
 		new_i += 1;
+
+	if (c != '"' && c != '\'')
+		var_allowed = 1;
 
 	token->_i = new_i;
 
@@ -465,6 +468,11 @@ int dsh_token_read(struct token *token)
 		token->data = strdup(&_b[0]);
 		if (token->data == NULL)
 			return token_error("out of memory");
+	}
+
+	if (var_allowed && valid_variable_char(token->data[0], 0)) {
+		if (strchr(token->data, '='))
+			token->type = token_type_var;
 	}
 
 	return 0;
