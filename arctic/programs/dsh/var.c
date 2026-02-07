@@ -130,14 +130,30 @@ const char *dsh_var_read(const char *name)
 
 void *dsh_var_write(const char *name, const char *value, size_t flags)
 {
-	size_t i, size = 4;
+	const size_t default_size = 4;
+	size_t i, size = default_size;
+
 	struct dsh_var *v = NULL;
 	char *data;
 
-	if (name[0] == '\0' || strchr(name, '='))
-		return NULL;
+	for (i = 0; name[i] != '\0'; i++) {
+		char c = name[i];
 
-	size += strlen(name);
+		if ((c >= '0' && c <= '9' && i > 0) || c == '_') {
+			size += 1;
+			continue;
+		}
+
+		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+			size += 1;
+			continue;
+		}
+
+		return NULL;
+	}
+
+	if (size == default_size)
+		return NULL;
 
 	if (value != NULL)
 		size += strlen(value);
