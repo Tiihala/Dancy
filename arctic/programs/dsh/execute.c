@@ -39,7 +39,6 @@ static int valid_command(const char *arg)
 
 static void execute_spawn(struct dsh_execute_state *state, const char *path)
 {
-	extern char **environ;
 	int r;
 
 	r = posix_spawn(&state->pid, path,
