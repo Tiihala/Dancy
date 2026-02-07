@@ -85,7 +85,7 @@ static int cmd_export(int argc, char *argv[])
 	int i;
 
 	if (argc == 1 || (argc == 2 && !strcmp(argv[1], "-p"))) {
-		char **e = dsh_var_environ;
+		char **e = dsh_environ();
 
 		while (*e != NULL)
 			fprintf(stdout, "%s\n", *e++);

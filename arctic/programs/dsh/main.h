@@ -111,7 +111,7 @@ int dsh_token_read(struct token *token);
 
 void dsh_tab_completion(struct dsh_prompt *state);
 
-extern char **dsh_var_environ;
+char **dsh_environ(void);
 int dsh_var_init(void);
 void dsh_var_free(void);
 

@@ -28,9 +28,9 @@ static struct dsh_var *dsh_var_array;
 static size_t dsh_var_end;
 
 extern char **environ;
-char **dsh_var_environ;
+static char **dsh_var_environ;
 
-static void update_environ(void)
+char **dsh_environ(void)
 {
 	size_t i, n = 0;
 
@@ -43,6 +43,8 @@ static void update_environ(void)
 	}
 
 	dsh_var_environ[n] = NULL;
+
+	return dsh_var_environ;
 }
 
 int dsh_var_init(void)
@@ -76,7 +78,6 @@ int dsh_var_init(void)
 		dsh_var_array[i].flags = 1;
 	}
 
-	update_environ();
 	return 0;
 }
 
@@ -204,7 +205,6 @@ void *dsh_var_write(const char *name, const char *value, size_t flags)
 			memmove(v + 0, v + 1, size);
 		}
 
-		update_environ();
 		return free(data), v;
 	}
 
@@ -218,6 +218,5 @@ void *dsh_var_write(const char *name, const char *value, size_t flags)
 	else
 		v->data[(v->data[0] == NULL) ? 0 : 1] = data;
 
-	update_environ();
 	return v;
 }
