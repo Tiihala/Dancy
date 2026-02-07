@@ -179,6 +179,13 @@ void *dsh_var_write(const char *name, const char *value, size_t flags)
 			free(v->data[0]), v->data[0] = NULL;
 			free(v->data[1]), v->data[1] = NULL;
 			v->flags = 0;
+
+			i = 0, size = sizeof(dsh_var_array[0]);
+
+			while ((v + (++i))->data[0] != NULL)
+				size += sizeof(dsh_var_array[0]);
+
+			memmove(v + 0, v + 1, size);
 		}
 
 		update_environ();
