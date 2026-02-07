@@ -213,7 +213,7 @@ void *dsh_var_write(const char *name, const char *value, size_t flags)
 
 	v->flags |= (flags & 1);
 
-	if ((v->flags & 1) != 0)
+	if ((flags & 1) != 0)
 		free(v->data[0]), v->data[0] = data;
 	else
 		v->data[(v->data[0] == NULL) ? 0 : 1] = data;
