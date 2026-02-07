@@ -110,7 +110,12 @@ int dsh_token_read(struct token *token);
 
 void dsh_tab_completion(struct dsh_prompt *state);
 
+extern char **dsh_var_environ;
+int dsh_var_init(void);
+void dsh_var_free(void);
+
 const char *dsh_var_read(const char *name);
+void *dsh_var_write(const char *name, const char *value, size_t flags);
 
 #else
 #error "MAIN_CMDNAME"

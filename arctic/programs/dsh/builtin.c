@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, 2025 Antti Tiihala
+ * Copyright (c) 2024, 2025, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -75,6 +75,82 @@ static int cmd_exit(int argc, char *argv[])
 	(void)argv;
 
 	dsh_operate_state = 0;
+
+	return 0;
+}
+
+static int cmd_export(int argc, char *argv[])
+{
+	const char *usage = "Usage: export [NAME[=VALUE]...]\n";
+	int i;
+
+	if (argc == 1 || (argc == 2 && !strcmp(argv[1], "-p"))) {
+		char **e = dsh_var_environ;
+
+		while (*e != NULL)
+			fprintf(stdout, "%s\n", *e++);
+
+		return 0;
+	}
+
+	for (i = 1; i < argc; i++) {
+		const char *arg = argv[i];
+
+		if (arg[0] != '-')
+			continue;
+
+		if (!strcmp(arg, "--help'"))
+			return fputs(usage, stdout), 0;
+
+		return fputs(usage, stderr), EXIT_FAILURE;
+	}
+
+	for (i = 1; i < argc; i++) {
+		const char *arg = argv[i];
+		size_t size = 0;
+
+		char name[256];
+		const char *value = strchr(arg, '=');
+		const size_t flags = 1;
+
+		if (arg[0] == '\0')
+			continue;
+
+		while (size + 1 < sizeof(name)) {
+			char c = arg[size];
+			int valid = 0;
+
+			if (c == '\0' || c == '=')
+				break;
+
+			if ((c >= '0' && c <= '9' && size > 0) || c == '_')
+				valid = 1;
+
+			if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+				valid = 1;
+
+			if (!valid) {
+				size = 0;
+				break;
+			}
+
+			name[size++] = c;
+			name[size] = '\0';
+		}
+
+		if (size == 0) {
+			fprintf(stderr, "export: \"%s\" not valid\n", arg);
+			return EXIT_FAILURE;
+		}
+
+		if (value != NULL)
+			value += 1;
+
+		if (!dsh_var_write(&name[0], value, flags)) {
+			fprintf(stderr, "export: \"%s\" not written\n", arg);
+			return EXIT_FAILURE;
+		}
+	}
 
 	return 0;
 }
@@ -158,6 +234,33 @@ static int cmd_unlink(int argc, char *argv[])
 	return 0;
 }
 
+static int cmd_unset(int argc, char *argv[])
+{
+	const char *usage = "Usage: unset NAME...\n";
+	int i;
+
+	for (i = 1; i < argc; i++) {
+		const char *arg = argv[i];
+
+		if (arg[0] == '-') {
+			if (!strcmp(arg, "--help'"))
+				return fputs(usage, stdout), 0;
+			else
+				return fputs(usage, stderr), EXIT_FAILURE;
+		}
+	}
+
+	for (i = 1; i < argc; i++) {
+		const char *name = argv[i];
+		const char *value = NULL;
+		const size_t flags = 2;
+
+		(void)dsh_var_write(name, value, flags);
+	}
+
+	return 0;
+}
+
 static int cmd_default(int argc, char *argv[])
 {
 	(void)argc;
@@ -174,8 +277,10 @@ struct dsh_builtin dsh_builtin_array[] = {
 	{ cmd_clear, "reset" },
 	{ cmd_echo, "echo" },
 	{ cmd_exit, "exit" },
+	{ cmd_export, "export" },
 	{ cmd_kill, "kill" },
 	{ cmd_rename, "rename" },
 	{ cmd_unlink, "unlink" },
+	{ cmd_unset, "unset" },
 	{ cmd_default, NULL }
 };

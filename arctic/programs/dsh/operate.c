@@ -147,6 +147,9 @@ int operate(struct options *opt)
 		return EXIT_FAILURE;
 	}
 
+	if (dsh_var_init())
+		return fputs("dsh: out of memory\n", stderr), EXIT_FAILURE;
+
 	dsh_prompt_init(&prompt_state);
 	opt->prompt_state = &prompt_state;
 	opt->prompt_state->tab_completion = dsh_tab_completion;
@@ -189,11 +192,40 @@ int operate(struct options *opt)
 		if (dsh_interactive)
 			fprintf(stdout, "\n");
 
+		{
+			char b[8];
+
+			r = snprintf(&b[0], sizeof(b),
+				"%d", prompt_state.ws_col);
+
+			if (r <= 0) {
+				dsh_exit_code = EXIT_FAILURE;
+				break;
+			}
+
+			dsh_var_write("COLUMNS", &b[0], 0);
+		}
+
+		{
+			char b[8];
+
+			r = snprintf(&b[0], sizeof(b),
+				"%d", prompt_state.ws_row);
+
+			if (r <= 0) {
+				dsh_exit_code = EXIT_FAILURE;
+				break;
+			}
+
+			dsh_var_write("LINES", &b[0], 0);
+		}
+
 		dsh_parse_input(buffer);
 		free(buffer);
 	}
 
 	dsh_prompt_free(&prompt_state);
+	dsh_var_free();
 
 	if (opt->input_stream != NULL)
 		fclose(opt->input_stream);

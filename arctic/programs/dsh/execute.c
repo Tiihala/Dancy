@@ -43,7 +43,7 @@ static void execute_spawn(struct dsh_execute_state *state, const char *path)
 	int r;
 
 	r = posix_spawn(&state->pid, path,
-		&state->actions, &state->attr, state->argv, environ);
+		&state->actions, &state->attr, state->argv, dsh_var_environ);
 
 	if (r != 0) {
 		const char *e;
