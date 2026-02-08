@@ -107,6 +107,7 @@ void dsh_var_free(void)
 				break;
 			free(dsh_var_array[i].data[0]);
 			free(dsh_var_array[i].data[1]);
+			free(dsh_var_array[i].data[2]);
 		}
 	}
 
