@@ -22,6 +22,7 @@
 struct command {
 	char **argv;
 	char **_argv;
+	char *var;
 	size_t state[2];
 	size_t gl_pathc;
 	char op[TOKEN_DATA_SIZE];
@@ -33,6 +34,7 @@ static void command_init(struct command *command)
 	memset(command, 0, sizeof(*command));
 	command->argv = NULL;
 	command->_argv = NULL;
+	command->var = NULL;
 }
 
 static void command_release(struct command *command)
@@ -48,6 +50,8 @@ static void command_release(struct command *command)
 	}
 
 	free(command->_argv);
+	free(command->var);
+
 	command_init(command);
 }
 
@@ -470,6 +474,30 @@ static int parse_pipeline_part(struct command *commands, int count,
 			continue;
 		}
 
+		if (command->var != NULL) {
+			char *name = command->var;
+			char *value = strchr(command->var, '=');
+
+			if (value == NULL) {
+				fputs("dsh: shell variable error\n", stderr);
+				e = -1;
+				break;
+			}
+
+			*value = '\0';
+
+			if (!dsh_var_write(name, value + 1, 4)) {
+				fprintf(stderr,
+					"dsh: %s=%s: %s\n", name, value + 1,
+					"shell variable error");
+				e = -1;
+				break;
+			}
+
+			*value = '=';
+			continue;
+		}
+
 		fprintf(stderr, "dsh: operator \033[95m%s"
 			"\033[0m is not supported\n", op);
 		e = -1;
@@ -738,6 +766,8 @@ static int parse_list(struct command *commands, int count)
 			continue;
 		}
 
+		dsh_var_write(NULL, NULL, 0);
+
 		if ((int)(p2 - p1) == 0) {
 			if (!strcmp(prev_op, "&") || !strcmp(prev_op, ";")) {
 				if (!strcmp(op, "\\n"))
@@ -801,23 +831,6 @@ static void parse_input(struct token *token)
 			strcpy(&command->op[0], "\\n");
 			commands_count += 1;
 			break;
-		}
-
-		if (token->type == token_type_var) {
-			char *name = token->data;
-			char *value = strchr(token->data, '=');
-			const int flags = 0;
-
-			if (state == 0 && value != NULL) {
-				*value++ = '\0';
-				if (!dsh_var_write(name, value, flags)) {
-					parsing_error("shell variable");
-					state = -1;
-					break;
-				}
-				continue;
-			}
-			token->type = token_type_arg;
 		}
 
 		if (token->type == token_type_arg) {
@@ -886,6 +899,24 @@ static void parse_input(struct token *token)
 			commands_count += 1;
 			continue;
 		}
+
+		if (token->type == token_type_var) {
+			if (state != 1) {
+				command_init(command);
+				if (!(command->var = strdup(token->data))) {
+					parsing_error("out of memory");
+					state = -1;
+					break;
+				}
+				commands_count += 1;
+				continue;
+			}
+			if (!append_arg(command, token->data)) {
+				parsing_error("out of memory"), state = -1;
+				break;
+			}
+			continue;
+		}
 	}
 
 	if (!(state < 0) && commands_count > 1)
@@ -893,6 +924,8 @@ static void parse_input(struct token *token)
 
 	while (commands_count > 0)
 		command_release(&commands[--commands_count]);
+
+	dsh_var_write(NULL, NULL, 0);
 }
 
 void dsh_parse_input(const char *input)
