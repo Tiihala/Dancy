@@ -41,16 +41,16 @@ static void command_release(struct command *command)
 {
 	size_t i;
 
-	if (!command->_argv)
-		return;
-
-	for (i = 0; command->_argv[i]; i++) {
-		free(command->_argv[i]);
-		command->_argv[i] = NULL;
+	if (command->_argv) {
+		for (i = 0; command->_argv[i]; i++) {
+			free(command->_argv[i]);
+			command->_argv[i] = NULL;
+		}
+		free(command->_argv);
 	}
 
-	free(command->_argv);
-	free(command->var);
+	if (command->var)
+		free(command->var);
 
 	command_init(command);
 }
