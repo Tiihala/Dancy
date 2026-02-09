@@ -20,7 +20,7 @@
 #include "main.h"
 
 struct dsh_var {
-	char *data[3];
+	char *data[2];
 	size_t flags;
 };
 
@@ -45,9 +45,6 @@ char **dsh_environ(void)
 
 			if (dsh_var_array[i].data[1] != NULL)
 				data_i = 1;
-
-			if (dsh_var_array[i].data[2] != NULL)
-				data_i = 2;
 
 			dsh_var_environ[n++] = dsh_var_array[i].data[data_i];
 			continue;
@@ -82,7 +79,6 @@ int dsh_var_init(void)
 	for (i = 0; i < dsh_var_end; i++) {
 		dsh_var_array[i].data[0] = NULL;
 		dsh_var_array[i].data[1] = NULL;
-		dsh_var_array[i].data[2] = NULL;
 		dsh_var_array[i].flags = 0;
 	}
 
@@ -107,7 +103,6 @@ void dsh_var_free(void)
 				break;
 			free(dsh_var_array[i].data[0]);
 			free(dsh_var_array[i].data[1]);
-			free(dsh_var_array[i].data[2]);
 		}
 	}
 
@@ -135,9 +130,6 @@ const char *dsh_var_read(const char *name)
 
 		if (dsh_var_array[i].data[1] != NULL)
 			e = dsh_var_array[i].data[1];
-
-		if (dsh_var_array[i].data[2] != NULL)
-			e = dsh_var_array[i].data[2];
 
 		if (strncmp(e, name, length))
 			continue;
@@ -167,11 +159,11 @@ void *dsh_var_write(const char *name, const char *value, size_t flags)
 			f = v->flags;
 			v->flags &= (~((size_t)0x0C));
 
-			if ((f & 4) == 0 || (f & 8) == 0)
-				continue;
-
-			if (v->data[2] != NULL) {
-				free(v->data[2]), v->data[2] = NULL;
+			if ((f & 4) == 0 || (f & 8) == 0) {
+				if (v->data[1] == NULL)
+					continue;
+				free(v->data[0]);
+				v->data[0] = v->data[1], v->data[1] = NULL;
 				continue;
 			}
 
@@ -240,16 +232,9 @@ void *dsh_var_write(const char *name, const char *value, size_t flags)
 		v->flags &= (~((size_t)3));
 		v->flags |= (flags & 3);
 
-		if ((v->flags & 1) != 0 && v->data[1] != NULL) {
-			free(v->data[0]);
-			v->data[0] = v->data[1];
-			v->data[1] = NULL;
-		}
-
 		if ((v->flags & 2) != 0) {
 			free(v->data[0]), v->data[0] = NULL;
 			free(v->data[1]), v->data[1] = NULL;
-			free(v->data[2]), v->data[2] = NULL;
 			v->flags = 0;
 
 			i = 0, size = sizeof(dsh_var_array[0]);
@@ -266,32 +251,16 @@ void *dsh_var_write(const char *name, const char *value, size_t flags)
 	strcat(data, value);
 
 	v->flags |= (flags & 1);
-
-	if ((flags & 1) != 0) {
-		free(v->data[0]), v->data[0] = data;
-		free(v->data[1]), v->data[1] = NULL;
-		free(v->data[2]), v->data[2] = NULL;
-		return v;
-	}
-
-	if ((v->flags & 4) != 0 && (flags & 4) != 0) {
-		if (v->data[2] != NULL)
-			return (free(v->data[2]), v->data[2] = data), v;
-		if (v->data[1] != NULL)
-			return (free(v->data[1]), v->data[1] = data), v;
-
-		free(v->data[0]), v->data[0] = data;
-		return v;
-	}
-
 	v->flags |= (flags & 4);
 
-	if (v->data[0] == NULL)
-		return v->data[0] = data, v;
+	free(v->data[1]), v->data[1] = NULL;
 
-	if (v->data[1] == NULL)
-		return v->data[1] = data, v;
+	if ((flags & 4) == 0) {
+		free(v->data[0]), v->data[0] = data;
+		return v;
+	}
 
-	free(v->data[2]), v->data[2] = data;
+	v->data[(v->data[0] == NULL) ? 0 : 1] = data;
+
 	return v;
 }
