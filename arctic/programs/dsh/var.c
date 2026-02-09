@@ -251,16 +251,20 @@ void *dsh_var_write(const char *name, const char *value, size_t flags)
 	strcat(data, value);
 
 	v->flags |= (flags & 1);
-	v->flags |= (flags & 4);
-
-	free(v->data[1]), v->data[1] = NULL;
 
 	if ((flags & 4) == 0) {
 		free(v->data[0]), v->data[0] = data;
+		free(v->data[1]), v->data[1] = NULL;
+		v->flags &= (~((size_t)4));
 		return v;
 	}
 
-	v->data[(v->data[0] == NULL) ? 0 : 1] = data;
+	if ((v->flags & 4) != 0 && v->data[1] == NULL) {
+		free(v->data[0]), v->data[0] = data;
+	} else {
+		free(v->data[1]), v->data[1] = NULL;
+		v->data[(v->data[0] == NULL) ? 0 : 1] = data;
+	}
 
-	return v;
+	return (v->flags |= 4), v;
 }
