@@ -59,6 +59,108 @@ static int valid_variable_char(char c, int digit)
 	return 0;
 }
 
+static const char *expand_substitute(char *parameter, char *word)
+{
+	const char *v;
+
+	if (parameter[0] == '\0')
+		return NULL;
+
+	v = dsh_var_read(parameter);
+
+	if (word[0] == '\0') {
+		if (v != NULL)
+			return v;
+		return &word[0];
+	}
+
+	{
+		const char c = '-';
+
+		if (word[0] == ':' && word[1] == c) {
+			if (v != NULL && v[0] != '\0')
+				return v;
+			return &word[2];
+		}
+
+		if (word[0] == c) {
+			if (v != NULL)
+				return v;
+			return &word[1];
+		}
+	}
+
+	{
+		const char c = '=';
+
+		if (word[0] == ':' && word[1] == c) {
+			if (v != NULL && v[0] != '\0')
+				return v;
+			if (!dsh_var_write(parameter, &word[2], 0))
+				return token_error("assign word"), NULL;
+			return dsh_var_read(parameter);
+		}
+
+		if (word[0] == c) {
+			if (v != NULL)
+				return v;
+			if (!dsh_var_write(parameter, &word[1], 0))
+				return token_error("assign word"), NULL;
+			return dsh_var_read(parameter);
+		}
+	}
+
+	{
+		const char c = '?';
+
+		if (word[0] == ':' && word[1] == c) {
+			if (v != NULL && v[0] != '\0')
+				return v;
+
+			fprintf(stderr, "dsh: %s: %s\n", parameter,
+				(word[2] != '\0') ? &word[2]
+				: "parameter null or not set");
+
+			if (!dsh_interactive)
+				dsh_operate_state = 0;
+
+			return dsh_exit_code = 127, NULL;
+		}
+
+		if (word[0] == c) {
+			if (v != NULL)
+				return v;
+
+			fprintf(stderr, "dsh: %s: %s\n", parameter,
+				(word[1] != '\0') ? &word[1]
+				: "parameter not set");
+
+			if (!dsh_interactive)
+				dsh_operate_state = 0;
+
+			return dsh_exit_code = 127, NULL;
+		}
+	}
+
+	{
+		const char c = '+';
+
+		if (word[0] == ':' && word[1] == c) {
+			if (v != NULL && v[0] != '\0')
+				return &word[2];
+			return "";
+		}
+
+		if (word[0] == c) {
+			if (v != NULL)
+				return &word[1];
+			return "";
+		}
+	}
+
+	return NULL;
+}
+
 static int expand(const char *input, size_t *new_i, char **b, char *e, char c)
 {
 	char next_c = input[*new_i];
@@ -66,6 +168,11 @@ static int expand(const char *input, size_t *new_i, char **b, char *e, char c)
 
 	int buffer_i = 0;
 	char buffer[256];
+
+	int word_i = -1;
+	char word[256];
+
+	buffer[0] = '\0', word[0] = '\0';
 
 	do {
 		if (c == '$' && next_c == '?') {
@@ -129,7 +236,8 @@ static int expand(const char *input, size_t *new_i, char **b, char *e, char c)
 					continue;
 
 				if (next_c == '\0') {
-					add_i = 0, buffer_i = 0;
+					add_i = 0, buffer_i = 0, word_i = 0;
+					buffer[0] = word[0] = (char)(n = 0);
 					break;
 				}
 
@@ -139,23 +247,33 @@ static int expand(const char *input, size_t *new_i, char **b, char *e, char c)
 				}
 
 				if (!valid_variable_char(next_c, (add_i > 1)))
-					return token_error("unknown ${...}");
+					word_i = ((word_i < 0) ? 0 : word_i);
 
-				buffer[buffer_i++] = next_c;
-				buffer[buffer_i] = '\0';
+				if (word_i < 0) {
+					buffer[buffer_i++] = next_c;
+					buffer[buffer_i] = '\0';
+				} else {
+					word[word_i++] = next_c;
+					word[word_i] = '\0';
+				}
 
 				if (buffer_i + 1 >= (int)sizeof(buffer))
 					return token_error("variable name");
+
+				if (word_i + 1 >= (int)sizeof(word))
+					return token_error("substitute word");
 			}
+
+			p = expand_substitute(&buffer[0], &word[0]);
+
+			if (p == NULL)
+				buffer_i = 0;
 
 			if (buffer_i == 0) {
 				if (n > 0)
 					strcpy(&buffer[0], "0"), buffer_i = 1;
 				break;
 			}
-
-			if ((p = dsh_var_read(&buffer[0])) == NULL)
-				p = "";
 
 			buffer_i = (int)strlen(p);
 
