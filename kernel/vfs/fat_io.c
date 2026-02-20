@@ -339,9 +339,6 @@ static int n_open(struct vfs_node *node, const char *name,
 
 	buf[0] = '\0';
 
-	if (check_name(name))
-		return DE_ARGUMENT;
-
 	{
 		struct vfs_node *owner = node;
 		int depth = 0;
@@ -360,7 +357,11 @@ static int n_open(struct vfs_node *node, const char *name,
 				p = &owner->name[0];
 			}
 
-			while ((buf[size] = (char)tolower((int)*p++)) != 0) {
+			while ((buf[size] = *p++) != 0) {
+				if ((p - 1) == name && buf[size] == '.') {
+					if (*p != '\0' && *p != '.')
+						buf[size] = 0x60;
+				}
 				if (size > (int)(sizeof(buf) - 3))
 					return DE_PATH;
 				size += 1;
@@ -374,6 +375,9 @@ static int n_open(struct vfs_node *node, const char *name,
 
 	if (buf[0] == '\0')
 		return DE_PATH;
+
+	if (check_name(&buf[0]) || name[0] == 0x60)
+		return DE_ARGUMENT;
 
 	if ((r = enter_fat(node)) != 0)
 		return r;
@@ -673,6 +677,9 @@ static int n_readdir(struct vfs_node *node,
 			if (read_size != 32 || fat_record[0] == 0)
 				return leave_fat(node), 0;
 
+			if (fat_record[0] == 0x60)
+				fat_record[0] = 0x2E;
+
 			fat_attributes = (int)fat_record[11];
 
 			if (fat_record[0] == 0xE5)
@@ -820,9 +827,6 @@ static int n_remove(struct vfs_node *node, const char *name, int dir)
 
 	buf[0] = '\0';
 
-	if (check_name(name))
-		return DE_ARGUMENT;
-
 	{
 		struct vfs_node *owner = node;
 		int depth = 0;
@@ -841,7 +845,11 @@ static int n_remove(struct vfs_node *node, const char *name, int dir)
 				p = &owner->name[0];
 			}
 
-			while ((buf[size] = (char)tolower((int)*p++)) != 0) {
+			while ((buf[size] = *p++) != 0) {
+				if ((p - 1) == name && buf[size] == '.') {
+					if (*p != '\0' && *p != '.')
+						buf[size] = 0x60;
+				}
 				if (size > (int)(sizeof(buf) - 3))
 					return DE_PATH;
 				size += 1;
@@ -855,6 +863,9 @@ static int n_remove(struct vfs_node *node, const char *name, int dir)
 
 	if (buf[0] == '\0')
 		return 0;
+
+	if (check_name(&buf[0]) || name[0] == 0x60)
+		return DE_ARGUMENT;
 
 	if ((r = enter_fat(node)) != 0)
 		return r;
