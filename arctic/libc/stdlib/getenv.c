@@ -21,6 +21,8 @@
 #include <string.h>
 #include <unistd.h>
 
+extern char **environ;
+
 char *getenv(const char *name)
 {
 	size_t length = 0;

@@ -25,6 +25,8 @@ static int fd_keyboard;
 
 static const struct __dancy_keymap *keymap;
 
+extern char **environ;
+
 static void handle_key(int key)
 {
 	const char *command = NULL;
