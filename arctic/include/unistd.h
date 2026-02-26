@@ -24,6 +24,8 @@
 #include <__dancy/seek.h>
 #include <__dancy/ssize.h>
 
+#include <stdint.h>
+
 __Dancy_Header_Begin
 
 #ifndef __DANCY_TYPEDEF_OFF_T
@@ -89,9 +91,9 @@ void _exit(int status);
 char *getcwd(char *buffer, size_t size);
 int isatty(int fd);
 
-extern char **environ;
-
+int execv(const char *path, char *const argv[]);
 int execve(const char *path, char *const argv[], char *const envp[]);
+int execvp(const char *path, char *const argv[]);
 
 __Dancy_Header_End
 
