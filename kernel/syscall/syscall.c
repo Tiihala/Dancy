@@ -788,7 +788,7 @@ static long long dancy_syscall_mmap(va_list va)
 	if (flags != 0)
 		return -ENOTSUP;
 
-	if ((vaddr = (addr_t)address) < 0x80000000)
+	if ((vaddr = (addr_t)address) < 0x10000000)
 		return -ENOTSUP;
 
 	if ((addr_t)pg_map_user(vaddr, size) != vaddr)
@@ -802,7 +802,7 @@ static long long dancy_syscall_munmap(va_list va)
 	void *address = va_arg(va, void *);
 	size_t size = va_arg(va, size_t);
 
-	if ((addr_t)address < 0x80000000 || size == 0)
+	if ((addr_t)address < 0x10000000 || size == 0)
 		return -EINVAL;
 
 	if (pg_unmap_user((addr_t)address, size))
