@@ -14,6 +14,7 @@ ARCTIC_BIN64_FILES= \
  ./arctic/bin64/hd \
  ./arctic/bin64/hexdump \
  ./arctic/bin64/init \
+ ./arctic/bin64/ld-dancy \
  ./arctic/bin64/ls \
  ./arctic/bin64/lsusb \
  ./arctic/bin64/mkdir \
@@ -45,6 +46,7 @@ ARCTIC_BIN64_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin64/hd ::hd
 	$(DY_MCOPY) -i $@ ./arctic/bin64/hexdump ::hexdump
 	$(DY_MCOPY) -i $@ ./arctic/bin64/init ::init
+	$(DY_MCOPY) -i $@ ./arctic/bin64/ld-dancy ::ld-dancy
 	$(DY_MCOPY) -i $@ ./arctic/bin64/ls ::ls
 	$(DY_MCOPY) -i $@ ./arctic/bin64/lsusb ::lsusb
 	$(DY_MCOPY) -i $@ ./arctic/bin64/mkdir ::mkdir
