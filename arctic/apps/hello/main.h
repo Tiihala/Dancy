@@ -27,10 +27,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 struct options {
 	char **operands;
 	const char *error;
+	int sleep;
 	int upcase;
 	int verbose;
 };

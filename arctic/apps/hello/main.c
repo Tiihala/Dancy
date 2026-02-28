@@ -23,6 +23,7 @@ static const char *help_str =
 	"Usage: " MAIN_CMDNAME
 	"\n"
 	"\nOptions:\n"
+	"  --sleep       sleep 10 seconds before printing the message\n"
 	"  --upcase, -u  convert to uppercase letters\n"
 	"\nGeneral:\n"
 	"  --help, -h    help text\n"
@@ -81,6 +82,10 @@ int main(int argc, char *argv[])
 				version();
 			if (!strcmp(arg + 2, "verbose")) {
 				opts.verbose = 1;
+				continue;
+			}
+			if (!strcmp(arg + 2, "sleep")) {
+				opts.sleep = 1;
 				continue;
 			}
 			if (!strcmp(arg + 2, "upcase")) {

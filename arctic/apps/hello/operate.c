@@ -19,9 +19,40 @@
 
 #include "main.h"
 
+static int call_sleep(time_t tv_sec, long tv_nsec)
+{
+	struct timespec request = { tv_sec, tv_nsec };
+
+	for (;;) {
+		struct timespec remain = { 0, 0 };
+		int r;
+
+		r = clock_nanosleep(CLOCK_MONOTONIC, 0, &request, &remain);
+
+		if (r == 0)
+			break;
+
+		if (r != EINTR) {
+			fprintf(stderr, MAIN_CMDNAME
+				": clock_nanosleep: %s\n", strerror(r));
+			return EXIT_FAILURE;
+		}
+
+		if (remain.tv_sec == 0 && remain.tv_nsec == 0)
+			break;
+
+		memcpy(&request, &remain, sizeof(struct timespec));
+	}
+
+	return 0;
+}
+
 int operate(struct options *opt)
 {
 	int i;
+
+	if (opt->sleep)
+		call_sleep(10, 0);
 
 	if (opt->upcase)
 		fputs("HELLO, WORLD\n", stdout);
