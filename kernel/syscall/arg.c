@@ -191,7 +191,7 @@ int arg_copy(void *arg_state, addr_t *user_sp)
 	return 0;
 }
 
-int arg_set_cmdline(struct vfs_node *node, addr_t user_sp)
+int arg_set_cmdline(struct vfs_node *node, addr_t user_sp, addr_t user_ld)
 {
 	struct task *current = task_current();
 	uint8_t *buffer = &current->cmd._line[0];
@@ -205,6 +205,9 @@ int arg_set_cmdline(struct vfs_node *node, addr_t user_sp)
 
 	char path[256];
 	int i, r;
+
+	if (user_ld != 0)
+		argc -= 1, argv += 1;
 
 	if ((r = vfs_realpath(node, &path[0], sizeof(path))) != 0)
 		return r;

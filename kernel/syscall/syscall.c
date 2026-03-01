@@ -68,7 +68,7 @@ static long long dancy_syscall_execve(va_list va)
 	const void *argv = va_arg(va, const void *);
 	const void *envp = va_arg(va, const void *);
 
-	addr_t user_ip, user_sp;
+	addr_t user_ip, user_sp, user_ld = 0;
 	struct vfs_node *node;
 	void *arg_state;
 	int i, r;
@@ -111,6 +111,7 @@ static long long dancy_syscall_execve(va_list va)
 			r = coff_load_executable(ld_node, &user_ip);
 			ld_node->n_release(&ld_node);
 			arg_enable_path(arg_state);
+			user_ld = 1;
 		}
 	}
 
@@ -132,7 +133,7 @@ static long long dancy_syscall_execve(va_list va)
 		return -ENOMEM;
 	}
 
-	if (arg_set_cmdline(node, user_sp)) {
+	if (arg_set_cmdline(node, user_sp, user_ld)) {
 		pg_alt_delete();
 		arg_delete(arg_state);
 		node->n_release(&node);

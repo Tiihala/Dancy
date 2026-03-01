@@ -83,7 +83,7 @@ static int func_setpgroup(struct task *task, void *arg)
 static int new_task(void *arg)
 {
 	struct task_arg *ta = arg;
-	addr_t user_ip, user_sp;
+	addr_t user_ip, user_sp, user_ld = 0;
 	int i, r = 0;
 
 	if (ta->attrp) {
@@ -211,6 +211,7 @@ static int new_task(void *arg)
 			r = coff_load_executable(ld_node, &user_ip);
 			ld_node->n_release(&ld_node);
 			arg_enable_path(ta->arg_state);
+			user_ld = 1;
 		}
 	}
 
@@ -226,7 +227,7 @@ static int new_task(void *arg)
 		return 0;
 	}
 
-	if ((r = arg_set_cmdline(ta->node, user_sp)) != 0) {
+	if ((r = arg_set_cmdline(ta->node, user_sp, user_ld)) != 0) {
 		ta->retval = r;
 		spin_unlock(&ta->lock);
 		return 0;
