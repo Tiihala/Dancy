@@ -203,7 +203,7 @@ static int new_task(void *arg)
 
 	r = coff_load_executable(ta->node, &user_ip);
 
-	if (r == DE_COFF_SIGNATURE) {
+	if (r == DE_COFF_SIGNATURE || r == DE_COFF_SIZE) {
 		const char *ld_path = "/bin/ld-dancy";
 		struct vfs_node *ld_node;
 

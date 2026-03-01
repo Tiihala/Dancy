@@ -103,7 +103,7 @@ static long long dancy_syscall_execve(va_list va)
 
 	r = coff_load_executable(node, &user_ip);
 
-	if (r == DE_COFF_SIGNATURE) {
+	if (r == DE_COFF_SIGNATURE || r == DE_COFF_SIZE) {
 		const char *ld_path = "/bin/ld-dancy";
 		struct vfs_node *ld_node;
 
