@@ -86,7 +86,7 @@ static long long dancy_syscall_execve(va_list va)
 		return -EINVAL;
 	}
 
-	if ((r = arg_create(&arg_state, argv, envp)) != 0) {
+	if ((r = arg_create(&arg_state, path, argv, envp)) != 0) {
 		node->n_release(&node);
 
 		if (r == DE_MEMORY)
@@ -183,7 +183,7 @@ static long long dancy_syscall_spawn(va_list va)
 		return -EINVAL;
 	}
 
-	if ((r = arg_create(&arg_state, argv, envp)) != 0) {
+	if ((r = arg_create(&arg_state, path, argv, envp)) != 0) {
 		node->n_release(&node);
 
 		if (r == DE_MEMORY)

@@ -46,7 +46,8 @@ static void *alloc_arg_state(size_t *size)
 	return arg_state;
 }
 
-int arg_create(void **arg_state, const void *argv, const void *envp)
+int arg_create(void **arg_state,
+	const char *path, const void *argv, const void *envp)
 {
 	size_t size = sizeof(struct arg_header);
 	int argv_count = 0, envp_count = 0;
@@ -66,8 +67,10 @@ int arg_create(void **arg_state, const void *argv, const void *envp)
 	if (argv_count > 0xFFFF || envp_count > 0xFFFF)
 		return DE_OVERFLOW;
 
-	size += ((size_t)(argv_count + 1) * sizeof(void *));
+	size += ((size_t)(argv_count + 2) * sizeof(void *));
 	size += ((size_t)(envp_count + 1) * sizeof(void *));
+
+	size += (strlen(path) + 1);
 
 	for (i = 0; i < argv_count; i++) {
 		char *s = *(((char **)((addr_t)argv)) + i);
@@ -118,14 +121,23 @@ int arg_create(void **arg_state, const void *argv, const void *envp)
 
 	p = *arg_state;
 	p += (sizeof(struct arg_header));
-	p += ((size_t)(argv_count + 1) * sizeof(void *));
+	p += ((size_t)(argv_count + 2) * sizeof(void *));
 	envp_pointer = (addr_t *)((addr_t)p);
 	ah->envp = (cpu_native_t)(base + ((addr_t)p - (addr_t)(*arg_state)));
 
 	p = *arg_state;
 	p += (sizeof(struct arg_header));
-	p += ((size_t)(argv_count + 1) * sizeof(void *));
+	p += ((size_t)(argv_count + 2) * sizeof(void *));
 	p += ((size_t)(envp_count + 1) * sizeof(void *));
+
+	{
+		const char *s = path;
+
+		*argv_pointer++ = base + ((addr_t)p - (addr_t)(*arg_state));
+
+		while ((*p++ = *s++) != '\0')
+			/* void */;
+	}
 
 	for (i = 0; i < argv_count; i++) {
 		char *s = *(((char **)((addr_t)argv)) + i);
@@ -147,6 +159,8 @@ int arg_create(void **arg_state, const void *argv, const void *envp)
 
 	if (((addr_t)p - (addr_t)(*arg_state)) != size)
 		kernel->panic("arg_create: unexpected behavior");
+
+	ah->argv += ((cpu_native_t)sizeof(cpu_native_t));
 
 	return 0;
 }
