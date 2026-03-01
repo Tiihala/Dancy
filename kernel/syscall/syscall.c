@@ -76,14 +76,21 @@ static long long dancy_syscall_execve(va_list va)
 	if (pg_check_user_string(path, &r))
 		return -EFAULT;
 
-	if ((r = vfs_open(path, &node, vfs_type_regular, 0)) != 0) {
+	if ((r = vfs_open(path, &node, 0, 0)) != 0) {
 		if (r == DE_NAME)
 			return -ENOENT;
 		if (r == DE_PATH)
 			return -ENOENT;
-		if (r == DE_TYPE)
-			return -ENOEXEC;
 		return -EINVAL;
+	}
+
+	if (node->type != vfs_type_regular) {
+		if (node->type == vfs_type_directory) {
+			node->n_release(&node);
+			return -EISDIR;
+		}
+		node->n_release(&node);
+		return -ENOEXEC;
 	}
 
 	if ((r = arg_create(&arg_state, path, argv, envp)) != 0) {
@@ -175,14 +182,21 @@ static long long dancy_syscall_spawn(va_list va)
 	if (pg_check_user_string(path, &r))
 		return -EFAULT;
 
-	if ((r = vfs_open(path, &node, vfs_type_regular, 0)) != 0) {
+	if ((r = vfs_open(path, &node, 0, 0)) != 0) {
 		if (r == DE_NAME)
 			return -ENOENT;
 		if (r == DE_PATH)
 			return -ENOENT;
-		if (r == DE_TYPE)
-			return -ENOEXEC;
 		return -EINVAL;
+	}
+
+	if (node->type != vfs_type_regular) {
+		if (node->type == vfs_type_directory) {
+			node->n_release(&node);
+			return -EISDIR;
+		}
+		node->n_release(&node);
+		return -ENOEXEC;
 	}
 
 	if ((r = arg_create(&arg_state, path, argv, envp)) != 0) {
