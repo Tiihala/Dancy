@@ -210,6 +210,7 @@ static int new_task(void *arg)
 		if (vfs_open(ld_path, &ld_node, vfs_type_regular, 0) == 0) {
 			r = coff_load_executable(ld_node, &user_ip);
 			ld_node->n_release(&ld_node);
+			arg_enable_path(ta->arg_state);
 		}
 	}
 

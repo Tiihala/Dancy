@@ -266,6 +266,14 @@ int arg_set_cmdline(struct vfs_node *node, addr_t user_sp)
 	return 0;
 }
 
+void arg_enable_path(void *arg_state)
+{
+	struct arg_header *ah = (struct arg_header *)arg_state;
+
+	ah->argc += 1;
+	ah->argv -= ((cpu_native_t)sizeof(cpu_native_t));
+}
+
 void arg_delete(void *arg_state)
 {
 	free(arg_state);
