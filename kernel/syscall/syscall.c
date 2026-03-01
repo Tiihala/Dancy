@@ -101,7 +101,19 @@ static long long dancy_syscall_execve(va_list va)
 		return -ENOMEM;
 	}
 
-	if ((r = coff_load_executable(node, &user_ip)) != 0) {
+	r = coff_load_executable(node, &user_ip);
+
+	if (r == DE_COFF_SIGNATURE) {
+		const char *ld_path = "/bin/ld-dancy";
+		struct vfs_node *ld_node;
+
+		if (vfs_open(ld_path, &ld_node, vfs_type_regular, 0) == 0) {
+			r = coff_load_executable(ld_node, &user_ip);
+			ld_node->n_release(&ld_node);
+		}
+	}
+
+	if (r != 0) {
 		pg_alt_delete();
 		arg_delete(arg_state);
 		node->n_release(&node);

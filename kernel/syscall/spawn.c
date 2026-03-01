@@ -201,7 +201,19 @@ static int new_task(void *arg)
 		return 0;
 	}
 
-	if ((r = coff_load_executable(ta->node, &user_ip)) != 0) {
+	r = coff_load_executable(ta->node, &user_ip);
+
+	if (r == DE_COFF_SIGNATURE) {
+		const char *ld_path = "/bin/ld-dancy";
+		struct vfs_node *ld_node;
+
+		if (vfs_open(ld_path, &ld_node, vfs_type_regular, 0) == 0) {
+			r = coff_load_executable(ld_node, &user_ip);
+			ld_node->n_release(&ld_node);
+		}
+	}
+
+	if (r != 0) {
 		ta->retval = r;
 		spin_unlock(&ta->lock);
 		return 0;
