@@ -19,24 +19,6 @@
 
 #include "main.h"
 
-static int valid_command(const char *arg)
-{
-	if (arg[0] == '\0' || arg[0] == '/')
-		return 0;
-
-	if (arg[0] == '.') {
-		size_t i = 1;
-
-		while (arg[i] == '.')
-			i += 1;
-
-		if (arg[i] == '/')
-			return 0;
-	}
-
-	return 1;
-}
-
 static void execute_spawn(struct dsh_execute_state *state, const char *path)
 {
 	int r;
@@ -47,7 +29,7 @@ static void execute_spawn(struct dsh_execute_state *state, const char *path)
 	if (r != 0) {
 		const char *e;
 
-		if (r == ENOENT && valid_command(state->argv[0]))
+		if (r == ENOENT && !strchr(state->argv[0], '/'))
 			e = "command not found...";
 		else
 			e = strerror(r);
@@ -121,7 +103,7 @@ void dsh_execute(struct dsh_execute_state *state)
 		}
 	}
 
-	if (valid_command(path)) {
+	if (!strchr(path, '/')) {
 		if (strlen(path) > 255) {
 			fputs("dsh: command name overflow...\n", stderr);
 			if (!dsh_interactive)
