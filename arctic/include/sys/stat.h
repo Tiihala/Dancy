@@ -26,6 +26,10 @@
 
 __Dancy_Header_Begin
 
+#define st_atime  st_atim.tv_sec
+#define st_ctime  st_ctim.tv_sec
+#define st_mtime  st_mtim.tv_sec
+
 #define S_IFMT    __DANCY_S_IFMT
 #define S_IFIFO   __DANCY_S_IFIFO
 #define S_IFCHR   __DANCY_S_IFCHR
