@@ -23,6 +23,8 @@ section .text
 
         extern __dancy_libc_start
         global __start
+        global __dancy_crt_init
+        global __dancy_crt_fini
 
 align 16
 
@@ -33,6 +35,11 @@ __start:
         mov eax, environ                ; rax = address of environ (32-bit)
         mov [rax], r8                   ; set the environ variable
         jmp near __dancy_libc_start     ; jump to the libc start function
+
+__dancy_crt_init:
+        ret                             ; do nothing
+__dancy_crt_fini:
+        ret                             ; do nothing
 
 section .data
 

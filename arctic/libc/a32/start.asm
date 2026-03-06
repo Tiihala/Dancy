@@ -23,6 +23,8 @@ section .text
 
         extern ___dancy_libc_start
         global ___start
+        global ___dancy_crt_init
+        global ___dancy_crt_fini
 
 align 16
 
@@ -34,6 +36,11 @@ ___start:
         mov edx, [esp+12]               ; edx = envp
         mov [eax], edx                  ; set the _environ variable
         jmp near ___dancy_libc_start    ; jump to the libc start function
+
+___dancy_crt_init:
+        ret                             ; do nothing
+___dancy_crt_fini:
+        ret                             ; do nothing
 
 section .data
 
