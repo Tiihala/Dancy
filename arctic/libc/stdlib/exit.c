@@ -30,6 +30,9 @@ void _Exit(int status)
 void exit(int status)
 {
 	__dancy_atexit_fini();
+	__dancy_crt_fini();
+
+	__dancy_atexit_fini();
 	__dancy_stdio_fini();
 
 	_Exit(status);
