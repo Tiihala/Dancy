@@ -49,9 +49,14 @@ void __dancy_libc_start(int argc, char *argv[])
 
 	__dancy_free = __dancy_free_default;
 	__dancy_stdio_init();
+
 	__dancy_atexit_init();
+	__dancy_crt_init();
 
 	retval = main(argc, argv);
+
+	__dancy_atexit_fini();
+	__dancy_crt_fini();
 
 	__dancy_atexit_fini();
 	__dancy_stdio_fini();
