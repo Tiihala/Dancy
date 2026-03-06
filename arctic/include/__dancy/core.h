@@ -88,6 +88,9 @@ typedef struct { void *_t; } __dancy_thrd_t;
 
 extern char __dancy_program_name[];
 
+void __dancy_crt_init(void);
+void __dancy_crt_fini(void);
+
 extern void (*__dancy_free)(void *pointer);
 void __dancy_free_default(void *pointer);
 
