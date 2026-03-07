@@ -19,23 +19,88 @@
 
 #include "main.h"
 
-static void not_implemented(struct options *opt)
+static int read_file(const char *name, unsigned char **out, size_t *size)
 {
-	int i;
+	size_t chunk = 0x1000;
+	const size_t size_max = ~((size_t)0);
+	unsigned char *ptr;
+	FILE *fp;
 
-	for (i = 0; opt->operands[i] != NULL; i++)
-		fprintf(stderr, "%s%d: \"%s\"\n", i ? "" : "\n",
-			i, opt->operands[i]);
+	fp = (errno = 0, fopen(name, "rb"));
 
-	fprintf(stderr, "\nThe loader has not been implemented yet.\n");
+	if (!fp) {
+		const char *fmt = "Error: reading file \'%s\' (%s)\n";
+		fprintf(stderr, fmt, name, strerror(errno));
+		return EXIT_FAILURE;
+	}
+
+	*size = 0;
+	ptr = malloc(chunk);
+
+	for (;;) {
+		size_t bytes_read;
+		int my_errno;
+		int stop;
+
+		if (!ptr) {
+			fputs("Error: not enough memory\n", stderr);
+			return (void)fclose(fp), EXIT_FAILURE;
+		}
+
+		*out = ptr;
+		ptr += *size;
+
+		bytes_read = (errno = 0, fread(ptr, 1, chunk, fp));
+		my_errno = errno;
+		stop = feof(fp);
+
+		if (ferror(fp) || (!stop && bytes_read != chunk)) {
+			const char *fmt = "Error: reading file \'%s\' (%s)\n";
+			fprintf(stderr, fmt, name, strerror(my_errno));
+			return (void)fclose(fp), EXIT_FAILURE;
+		}
+
+		*size += ((bytes_read <= chunk) ? bytes_read : chunk);
+		if (stop)
+			break;
+
+		if (chunk < 0x00200000)
+			chunk <<= 1;
+
+		if (!(*size < size_max - chunk)) {
+			const char *fmt = "Error: reading file \'%s\' (%s)\n";
+			fprintf(stderr, fmt, name, "size_t overflow");
+			return (void)fclose(fp), EXIT_FAILURE;
+		}
+
+		ptr = realloc(*out, *size + chunk);
+	}
+
+	return (void)fclose(fp), 0;
 }
 
 int operate(struct options *opt)
 {
+	int r = EXIT_FAILURE;
+	unsigned char *p;
+	size_t s;
+
 	if (opt->operands[0] == NULL)
 		return opt->error = "missing program", EXIT_FAILURE;
 
-	not_implemented(opt);
+	if (read_file(opt->operands[0], &opt->program, &opt->program_size))
+		return EXIT_FAILURE;
 
-	return 0;
+	p = opt->program;
+	s = opt->program_size;
+
+	if (s >= 4 && p[0] == 0x7F && !memcmp(&p[1], "ELF", 3))
+		r = elf_execute(opt);
+	else
+		fprintf(stderr, "ld-dancy: %s: "
+			"Exec format not supported\n", opt->operands[0]);
+
+	free(opt->program), opt->program = NULL, opt->program_size = 0;
+
+	return r;
 }

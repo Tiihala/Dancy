@@ -54,6 +54,7 @@ ARCTIC_PROGRAMS_INIT_OBJECTS_32= \
  ./o32/arctic/libc.a \
 
 ARCTIC_PROGRAMS_LD-DANCY_OBJECTS_32= \
+ ./o32/arctic/programs/ld-dancy/elf.o \
  ./o32/arctic/programs/ld-dancy/main.o \
  ./o32/arctic/programs/ld-dancy/operate.o \
  ./o32/arctic/libc.a \
@@ -187,6 +188,7 @@ ARCTIC_PROGRAMS_INIT_OBJECTS_64= \
  ./o64/arctic/libc.a \
 
 ARCTIC_PROGRAMS_LD-DANCY_OBJECTS_64= \
+ ./o64/arctic/programs/ld-dancy/elf.o \
  ./o64/arctic/programs/ld-dancy/main.o \
  ./o64/arctic/programs/ld-dancy/operate.o \
  ./o64/arctic/libc.a \
