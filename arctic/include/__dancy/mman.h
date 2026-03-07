@@ -35,6 +35,7 @@ __Dancy_Header_Begin
 
 #define __DANCY_MAP_ANON        (0x0020)
 #define __DANCY_MAP_ANONYMOUS   (0x0020)
+#define __DANCY_MAP_ARCTIC      (0x0800)
 
 #define __DANCY_MS_ASYNC        (0x0001)
 #define __DANCY_MS_INVALIDATE   (0x0002)
