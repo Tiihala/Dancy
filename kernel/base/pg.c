@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022, 2023 Antti Tiihala
+ * Copyright (c) 2021, 2022, 2023, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -174,7 +174,8 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 	return 0;
 }
 
-static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
+static int pg_map_virtual(cpu_native_t cr3,
+	addr_t vaddr, phys_addr_t addr, int type)
 {
 	uint32_t page_bits = 0x27;
 	int offset = (int)(vaddr >> 22);
@@ -202,6 +203,12 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	ptr = (uint32_t *)(ptr[offset] & 0xFFFFF000);
 
 	offset = (int)((vaddr >> 12) & 0x3FF);
+
+	if ((type & pg_readonly) != 0)
+		page_bits &= 0xFFD;
+
+	if ((type & pg_arctic) != 0)
+		page_bits |= 0x800;
 
 	if ((ptr[offset] & 1) == 0) {
 		ptr[offset] = page | page_bits;
@@ -519,7 +526,8 @@ static int pg_map_identity(phys_addr_t addr, int type, int page_type)
 	return 0;
 }
 
-static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
+static int pg_map_virtual(cpu_native_t cr3,
+	addr_t vaddr, phys_addr_t addr, int type)
 {
 	uint64_t page_bits = 0x27;
 	int pml4e_offset = (int)(vaddr >> 39);
@@ -579,6 +587,12 @@ static int pg_map_virtual(cpu_native_t cr3, addr_t vaddr, phys_addr_t addr)
 	ptr = (uint64_t *)(ptr[offset] & 0xFFFFFFFFFFFFF000ull);
 
 	offset = (int)((vaddr >> 12) & 0x1FF);
+
+	if ((type & pg_readonly) != 0)
+		page_bits &= 0xFFD;
+
+	if ((type & pg_arctic) != 0)
+		page_bits |= 0x800;
 
 	if ((ptr[offset] & 1) == 0) {
 		ptr[offset] = page | page_bits;
@@ -1105,7 +1119,7 @@ void *pg_map_user(addr_t vaddr, size_t size, int type)
 		current->pg_user_memory += 0x1000;
 		vaddr_end -= 0x1000;
 
-		if (pg_map_virtual(cr3, vaddr_end, addr)) {
+		if (pg_map_virtual(cr3, vaddr_end, addr, type)) {
 			mm_free_page(addr);
 			current->pg_user_memory -= 0x1000;
 			vaddr = 0;
@@ -1269,7 +1283,7 @@ static int pg_check_user(cpu_native_t cr3, addr_t vaddr, size_t size, int rw)
 			memset((void *)addr, 0, 0x1000);
 			task_current()->pg_user_memory += 0x1000;
 
-			if (pg_map_virtual(cr3, a, addr)) {
+			if (pg_map_virtual(cr3, a, addr, pg_noexec)) {
 				mm_free_page(addr);
 				task_current()->pg_user_memory -= 0x1000;
 				return DE_ADDRESS;
