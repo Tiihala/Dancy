@@ -223,7 +223,11 @@ void panic(const char *message);
 enum pg_type {
 	pg_normal   = 0x00,
 	pg_uncached = 0x01,
-	pg_extended = 0x02
+	pg_extended = 0x02,
+
+	pg_readonly = 0x0200,
+	pg_noexec   = 0x0400,
+	pg_arctic   = 0x0800
 };
 
 extern cpu_native_t pg_kernel;
