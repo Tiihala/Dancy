@@ -118,7 +118,7 @@ int idt_user_exception(int num, void *stack)
 		cpu_native_t cr2 = cpu_read_cr2();
 
 		if ((code & 1) == 0 && cr2 >= stack_min && cr2 <= stack_max) {
-			if (pg_map_user((addr_t)cr2, 1))
+			if (pg_map_user((addr_t)cr2, 1, pg_noexec))
 				return 0;
 		}
 

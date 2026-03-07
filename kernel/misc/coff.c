@@ -105,11 +105,13 @@ static int coff_allocate(struct coff *coff)
 {
 	addr_t vaddr = 0x80000000;
 	size_t size;
+	int type;
 
 	vaddr -= (addr_t)coff->stack_aligned_size;
 	size = coff->stack_aligned_size - 0x1000;
+	type = pg_noexec;
 
-	if (size && (addr_t)pg_map_user(vaddr, size) != vaddr)
+	if (size && (addr_t)pg_map_user(vaddr, size, type) != vaddr)
 		return DE_MEMORY;
 
 	if ((coff->stack_vaddr[0] = vaddr) < 0x78000000)
@@ -131,8 +133,9 @@ static int coff_allocate(struct coff *coff)
 	 */
 	size = coff->text_aligned_size;
 	coff->text_vaddr = size ? vaddr : (addr_t)0;
+	type = pg_readonly;
 
-	if (size && (addr_t)pg_map_user(vaddr, size) != vaddr)
+	if (size && (addr_t)pg_map_user(vaddr, size, type) != vaddr)
 		return DE_MEMORY;
 
 	vaddr += (addr_t)size;
@@ -142,8 +145,9 @@ static int coff_allocate(struct coff *coff)
 	 */
 	size = coff->rdata_aligned_size;
 	coff->rdata_vaddr = size ? vaddr : (addr_t)0;
+	type = pg_readonly | pg_noexec;
 
-	if (size && (addr_t)pg_map_user(vaddr, size) != vaddr)
+	if (size && (addr_t)pg_map_user(vaddr, size, type) != vaddr)
 		return DE_MEMORY;
 
 	vaddr += (addr_t)size;
@@ -153,8 +157,9 @@ static int coff_allocate(struct coff *coff)
 	 */
 	size = coff->data_aligned_size;
 	coff->data_vaddr = size ? vaddr : (addr_t)0;
+	type = pg_noexec;
 
-	if (size && (addr_t)pg_map_user(vaddr, size) != vaddr)
+	if (size && (addr_t)pg_map_user(vaddr, size, type) != vaddr)
 		return DE_MEMORY;
 
 	vaddr += (addr_t)size;
@@ -164,8 +169,9 @@ static int coff_allocate(struct coff *coff)
 	 */
 	size = coff->bss_aligned_size;
 	coff->bss_vaddr = size ? vaddr : (addr_t)0;
+	type = pg_noexec;
 
-	if (size && (addr_t)pg_map_user(vaddr, size) != vaddr)
+	if (size && (addr_t)pg_map_user(vaddr, size, type) != vaddr)
 		return DE_MEMORY;
 
 	vaddr += (addr_t)size;
@@ -204,7 +210,7 @@ int coff_load_executable(struct vfs_node *node, addr_t *start_addr)
 	if (!task_current()->pg_cr3)
 		return DE_UNINITIALIZED;
 
-	if ((obj = pg_map_user(0x7FFFF000, 0x1000)) == NULL)
+	if ((obj = pg_map_user(0x7FFFF000, 0x1000, pg_noexec)) == NULL)
 		return DE_MEMORY;
 
 	if ((size = 180, (r = node->n_read(node, 0, &size, obj))) != 0)

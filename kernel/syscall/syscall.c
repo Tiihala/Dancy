@@ -813,14 +813,27 @@ static long long dancy_syscall_mmap(va_list va)
 	flags ^= ((unsigned int)__DANCY_MAP_PRIVATE);
 	flags ^= ((unsigned int)__DANCY_MAP_FIXED);
 
-	if (flags != 0)
+	if (flags != 0 && flags != __DANCY_MAP_ARCTIC)
 		return -ENOTSUP;
 
 	if ((vaddr = (addr_t)address) < 0x10000000)
 		return -ENOTSUP;
 
-	if ((addr_t)pg_map_user(vaddr, size) != vaddr)
-		return -ENOMEM;
+	{
+		int type = 0;
+
+		if ((options->_prot & __DANCY_PROT_WRITE) == 0)
+			type |= pg_readonly;
+
+		if ((options->_prot & __DANCY_PROT_EXEC) == 0)
+			type |= pg_noexec;
+
+		if ((options->_flags & __DANCY_MAP_ARCTIC) != 0)
+			type |= pg_arctic;
+
+		if ((addr_t)pg_map_user(vaddr, size, type) != vaddr)
+			return -ENOMEM;
+	}
 
 	return (long long)vaddr;
 }
@@ -858,7 +871,7 @@ static long long dancy_syscall_mprotect(va_list va)
 	if (size && pg_check_user_read(address, size))
 		return -ENOMEM;
 
-	return 0;
+	return -ENOTSUP;
 }
 
 static long long dancy_syscall_msync(va_list va)

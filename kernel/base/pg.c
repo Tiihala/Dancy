@@ -1069,7 +1069,7 @@ void *pg_map_kernel(phys_addr_t addr, size_t size, int type)
 	return (void *)addr;
 }
 
-void *pg_map_user(addr_t vaddr, size_t size)
+void *pg_map_user(addr_t vaddr, size_t size, int type)
 {
 	const addr_t page_mask = 0x0FFF;
 	addr_t vaddr_beg, vaddr_end;

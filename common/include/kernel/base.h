@@ -246,7 +246,7 @@ void pg_alt_delete(void);
 
 void *pg_get_entry(cpu_native_t cr3, const void *pte);
 void *pg_map_kernel(phys_addr_t addr, size_t size, int type);
-void *pg_map_user(addr_t vaddr, size_t size);
+void *pg_map_user(addr_t vaddr, size_t size, int type);
 int pg_unmap_user(addr_t vaddr, size_t size);
 
 uint64_t pg_read_memory(phys_addr_t addr, size_t size);
