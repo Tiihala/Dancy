@@ -1309,7 +1309,7 @@ static int pg_check_user(cpu_native_t cr3, addr_t vaddr, size_t size, int rw)
 	addr_t a = vaddr;
 	addr_t e = vaddr + (addr_t)((size > 0) ? size - 1 : 0);
 
-	if (a == 0 || a < 0x10000000 || a > e)
+	if (size == 0 || a < 0x10000000 || a > e)
 		return DE_ACCESS;
 
 	a &= (~mask);
