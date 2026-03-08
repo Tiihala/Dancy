@@ -1327,13 +1327,9 @@ void pg_protect_user(addr_t vaddr, size_t size, int type)
 			cpu_native_t v = *p;
 
 			v |= 0x002;
-			v |= 0x800;
 
 			if ((type & pg_readonly) != 0)
 				v ^= 0x002;
-			if ((type & pg_arctic) == 0)
-				v ^= 0x800;
-
 			*p = v;
 		}
 
