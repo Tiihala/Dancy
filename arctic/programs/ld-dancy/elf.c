@@ -19,6 +19,28 @@
 
 #include "main.h"
 
+static int elf_map_pages(void *addr, size_t size)
+{
+	int prot = PROT_READ | PROT_WRITE | PROT_EXEC;
+	int flags = MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED;
+
+	void *r = mmap(addr, size, prot, flags | __DANCY_MAP_ARCTIC, -1, 0);
+
+	return (r != addr) ? EXIT_FAILURE : 0;
+}
+
+static void elf_start(void *addr, char *const argv[], char *const envp[])
+{
+	long long r;
+
+	r = __dancy_syscall4(__dancy_syscall_arctic, addr, argv, envp, 0);
+
+	if (r < 0)
+		errno = -((int)r);
+	else
+		errno = ENOSYS;
+}
+
 static int elf_error(struct options *opt, const char *msg)
 {
 	fprintf(stderr, "ld-dancy: %s: %s\n", opt->operands[0], msg);
@@ -69,6 +91,23 @@ int elf_execute(struct options *opt)
 			opt->operands[0], file_format);
 		printf("flags 0x%08X\n", (unsigned int)ehdr->e_flags);
 		printf("start address 0x%p\n\n", (void *)ehdr->e_entry);
+	}
+
+	/*
+	 * Debugging and testing!
+	 */
+	{
+		unsigned char *p = (void *)((size_t)0x20000000);
+
+		if (elf_map_pages(p, 0x1000))
+			return perror("elf_map_pages"), EXIT_FAILURE;
+
+		p[0] = 0xEB;
+		p[1] = 0xFE;
+
+		elf_start(p, NULL, NULL);
+
+		return perror("elf_start"), EXIT_FAILURE;
 	}
 
 	return 0;
