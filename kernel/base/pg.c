@@ -60,6 +60,7 @@ static void *pg_create_cr3(void)
 static int pg_free_pte(uint32_t *pte, int sync_arctic)
 {
 	struct task *current = task_current();
+	phys_addr_t p;
 	int i, r = 0;
 
 	for (i = 0; i < 1024; i++) {
@@ -70,9 +71,9 @@ static int pg_free_pte(uint32_t *pte, int sync_arctic)
 			r += 1;
 			continue;
 		}
-		mm_free_page((phys_addr_t)pte[i]);
+		p = (phys_addr_t)pte[i], pte[i] = 0;
+		mm_free_page(p);
 		current->pg_user_memory -= 0x1000;
-		pte[i] = 0;
 	}
 
 	return r;
@@ -102,6 +103,7 @@ static void pg_delete_cr3(cpu_native_t cr3, int sync_arctic)
 		if (pg_free_pte(pte, sync_arctic))
 			continue;
 
+		pde[i] = 0;
 		mm_free_page((phys_addr_t)pte);
 	}
 
@@ -318,6 +320,7 @@ static void *pg_create_cr3(void)
 static int pg_free_pte(uint64_t *pte, int sync_arctic)
 {
 	struct task *current = task_current();
+	phys_addr_t p;
 	int i, r = 0;
 
 	for (i = 0; i < 512; i++) {
@@ -328,9 +331,9 @@ static int pg_free_pte(uint64_t *pte, int sync_arctic)
 			r += 1;
 			continue;
 		}
-		mm_free_page((phys_addr_t)pte[i]);
+		p = (phys_addr_t)pte[i], pte[i] = 0;
+		mm_free_page(p);
 		current->pg_user_memory -= 0x1000;
-		pte[i] = 0;
 	}
 
 	return r;
@@ -380,18 +383,21 @@ static void pg_delete_cr3(cpu_native_t cr3, int sync_arctic)
 				if (pg_free_pte(pte, sync_arctic))
 					continue;
 
+				pde[k] = 0;
 				mm_free_page((phys_addr_t)pte);
 			}
 
 			if (sync_arctic)
 				continue;
 
+			pdpe[j] = 0;
 			mm_free_page((phys_addr_t)pde);
 		}
 
 		if (sync_arctic)
 			continue;
 
+		pml4e[i] = 0;
 		mm_free_page((phys_addr_t)pdpe);
 	}
 
