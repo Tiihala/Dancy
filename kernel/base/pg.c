@@ -1301,6 +1301,49 @@ void pg_write_memory(phys_addr_t addr, uint64_t val, size_t size)
 	spin_leave(&lock_local);
 }
 
+void pg_protect_user(addr_t vaddr, size_t size, int type)
+{
+	const addr_t mask = (addr_t)0x0FFF;
+	const addr_t add  = (addr_t)0x1000;
+
+	addr_t a = vaddr;
+	addr_t e = vaddr + (addr_t)((size > 0) ? size - 1 : 0);
+
+	cpu_native_t cr3 = cpu_read_cr3();
+
+	if (size == 0 || a < 0x10000000 || a > e)
+		return;
+
+	a &= (~mask);
+	e &= (~mask);
+	e += add;
+
+	pg_enter_kernel();
+
+	do {
+		cpu_native_t *p = pg_get_entry(cr3, (const void *)a);
+
+		if (p != NULL && (*p & 1u) != 0) {
+			cpu_native_t v = *p;
+
+			v |= 0x002;
+			v |= 0x800;
+
+			if ((type & pg_readonly) != 0)
+				v ^= 0x002;
+			if ((type & pg_arctic) == 0)
+				v ^= 0x800;
+
+			*p = v;
+		}
+
+		a += add;
+
+	} while (a != e);
+
+	pg_leave_kernel();
+}
+
 static int pg_check_user(cpu_native_t cr3, addr_t vaddr, size_t size, int rw)
 {
 	const addr_t mask = (addr_t)0x0FFF;
