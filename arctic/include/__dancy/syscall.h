@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023, 2024, 2025 Antti Tiihala
+ * Copyright (c) 2022, 2023, 2024, 2025, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -338,6 +338,15 @@ enum __dancy_syscall_enum__ {
 	 *         int flags);
 	 */
 	__dancy_syscall_errno,
+
+	/*
+	 * long long __dancy_syscall_arctic(
+	 *         void *address,
+	 *         char *const argv[],
+	 *         char *const envp[],
+	 *         int flags);
+	 */
+	__dancy_syscall_arctic,
 
 	__dancy_syscall_argn__
 };

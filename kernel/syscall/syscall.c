@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023, 2024, 2025 Antti Tiihala
+ * Copyright (c) 2022, 2023, 2024, 2025, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -1304,6 +1304,46 @@ static long long dancy_syscall_errno(va_list va)
 	return -EINVAL;
 }
 
+static long long dancy_syscall_arctic(va_list va)
+{
+	void *address = va_arg(va, void *);
+	const void *argv = va_arg(va, const void *);
+	const void *envp = va_arg(va, const void *);
+	int flags = va_arg(va, int);
+
+	const char *path = (const void *)task_current()->cmd.line;
+	addr_t user_sp;
+	void *arg_state;
+	int r;
+
+	if (pg_check_user_read(address, 1))
+		return -EFAULT;
+
+	if (flags != 0)
+		return -EINVAL;
+
+	if ((r = arg_create(&arg_state, path, argv, envp)) != 0) {
+		if (r == DE_MEMORY)
+			return -ENOMEM;
+		return -EFAULT;
+	}
+
+	pg_sync_arctic();
+
+	if ((r = arg_copy(arg_state, &user_sp)) == 0)
+		r = arg_set_cmdline(NULL, user_sp, 0);
+
+	arg_delete(arg_state);
+
+	if (r == 0)
+		task_jump((addr_t)address, user_sp);
+
+	task_exit(SIGSEGV);
+	kernel->panic("__dancy_syscall_arctic: unexpected behavior");
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -1352,6 +1392,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_proclist },
 	{ dancy_syscall_procinfo },
 	{ dancy_syscall_errno },
+	{ dancy_syscall_arctic },
 	{ dancy_syscall_reserved }
 };
 
