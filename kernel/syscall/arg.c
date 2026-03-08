@@ -209,8 +209,17 @@ int arg_set_cmdline(struct vfs_node *node, addr_t user_sp, addr_t user_ld)
 	if (user_ld != 0)
 		argc -= 1, argv += 1;
 
-	if ((r = vfs_realpath(node, &path[0], sizeof(path))) != 0)
-		return r;
+	if (node == NULL) {
+		const uint8_t *line = task_current()->cmd.line;
+		for (i = 0; i < (int)sizeof(path) - 1; i++) {
+			if ((path[i] = (char)line[i]) == '\0')
+				break;
+			path[i + 1] = '\0';
+		}
+	} else {
+		if ((r = vfs_realpath(node, &path[0], sizeof(path))) != 0)
+			return r;
+	}
 
 	buffer_size += (strlen(&path[0]) + 1);
 
