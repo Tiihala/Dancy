@@ -57,20 +57,28 @@ static void *pg_create_cr3(void)
 	return pde;
 }
 
-static void pg_free_pte(uint32_t *pte)
+static int pg_free_pte(uint32_t *pte, int sync_arctic)
 {
 	struct task *current = task_current();
-	int i;
+	int i, r = 0;
 
 	for (i = 0; i < 1024; i++) {
 		if ((pte[i] & 0x01) == 0)
 			continue;
+		if (sync_arctic && (pte[i] & 0x800) != 0) {
+			pte[i] ^= 0x800;
+			r += 1;
+			continue;
+		}
 		mm_free_page((phys_addr_t)pte[i]);
 		current->pg_user_memory -= 0x1000;
+		pte[i] = 0;
 	}
+
+	return r;
 }
 
-static void pg_delete_cr3(cpu_native_t cr3)
+static void pg_delete_cr3(cpu_native_t cr3, int sync_arctic)
 {
 	const uint32_t entry_mask = 0xFFFFF000;
 	uint32_t *pde, *pte;
@@ -90,10 +98,15 @@ static void pg_delete_cr3(cpu_native_t cr3)
 		 * Page table.
 		 */
 		pte = (uint32_t *)(pde[i] & entry_mask);
-		pg_free_pte(pte);
+
+		if (pg_free_pte(pte, sync_arctic))
+			continue;
 
 		mm_free_page((phys_addr_t)pte);
 	}
+
+	if (sync_arctic)
+		return;
 
 	memset(pde, 0, 0x1000);
 	mm_free_page((phys_addr_t)pde);
@@ -302,20 +315,28 @@ static void *pg_create_cr3(void)
 	return pml4e;
 }
 
-static void pg_free_pte(uint64_t *pte)
+static int pg_free_pte(uint64_t *pte, int sync_arctic)
 {
 	struct task *current = task_current();
-	int i;
+	int i, r = 0;
 
 	for (i = 0; i < 512; i++) {
 		if ((pte[i] & 0x01) == 0)
 			continue;
+		if (sync_arctic && (pte[i] & 0x800) != 0) {
+			pte[i] ^= 0x800;
+			r += 1;
+			continue;
+		}
 		mm_free_page((phys_addr_t)pte[i]);
 		current->pg_user_memory -= 0x1000;
+		pte[i] = 0;
 	}
+
+	return r;
 }
 
-static void pg_delete_cr3(cpu_native_t cr3)
+static void pg_delete_cr3(cpu_native_t cr3, int sync_arctic)
 {
 	const uint64_t entry_mask = 0x000FFFFFFFFFF000ull;
 	uint64_t *pml4e, *pdpe, *pde, *pte;
@@ -355,16 +376,27 @@ static void pg_delete_cr3(cpu_native_t cr3)
 				 * Page table.
 				 */
 				pte = (uint64_t *)(pde[k] & entry_mask);
-				pg_free_pte(pte);
+
+				if (pg_free_pte(pte, sync_arctic))
+					continue;
 
 				mm_free_page((phys_addr_t)pte);
 			}
 
+			if (sync_arctic)
+				continue;
+
 			mm_free_page((phys_addr_t)pde);
 		}
 
+		if (sync_arctic)
+			continue;
+
 		mm_free_page((phys_addr_t)pdpe);
 	}
+
+	if (sync_arctic)
+		return;
 
 	memset(pml4e, 0, 0x1000);
 	mm_free_page((phys_addr_t)pml4e);
@@ -923,12 +955,24 @@ void pg_delete(void)
 	current->cr3 = (uint32_t)pg_kernel;
 	cpu_write_cr3(pg_kernel);
 
-	pg_delete_cr3(cr3);
+	pg_delete_cr3(cr3, 0);
 
 	if ((cr3 = (cpu_native_t)current->pg_alt_cr3) != 0) {
 		current->pg_alt_cr3 = 0;
-		pg_delete_cr3(cr3);
+		pg_delete_cr3(cr3, 0);
 	}
+}
+
+void pg_sync_arctic(void)
+{
+	cpu_native_t cr3;
+
+	if ((cr3 = (cpu_native_t)task_current()->pg_cr3) == 0)
+		return;
+
+	pg_enter_kernel();
+	pg_delete_cr3(cr3, 1);
+	pg_leave_kernel();
 }
 
 void pg_enter_kernel(void)
@@ -996,7 +1040,7 @@ void pg_alt_accept(void)
 	current->pg_alt_cr3 = 0;
 
 	pg_enter_kernel();
-	pg_delete_cr3(cr3[0]);
+	pg_delete_cr3(cr3[0], 0);
 	pg_leave_kernel();
 }
 
@@ -1015,7 +1059,7 @@ void pg_alt_delete(void)
 	current->pg_alt_cr3 = 0;
 
 	pg_enter_kernel();
-	pg_delete_cr3(cr3[1]);
+	pg_delete_cr3(cr3[1], 0);
 	pg_leave_kernel();
 }
 
