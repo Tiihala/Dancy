@@ -858,20 +858,33 @@ static long long dancy_syscall_mprotect(va_list va)
 	size_t size = va_arg(va, size_t);
 	unsigned int prot = va_arg(va, unsigned int);
 
-	if ((addr_t)address < 0x80000000)
+	int type = 0;
+
+	if ((addr_t)address < 0x10000000)
 		return -EINVAL;
+
+	if ((prot & __DANCY_PROT_READ) == 0)
+		return -ENOTSUP;
+
+	if ((prot & __DANCY_PROT_WRITE) == 0)
+		type |= pg_readonly;
+
+	if ((prot & __DANCY_PROT_EXEC) == 0)
+		type |= pg_noexec;
 
 	prot &= (~((unsigned int)__DANCY_PROT_READ));
 	prot &= (~((unsigned int)__DANCY_PROT_WRITE));
 	prot &= (~((unsigned int)__DANCY_PROT_EXEC));
 
 	if (prot != 0)
-		return -EINVAL;
+		return -ENOTSUP;
 
 	if (size && pg_check_user_read(address, size))
 		return -ENOMEM;
 
-	return -ENOTSUP;
+	pg_protect_user((addr_t)address, size, type);
+
+	return 0;
 }
 
 static long long dancy_syscall_msync(va_list va)
