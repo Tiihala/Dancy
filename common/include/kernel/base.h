@@ -225,6 +225,7 @@ enum pg_type {
 	pg_uncached = 0x01,
 	pg_extended = 0x02,
 
+	pg_blocked  = 0x0100,
 	pg_readonly = 0x0200,
 	pg_noexec   = 0x0400,
 	pg_arctic   = 0x0800
