@@ -879,9 +879,6 @@ static long long dancy_syscall_mprotect(va_list va)
 	if (prot != 0)
 		return -ENOTSUP;
 
-	if (size && pg_check_user_read(address, size))
-		return -ENOMEM;
-
 	pg_protect_user((addr_t)address, size, type);
 
 	return 0;
