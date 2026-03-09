@@ -111,6 +111,7 @@ void cpu_init_control_registers(void)
 
 		cpu_rdmsr(0xC0000080u, &eax, &edx);
 		eax = (eax & 0xFFFF8701u) | 0x01u;
+		eax |= (cpu_nxbit_support ? 0x800u : 0u);
 		cpu_wrmsr(0xC0000080u, eax, edx);
 	}
 #endif
