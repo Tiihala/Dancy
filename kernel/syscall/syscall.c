@@ -863,8 +863,8 @@ static long long dancy_syscall_mprotect(va_list va)
 	if ((addr_t)address < 0x10000000)
 		return -EINVAL;
 
-	if ((prot & __DANCY_PROT_READ) == 0)
-		return -ENOTSUP;
+	if (prot == __DANCY_PROT_NONE)
+		type |= pg_blocked;
 
 	if ((prot & __DANCY_PROT_WRITE) == 0)
 		type |= pg_readonly;
