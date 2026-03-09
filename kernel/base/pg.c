@@ -1333,7 +1333,7 @@ void pg_protect_user(addr_t vaddr, size_t size, int type)
 	do {
 		cpu_native_t *p = pg_get_entry(cr3, (const void *)a);
 
-		if (p != NULL && *p != 0) {
+		if (p != NULL && (*p & 0x004) != 0) {
 			cpu_native_t v = (*p | 0x003);
 
 			if ((type & pg_blocked) != 0)
