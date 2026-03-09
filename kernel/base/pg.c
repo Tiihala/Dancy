@@ -64,7 +64,7 @@ static int pg_free_pte(uint32_t *pte, int sync_arctic)
 	int i, r = 0;
 
 	for (i = 0; i < 1024; i++) {
-		if ((pte[i] & 0x01) == 0)
+		if (pte[i] == 0)
 			continue;
 		if (sync_arctic && (pte[i] & 0x800) != 0) {
 			pte[i] ^= 0x800;
@@ -219,13 +219,16 @@ static int pg_map_virtual(cpu_native_t cr3,
 
 	offset = (int)((vaddr >> 12) & 0x3FF);
 
+	if ((type & pg_blocked) != 0)
+		page_bits &= 0xFFE;
+
 	if ((type & pg_readonly) != 0)
 		page_bits &= 0xFFD;
 
 	if ((type & pg_arctic) != 0)
 		page_bits |= 0x800;
 
-	if ((ptr[offset] & 1) == 0) {
+	if (ptr[offset] == 0) {
 		ptr[offset] = page | page_bits;
 	} else {
 		uint32_t old_page = ptr[offset] & 0xFFFFF000;
@@ -324,7 +327,7 @@ static int pg_free_pte(uint64_t *pte, int sync_arctic)
 	int i, r = 0;
 
 	for (i = 0; i < 512; i++) {
-		if ((pte[i] & 0x01) == 0)
+		if (pte[i] == 0)
 			continue;
 		if (sync_arctic && (pte[i] & 0x800) != 0) {
 			pte[i] ^= 0x800;
@@ -627,6 +630,9 @@ static int pg_map_virtual(cpu_native_t cr3,
 
 	offset = (int)((vaddr >> 12) & 0x1FF);
 
+	if ((type & pg_blocked) != 0)
+		page_bits &= 0xFFE;
+
 	if ((type & pg_readonly) != 0)
 		page_bits &= 0xFFD;
 
@@ -636,7 +642,7 @@ static int pg_map_virtual(cpu_native_t cr3,
 	if ((type & pg_noexec) != 0 && kernel->cpu_feature.nxbit != 0)
 		page_bits |= 0x8000000000000000ull;
 
-	if ((ptr[offset] & 1) == 0) {
+	if (ptr[offset] == 0) {
 		ptr[offset] = page | page_bits;
 	} else {
 		uint64_t old_page = ptr[offset] & 0x000FFFFFFFFFF000ull;
@@ -1217,7 +1223,7 @@ int pg_unmap_user(addr_t vaddr, size_t size)
 
 		vaddr_beg += 0x1000;
 
-		if (e == NULL || (*e & 0x05) != 0x05)
+		if (e == NULL || (*e & 0x04) != 0x04)
 			continue;
 
 		addr = (phys_addr_t)(*e & (~page_mask));
@@ -1327,10 +1333,11 @@ void pg_protect_user(addr_t vaddr, size_t size, int type)
 	do {
 		cpu_native_t *p = pg_get_entry(cr3, (const void *)a);
 
-		if (p != NULL && (*p & 1u) != 0) {
-			cpu_native_t v = *p;
+		if (p != NULL && *p != 0) {
+			cpu_native_t v = (*p | 0x003);
 
-			v |= 0x002;
+			if ((type & pg_blocked) != 0)
+				v ^= 0x001;
 
 			if ((type & pg_readonly) != 0)
 				v ^= 0x002;
@@ -1374,6 +1381,9 @@ static int pg_check_user(cpu_native_t cr3, addr_t vaddr, size_t size, int rw)
 			const addr_t stack_min = 0x78000000;
 			const addr_t stack_max = 0x7FFFFFFF;
 			phys_addr_t addr;
+
+			if (*p != 0)
+				return DE_ACCESS;
 
 			if (a < stack_min || a > stack_max)
 				return DE_ADDRESS;
