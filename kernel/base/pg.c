@@ -332,6 +332,7 @@ static int pg_free_pte(uint64_t *pte, int sync_arctic)
 			continue;
 		}
 		p = (phys_addr_t)pte[i], pte[i] = 0;
+		p &= 0x000FFFFFFFFFF000ull;
 		mm_free_page(p);
 		current->pg_user_memory -= 0x1000;
 	}
@@ -632,10 +633,13 @@ static int pg_map_virtual(cpu_native_t cr3,
 	if ((type & pg_arctic) != 0)
 		page_bits |= 0x800;
 
+	if ((type & pg_noexec) != 0 && kernel->cpu_feature.nxbit != 0)
+		page_bits |= 0x8000000000000000ull;
+
 	if ((ptr[offset] & 1) == 0) {
 		ptr[offset] = page | page_bits;
 	} else {
-		uint64_t old_page = ptr[offset] & 0xFFFFFFFFFFFFF000ull;
+		uint64_t old_page = ptr[offset] & 0x000FFFFFFFFFF000ull;
 		ptr[offset] = page | page_bits;
 		mm_free_page((phys_addr_t)old_page);
 		task_current()->pg_user_memory -= 0x1000;
@@ -1330,6 +1334,14 @@ void pg_protect_user(addr_t vaddr, size_t size, int type)
 
 			if ((type & pg_readonly) != 0)
 				v ^= 0x002;
+#ifdef DANCY_64
+			v &= 0x7FFFFFFFFFFFFFFFull;
+
+			if ((type & pg_noexec) != 0) {
+				if (kernel->cpu_feature.nxbit != 0)
+					v |= 0x8000000000000000ull;
+			}
+#endif
 			*p = v;
 		}
 
