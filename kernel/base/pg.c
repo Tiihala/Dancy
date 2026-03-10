@@ -1382,7 +1382,7 @@ static int pg_check_user(cpu_native_t cr3, addr_t vaddr, size_t size, int rw)
 			const addr_t stack_max = 0x7FFFFFFF;
 			phys_addr_t addr;
 
-			if (*p != 0)
+			if (p != NULL && *p != 0)
 				return DE_ACCESS;
 
 			if (a < stack_min || a > stack_max)
