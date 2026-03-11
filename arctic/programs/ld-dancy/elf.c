@@ -47,18 +47,61 @@ static int elf_error(struct options *opt, const char *msg)
 	return EXIT_FAILURE;
 }
 
+static int elf_ph_load(struct options *opt, void *entry)
+{
+	int r = 0;
+
+#if defined(__DANCY_32)
+	Elf32_Phdr *p = entry;
+#elif defined(__DANCY_64)
+	Elf64_Phdr *p = entry;
+#else
+#error "__DANCY_32 or __DANCY_64 must be defined"
+#endif
+
+	r |= (p->p_offset > opt->program_size);
+	r |= (p->p_vaddr < 0x20000000);
+	r |= (p->p_vaddr > 0x40000000);
+
+	r |= (p->p_memsz > 0x20000000);
+	r |= (p->p_filesz > p->p_memsz);
+	r |= (p->p_offset + p->p_filesz > opt->program_size);
+
+	if (r != 0)
+		return elf_error(opt, "Program header not supported");
+
+	if (opt->debug) {
+		printf("  LOAD off    0x%08X"
+			" vaddr 0x%08X paddr 0x%08X align %u\n",
+			(unsigned int)p->p_offset,
+			(unsigned int)p->p_vaddr, (unsigned int)p->p_paddr,
+			(unsigned int)p->p_align);
+
+		printf("       filesz 0x%08X memsz 0x%08X flags %c%c%c\n",
+			(unsigned int)p->p_filesz, (unsigned int)p->p_memsz,
+			(p->p_flags & 4) ? 'r' : '-',
+			(p->p_flags & 2) ? 'w' : '-',
+			(p->p_flags & 1) ? 'x' : '-');
+	}
+
+	return 0;
+}
+
 int elf_execute(struct options *opt)
 {
 	unsigned char *program = opt->program;
-	size_t program_size = opt->program_size;
+	size_t i, program_size = opt->program_size;
+	int r = 0;
 
 #if defined(__DANCY_32)
 	Elf32_Ehdr *ehdr;
+	Elf32_Phdr *phdr;
 	const unsigned char ei_class = 1;
 	const char *ei_class_error = "Only 32-bit supported (EI_CLASS)";
 	const char *file_format = "elf32-i386";
 #elif defined(__DANCY_64)
 	Elf64_Ehdr *ehdr;
+	Elf64_Phdr *phdr;
 	const unsigned char ei_class = 2;
 	const char *ei_class_error = "Only 64-bit supported (EI_CLASS)";
 	const char *file_format = "elf64-x86-64";
@@ -68,6 +111,9 @@ int elf_execute(struct options *opt)
 
 	if (program_size < sizeof(*ehdr))
 		return elf_error(opt, "Exec header not supported");
+
+	if (program_size > 0x20000000)
+		return elf_error(opt, "Program size not supported");
 
 	ehdr = (void *)program;
 
@@ -86,29 +132,47 @@ int elf_execute(struct options *opt)
 	if (ehdr->e_type != 2)
 		return elf_error(opt, "Only executables supported (ET_EXEC)");
 
+	if (ehdr->e_entry < 0x20000000 || ehdr->e_entry > 0x40000000)
+		return elf_error(opt, "Start address not supported");
+
+	if (ehdr->e_phentsize < sizeof(*phdr) || ehdr->e_phentsize > 0x1000)
+		return elf_error(opt, "Program entries not supported");
+
+	if (ehdr->e_phoff > 0x20000000 || ehdr->e_phnum > 0x1000)
+		return elf_error(opt, "Program header offset not supported");
+
 	if (opt->debug) {
 		printf("\n%s: file format %s\n\n",
 			opt->operands[0], file_format);
-		printf("flags 0x%08X\n", (unsigned int)ehdr->e_flags);
-		printf("start address 0x%p\n\n", (void *)ehdr->e_entry);
+		printf("start address 0x%08X\n\n",
+			(unsigned int)ehdr->e_entry);
+		printf("Program Header:\n");
 	}
 
-	/*
-	 * Debugging and testing!
-	 */
-	{
-		unsigned char *p = (void *)((size_t)0x20000000);
+	for (i = 0; i < ehdr->e_phnum; i++) {
+		size_t offset = (size_t)ehdr->e_phoff;
+		offset += (i * (size_t)ehdr->e_phentsize);
 
-		if (elf_map_pages(p, 0x1000))
-			return perror("elf_map_pages"), EXIT_FAILURE;
-
-		p[0] = 0xEB;
-		p[1] = 0xFE;
-
-		elf_start(p, NULL, NULL);
-
-		return perror("elf_start"), EXIT_FAILURE;
+		if (offset + (size_t)ehdr->e_phentsize > program_size)
+			return elf_error(opt, "Program header overflow");
 	}
+
+	for (i = 0; i < ehdr->e_phnum; i++) {
+		size_t offset = (size_t)ehdr->e_phoff;
+		offset += (i * (size_t)ehdr->e_phentsize);
+
+		if ((r = elf_ph_load(opt, &program[offset])) != 0)
+			break;
+	}
+
+	if (opt->debug)
+		printf("\n");
+
+	if (r != 0)
+		return EXIT_FAILURE;
+
+	(void)elf_map_pages;
+	(void)elf_start;
 
 	return 0;
 }
