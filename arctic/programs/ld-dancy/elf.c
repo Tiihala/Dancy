@@ -19,6 +19,8 @@
 
 #include "main.h"
 
+extern char **environ;
+
 static int elf_map_pages(void *addr, size_t size)
 {
 	int prot = PROT_READ | PROT_WRITE | PROT_EXEC;
@@ -49,7 +51,7 @@ static int elf_error(struct options *opt, const char *msg)
 
 static int elf_ph_load(struct options *opt, void *entry)
 {
-	int r = 0;
+	int r = 0, prot = 0;
 
 #if defined(__DANCY_32)
 	Elf32_Phdr *p = entry;
@@ -58,6 +60,9 @@ static int elf_ph_load(struct options *opt, void *entry)
 #else
 #error "__DANCY_32 or __DANCY_64 must be defined"
 #endif
+
+	if (p->p_type != 1 || p->p_memsz == 0)
+		return 0;
 
 	r |= (p->p_offset > opt->program_size);
 	r |= (p->p_vaddr < 0x20000000);
@@ -83,6 +88,29 @@ static int elf_ph_load(struct options *opt, void *entry)
 			(p->p_flags & 2) ? 'w' : '-',
 			(p->p_flags & 1) ? 'x' : '-');
 	}
+
+	if (elf_map_pages((void *)p->p_vaddr, (size_t)p->p_memsz)) {
+		fprintf(stderr, "ld-dancy: %s: mmap: %s\n",
+			opt->operands[0], strerror(errno));
+		return EXIT_FAILURE;
+	}
+
+	if (p->p_filesz != 0) {
+		void *d = (void *)p->p_vaddr;
+		const void *s = &opt->program[p->p_offset];
+		memcpy(d, s, (size_t)p->p_filesz);
+	}
+
+	if ((p->p_flags & 4) != 0)
+		prot |= PROT_READ;
+
+	if ((p->p_flags & 2) != 0)
+		prot |= PROT_WRITE;
+
+	if ((p->p_flags & 1) != 0)
+		prot |= PROT_EXEC;
+
+	(void)mprotect((void *)p->p_vaddr, (size_t)p->p_memsz, prot);
 
 	return 0;
 }
@@ -171,8 +199,10 @@ int elf_execute(struct options *opt)
 	if (r != 0)
 		return EXIT_FAILURE;
 
-	(void)elf_map_pages;
-	(void)elf_start;
+	elf_start((void *)ehdr->e_entry, &opt->operands[0], environ);
 
-	return 0;
+	fprintf(stderr, "ld-dancy: %s: start: %s\n",
+		opt->operands[0], strerror(errno));
+
+	return EXIT_FAILURE;
 }
