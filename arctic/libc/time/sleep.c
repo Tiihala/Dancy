@@ -27,6 +27,9 @@ int clock_nanosleep(clockid_t id, int flags,
 	const int arg0 = __dancy_syscall_sleep;
 	int r;
 
+	if (!request || request->tv_nsec < 0 || request->tv_nsec > 999999999)
+		return (errno = EINVAL), EINVAL;
+
 	r = (int)__dancy_syscall4(arg0, id, flags, request, remain);
 
 	if (r < 0)
