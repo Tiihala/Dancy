@@ -32,7 +32,7 @@ int snprintf(char *s, size_t n, const char *format, ...)
 	return ret;
 }
 
-int vsnprintf(char *s, size_t n, const char *format, va_list arg)
+static int my_vsnprintf(char *s, size_t n, const char *format, va_list arg)
 {
 	static const char *hex_normal = "0123456789abcdef";
 	static const char *hex_upcase = "0123456789ABCDEF";
@@ -549,5 +549,21 @@ int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 	}
 
 	s[out] = '\0';
+
+	if (out >= n)
+		return -1;
+
 	return (out < INT_MAX) ? (int)out : INT_MAX;
+}
+
+int vsnprintf(char *s, size_t n, const char *format, va_list arg)
+{
+	int r = my_vsnprintf(s, n, format, arg);
+
+	if (r < 0) {
+		char temp_s[4096];
+		r = my_vsnprintf(&temp_s[0], sizeof(temp_s), format, arg);
+	}
+
+	return r;
 }
