@@ -61,6 +61,27 @@ __Dancy_Header_Begin
 #define PRIX32 "X"
 #define PRIX64 "llX"
 
+/*
+ * Handle the LP64 data model.
+ */
+#if __SIZEOF_LONG__ == 8
+
+#undef PRId64
+#undef PRIi64
+#undef PRIo64
+#undef PRIu64
+#undef PRIx64
+#undef PRIX64
+
+#define PRId64 "ld"
+#define PRIi64 "li"
+#define PRIo64 "lo"
+#define PRIu64 "lu"
+#define PRIx64 "lx"
+#define PRIX64 "lX"
+
+#endif
+
 __Dancy_Header_End
 
 #endif
