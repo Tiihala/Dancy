@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023 Antti Tiihala
+ * Copyright (c) 2022, 2023, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,22 +28,23 @@ struct devfs_data {
 
 #define DEVFS_COUNT 64
 
-static struct devfs_data devfs_table[DEVFS_COUNT];
+static struct devfs_data devfs_root_table[DEVFS_COUNT];
 
-static struct vfs_node *alloc_node(int i, int type);
+static struct vfs_node *alloc_node(int i, int type, void *internal_data);
 
 static int n_open(struct vfs_node *node, const char *name,
 	struct vfs_node **new_node, int type, int mode)
 {
+	struct devfs_data *devfs_table = node->internal_data;
 	int i;
 
 	*new_node = NULL;
 
+	if (devfs_table == NULL)
+		return DE_NAME;
+
 	if (strlen(name) >= sizeof(devfs_table[0].name))
 		return DE_PATH;
-
-	if (node->internal_data == &devfs_table[0])
-		return DE_NAME;
 
 	if (mtx_lock(&devfs_mtx) != thrd_success)
 		return DE_UNEXPECTED;
@@ -66,7 +67,7 @@ static int n_open(struct vfs_node *node, const char *name,
 
 	for (i = 1; i < DEVFS_COUNT; i++) {
 		if (devfs_table[i].node == NULL) {
-			devfs_table[i].node = alloc_node(i, type);
+			devfs_table[i].node = alloc_node(i, type, NULL);
 
 			if (devfs_table[i].node == NULL)
 				return mtx_unlock(&devfs_mtx), DE_MEMORY;
@@ -84,7 +85,7 @@ static int n_open(struct vfs_node *node, const char *name,
 static int n_readdir(struct vfs_node *node,
 	uint32_t offset, struct vfs_dent *dent)
 {
-	(void)node;
+	struct devfs_data *devfs_table = node->internal_data;
 
 	memset(dent, 0, sizeof(*dent));
 
@@ -101,6 +102,9 @@ static int n_readdir(struct vfs_node *node,
 	if (offset - 1 >= DEVFS_COUNT)
 		return 0;
 
+	if (devfs_table == NULL)
+		return 0;
+
 	if (mtx_lock(&devfs_mtx) != thrd_success)
 		return DE_UNEXPECTED;
 
@@ -110,8 +114,9 @@ static int n_readdir(struct vfs_node *node,
 	return mtx_unlock(&devfs_mtx), 0;
 }
 
-static struct vfs_node *alloc_node(int i, int type)
+static struct vfs_node *alloc_node(int i, int type, void *internal_data)
 {
+	struct devfs_data *devfs_table = internal_data;
 	struct vfs_node *node;
 
 	if ((node = malloc(sizeof(*node))) == NULL)
@@ -122,13 +127,11 @@ static struct vfs_node *alloc_node(int i, int type)
 	node->type = type;
 
 	node->n_open = n_open;
+	node->n_readdir = n_readdir;
+	node->internal_data = internal_data;
 
-	if (i == 0)
-		node->n_readdir = n_readdir;
-	else
-		node->internal_data = &devfs_table[0];
-
-	devfs_table[i].node = node;
+	if (devfs_table != NULL)
+		devfs_table[i].node = node;
 
 	return node;
 }
@@ -150,7 +153,8 @@ int devfs_init(void)
 
 	node->n_release(&node);
 
-	if ((node = alloc_node(0, vfs_type_directory)) == NULL)
+	node = alloc_node(0, vfs_type_directory, &devfs_root_table[0]);
+	if (node == NULL)
 		return DE_MEMORY;
 
 	r = vfs_mount("/dev/", node);
