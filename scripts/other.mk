@@ -13,10 +13,7 @@ DANCY_C32=$(DANCY_CC) -m32
 DANCY_C64=$(DANCY_CC) -m64
 
 ACPICA_SOURCE=call scripts\git\acpica.cmd
-SORTIX_SOURCE=call scripts\git\sortix.cmd
-
 DANCY_MK=copy NUL scripts\dancy.mk
-DANCY_UP=call scripts\git\_up.cmd
 
 !include .\VERSION
 !include .\scripts\header.mk
@@ -62,7 +59,6 @@ distclean: clean
 !include .\scripts\arctic\apps.mk
 !include .\scripts\arctic\libc.mk
 !include .\scripts\arctic\programs.mk
-!include .\scripts\arctic\sortix.mk
 
 !include .\scripts\boot\init.mk
 !include .\scripts\boot\uefi.mk
