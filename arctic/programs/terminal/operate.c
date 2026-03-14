@@ -162,7 +162,7 @@ int operate(struct options *opt)
 	pid_t pid;
 
 	if (!opt->keyboard)
-		opt->keyboard = "/dev/dancy-keyboard-1";
+		opt->keyboard = "/dev/dancy-keyboard/0";
 
 	fd_keyboard = open(opt->keyboard, O_RDONLY | O_NONBLOCK);
 

@@ -87,27 +87,27 @@ int main(int argc, char *argv[])
 				break;
 			}
 			if (arg[2] == '1' && arg[3] == '\0') {
-				opts.keyboard = "/dev/dancy-keyboard-1";
+				opts.keyboard = "/dev/dancy-keyboard/0";
 				continue;
 			}
 			if (arg[2] == '2' && arg[3] == '\0') {
-				opts.keyboard = "/dev/dancy-keyboard-2";
+				opts.keyboard = "/dev/dancy-keyboard/1";
 				continue;
 			}
 			if (arg[2] == '3' && arg[3] == '\0') {
-				opts.keyboard = "/dev/dancy-keyboard-3";
+				opts.keyboard = "/dev/dancy-keyboard/2";
 				continue;
 			}
 			if (arg[2] == '4' && arg[3] == '\0') {
-				opts.keyboard = "/dev/dancy-keyboard-4";
+				opts.keyboard = "/dev/dancy-keyboard/3";
 				continue;
 			}
 			if (arg[2] == '5' && arg[3] == '\0') {
-				opts.keyboard = "/dev/dancy-keyboard-5";
+				opts.keyboard = "/dev/dancy-keyboard/4";
 				continue;
 			}
 			if (arg[2] == '6' && arg[3] == '\0') {
-				opts.keyboard = "/dev/dancy-keyboard-6";
+				opts.keyboard = "/dev/dancy-keyboard/5";
 				continue;
 			}
 			if (!strcmp(arg + 2, "help"))
