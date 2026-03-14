@@ -156,6 +156,47 @@ int devfs_init(void)
 		return DE_MEMORY;
 
 	r = vfs_mount("/dev/", node);
+
+	if (r == 0) {
+		const int i = 1;
+		const char *name = "dancy-console";
+
+		static struct devfs_data t[DEVFS_COUNT]; /* STATIC */
+		struct vfs_node *n = alloc_node(vfs_type_directory, &t[0]);
+
+		strcpy(&devfs_root_table[i].name[0], &name[0]);
+
+		if ((devfs_root_table[i].node = n) == NULL)
+			r = DE_MEMORY;
+	}
+
+	if (r == 0) {
+		const int i = 2;
+		const char *name = "dancy-keyboard";
+
+		static struct devfs_data t[DEVFS_COUNT]; /* STATIC */
+		struct vfs_node *n = alloc_node(vfs_type_directory, &t[0]);
+
+		strcpy(&devfs_root_table[i].name[0], &name[0]);
+
+		if ((devfs_root_table[i].node = n) == NULL)
+			r = DE_MEMORY;
+	}
+
+
+	if (r == 0) {
+		const int i = 3;
+		const char *name = "dancy-mouse";
+
+		static struct devfs_data t[DEVFS_COUNT]; /* STATIC */
+		struct vfs_node *n = alloc_node(vfs_type_directory, &t[0]);
+
+		strcpy(&devfs_root_table[i].name[0], &name[0]);
+
+		if ((devfs_root_table[i].node = n) == NULL)
+			r = DE_MEMORY;
+	}
+
 	node->n_release(&node);
 
 	return r;
