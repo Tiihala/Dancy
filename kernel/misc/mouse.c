@@ -27,13 +27,13 @@ struct mse_device {
 };
 
 static struct mse_device mse_devices[] = {
-	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse-1" },
-	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse-2" },
-	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse-3" },
-	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse-4" },
-	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse-5" },
-	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse-6" },
-	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse-gui" }
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse/0" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse/1" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse/2" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse/3" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse/4" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse/5" },
+	{ { NULL, NULL }, { 0 }, 0, "/dev/dancy-mouse/gui" }
 };
 
 #define MSE_DEVICE_COUNT ((int)(sizeof(mse_devices) / sizeof(mse_devices[0])))
