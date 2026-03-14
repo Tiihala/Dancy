@@ -180,7 +180,7 @@ int console_init(void)
 		char buffer[24];
 
 		r = snprintf(&buffer[0], sizeof(buffer),
-			"/dev/dancy-console-%d", i + 1);
+			"/dev/dancy-console/%d", i);
 
 		if (r != 20)
 			return DE_UNEXPECTED;

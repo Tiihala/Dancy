@@ -28,7 +28,7 @@ static void write_console_message(int i)
 		char message[32];
 
 		r = snprintf(&console[0], sizeof(console),
-			"/dev/dancy-console-%d", i + 1);
+			"/dev/dancy-console/%d", i);
 
 		if (r != 20)
 			return;
@@ -111,7 +111,7 @@ static void process_consoles(void)
 
 		if (state[i] < 0) {
 			r = snprintf(&console[0], sizeof(console),
-				"/dev/dancy-console-%d", i + 1);
+				"/dev/dancy-console/%d", i);
 
 			if (r != 20)
 				break;
