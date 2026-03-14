@@ -30,7 +30,7 @@ struct devfs_data {
 
 static struct devfs_data devfs_root_table[DEVFS_COUNT];
 
-static struct vfs_node *alloc_node(int i, int type, void *internal_data);
+static struct vfs_node *alloc_node(int type, void *internal_data);
 
 static int n_open(struct vfs_node *node, const char *name,
 	struct vfs_node **new_node, int type, int mode)
@@ -67,7 +67,7 @@ static int n_open(struct vfs_node *node, const char *name,
 
 	for (i = 1; i < DEVFS_COUNT; i++) {
 		if (devfs_table[i].node == NULL) {
-			devfs_table[i].node = alloc_node(i, type, NULL);
+			devfs_table[i].node = alloc_node(type, NULL);
 
 			if (devfs_table[i].node == NULL)
 				return mtx_unlock(&devfs_mtx), DE_MEMORY;
@@ -114,9 +114,8 @@ static int n_readdir(struct vfs_node *node,
 	return mtx_unlock(&devfs_mtx), 0;
 }
 
-static struct vfs_node *alloc_node(int i, int type, void *internal_data)
+static struct vfs_node *alloc_node(int type, void *internal_data)
 {
-	struct devfs_data *devfs_table = internal_data;
 	struct vfs_node *node;
 
 	if ((node = malloc(sizeof(*node))) == NULL)
@@ -129,9 +128,6 @@ static struct vfs_node *alloc_node(int i, int type, void *internal_data)
 	node->n_open = n_open;
 	node->n_readdir = n_readdir;
 	node->internal_data = internal_data;
-
-	if (devfs_table != NULL)
-		devfs_table[i].node = node;
 
 	return node;
 }
@@ -153,7 +149,9 @@ int devfs_init(void)
 
 	node->n_release(&node);
 
-	node = alloc_node(0, vfs_type_directory, &devfs_root_table[0]);
+	node = alloc_node(vfs_type_directory, &devfs_root_table[0]);
+	devfs_root_table[0].node = node;
+
 	if (node == NULL)
 		return DE_MEMORY;
 
