@@ -56,9 +56,6 @@ FILE *fopen(const char *path, const char *mode)
 	}
 
 	for (i = 1; /* void */; i++) {
-		if (i > 4)
-			return (errno = EINVAL), NULL;
-
 		if ((c = (int)((unsigned char)mode[i])) == '\0')
 			break;
 
@@ -67,13 +64,11 @@ FILE *fopen(const char *path, const char *mode)
 				o_flags &= (~(O_ACCMODE));
 				o_flags |= O_RDWR;
 				break;
-			case 'b':
-				break;
 			case 'x':
 				o_flags |= O_EXCL;
 				break;
 			default:
-				return (errno = EINVAL), NULL;
+				break;
 		}
 	}
 
