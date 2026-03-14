@@ -53,7 +53,7 @@ ARCTIC_PROGRAMS_INIT_OBJECTS_32= \
  ./o32/arctic/programs/init/operate.o \
  ./o32/arctic/libc.a \
 
-ARCTIC_PROGRAMS_LD-DANCY_OBJECTS_32= \
+ARCTIC_PROGRAMS_LD_DANCY_OBJECTS_32= \
  ./o32/arctic/programs/ld-dancy/elf.o \
  ./o32/arctic/programs/ld-dancy/main.o \
  ./o32/arctic/programs/ld-dancy/operate.o \
@@ -187,7 +187,7 @@ ARCTIC_PROGRAMS_INIT_OBJECTS_64= \
  ./o64/arctic/programs/init/operate.o \
  ./o64/arctic/libc.a \
 
-ARCTIC_PROGRAMS_LD-DANCY_OBJECTS_64= \
+ARCTIC_PROGRAMS_LD_DANCY_OBJECTS_64= \
  ./o64/arctic/programs/ld-dancy/elf.o \
  ./o64/arctic/programs/ld-dancy/main.o \
  ./o64/arctic/programs/ld-dancy/operate.o \
@@ -298,7 +298,7 @@ ARCTIC_PROGRAMS_HEXDUMP_HEADERS= \
 ARCTIC_PROGRAMS_INIT_HEADERS= \
  ./arctic/programs/init/main.h \
 
-ARCTIC_PROGRAMS_LD-DANCY_HEADERS= \
+ARCTIC_PROGRAMS_LD_DANCY_HEADERS= \
  ./arctic/programs/ld-dancy/main.h \
 
 ARCTIC_PROGRAMS_LS_HEADERS= \
@@ -374,8 +374,8 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 ./arctic/bin32/init: $(ARCTIC_PROGRAMS_INIT_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_INIT_OBJECTS_32)
 
-./arctic/bin32/ld-dancy: $(ARCTIC_PROGRAMS_LD-DANCY_OBJECTS_32)
-	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LD-DANCY_OBJECTS_32)
+./arctic/bin32/ld-dancy: $(ARCTIC_PROGRAMS_LD_DANCY_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LD_DANCY_OBJECTS_32)
 
 ./arctic/bin32/ls: $(ARCTIC_PROGRAMS_LS_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LS_OBJECTS_32)
@@ -449,8 +449,8 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 ./arctic/bin64/init: $(ARCTIC_PROGRAMS_INIT_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_INIT_OBJECTS_64)
 
-./arctic/bin64/ld-dancy: $(ARCTIC_PROGRAMS_LD-DANCY_OBJECTS_64)
-	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LD-DANCY_OBJECTS_64)
+./arctic/bin64/ld-dancy: $(ARCTIC_PROGRAMS_LD_DANCY_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LD_DANCY_OBJECTS_64)
 
 ./arctic/bin64/ls: $(ARCTIC_PROGRAMS_LS_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_LS_OBJECTS_64)

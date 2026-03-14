@@ -1110,17 +1110,17 @@
 
 ./o32/arctic/programs/ld-dancy/elf.o: \
     ./arctic/programs/ld-dancy/elf.c $(DANCY_DEPS) \
-    $(ARCTIC_PROGRAMS_LD-DANCY_HEADERS)
+    $(ARCTIC_PROGRAMS_LD_DANCY_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/ld-dancy/elf.c
 
 ./o32/arctic/programs/ld-dancy/main.o: \
     ./arctic/programs/ld-dancy/main.c $(DANCY_DEPS) \
-    $(ARCTIC_PROGRAMS_LD-DANCY_HEADERS)
+    $(ARCTIC_PROGRAMS_LD_DANCY_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/ld-dancy/main.c
 
 ./o32/arctic/programs/ld-dancy/operate.o: \
     ./arctic/programs/ld-dancy/operate.c $(DANCY_DEPS) \
-    $(ARCTIC_PROGRAMS_LD-DANCY_HEADERS)
+    $(ARCTIC_PROGRAMS_LD_DANCY_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/programs/ld-dancy/operate.c
 
 ./o32/arctic/programs/ls/main.o: \
@@ -2937,17 +2937,17 @@
 
 ./o64/arctic/programs/ld-dancy/elf.o: \
     ./arctic/programs/ld-dancy/elf.c $(DANCY_DEPS) \
-    $(ARCTIC_PROGRAMS_LD-DANCY_HEADERS)
+    $(ARCTIC_PROGRAMS_LD_DANCY_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/ld-dancy/elf.c
 
 ./o64/arctic/programs/ld-dancy/main.o: \
     ./arctic/programs/ld-dancy/main.c $(DANCY_DEPS) \
-    $(ARCTIC_PROGRAMS_LD-DANCY_HEADERS)
+    $(ARCTIC_PROGRAMS_LD_DANCY_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/ld-dancy/main.c
 
 ./o64/arctic/programs/ld-dancy/operate.o: \
     ./arctic/programs/ld-dancy/operate.c $(DANCY_DEPS) \
-    $(ARCTIC_PROGRAMS_LD-DANCY_HEADERS)
+    $(ARCTIC_PROGRAMS_LD_DANCY_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/programs/ld-dancy/operate.c
 
 ./o64/arctic/programs/ls/main.o: \
