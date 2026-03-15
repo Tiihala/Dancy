@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Antti Tiihala
+ * Copyright (c) 2022, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,6 +18,19 @@
  */
 
 #include <dancy.h>
+
+static struct {
+	int state;
+	const char *label;
+	const char *name;
+} named_mount[] = {
+	{ 0, "BOOT@DANCY ", "/boot"  },
+	{ 0, "ETC@DANCY  ", "/etc"   },
+	{ 0, "HOME@DANCY ", "/home"  },
+	{ 0, "OPT@DANCY  ", "/opt"   },
+	{ 0, "USR@DANCY  ", "/usr"   },
+	{ 0, NULL, NULL }
+};
 
 static int mount_drive(const char *name, struct vfs_node *dev_node)
 {
@@ -48,9 +61,10 @@ static int mount_drive(const char *name, struct vfs_node *dev_node)
 	return r;
 }
 
-static int inspect_bpb(const unsigned char *buf)
+static int inspect_bpb(const unsigned char *buf, int *named_mount_i)
 {
 	unsigned int val;
+	int i;
 
 	/*
 	 * Check the jump instruction.
@@ -101,10 +115,28 @@ static int inspect_bpb(const unsigned char *buf)
 	if (val != 1 && val != 2)
 		return 1;
 
+	/*
+	 * Check the volume label.
+	 */
+	for (i = 0; named_mount[i].label != NULL; i++) {
+		const char *label = named_mount[i].label;
+		size_t size = strlen(label);
+
+		if (buf[38] == 0x29 && !memcmp(&buf[43], label, size)) {
+			*named_mount_i = i;
+			break;
+		}
+
+		if (buf[66] == 0x29 && !memcmp(&buf[71], label, size)) {
+			*named_mount_i = i;
+			break;
+		}
+	}
+
 	return 0;
 }
 
-static int detect_fs(struct vfs_node *dev_node)
+static int detect_fs(struct vfs_node *dev_node, int *named_mount_i)
 {
 	unsigned char *buf;
 	size_t size;
@@ -129,7 +161,7 @@ static int detect_fs(struct vfs_node *dev_node)
 		return free(buf), DE_UNSUPPORTED;
 	}
 
-	if (inspect_bpb(buf))
+	if (inspect_bpb(buf, named_mount_i))
 		r = DE_UNSUPPORTED;
 
 	return free(buf), r;
@@ -210,6 +242,7 @@ static int find_drives(void)
 	qsort(partitions, (size_t)count, sizeof(*partitions), qsort_func);
 
 	for (i = 0; i < count && letter <= 't'; i++) {
+		int named_mount_i = -1;
 		char *name = &buf[0];
 
 		snprintf(name, 16, "/dev/%s", &partitions[i].name[0]);
@@ -217,14 +250,19 @@ static int find_drives(void)
 		if ((r = vfs_open(name, &dev_node, 0, 0)) != 0)
 			return free(partitions), r;
 
-		if ((r = detect_fs(dev_node)) != 0) {
+		if ((r = detect_fs(dev_node, &named_mount_i)) != 0) {
 			dev_node->n_release(&dev_node);
 			if (r != DE_UNSUPPORTED)
 				return free(partitions), r;
 			continue;
 		}
 
-		snprintf(name, 16, "/mnt/%c", letter++);
+		if (named_mount_i >= 0 && !named_mount[named_mount_i].state) {
+			named_mount[named_mount_i].state = 1;
+			name = (char *)named_mount[named_mount_i].name;
+		} else {
+			snprintf(name, 16, "/mnt/%c", letter++);
+		}
 
 		r = mount_drive(name, dev_node);
 		dev_node->n_release(&dev_node);
