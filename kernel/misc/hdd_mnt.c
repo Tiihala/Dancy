@@ -24,11 +24,11 @@ static struct {
 	const char *label;
 	const char *name;
 } named_mount[] = {
-	{ 0, "BOOT@DANCY ", "/boot"  },
-	{ 0, "ETC@DANCY  ", "/etc"   },
-	{ 0, "HOME@DANCY ", "/home"  },
-	{ 0, "OPT@DANCY  ", "/opt"   },
-	{ 0, "USR@DANCY  ", "/usr"   },
+	{ 0, "DANCY-BOOT ", "/boot" },
+	{ 0, "DANCY-ETC  ", "/etc"  },
+	{ 0, "DANCY-HOME ", "/home" },
+	{ 0, "DANCY-OPT  ", "/opt"  },
+	{ 0, "DANCY-USR  ", "/usr"  },
 	{ 0, NULL, NULL }
 };
 
