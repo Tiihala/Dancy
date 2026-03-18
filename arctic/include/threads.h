@@ -44,6 +44,14 @@ enum __dancy_thrd_constants {
 	thrd_timedout
 };
 
+typedef struct {
+	int _lock[2];
+} once_flag;
+
+#define ONCE_FLAG_INIT { { 0, 1 } }
+
+void call_once(once_flag *flag, void (*init_routine)(void));
+
 void mtx_destroy(mtx_t *mtx);
 int mtx_init(mtx_t *mtx, int type);
 int mtx_lock(mtx_t *mtx);
