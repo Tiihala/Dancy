@@ -122,6 +122,11 @@ int idt_user_exception(int num, void *stack)
 				return 0;
 		}
 
+		printk("[PROCESS] ID %llu, IP %08llX, "
+			"CR2 %08llX, Page-Fault Exception\n",
+			(unsigned long long)task_current()->id,
+			(unsigned long long)p[0], (unsigned long long)cr2);
+
 		task_exit(SIGSEGV);
 	}
 
