@@ -110,10 +110,32 @@ static void tab_command(struct dsh_prompt *state, const char *command)
 	int buffer_end = (int)(sizeof(buffer) / sizeof(buffer[0]));
 	int buffer_i = 0;
 
-	tab_command_bin("/bin",
-		command, command_length,
-		array, array_end, &array_i,
-		buffer, buffer_end, &buffer_i);
+	{
+		const char *p1 = dsh_var_read("PATH");
+		char *p2, *p3, *p4;
+
+		if (p1 == NULL || *p1 == '\0')
+			p1 = "/bin";
+
+		p2 = strdup(p1), p3 = p2;
+
+		while (p3 && *p3 != '\0') {
+			if ((p4 = strchr(p3, ':')) != NULL)
+				*p4++ = '\0';
+			else
+				p4 = strchr(p3, '\0');
+
+			if (*p3 == '/') {
+				tab_command_bin(p3, command, command_length,
+					array, array_end, &array_i,
+					buffer, buffer_end, &buffer_i);
+			}
+
+			p3 = p4;
+		}
+
+		free(p2);
+	}
 
 	for (i = 0; dsh_builtin_array[i].name != NULL; i++) {
 		const char *name = dsh_builtin_array[i].name;

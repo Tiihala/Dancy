@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Antti Tiihala
+ * Copyright (c) 2024, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -81,10 +81,32 @@ static void execute_spawn(struct dsh_execute_state *state, const char *path)
 	}
 }
 
+static int path_spawn(struct dsh_execute_state *state,
+	const char *dir_name, const char *name, int last_component)
+{
+	struct stat s;
+	char path[512];
+
+	if (strlen(dir_name) >= 250 || strlen(name) >= 250) {
+		fputs("dsh: command name overflow...\n", stderr);
+		if (!dsh_interactive)
+			dsh_operate_state = 0;
+		return 1;
+	}
+
+	strcpy(&path[0], dir_name);
+	strcat(&path[0], "/");
+	strcat(&path[0], name);
+
+	if (!last_component && stat(&path[0], &s) == -1 && errno == ENOENT)
+		return 0;
+
+	return execute_spawn(state, &path[0]), 1;
+}
+
 void dsh_execute(struct dsh_execute_state *state)
 {
 	const char *path = state->argv[0];
-	char cmd[512];
 	size_t i;
 
 	dsh_exit_code = 127;
@@ -104,18 +126,33 @@ void dsh_execute(struct dsh_execute_state *state)
 	}
 
 	if (!strchr(path, '/')) {
-		if (strlen(path) > 255) {
-			fputs("dsh: command name overflow...\n", stderr);
-			if (!dsh_interactive)
-				dsh_operate_state = 0;
-			return;
-		}
-		strcpy(&cmd[0], "/bin/");
-		strcat(&cmd[0], path);
-		path = &cmd[0];
-	}
+		const char *p1 = dsh_var_read("PATH");
+		char *p2, *p3, *p4;
 
-	execute_spawn(state, path);
+		if (p1 == NULL || *p1 == '\0')
+			p1 = "/bin";
+
+		p2 = strdup(p1), p3 = p2;
+
+		while (p3 && *p3 != '\0') {
+			if ((p4 = strchr(p3, ':')) != NULL)
+				*p4++ = '\0';
+			else
+				p4 = strchr(p3, '\0');
+
+			if (*p3 == '/' && p4 != NULL) {
+				if (path_spawn(state, p3, path, *p4 == '\0'))
+					break;
+			}
+
+			p3 = p4;
+		}
+
+		free(p2);
+
+	} else {
+		execute_spawn(state, path);
+	}
 
 	if (dsh_tcpgrp)
 		tcsetpgrp(0, dsh_tcpgrp);
