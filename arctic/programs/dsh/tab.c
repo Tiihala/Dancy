@@ -54,19 +54,12 @@ static int tab_qsort(const void *p1, const void *p2)
 	return strcmp(*s1, *s2);
 }
 
-static void tab_command(struct dsh_prompt *state, const char *command)
+static void tab_command_bin(const char *dir_name,
+	const char *command, size_t command_length,
+	const char *array[], int array_end, int *array_i,
+	char buffer[], int buffer_end, int *buffer_i)
 {
-	size_t command_length = strlen(command);
-	DIR *dir = opendir("/bin");
-	int i;
-
-	const char *array[1024];
-	int array_end = (int)(sizeof(array) / sizeof(array[0]));
-	int array_i = 0;
-
-	char buffer[0x10000];
-	int buffer_end = (int)(sizeof(buffer) / sizeof(buffer[0]));
-	int buffer_i = 0;
+	DIR *dir = opendir(dir_name);
 
 	while (dir != NULL) {
 		struct dirent *d = readdir(dir);
@@ -77,7 +70,7 @@ static void tab_command(struct dsh_prompt *state, const char *command)
 			break;
 		}
 
-		p1 = &buffer[buffer_i];
+		p1 = &buffer[(*buffer_i)];
 		p2 = &d->d_name[0];
 
 		if (p2[0] == '.' && (!strcmp(p2, ".") || !strcmp(p2, "..")))
@@ -90,18 +83,37 @@ static void tab_command(struct dsh_prompt *state, const char *command)
 			continue;
 
 		for (;;) {
-			if (buffer_i + 1 >= buffer_end) {
+			if ((*buffer_i) + 1 >= buffer_end) {
 				p1 = NULL;
 				break;
 			}
 
-			if ((buffer[buffer_i++] = *p2++) == '\0')
+			if ((buffer[(*buffer_i)++] = *p2++) == '\0')
 				break;
 		}
 
-		if (p1 != NULL && array_i < array_end)
-			array[array_i++] = p1;
+		if (p1 != NULL && (*array_i) < array_end)
+			array[(*array_i)++] = p1;
 	}
+}
+
+static void tab_command(struct dsh_prompt *state, const char *command)
+{
+	size_t command_length = strlen(command);
+	int i;
+
+	const char *array[1024];
+	int array_end = (int)(sizeof(array) / sizeof(array[0]));
+	int array_i = 0;
+
+	char buffer[0x10000];
+	int buffer_end = (int)(sizeof(buffer) / sizeof(buffer[0]));
+	int buffer_i = 0;
+
+	tab_command_bin("/bin",
+		command, command_length,
+		array, array_end, &array_i,
+		buffer, buffer_end, &buffer_i);
 
 	for (i = 0; dsh_builtin_array[i].name != NULL; i++) {
 		const char *name = dsh_builtin_array[i].name;
