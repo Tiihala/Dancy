@@ -26,7 +26,7 @@
  * Declarations of arg.c
  */
 int arg_create(void **arg_state,
-	const char *path, const void *argv, const void *envp);
+	struct vfs_node *node, const void *argv, const void *envp);
 
 int arg_copy(void *arg_state, addr_t *user_sp);
 int arg_set_cmdline(struct vfs_node *node, addr_t user_sp, addr_t user_ld);

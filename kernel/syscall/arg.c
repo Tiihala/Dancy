@@ -47,16 +47,27 @@ static void *alloc_arg_state(size_t *size)
 }
 
 int arg_create(void **arg_state,
-	const char *path, const void *argv, const void *envp)
+	struct vfs_node *node, const void *argv, const void *envp)
 {
 	size_t size = sizeof(struct arg_header);
 	int argv_count = 0, envp_count = 0;
 	addr_t base, *argv_pointer, *envp_pointer;
 	struct arg_header *ah;
+
+	char _path[256];
+	char *path = &_path[0];
+
 	int i, r;
 	char *p;
 
 	*arg_state = NULL;
+
+	if (node != NULL) {
+		if ((r = vfs_realpath(node, &_path[0], sizeof(_path))) != 0)
+			return r;
+	} else {
+		path = (void *)task_current()->cmd.line;
+	}
 
 	if (argv && (r = pg_check_user_vector(argv, &argv_count)) != 0)
 		return r;

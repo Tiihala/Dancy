@@ -93,7 +93,7 @@ static long long dancy_syscall_execve(va_list va)
 		return -ENOEXEC;
 	}
 
-	if ((r = arg_create(&arg_state, path, argv, envp)) != 0) {
+	if ((r = arg_create(&arg_state, node, argv, envp)) != 0) {
 		node->n_release(&node);
 
 		if (r == DE_MEMORY)
@@ -199,7 +199,7 @@ static long long dancy_syscall_spawn(va_list va)
 		return -ENOEXEC;
 	}
 
-	if ((r = arg_create(&arg_state, path, argv, envp)) != 0) {
+	if ((r = arg_create(&arg_state, node, argv, envp)) != 0) {
 		node->n_release(&node);
 
 		if (r == DE_MEMORY)
@@ -1321,7 +1321,6 @@ static long long dancy_syscall_arctic(va_list va)
 	const void *envp = va_arg(va, const void *);
 	int flags = va_arg(va, int);
 
-	const char *path = (const void *)task_current()->cmd.line;
 	addr_t user_sp;
 	void *arg_state;
 	int r;
@@ -1332,7 +1331,7 @@ static long long dancy_syscall_arctic(va_list va)
 	if (flags != 0)
 		return -EINVAL;
 
-	if ((r = arg_create(&arg_state, path, argv, envp)) != 0) {
+	if ((r = arg_create(&arg_state, NULL, argv, envp)) != 0) {
 		if (r == DE_MEMORY)
 			return -ENOMEM;
 		return -EFAULT;
