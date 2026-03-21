@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023 Antti Tiihala
+ * Copyright (c) 2022, 2023, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -78,7 +78,7 @@ int arg_create(void **arg_state,
 	if (argv_count > 0xFFFF || envp_count > 0xFFFF)
 		return DE_OVERFLOW;
 
-	size += ((size_t)(argv_count + 2) * sizeof(void *));
+	size += ((size_t)(argv_count + 3) * sizeof(void *));
 	size += ((size_t)(envp_count + 1) * sizeof(void *));
 
 	size += (strlen(path) + 1);
@@ -132,13 +132,13 @@ int arg_create(void **arg_state,
 
 	p = *arg_state;
 	p += (sizeof(struct arg_header));
-	p += ((size_t)(argv_count + 2) * sizeof(void *));
+	p += ((size_t)(argv_count + 3) * sizeof(void *));
 	envp_pointer = (addr_t *)((addr_t)p);
 	ah->envp = (cpu_native_t)(base + ((addr_t)p - (addr_t)(*arg_state)));
 
 	p = *arg_state;
 	p += (sizeof(struct arg_header));
-	p += ((size_t)(argv_count + 2) * sizeof(void *));
+	p += ((size_t)(argv_count + 3) * sizeof(void *));
 	p += ((size_t)(envp_count + 1) * sizeof(void *));
 
 	{
@@ -224,6 +224,8 @@ int arg_set_cmdline(struct vfs_node *node, addr_t user_sp)
 				break;
 			path[i + 1] = '\0';
 		}
+		if (!strcmp(&path[0], "/bin/ld-dancy"))
+			argc += 1, argv -= 1;
 	} else {
 		if ((r = vfs_realpath(node, &path[0], sizeof(path))) != 0)
 			return r;
@@ -289,9 +291,13 @@ int arg_set_cmdline(struct vfs_node *node, addr_t user_sp)
 void arg_enable_path(void *arg_state)
 {
 	struct arg_header *ah = (struct arg_header *)arg_state;
+	cpu_native_t *p;
 
 	ah->argc += 1;
 	ah->argv -= ((cpu_native_t)sizeof(cpu_native_t));
+
+	p = (void *)((addr_t)arg_state + (addr_t)sizeof(struct arg_header));
+	*(p + 1) = *(p + 0);
 }
 
 void arg_delete(void *arg_state)
