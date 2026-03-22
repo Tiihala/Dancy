@@ -136,6 +136,11 @@ ARCTIC_PROGRAMS_TRUE_OBJECTS_32= \
  ./o32/arctic/programs/true/main.o \
  ./o32/arctic/libc.a \
 
+ARCTIC_PROGRAMS_WHICH_OBJECTS_32= \
+ ./o32/arctic/programs/which/main.o \
+ ./o32/arctic/programs/which/operate.o \
+ ./o32/arctic/libc.a \
+
 ARCTIC_PROGRAMS_CAT_OBJECTS_64= \
  ./o64/arctic/programs/cat/main.o \
  ./o64/arctic/programs/cat/operate.o \
@@ -270,6 +275,11 @@ ARCTIC_PROGRAMS_TRUE_OBJECTS_64= \
  ./o64/arctic/programs/true/main.o \
  ./o64/arctic/libc.a \
 
+ARCTIC_PROGRAMS_WHICH_OBJECTS_64= \
+ ./o64/arctic/programs/which/main.o \
+ ./o64/arctic/programs/which/operate.o \
+ ./o64/arctic/libc.a \
+
 ##############################################################################
 
 ARCTIC_PROGRAMS_CAT_HEADERS= \
@@ -344,6 +354,9 @@ ARCTIC_PROGRAMS_TERMINAL_HEADERS= \
  ./arctic/programs/terminal/main.h \
 
 ARCTIC_PROGRAMS_TRUE_HEADERS= \
+
+ARCTIC_PROGRAMS_WHICH_HEADERS= \
+ ./arctic/programs/which/main.h \
 
 ##############################################################################
 
@@ -422,6 +435,9 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 ./arctic/bin32/true: $(ARCTIC_PROGRAMS_TRUE_OBJECTS_32)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_TRUE_OBJECTS_32)
 
+./arctic/bin32/which: $(ARCTIC_PROGRAMS_WHICH_OBJECTS_32)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_WHICH_OBJECTS_32)
+
 ./arctic/bin64/cat: $(ARCTIC_PROGRAMS_CAT_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_CAT_OBJECTS_64)
 
@@ -496,3 +512,6 @@ ARCTIC_PROGRAMS_TRUE_HEADERS= \
 
 ./arctic/bin64/true: $(ARCTIC_PROGRAMS_TRUE_OBJECTS_64)
 	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_TRUE_OBJECTS_64)
+
+./arctic/bin64/which: $(ARCTIC_PROGRAMS_WHICH_OBJECTS_64)
+	$(DY_LINK) -o$@ $(ARCTIC_PROGRAMS_WHICH_OBJECTS_64)

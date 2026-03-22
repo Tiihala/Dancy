@@ -29,6 +29,7 @@ ARCTIC_BIN32_FILES= \
  ./arctic/bin32/tee \
  ./arctic/bin32/terminal \
  ./arctic/bin32/true \
+ ./arctic/bin32/which \
 
 ##############################################################################
 
@@ -60,3 +61,4 @@ ARCTIC_BIN32_FILES= \
 	$(DY_MCOPY) -i $@ ./arctic/bin32/tee ::tee
 	$(DY_MCOPY) -i $@ ./arctic/bin32/terminal ::terminal
 	$(DY_MCOPY) -i $@ ./arctic/bin32/true ::true
+	$(DY_MCOPY) -i $@ ./arctic/bin32/which ::which
