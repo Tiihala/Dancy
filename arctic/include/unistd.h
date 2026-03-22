@@ -93,7 +93,7 @@ int isatty(int fd);
 
 int execv(const char *path, char *const argv[]);
 int execve(const char *path, char *const argv[], char *const envp[]);
-int execvp(const char *path, char *const argv[]);
+int execvp(const char *file, char *const argv[]);
 
 __Dancy_Header_End
 
