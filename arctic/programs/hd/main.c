@@ -14,15 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * hd/main.c
- *      Execute /bin/hexdump -C
+ *      Execute hexdump -C
  */
 
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-extern char **environ;
 
 int main(int argc, char *argv[])
 {
@@ -46,9 +44,9 @@ int main(int argc, char *argv[])
 	}
 
 	errno = 0;
-	execve("/bin/hexdump", new_argv, environ);
+	execvp("hexdump", new_argv);
 
-	perror("hd: execve(\"/bin/hexdump\", ...)");
+	perror("hd: execvp(\"hexdump\", ...)");
 	free(new_argv);
 
 	return EXIT_FAILURE;
