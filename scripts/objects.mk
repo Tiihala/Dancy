@@ -892,6 +892,10 @@
     ./arctic/libc/unistd/lseek.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/lseek.c
 
+./o32/arctic/libc/unistd/pathconf.o: \
+    ./arctic/libc/unistd/pathconf.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/pathconf.c
+
 ./o32/arctic/libc/unistd/pipe.o: \
     ./arctic/libc/unistd/pipe.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/pipe.c
@@ -2740,6 +2744,10 @@
 ./o64/arctic/libc/unistd/lseek.o: \
     ./arctic/libc/unistd/lseek.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/lseek.c
+
+./o64/arctic/libc/unistd/pathconf.o: \
+    ./arctic/libc/unistd/pathconf.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/pathconf.c
 
 ./o64/arctic/libc/unistd/pipe.o: \
     ./arctic/libc/unistd/pipe.c $(DANCY_DEPS)
