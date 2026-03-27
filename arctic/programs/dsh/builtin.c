@@ -19,6 +19,24 @@
 
 #include "main.h"
 
+static int cmd_access(int argc, char *argv[])
+{
+	const char *usage = "Usage: access FILE...\n";
+	int i, r = 0;
+
+	if (argc < 2)
+		return fputs(usage, stderr), EXIT_FAILURE;
+
+	for (i = 1; i < argc; i++) {
+		if (access(argv[i], F_OK) == 0)
+			continue;
+		fprintf(stderr, "access: %s: %s\n", argv[i], strerror(errno));
+		r = EXIT_FAILURE;
+	}
+
+	return r;
+}
+
 static int cmd_chdir(int argc, char *argv[])
 {
 	const char *path = (argc > 1) ? argv[1] : NULL;
@@ -221,17 +239,20 @@ static int cmd_rename(int argc, char *argv[])
 
 static int cmd_unlink(int argc, char *argv[])
 {
-	const char *usage = "Usage: unlink FILE\n";
+	const char *usage = "Usage: unlink FILE...\n";
+	int i, r = 0;
 
-	if (argc != 2)
+	if (argc < 2)
 		return fputs(usage, stderr), EXIT_FAILURE;
 
-	if (unlink(argv[1]) != 0) {
-		fprintf(stderr, "unlink: %s: %s\n", argv[1], strerror(errno));
-		return EXIT_FAILURE;
+	for (i = 1; i < argc; i++) {
+		if (unlink(argv[i]) == 0)
+			continue;
+		fprintf(stderr, "unlink: %s: %s\n", argv[i], strerror(errno));
+		r = EXIT_FAILURE;
 	}
 
-	return 0;
+	return r;
 }
 
 static int cmd_unset(int argc, char *argv[])
@@ -270,6 +291,7 @@ static int cmd_default(int argc, char *argv[])
 }
 
 struct dsh_builtin dsh_builtin_array[] = {
+	{ cmd_access, "access" },
 	{ cmd_chdir, "cd" },
 	{ cmd_chdir, "chdir" },
 	{ cmd_clear, "clear" },
