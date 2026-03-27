@@ -62,6 +62,19 @@ __Dancy_Header_Begin
 #define PRIX64 "llX"
 
 /*
+ * The scanf() macros for unsigned integers.
+ */
+#define SCNu8  "u"
+#define SCNu16 "u"
+#define SCNu32 "u"
+#define SCNu64 "llu"
+
+#define SCNx8  "x"
+#define SCNx16 "x"
+#define SCNx32 "x"
+#define SCNx64 "llx"
+
+/*
  * Handle the LP64 data model.
  */
 #if __SIZEOF_LONG__ == 8
@@ -79,6 +92,12 @@ __Dancy_Header_Begin
 #define PRIu64 "lu"
 #define PRIx64 "lx"
 #define PRIX64 "lX"
+
+#undef SCNu64
+#undef SCNx64
+
+#define SCNu64 "lu"
+#define SCNx64 "lx"
 
 #endif
 

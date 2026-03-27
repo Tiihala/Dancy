@@ -95,6 +95,12 @@ int execv(const char *path, char *const argv[]);
 int execve(const char *path, char *const argv[], char *const envp[]);
 int execvp(const char *file, char *const argv[]);
 
+#define _PC_NAME_MAX 1001
+#define _PC_PATH_MAX 1002
+
+long pathconf(const char *path, int name);
+int access(const char *path, int mode);
+
 __Dancy_Header_End
 
 #endif

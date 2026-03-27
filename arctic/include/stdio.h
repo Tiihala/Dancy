@@ -95,6 +95,7 @@ int __dancy_scanf(int (*get)(void *), int (*unget)(int, void *), void *stream,
 	const char *format, va_list arg);
 
 FILE *fopen(const char *path, const char *mode);
+FILE *fdopen(int fd, const char *mode);
 FILE *freopen(const char *path, const char *mode, FILE *stream);
 
 int fclose(FILE *stream);

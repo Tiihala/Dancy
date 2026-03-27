@@ -27,6 +27,14 @@ __Dancy_Header_Begin
 double fabs(double x);
 float fabsf(float x);
 
+double ldexp(double x, int e);
+float ldexpf(float x, int e);
+long double ldexpl(long double x, int e);
+
+double frexp(double x, int *e);
+float frexpf(float x, int *e);
+long double frexpl(long double x, int *e);
+
 __Dancy_Header_End
 
 #endif

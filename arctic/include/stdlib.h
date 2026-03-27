@@ -75,6 +75,14 @@ long long strtoll(const char *str, char **endptr, int base);
 unsigned long strtoul(const char *str, char **endptr, int base);
 unsigned long long strtoull(const char *str, char **endptr, int base);
 
+char *mktemp(char *template);
+char *mkdtemp(char *template);
+
+int setenv(const char *name, const char *value, int overwrite);
+int unsetenv(const char *name);
+
+size_t mbstowcs(wchar_t *dest, const char *str, size_t size);
+
 __Dancy_Header_End
 
 #endif
