@@ -54,6 +54,7 @@ DANCY_HEADERS= \
  ./arctic/include/sys/resource.h \
  ./arctic/include/sys/select.h \
  ./arctic/include/sys/stat.h \
+ ./arctic/include/sys/time.h \
  ./arctic/include/sys/types.h \
  ./arctic/include/sys/wait.h \
  ./arctic/include/termios.h \
