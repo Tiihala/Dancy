@@ -99,6 +99,12 @@ int execvp(const char *file, char *const argv[]);
 #define _PC_PATH_MAX 1002
 
 long pathconf(const char *path, int name);
+
+#define F_OK 0
+#define R_OK 4
+#define W_OK 2
+#define X_OK 1
+
 int access(const char *path, int mode);
 
 __Dancy_Header_End
