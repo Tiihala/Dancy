@@ -832,6 +832,10 @@
     ./arctic/libc/unistd/_exit.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/_exit.c
 
+./o32/arctic/libc/unistd/access.o: \
+    ./arctic/libc/unistd/access.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/access.c
+
 ./o32/arctic/libc/unistd/chdir.o: \
     ./arctic/libc/unistd/chdir.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/chdir.c
@@ -2676,6 +2680,10 @@
 ./o64/arctic/libc/unistd/_exit.o: \
     ./arctic/libc/unistd/_exit.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/_exit.c
+
+./o64/arctic/libc/unistd/access.o: \
+    ./arctic/libc/unistd/access.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/access.c
 
 ./o64/arctic/libc/unistd/chdir.o: \
     ./arctic/libc/unistd/chdir.c $(DANCY_DEPS)

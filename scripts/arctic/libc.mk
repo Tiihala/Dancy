@@ -208,6 +208,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/time/strftime.o \
  ./o32/arctic/libc/time/time.o \
  ./o32/arctic/libc/unistd/_exit.o \
+ ./o32/arctic/libc/unistd/access.o \
  ./o32/arctic/libc/unistd/chdir.o \
  ./o32/arctic/libc/unistd/close.o \
  ./o32/arctic/libc/unistd/dup.o \
@@ -457,6 +458,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/time/strftime.o \
  ./o64/arctic/libc/time/time.o \
  ./o64/arctic/libc/unistd/_exit.o \
+ ./o64/arctic/libc/unistd/access.o \
  ./o64/arctic/libc/unistd/chdir.o \
  ./o64/arctic/libc/unistd/close.o \
  ./o64/arctic/libc/unistd/dup.o \
