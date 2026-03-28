@@ -99,6 +99,7 @@ int __dancy_scanf(int (*get)(void *), int (*unget)(int, void *), void *stream,
 FILE *fopen(const char *path, const char *mode);
 FILE *fdopen(int fd, const char *mode);
 FILE *freopen(const char *path, const char *mode, FILE *stream);
+FILE *tmpfile(void);
 
 int fclose(FILE *stream);
 int fflush(FILE *stream);
