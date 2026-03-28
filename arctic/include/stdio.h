@@ -59,6 +59,8 @@ struct __dancy_FILE {
 	int _buffer_end;
 	unsigned char *_buffer;
 	size_t _buffer_size;
+
+	char *_tmp;
 };
 
 typedef struct __dancy_fpos_t fpos_t;
