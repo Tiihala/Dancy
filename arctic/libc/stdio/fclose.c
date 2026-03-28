@@ -46,6 +46,9 @@ int fclose(FILE *stream)
 		if ((state & __DANCY_FILE_STATIC_BUFFER) == 0)
 			__dancy_free(stream->_buffer);
 
+		if (stream->_tmp != NULL)
+			unlink(stream->_tmp), __dancy_free(stream->_tmp);
+
 		mtx_unlock(&stream->_mtx);
 		mtx_destroy(&stream->_mtx);
 
