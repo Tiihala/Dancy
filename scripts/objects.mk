@@ -584,6 +584,10 @@
     ./arctic/libc/stdlib/atoll.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/atoll.c
 
+./o32/arctic/libc/stdlib/bsearch.o: \
+    ./arctic/libc/stdlib/bsearch.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/bsearch.c
+
 ./o32/arctic/libc/stdlib/exit.o: \
     ./arctic/libc/stdlib/exit.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/exit.c
@@ -2444,6 +2448,10 @@
 ./o64/arctic/libc/stdlib/atoll.o: \
     ./arctic/libc/stdlib/atoll.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/atoll.c
+
+./o64/arctic/libc/stdlib/bsearch.o: \
+    ./arctic/libc/stdlib/bsearch.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/bsearch.c
 
 ./o64/arctic/libc/stdlib/exit.o: \
     ./arctic/libc/stdlib/exit.c $(DANCY_DEPS)
