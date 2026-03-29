@@ -30,11 +30,11 @@ FILE *tmpfile(void)
 
 	mkdir("/tmp", 0777);
 
-	for (i = 0; i < 0x10000; i++) {
+	for (i = 0; i < 10000; i++) {
 		char path[16];
 
 		int r = snprintf(&path[0], sizeof(path),
-			"/tmp/%04X.tmp", (unsigned int)i);
+			"/tmp/%04d.tmp", i);
 
 		if (r != 13)
 			break;
