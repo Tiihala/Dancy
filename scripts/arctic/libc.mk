@@ -152,6 +152,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdlib/labs.o \
  ./o32/arctic/libc/stdlib/llabs.o \
  ./o32/arctic/libc/stdlib/mbstowcs.o \
+ ./o32/arctic/libc/stdlib/mkdtemp.o \
  ./o32/arctic/libc/stdlib/qsort.o \
  ./o32/arctic/libc/stdlib/realpath.o \
  ./o32/arctic/libc/stdlib/strtol.o \
@@ -406,6 +407,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdlib/labs.o \
  ./o64/arctic/libc/stdlib/llabs.o \
  ./o64/arctic/libc/stdlib/mbstowcs.o \
+ ./o64/arctic/libc/stdlib/mkdtemp.o \
  ./o64/arctic/libc/stdlib/qsort.o \
  ./o64/arctic/libc/stdlib/realpath.o \
  ./o64/arctic/libc/stdlib/strtol.o \
