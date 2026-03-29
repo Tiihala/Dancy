@@ -612,6 +612,10 @@
     ./arctic/libc/stdlib/mkdtemp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/mkdtemp.c
 
+./o32/arctic/libc/stdlib/mkstemp.o: \
+    ./arctic/libc/stdlib/mkstemp.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/mkstemp.c
+
 ./o32/arctic/libc/stdlib/qsort.o: \
     ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/qsort.c
@@ -2480,6 +2484,10 @@
 ./o64/arctic/libc/stdlib/mkdtemp.o: \
     ./arctic/libc/stdlib/mkdtemp.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/mkdtemp.c
+
+./o64/arctic/libc/stdlib/mkstemp.o: \
+    ./arctic/libc/stdlib/mkstemp.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/mkstemp.c
 
 ./o64/arctic/libc/stdlib/qsort.o: \
     ./arctic/libc/stdlib/qsort.c $(DANCY_DEPS)
