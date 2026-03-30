@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Antti Tiihala
+ * Copyright (c) 2023, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -30,7 +30,7 @@ FILE *fopen(const char *path, const char *mode)
 	FILE *r = NULL;
 	int o_flags = -1;
 	mode_t o_mode = 0;
-	int i, c, fd;
+	int i, c;
 
 	if (mode == NULL)
 		return (errno = EINVAL), NULL;
@@ -72,25 +72,22 @@ FILE *fopen(const char *path, const char *mode)
 		}
 	}
 
-	if ((fd = open(path, o_flags, o_mode)) < 0)
-		return NULL;
-
 	if ((r = malloc(sizeof(FILE))) == NULL)
-		return close(fd), (errno = ENOMEM), NULL;
+		return (errno = ENOMEM), NULL;
 
 	memset(r, 0, sizeof(FILE));
 
 	if (mtx_init(&r->_mtx, mtx_plain) != thrd_success)
-		return free(r), close(fd), (errno = ENOMEM), NULL;
+		return free(r), (errno = ENOMEM), NULL;
 
 	if ((r->_buffer = malloc(BUFSIZ)) == NULL) {
 		mtx_destroy(&r->_mtx);
-		return free(r), close(fd), (errno = ENOMEM), NULL;
+		return free(r), (errno = ENOMEM), NULL;
 	}
 
 	memset(r->_buffer, 0, BUFSIZ);
 
-	r->_fd = fd;
+	r->_fd = -1;
 	r->_i = -1;
 
 	r->_mode = (unsigned int)(o_flags & O_ACCMODE);
@@ -102,7 +99,7 @@ FILE *fopen(const char *path, const char *mode)
 	if (mtx_lock(&__dancy_io_array_mtx) != thrd_success) {
 		free(r->_buffer);
 		mtx_destroy(&r->_mtx);
-		return free(r), close(fd), (errno = EMFILE), NULL;
+		return free(r), (errno = EMFILE), NULL;
 	}
 
 	for (i = 0; i < FOPEN_MAX; i++) {
@@ -117,7 +114,13 @@ FILE *fopen(const char *path, const char *mode)
 	if (r->_i < 0) {
 		free(r->_buffer);
 		mtx_destroy(&r->_mtx);
-		return free(r), close(fd), (errno = EMFILE), NULL;
+		return free(r), (errno = EMFILE), NULL;
+	}
+
+	if ((r->_fd = open(path, o_flags, o_mode)) < 0) {
+		int e = errno;
+		fclose(r), r = NULL;
+		errno = e;
 	}
 
 	return r;
