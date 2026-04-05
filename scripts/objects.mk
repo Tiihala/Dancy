@@ -376,6 +376,10 @@
     ./arctic/libc/stdio/fclose.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fclose.c
 
+./o32/arctic/libc/stdio/fdopen.o: \
+    ./arctic/libc/stdio/fdopen.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdio/fdopen.c
+
 ./o32/arctic/libc/stdio/feof.o: \
     ./arctic/libc/stdio/feof.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdio/feof.c
@@ -2248,6 +2252,10 @@
 ./o64/arctic/libc/stdio/fclose.o: \
     ./arctic/libc/stdio/fclose.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdio/fclose.c
+
+./o64/arctic/libc/stdio/fdopen.o: \
+    ./arctic/libc/stdio/fdopen.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdio/fdopen.c
 
 ./o64/arctic/libc/stdio/feof.o: \
     ./arctic/libc/stdio/feof.c $(DANCY_DEPS)
