@@ -101,6 +101,7 @@ then
     mkdir -p external/mingw/include
 
     pushd external/mingw/include
+        touch float.h
         touch limits.h
         touch stdarg.h
         touch stddef.h
