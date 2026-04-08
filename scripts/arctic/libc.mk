@@ -144,6 +144,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdlib/abs.o \
  ./o32/arctic/libc/stdlib/alloc.o \
  ./o32/arctic/libc/stdlib/atexit.o \
+ ./o32/arctic/libc/stdlib/atof.o \
  ./o32/arctic/libc/stdlib/atoi.o \
  ./o32/arctic/libc/stdlib/atol.o \
  ./o32/arctic/libc/stdlib/atoll.o \
@@ -402,6 +403,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdlib/abs.o \
  ./o64/arctic/libc/stdlib/alloc.o \
  ./o64/arctic/libc/stdlib/atexit.o \
+ ./o64/arctic/libc/stdlib/atof.o \
  ./o64/arctic/libc/stdlib/atoi.o \
  ./o64/arctic/libc/stdlib/atol.o \
  ./o64/arctic/libc/stdlib/atoll.o \
