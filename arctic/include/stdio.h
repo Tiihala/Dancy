@@ -130,6 +130,7 @@ void setbuf(FILE *stream, char *buffer);
 int setvbuf(FILE *stream, char *buffer, int mode, size_t size);
 
 int printf(const char *format, ...);
+int vprintf(const char *format, va_list arg);
 int fprintf(FILE *stream, const char *format, ...);
 int vfprintf(FILE *stream, const char *format, va_list arg);
 

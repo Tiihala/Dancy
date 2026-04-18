@@ -140,6 +140,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdio/tmpfile.o \
  ./o32/arctic/libc/stdio/ungetc.o \
  ./o32/arctic/libc/stdio/vfprintf.o \
+ ./o32/arctic/libc/stdio/vprintf.o \
  ./o32/arctic/libc/stdio/vsprintf.o \
  ./o32/arctic/libc/stdlib/_ull.o \
  ./o32/arctic/libc/stdlib/abort.o \
@@ -404,6 +405,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdio/tmpfile.o \
  ./o64/arctic/libc/stdio/ungetc.o \
  ./o64/arctic/libc/stdio/vfprintf.o \
+ ./o64/arctic/libc/stdio/vprintf.o \
  ./o64/arctic/libc/stdio/vsprintf.o \
  ./o64/arctic/libc/stdlib/_ull.o \
  ./o64/arctic/libc/stdlib/abort.o \
