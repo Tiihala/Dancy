@@ -140,6 +140,10 @@
     ./arctic/libc/dlfcn/dlclose.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/dlfcn/dlclose.c
 
+./o32/arctic/libc/dlfcn/dlerror.o: \
+    ./arctic/libc/dlfcn/dlerror.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/dlfcn/dlerror.c
+
 ./o32/arctic/libc/dlfcn/dlopen.o: \
     ./arctic/libc/dlfcn/dlopen.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/dlfcn/dlopen.c
@@ -2052,6 +2056,10 @@
 ./o64/arctic/libc/dlfcn/dlclose.o: \
     ./arctic/libc/dlfcn/dlclose.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/dlfcn/dlclose.c
+
+./o64/arctic/libc/dlfcn/dlerror.o: \
+    ./arctic/libc/dlfcn/dlerror.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/dlfcn/dlerror.c
 
 ./o64/arctic/libc/dlfcn/dlopen.o: \
     ./arctic/libc/dlfcn/dlopen.c $(DANCY_DEPS)
