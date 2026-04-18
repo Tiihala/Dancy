@@ -62,6 +62,7 @@ DANCY_HEADERS= \
  ./arctic/include/threads.h \
  ./arctic/include/time.h \
  ./arctic/include/unistd.h \
+ ./arctic/include/utime.h \
  ./arctic/include/wchar.h \
  ./arctic/include/wctype.h \
  ./common/include/boot/init.h \
