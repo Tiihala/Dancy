@@ -124,7 +124,7 @@ then
             --enable-targets=x86_64-w64-mingw32,i686-w64-mingw32 \
             --disable-nls \
             --with-sysroot=$PREFIX
-        make
+        make -j$(nproc)
         make install
     popd
 
@@ -139,7 +139,7 @@ then
             --without-headers \
             --disable-nls \
             --with-sysroot=$PREFIX
-        make all-gcc
+        make -j$(nproc) all-gcc
         make install-gcc
     popd
 fi
