@@ -136,6 +136,10 @@
     ./arctic/libc/dirent/rewind.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/dirent/rewind.c
 
+./o32/arctic/libc/dlfcn/dlclose.o: \
+    ./arctic/libc/dlfcn/dlclose.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/dlfcn/dlclose.c
+
 ./o32/arctic/libc/dlfcn/dlopen.o: \
     ./arctic/libc/dlfcn/dlopen.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/dlfcn/dlopen.c
@@ -2036,6 +2040,10 @@
 ./o64/arctic/libc/dirent/rewind.o: \
     ./arctic/libc/dirent/rewind.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/dirent/rewind.c
+
+./o64/arctic/libc/dlfcn/dlclose.o: \
+    ./arctic/libc/dlfcn/dlclose.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/dlfcn/dlclose.c
 
 ./o64/arctic/libc/dlfcn/dlopen.o: \
     ./arctic/libc/dlfcn/dlopen.c $(DANCY_DEPS)
