@@ -36,6 +36,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/dirent/rewind.o \
  ./o32/arctic/libc/dlfcn/dlclose.o \
  ./o32/arctic/libc/dlfcn/dlopen.o \
+ ./o32/arctic/libc/dlfcn/dlsym.o \
  ./o32/arctic/libc/err/err.o \
  ./o32/arctic/libc/err/errx.o \
  ./o32/arctic/libc/err/warn.o \
@@ -301,6 +302,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/dirent/rewind.o \
  ./o64/arctic/libc/dlfcn/dlclose.o \
  ./o64/arctic/libc/dlfcn/dlopen.o \
+ ./o64/arctic/libc/dlfcn/dlsym.o \
  ./o64/arctic/libc/err/err.o \
  ./o64/arctic/libc/err/errx.o \
  ./o64/arctic/libc/err/warn.o \
