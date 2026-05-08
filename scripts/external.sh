@@ -2,8 +2,8 @@
 set -e
 
 ASM_VERSION=3.01
-BIN_VERSION=2.45.1
-GCC_VERSION=15.2.0
+BIN_VERSION=2.46.0
+GCC_VERSION=16.1.0
 
 ASM_ADDR=https://www.nasm.us/pub/nasm
 GNU_ADDR=https://ftp.gnu.org/gnu
