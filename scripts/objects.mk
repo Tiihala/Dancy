@@ -248,6 +248,10 @@
     ./arctic/libc/misc/__main.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/misc/__main.c
 
+./o32/arctic/libc/misc/debug.o: \
+    ./arctic/libc/misc/debug.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/misc/debug.c
+
 ./o32/arctic/libc/misc/memusage.o: \
     ./arctic/libc/misc/memusage.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/misc/memusage.c
@@ -2168,6 +2172,10 @@
 ./o64/arctic/libc/misc/__main.o: \
     ./arctic/libc/misc/__main.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/misc/__main.c
+
+./o64/arctic/libc/misc/debug.o: \
+    ./arctic/libc/misc/debug.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/misc/debug.c
 
 ./o64/arctic/libc/misc/memusage.o: \
     ./arctic/libc/misc/memusage.c $(DANCY_DEPS)
