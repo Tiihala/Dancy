@@ -91,6 +91,9 @@ extern char __dancy_program_name[];
 void __dancy_crt_init(void);
 void __dancy_crt_fini(void);
 
+void __dancy_debug(const char *format, ...);
+void __dancy_debug_asm(void);
+
 extern void (*__dancy_free)(void *pointer);
 void __dancy_free_default(void *pointer);
 
