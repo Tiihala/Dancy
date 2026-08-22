@@ -12,6 +12,10 @@
     $(ARCTIC_APPS_HELLO_HEADERS)
 	$(ARCTIC_O32)$@ ./arctic/apps/hello/operate.c
 
+./o32/arctic/libc/a32/debug.o: \
+    ./arctic/libc/a32/debug.asm $(DANCY_DEPS)
+	$(DANCY_A32)$@ ./arctic/libc/a32/debug.asm
+
 ./o32/arctic/libc/a32/memcmp.o: \
     ./arctic/libc/a32/memcmp.asm $(DANCY_DEPS)
 	$(DANCY_A32)$@ ./arctic/libc/a32/memcmp.asm
@@ -1928,6 +1932,10 @@
     ./arctic/apps/hello/operate.c $(DANCY_DEPS) \
     $(ARCTIC_APPS_HELLO_HEADERS)
 	$(ARCTIC_O64)$@ ./arctic/apps/hello/operate.c
+
+./o64/arctic/libc/a64/debug.o: \
+    ./arctic/libc/a64/debug.asm $(DANCY_DEPS)
+	$(DANCY_A64)$@ ./arctic/libc/a64/debug.asm
 
 ./o64/arctic/libc/a64/memcmp.o: \
     ./arctic/libc/a64/memcmp.asm $(DANCY_DEPS)

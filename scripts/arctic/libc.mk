@@ -3,6 +3,7 @@
 ##############################################################################
 
 ARCTIC_LIBC_OBJECTS_32= \
+ ./o32/arctic/libc/a32/debug.o \
  ./o32/arctic/libc/a32/memcmp.o \
  ./o32/arctic/libc/a32/memcpy.o \
  ./o32/arctic/libc/a32/memmove.o \
@@ -270,6 +271,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/common/a32/dark.o \
 
 ARCTIC_LIBC_OBJECTS_64= \
+ ./o64/arctic/libc/a64/debug.o \
  ./o64/arctic/libc/a64/memcmp.o \
  ./o64/arctic/libc/a64/memcpy.o \
  ./o64/arctic/libc/a64/memmove.o \
