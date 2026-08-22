@@ -91,6 +91,12 @@ void _exit(int status);
 char *getcwd(char *buffer, size_t size);
 int isatty(int fd);
 
+pid_t fork(void);
+int getpagesize(void);
+
+unsigned int alarm(unsigned int seconds);
+unsigned int sleep(unsigned int seconds);
+
 int execv(const char *path, char *const argv[]);
 int execve(const char *path, char *const argv[], char *const envp[]);
 int execvp(const char *file, char *const argv[]);
