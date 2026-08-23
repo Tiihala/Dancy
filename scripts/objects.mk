@@ -928,6 +928,10 @@
     ./arctic/libc/unistd/execvp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/execvp.c
 
+./o32/arctic/libc/unistd/fork.o: \
+    ./arctic/libc/unistd/fork.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/fork.c
+
 ./o32/arctic/libc/unistd/getcwd.o: \
     ./arctic/libc/unistd/getcwd.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/getcwd.c
@@ -2856,6 +2860,10 @@
 ./o64/arctic/libc/unistd/execvp.o: \
     ./arctic/libc/unistd/execvp.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/execvp.c
+
+./o64/arctic/libc/unistd/fork.o: \
+    ./arctic/libc/unistd/fork.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/fork.c
 
 ./o64/arctic/libc/unistd/getcwd.o: \
     ./arctic/libc/unistd/getcwd.c $(DANCY_DEPS)
