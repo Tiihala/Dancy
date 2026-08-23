@@ -988,6 +988,10 @@
     ./arctic/libc/unistd/rmdir.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/rmdir.c
 
+./o32/arctic/libc/unistd/sleep.o: \
+    ./arctic/libc/unistd/sleep.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/sleep.c
+
 ./o32/arctic/libc/unistd/tcpgrp.o: \
     ./arctic/libc/unistd/tcpgrp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/tcpgrp.c
@@ -2924,6 +2928,10 @@
 ./o64/arctic/libc/unistd/rmdir.o: \
     ./arctic/libc/unistd/rmdir.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/rmdir.c
+
+./o64/arctic/libc/unistd/sleep.o: \
+    ./arctic/libc/unistd/sleep.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/sleep.c
 
 ./o64/arctic/libc/unistd/tcpgrp.o: \
     ./arctic/libc/unistd/tcpgrp.c $(DANCY_DEPS)
