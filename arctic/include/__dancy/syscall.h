@@ -344,6 +344,7 @@ enum __dancy_syscall_enum__ {
 	 *         void *address,
 	 *         char *const argv[],
 	 *         char *const envp[],
+	 *         const void *tlsp,
 	 *         int flags);
 	 */
 	__dancy_syscall_arctic,

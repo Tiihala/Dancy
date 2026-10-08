@@ -1318,14 +1318,28 @@ static long long dancy_syscall_arctic(va_list va)
 	void *address = va_arg(va, void *);
 	const void *argv = va_arg(va, const void *);
 	const void *envp = va_arg(va, const void *);
+	const void *tlsp = va_arg(va, const void *);
 	int flags = va_arg(va, int);
 
+	__dancy_tls_t tls;
 	addr_t user_sp;
 	void *arg_state;
 	int r;
 
 	if (pg_check_user_read(address, 1))
 		return -EFAULT;
+
+	if (tlsp != NULL) {
+		if (pg_check_user_read(tlsp, sizeof(tls)))
+			return -EFAULT;
+
+		memcpy(&tls, tlsp, sizeof(tls));
+
+		if ((addr_t)tls._b > (addr_t)tls._e)
+			return -EINVAL;
+	} else {
+		memset(&tls, 0, sizeof(tls));
+	}
 
 	if (flags != 0)
 		return -EINVAL;
@@ -1342,6 +1356,7 @@ static long long dancy_syscall_arctic(va_list va)
 		r = arg_set_cmdline(NULL, user_sp);
 
 	arg_delete(arg_state);
+	memcpy(&task_current()->tls, &tls, sizeof(tls));
 
 	if (r == 0)
 		task_jump((addr_t)address, user_sp);
