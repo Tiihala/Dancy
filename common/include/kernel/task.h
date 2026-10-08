@@ -95,6 +95,8 @@ struct task {
 		void (*send)(struct task *task);
 		uint32_t mask;
 	} sig;
+
+	__dancy_tls_t tls;
 };
 
 extern void *task_uniproc_tss;
