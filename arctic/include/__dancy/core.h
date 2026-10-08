@@ -103,6 +103,8 @@ int *__dancy_errno(void);
 size_t __dancy_memusage(int flags);
 long long __dancy_pointer_to_long_long(const void *pointer);
 
+typedef struct { void *_b; void *_e; } __dancy_tls_t;
+
 #ifndef __Dancy_Header_End
 #define __Dancy_Header_End
 #endif
