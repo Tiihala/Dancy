@@ -21,6 +21,8 @@
 
 extern char **environ;
 
+static __dancy_tls_t elf_tls;
+
 static int elf_map_pages(void *addr, size_t size)
 {
 	int prot = PROT_READ | PROT_WRITE | PROT_EXEC;
@@ -35,7 +37,8 @@ static void elf_start(void *addr, char *const argv[], char *const envp[])
 {
 	long long r;
 
-	r = __dancy_syscall4(__dancy_syscall_arctic, addr, argv, envp, 0);
+	r = __dancy_syscall5(__dancy_syscall_arctic,
+		addr, argv, envp, &elf_tls, 0);
 
 	if (r < 0)
 		errno = -((int)r);
@@ -61,8 +64,11 @@ static int elf_ph_load(struct options *opt, void *entry)
 #error "__DANCY_32 or __DANCY_64 must be defined"
 #endif
 
-	if (p->p_type != 1 || p->p_memsz == 0)
+	if ((p->p_type != 1 && p->p_type != 7) || p->p_memsz == 0)
 		return 0;
+
+	if (p->p_type == 7)
+		p->p_vaddr = 0x20000000, p->p_paddr = 0;
 
 	r |= (p->p_offset > opt->program_size);
 	r |= (p->p_vaddr < 0x20000000);
@@ -72,12 +78,39 @@ static int elf_ph_load(struct options *opt, void *entry)
 	r |= (p->p_filesz > p->p_memsz);
 	r |= (p->p_offset + p->p_filesz > opt->program_size);
 
+	r |= ((p->p_align & (p->p_align - 1)) != 0);
+
 	if (r != 0)
 		return elf_error(opt, "Program header not supported");
 
+	if (p->p_type == 7) {
+		size_t b, e;
+
+		if (elf_tls._b != NULL)
+			return elf_error(opt, "Too many TLS records");
+
+		if (p->p_memsz > (0x400000 - 0x40) || p->p_align > 0x400000)
+			return elf_error(opt, "TLS layout not supported");
+
+		p->p_vaddr -= 0x40;
+		p->p_vaddr &= (~(p->p_align - 1));
+		e = (size_t)p->p_vaddr;
+
+		p->p_vaddr -= p->p_memsz;
+		p->p_vaddr &= (~(p->p_align - 1));
+		b = (size_t)p->p_vaddr;
+
+		elf_tls._b = (void *)b;
+		elf_tls._e = (void *)e;
+
+		p->p_memsz = (0x20000000 - p->p_vaddr);
+		p->p_flags = 6;
+	}
+
 	if (opt->debug) {
-		printf("  LOAD off    0x%08X"
+		printf("  %s off    0x%08X"
 			" vaddr 0x%08X paddr 0x%08X align %u\n",
+			(p->p_type == 1 ? "LOAD" : " TLS"),
 			(unsigned int)p->p_offset,
 			(unsigned int)p->p_vaddr, (unsigned int)p->p_paddr,
 			(unsigned int)p->p_align);
@@ -93,6 +126,11 @@ static int elf_ph_load(struct options *opt, void *entry)
 		fprintf(stderr, "ld-dancy: %s: mmap: %s\n",
 			opt->operands[0], strerror(errno));
 		return EXIT_FAILURE;
+	}
+
+	if (elf_tls._e != NULL) {
+		void **e = (void **)elf_tls._e;
+		e[0] = elf_tls._e, e[1] = NULL;
 	}
 
 	if (p->p_filesz != 0) {
