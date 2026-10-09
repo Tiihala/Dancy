@@ -19,44 +19,9 @@
 
 #include <dancy.h>
 
-static int handle_get_tls(cpu_native_t *ip, cpu_native_t *ax)
-{
-	void *e = task_current()->tls._e;
-
-#if DANCY_32
-	unsigned char gs_zero_to_eax[6] = {
-		0x65, 0xA1, 0x00, 0x00, 0x00, 0x00
-	};
-	const void *mov = &gs_zero_to_eax[0];
-	size_t size = sizeof(gs_zero_to_eax);
-#endif
-
-#if DANCY_64
-	unsigned char fs_zero_to_rax[9] = {
-		0x64, 0x48, 0x8B, 0x04, 0x25, 0x00, 0x00, 0x00, 0x00
-	};
-	const void *mov = &fs_zero_to_rax[0];
-	size_t size = sizeof(fs_zero_to_rax);
-#endif
-
-	if (pg_check_user_read((const void *)(*ip), size))
-		return -1;
-
-	if (memcmp((const void *)(*ip), mov, size))
-		return -1;
-
-	if (e == NULL || pg_check_user_read(e, sizeof(cpu_native_t)))
-		return -1;
-
-	*ip += ((cpu_native_t)size);
-	memcpy(ax, e, sizeof(cpu_native_t));
-
-	return 0;
-}
-
 int idt_user_exception(int num, void *stack)
 {
-	cpu_native_t *p = stack;
+	const cpu_native_t *p = stack;
 
 	/*
 	 * Divide-by-Zero Exception
@@ -140,7 +105,7 @@ int idt_user_exception(int num, void *stack)
 	 * General-Protection Exception
 	 */
 	if (num == 13) {
-		if (!handle_get_tls(&p[0], &p[-2]))
+		if (!idt_emul_patch(stack))
 			return 0;
 
 		task_exit(SIGILL);
@@ -161,7 +126,7 @@ int idt_user_exception(int num, void *stack)
 				return 0;
 		}
 
-		if (!handle_get_tls(&p[0], &p[-2]))
+		if (!idt_emul_patch(stack))
 			return 0;
 
 		printk("[PROCESS] ID %llu, IP %08llX, "
