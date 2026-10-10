@@ -22,13 +22,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void __dancy_libc_start(int argc, char *argv[]);
+void __dancy_libc_start(int argc, char *argv[], char *envp[]);
 
 char __dancy_program_name[16];
 
-void __dancy_libc_start(int argc, char *argv[])
+void __dancy_libc_start(int argc, char *argv[], char *envp[])
 {
-	extern int main(int argc, char *argv[]);
+	extern int main(int argc, char *argv[], char *envp[]);
 	int retval;
 
 	{
@@ -53,7 +53,7 @@ void __dancy_libc_start(int argc, char *argv[])
 	__dancy_atexit_init();
 	__dancy_crt_init();
 
-	retval = main(argc, argv);
+	retval = main(argc, argv, envp);
 
 	__dancy_atexit_fini();
 	__dancy_crt_fini();
