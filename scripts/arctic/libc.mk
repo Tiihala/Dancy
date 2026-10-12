@@ -20,6 +20,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/a32/syscall5.o \
  ./o32/arctic/libc/ctype/isalnum.o \
  ./o32/arctic/libc/ctype/isalpha.o \
+ ./o32/arctic/libc/ctype/isascii.o \
  ./o32/arctic/libc/ctype/isblank.o \
  ./o32/arctic/libc/ctype/iscntrl.o \
  ./o32/arctic/libc/ctype/isdigit.o \
@@ -293,6 +294,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/a64/syscall5.o \
  ./o64/arctic/libc/ctype/isalnum.o \
  ./o64/arctic/libc/ctype/isalpha.o \
+ ./o64/arctic/libc/ctype/isascii.o \
  ./o64/arctic/libc/ctype/isblank.o \
  ./o64/arctic/libc/ctype/iscntrl.o \
  ./o64/arctic/libc/ctype/isdigit.o \

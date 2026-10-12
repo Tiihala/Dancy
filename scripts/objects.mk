@@ -80,6 +80,10 @@
     ./arctic/libc/ctype/isalpha.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/ctype/isalpha.c
 
+./o32/arctic/libc/ctype/isascii.o: \
+    ./arctic/libc/ctype/isascii.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/ctype/isascii.c
+
 ./o32/arctic/libc/ctype/isblank.o: \
     ./arctic/libc/ctype/isblank.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/ctype/isblank.c
@@ -2024,6 +2028,10 @@
 ./o64/arctic/libc/ctype/isalpha.o: \
     ./arctic/libc/ctype/isalpha.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/ctype/isalpha.c
+
+./o64/arctic/libc/ctype/isascii.o: \
+    ./arctic/libc/ctype/isascii.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/ctype/isascii.c
 
 ./o64/arctic/libc/ctype/isblank.o: \
     ./arctic/libc/ctype/isblank.c $(DANCY_DEPS)
