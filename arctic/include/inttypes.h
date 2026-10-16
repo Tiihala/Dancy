@@ -62,6 +62,30 @@ __Dancy_Header_Begin
 #define PRIX64 "llX"
 
 /*
+ * The printf() macros for pointers (32-bit).
+ */
+#if defined(__DANCY_32) || __SIZEOF_POINTER__ == 4
+#define PRIdPTR "d"
+#define PRIiPTR "i"
+#define PRIoPTR "o"
+#define PRIuPTR "u"
+#define PRIxPTR "x"
+#define PRIXPTR "X"
+#endif
+
+/*
+ * The printf() macros for pointers (64-bit).
+ */
+#if defined(__DANCY_64) || __SIZEOF_POINTER__ == 8
+#define PRIdPTR "lld"
+#define PRIiPTR "lli"
+#define PRIoPTR "llo"
+#define PRIuPTR "llu"
+#define PRIxPTR "llx"
+#define PRIXPTR "llX"
+#endif
+
+/*
  * The scanf() macros for unsigned integers.
  */
 #define SCNu8  "u"
@@ -92,6 +116,20 @@ __Dancy_Header_Begin
 #define PRIu64 "lu"
 #define PRIx64 "lx"
 #define PRIX64 "lX"
+
+#undef PRIdPTR
+#undef PRIiPTR
+#undef PRIoPTR
+#undef PRIuPTR
+#undef PRIxPTR
+#undef PRIXPTR
+
+#define PRIdPTR "ld"
+#define PRIiPTR "li"
+#define PRIoPTR "lo"
+#define PRIuPTR "lu"
+#define PRIxPTR "lx"
+#define PRIXPTR "lX"
 
 #undef SCNu64
 #undef SCNx64
