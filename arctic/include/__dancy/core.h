@@ -23,7 +23,11 @@
 #include <stddef.h>
 
 #ifndef __Dancy_Header_Begin
+#ifdef __cplusplus
+#define __Dancy_Header_Begin extern "C" {
+#else
 #define __Dancy_Header_Begin
+#endif
 #endif
 
 __Dancy_Header_Begin
@@ -106,7 +110,11 @@ long long __dancy_pointer_to_long_long(const void *pointer);
 typedef struct { void *_b; void *_e; } __dancy_tls_t;
 
 #ifndef __Dancy_Header_End
+#ifdef __cplusplus
+#define __Dancy_Header_End }
+#else
 #define __Dancy_Header_End
+#endif
 #endif
 
 __Dancy_Header_End
