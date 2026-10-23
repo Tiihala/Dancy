@@ -37,6 +37,7 @@ DANCY_HEADERS= \
  ./arctic/include/fenv.h \
  ./arctic/include/glob.h \
  ./arctic/include/inttypes.h \
+ ./arctic/include/libgen.h \
  ./arctic/include/locale.h \
  ./arctic/include/math.h \
  ./arctic/include/poll.h \
