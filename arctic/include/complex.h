@@ -24,6 +24,19 @@
 
 __Dancy_Header_Begin
 
+#define complex _Complex
+#define _Complex_I (1.0fi)
+
+#define I _Complex_I
+
+double cimag(double complex);
+float cimagf(float complex);
+long double cimagl(long double complex);
+
+double creal(double complex);
+float crealf(float complex);
+long double creall(long double complex);
+
 __Dancy_Header_End
 
 #endif
