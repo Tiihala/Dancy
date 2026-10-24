@@ -240,6 +240,10 @@
     ./arctic/libc/libgen/basename.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/libgen/basename.c
 
+./o32/arctic/libc/libgen/dirname.o: \
+    ./arctic/libc/libgen/dirname.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/libgen/dirname.c
+
 ./o32/arctic/libc/locale/conv.o: \
     ./arctic/libc/locale/conv.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/locale/conv.c
@@ -2200,6 +2204,10 @@
 ./o64/arctic/libc/libgen/basename.o: \
     ./arctic/libc/libgen/basename.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/libgen/basename.c
+
+./o64/arctic/libc/libgen/dirname.o: \
+    ./arctic/libc/libgen/dirname.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/libgen/dirname.c
 
 ./o64/arctic/libc/locale/conv.o: \
     ./arctic/libc/locale/conv.c $(DANCY_DEPS)
