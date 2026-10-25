@@ -37,3 +37,8 @@ int clock_nanosleep(clockid_t id, int flags,
 
 	return 0;
 }
+
+int nanosleep(const struct timespec *request, struct timespec *remain)
+{
+	return clock_nanosleep(CLOCK_MONOTONIC, 0, request, remain);
+}
