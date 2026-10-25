@@ -78,9 +78,9 @@ long long strtoll(const char *str, char **endptr, int base);
 unsigned long strtoul(const char *str, char **endptr, int base);
 unsigned long long strtoull(const char *str, char **endptr, int base);
 
-char *mktemp(char *template);
-char *mkdtemp(char *template);
-int mkstemp(char *template);
+char *mktemp(char *t);
+char *mkdtemp(char *t);
+int mkstemp(char *t);
 
 int setenv(const char *name, const char *value, int overwrite);
 int unsetenv(const char *name);
