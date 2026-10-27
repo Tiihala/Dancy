@@ -55,6 +55,8 @@ char *strstr(const char *s1, const char *s2);
 int strcasecmp(const char *s1, const char *s2);
 int strncasecmp(const char *s1, const char *s2, size_t n);
 
+size_t strxfrm(char *s1, const char *s2, size_t n);
+
 __Dancy_Header_End
 
 #endif
