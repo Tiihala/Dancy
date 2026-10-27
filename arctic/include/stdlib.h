@@ -86,6 +86,21 @@ int setenv(const char *name, const char *value, int overwrite);
 int unsetenv(const char *name);
 
 size_t mbstowcs(wchar_t *dest, const char *str, size_t size);
+int mbtowc(wchar_t *dest, const char *str, size_t size);
+int mblen(const char *str, size_t size);
+
+typedef struct { int quot; int rem; } div_t;
+div_t div(int numer, int denom);
+
+typedef struct { long quot; long rem; } ldiv_t;
+ldiv_t ldiv(long numer, long denom);
+
+typedef struct { long long quot; long long rem; } lldiv_t;
+lldiv_t lldiv(long long numer, long long denom);
+
+#define RAND_MAX 32767
+int rand(void);
+void srand(unsigned int seed);
 
 __Dancy_Header_End
 
