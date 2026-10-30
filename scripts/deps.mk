@@ -26,6 +26,7 @@ DANCY_HEADERS= \
  ./arctic/include/__dancy/timeval.h \
  ./arctic/include/__dancy/tm.h \
  ./arctic/include/__dancy/undef.h \
+ ./arctic/include/arpa/inet.h \
  ./arctic/include/assert.h \
  ./arctic/include/complex.h \
  ./arctic/include/ctype.h \
@@ -40,6 +41,9 @@ DANCY_HEADERS= \
  ./arctic/include/libgen.h \
  ./arctic/include/locale.h \
  ./arctic/include/math.h \
+ ./arctic/include/netdb.h \
+ ./arctic/include/netinet/in.h \
+ ./arctic/include/netinet/tcp.h \
  ./arctic/include/poll.h \
  ./arctic/include/pty.h \
  ./arctic/include/pwd.h \
@@ -55,9 +59,11 @@ DANCY_HEADERS= \
  ./arctic/include/sys/mman.h \
  ./arctic/include/sys/resource.h \
  ./arctic/include/sys/select.h \
+ ./arctic/include/sys/socket.h \
  ./arctic/include/sys/stat.h \
  ./arctic/include/sys/time.h \
  ./arctic/include/sys/types.h \
+ ./arctic/include/sys/un.h \
  ./arctic/include/sys/wait.h \
  ./arctic/include/termios.h \
  ./arctic/include/tgmath.h \
