@@ -84,6 +84,7 @@ int mkstemp(char *t);
 
 int setenv(const char *name, const char *value, int overwrite);
 int unsetenv(const char *name);
+int putenv(char *str);
 
 size_t mbstowcs(wchar_t *dest, const char *str, size_t size);
 int mbtowc(wchar_t *dest, const char *str, size_t size);
