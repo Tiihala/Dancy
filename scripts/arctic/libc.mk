@@ -256,6 +256,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/unistd/rmdir.o \
  ./o32/arctic/libc/unistd/sleep.o \
  ./o32/arctic/libc/unistd/tcpgrp.o \
+ ./o32/arctic/libc/unistd/truncate.o \
  ./o32/arctic/libc/unistd/unlink.o \
  ./o32/arctic/libc/unistd/write.o \
  ./o32/arctic/libc/utime/utime.o \
@@ -537,6 +538,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/unistd/rmdir.o \
  ./o64/arctic/libc/unistd/sleep.o \
  ./o64/arctic/libc/unistd/tcpgrp.o \
+ ./o64/arctic/libc/unistd/truncate.o \
  ./o64/arctic/libc/unistd/unlink.o \
  ./o64/arctic/libc/unistd/write.o \
  ./o64/arctic/libc/utime/utime.o \

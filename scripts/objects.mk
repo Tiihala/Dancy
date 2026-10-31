@@ -1024,6 +1024,10 @@
     ./arctic/libc/unistd/tcpgrp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/tcpgrp.c
 
+./o32/arctic/libc/unistd/truncate.o: \
+    ./arctic/libc/unistd/truncate.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/truncate.c
+
 ./o32/arctic/libc/unistd/unlink.o: \
     ./arctic/libc/unistd/unlink.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/unlink.c
@@ -3000,6 +3004,10 @@
 ./o64/arctic/libc/unistd/tcpgrp.o: \
     ./arctic/libc/unistd/tcpgrp.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/tcpgrp.c
+
+./o64/arctic/libc/unistd/truncate.o: \
+    ./arctic/libc/unistd/truncate.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/truncate.c
 
 ./o64/arctic/libc/unistd/unlink.o: \
     ./arctic/libc/unistd/unlink.c $(DANCY_DEPS)
