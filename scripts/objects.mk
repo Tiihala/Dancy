@@ -824,6 +824,10 @@
     ./arctic/libc/sys/select.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/select.c
 
+./o32/arctic/libc/sys/socket.o: \
+    ./arctic/libc/sys/socket.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/sys/socket.c
+
 ./o32/arctic/libc/sys/stat.o: \
     ./arctic/libc/sys/stat.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/stat.c
@@ -2792,6 +2796,10 @@
 ./o64/arctic/libc/sys/select.o: \
     ./arctic/libc/sys/select.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/sys/select.c
+
+./o64/arctic/libc/sys/socket.o: \
+    ./arctic/libc/sys/socket.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/sys/socket.c
 
 ./o64/arctic/libc/sys/stat.o: \
     ./arctic/libc/sys/stat.c $(DANCY_DEPS)

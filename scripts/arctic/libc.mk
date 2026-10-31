@@ -206,6 +206,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/sys/msync.o \
  ./o32/arctic/libc/sys/munmap.o \
  ./o32/arctic/libc/sys/select.o \
+ ./o32/arctic/libc/sys/socket.o \
  ./o32/arctic/libc/sys/stat.o \
  ./o32/arctic/libc/sys/umask.o \
  ./o32/arctic/libc/sys/wait.o \
@@ -485,6 +486,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/sys/msync.o \
  ./o64/arctic/libc/sys/munmap.o \
  ./o64/arctic/libc/sys/select.o \
+ ./o64/arctic/libc/sys/socket.o \
  ./o64/arctic/libc/sys/stat.o \
  ./o64/arctic/libc/sys/umask.o \
  ./o64/arctic/libc/sys/wait.o \
