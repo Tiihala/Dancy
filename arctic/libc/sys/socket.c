@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * libc/sys/socket.c
- *      Connect a socket
+ *      Create an endpoint for communication
  */
 
 #include <errno.h>
-#include <sys/stat.h>
+#include <sys/socket.h>
 
 int socket(int domain, int type, int protocol)
 {
