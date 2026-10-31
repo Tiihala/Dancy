@@ -349,6 +349,14 @@ enum __dancy_syscall_enum__ {
 	 */
 	__dancy_syscall_arctic,
 
+	/*
+	 * long long __dancy_syscall_truncate(
+	 *         int fd,
+	 *         const char *path,
+	 *         off_t size);
+	 */
+	__dancy_syscall_truncate,
+
 	__dancy_syscall_argn__
 };
 

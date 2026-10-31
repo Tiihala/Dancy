@@ -1367,6 +1367,66 @@ static long long dancy_syscall_arctic(va_list va)
 	return 0;
 }
 
+static long long dancy_syscall_truncate(va_list va)
+{
+	int fd = va_arg(va, int);
+	const char *path = va_arg(va, const char *);
+	off_t size = va_arg(va, off_t);
+
+	struct vfs_node *node = NULL;
+	int count, r;
+
+	if (path) {
+		if (pg_check_user_string(path, &count))
+			return -EFAULT;
+
+		if ((r = vfs_open(path, &node, 0, 0)) != 0) {
+			if (r == DE_NAME)
+				return -ENOENT;
+			return -EINVAL;
+		}
+
+	} else {
+		const uint32_t table_mask = 0x0FFFFFFF;
+		struct task *task = task_current();
+		struct file_table_entry *fte;
+		uint32_t t;
+
+		if (fd < 0 || fd >= (int)task->fd.state)
+			return -EBADF;
+
+		if ((t = task->fd.table[fd]) == 0)
+			return -EBADF;
+
+		fte = (void *)((addr_t)(t & table_mask));
+
+		while (!spin_trylock(&fte->lock[1]))
+			task_yield();
+
+		node = fte->node;
+		vfs_increment_count(node);
+
+		spin_unlock(&fte->lock[1]);
+	}
+
+	if (node->type == vfs_type_directory)
+		return node->n_release(&node), -EISDIR;
+
+	if (size < 0 || node->type != vfs_type_regular)
+		return node->n_release(&node), -EINVAL;
+
+	r = node->n_truncate(node, (uint64_t)size);
+	node->n_release(&node);
+
+	if (r != 0) {
+		if (r == DE_READ_ONLY)
+			return -EROFS;
+		return -EIO;
+	}
+
+	return 0;
+}
+
 static long long dancy_syscall_reserved(va_list va)
 {
 	return (void)va, -EINVAL;
@@ -1416,6 +1476,7 @@ static struct { long long (*handler)(va_list va); } handler_array[] = {
 	{ dancy_syscall_procinfo },
 	{ dancy_syscall_errno },
 	{ dancy_syscall_arctic },
+	{ dancy_syscall_truncate },
 	{ dancy_syscall_reserved }
 };
 
