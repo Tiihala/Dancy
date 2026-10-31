@@ -780,6 +780,10 @@
     ./arctic/libc/sys/chmod.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/chmod.c
 
+./o32/arctic/libc/sys/connect.o: \
+    ./arctic/libc/sys/connect.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/sys/connect.c
+
 ./o32/arctic/libc/sys/fchmod.o: \
     ./arctic/libc/sys/fchmod.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/fchmod.c
@@ -2752,6 +2756,10 @@
 ./o64/arctic/libc/sys/chmod.o: \
     ./arctic/libc/sys/chmod.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/sys/chmod.c
+
+./o64/arctic/libc/sys/connect.o: \
+    ./arctic/libc/sys/connect.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/sys/connect.c
 
 ./o64/arctic/libc/sys/fchmod.o: \
     ./arctic/libc/sys/fchmod.c $(DANCY_DEPS)
