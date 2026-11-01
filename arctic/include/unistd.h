@@ -104,6 +104,7 @@ int execvp(const char *file, char *const argv[]);
 #define _PC_NAME_MAX 1001
 #define _PC_PATH_MAX 1002
 
+long fpathconf(int fd, int name);
 long pathconf(const char *path, int name);
 
 #define F_OK 0

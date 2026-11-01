@@ -20,10 +20,8 @@
 #include <errno.h>
 #include <unistd.h>
 
-long pathconf(const char *path, int name)
+static long p(int name)
 {
-	(void)path;
-
 	if (name == _PC_NAME_MAX)
 		return 255;
 
@@ -31,4 +29,14 @@ long pathconf(const char *path, int name)
 		return 255;
 
 	return (errno = EINVAL), -1;
+}
+
+long fpathconf(int fd, int name)
+{
+	return (void)fd, p(name);
+}
+
+long pathconf(const char *path, int name)
+{
+	return (void)path, p(name);
 }
