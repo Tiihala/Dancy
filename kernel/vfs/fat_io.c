@@ -74,6 +74,9 @@ static int check_name(const char *name)
 
 		if (c <= 0x20 || c > 0x7E)
 			return 1;
+
+		if (c == '/')
+			periods = 0;
 	}
 
 	return 0;
