@@ -1969,6 +1969,10 @@
     ./kernel/vfs/fat_io.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/vfs/fat_io.c
 
+./o32/kernel/vfs/lfn.o: \
+    ./kernel/vfs/lfn.c $(DANCY_DEPS)
+	$(DANCY_O32)$@ ./kernel/vfs/lfn.c
+
 ./o32/kernel/vfs/pipe.o: \
     ./kernel/vfs/pipe.c $(DANCY_DEPS)
 	$(DANCY_O32)$@ ./kernel/vfs/pipe.c
@@ -4025,6 +4029,10 @@
 ./o64/kernel/vfs/fat_io.o: \
     ./kernel/vfs/fat_io.c $(DANCY_DEPS)
 	$(DANCY_O64)$@ ./kernel/vfs/fat_io.c
+
+./o64/kernel/vfs/lfn.o: \
+    ./kernel/vfs/lfn.c $(DANCY_DEPS)
+	$(DANCY_O64)$@ ./kernel/vfs/lfn.c
 
 ./o64/kernel/vfs/pipe.o: \
     ./kernel/vfs/pipe.c $(DANCY_DEPS)

@@ -125,6 +125,9 @@ static int build_vname_locked(const char *name)
 		}
 	}
 
+	if (vname.components[0] && !strcmp(vname.components[0], "boot"))
+		lfn_vname_locked(vname.components);
+
 	return 0;
 }
 

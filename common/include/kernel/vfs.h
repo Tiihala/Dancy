@@ -127,6 +127,11 @@ int devfs_init(void);
 int fat_io_create(struct vfs_node **new_node, struct vfs_node *dev_node);
 
 /*
+ * Declarations of lfn.c
+ */
+void lfn_vname_locked(char *components[]);
+
+/*
  * Declarations of pipe.c
  */
 int vfs_pipe(struct vfs_node *nodes[2]);
