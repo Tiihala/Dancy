@@ -46,6 +46,34 @@ static void write_console_message(int i)
 	}
 }
 
+static const char *create_env_path(void)
+{
+	static char b[256];
+
+	const char *p;
+	struct stat s;
+
+	strcpy(&b[0], "PATH=");
+
+#ifdef __DANCY_32
+	if (!stat((p = "/boot/usr32/bin"), &s))
+		strcat(&b[0], p), strcat(&b[0], ":");
+#endif
+
+#ifdef __DANCY_64
+	if (!stat((p = "/boot/usr64/bin"), &s))
+		strcat(&b[0], p), strcat(&b[0], ":");
+#endif
+
+	if (!stat((p = "/usr/local/bin"), &s))
+		strcat(&b[0], p), strcat(&b[0], ":");
+
+	if (!stat((p = "/usr/bin"), &s))
+		strcat(&b[0], p), strcat(&b[0], ":");
+
+	return strcat(&b[0], "/bin");
+}
+
 static pid_t start_dsh(char *console, char *number)
 {
 	const char *path = "/bin/terminal";
@@ -53,7 +81,7 @@ static pid_t start_dsh(char *console, char *number)
 	const char *e[] = {
 		"HOME=/root",
 		"LOGNAME=root",
-		"PATH=/bin",
+		create_env_path(),
 		"SHELL=/bin/dsh",
 		"TERM=dancy",
 		"USER=root",
