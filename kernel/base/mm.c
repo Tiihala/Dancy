@@ -481,9 +481,15 @@ phys_addr_t mm_alloc_pages(int type, int order)
 	return page;
 }
 
+#ifdef DANCY_64
+#define MM_GET_PAGE_FRAME(addr) ((size_t)(((addr) << 1) >> 13))
+#else
+#define MM_GET_PAGE_FRAME(addr) ((size_t)((addr) >> 12))
+#endif
+
 void mm_free_page(phys_addr_t addr)
 {
-	size_t page_frame = (size_t)(addr >> 12);
+	size_t page_frame = MM_GET_PAGE_FRAME(addr);
 	unsigned int b;
 	size_t i;
 
@@ -507,7 +513,7 @@ void mm_free_page(phys_addr_t addr)
 
 void mm_free_pages(phys_addr_t addr, int order)
 {
-	size_t page_frame = (size_t)(addr >> 12);
+	size_t page_frame = MM_GET_PAGE_FRAME(addr);
 	size_t page_count = (size_t)mm_get_count(order);
 	size_t i;
 
