@@ -160,10 +160,11 @@ static void *internal_aligned_alloc(size_t alignment, size_t size)
 		alloc_state[1] = aligned_addr;
 	}
 
-	map_used = sizeof(size_t) * (size_t)alloc_map_count;
+	map_used = sizeof(size_t) * (size_t)(alloc_map_count + 1);
 
 	if (map_used >= alloc_map_size) {
 		size_t alloc_map_addr = (size_t)alloc_map;
+		const size_t add = 0x1000;
 
 		if (map_used > alloc_map_size)
 			return NULL;
@@ -171,13 +172,13 @@ static void *internal_aligned_alloc(size_t alignment, size_t size)
 		if ((alloc_map[0] & used_bit) != 0)
 			return NULL;
 
-		if ((alloc_map[1] - alloc_map[0]) < 0x2000)
+		if ((alloc_map[1] - alloc_map[0]) < (add * 4))
 			return NULL;
 
-		if (internal_map_pages(alloc_map + alloc_map_count, 0x1000))
+		if (internal_map_pages(alloc_map + alloc_map_count + 1, add))
 			return NULL;
 
-		alloc_map_size += 0x1000;
+		alloc_map_size += add;
 		alloc_map[0] = alloc_map_addr + alloc_map_size;
 	}
 
