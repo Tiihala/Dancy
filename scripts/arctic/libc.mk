@@ -270,6 +270,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/wchar/wcrtomb.o \
  ./o32/arctic/libc/wchar/wcslen.o \
  ./o32/arctic/libc/wchar/wcsncmp.o \
+ ./o32/arctic/libc/wchar/wctob.o \
  ./o32/arctic/libc/wchar/wcwidth.o \
  ./o32/arctic/libc/wctype/iswalnum.o \
  ./o32/arctic/libc/wctype/iswalpha.o \
@@ -555,6 +556,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/wchar/wcrtomb.o \
  ./o64/arctic/libc/wchar/wcslen.o \
  ./o64/arctic/libc/wchar/wcsncmp.o \
+ ./o64/arctic/libc/wchar/wctob.o \
  ./o64/arctic/libc/wchar/wcwidth.o \
  ./o64/arctic/libc/wctype/iswalnum.o \
  ./o64/arctic/libc/wctype/iswalpha.o \
