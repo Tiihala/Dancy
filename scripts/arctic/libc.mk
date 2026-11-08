@@ -176,6 +176,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/stdlib/strtoul.o \
  ./o32/arctic/libc/stdlib/strtoull.o \
  ./o32/arctic/libc/stdlib/system.o \
+ ./o32/arctic/libc/stdlib/wcstombs.o \
  ./o32/arctic/libc/string/casecmp.o \
  ./o32/arctic/libc/string/memchr.o \
  ./o32/arctic/libc/string/strcat.o \
@@ -460,6 +461,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/stdlib/strtoul.o \
  ./o64/arctic/libc/stdlib/strtoull.o \
  ./o64/arctic/libc/stdlib/system.o \
+ ./o64/arctic/libc/stdlib/wcstombs.o \
  ./o64/arctic/libc/string/casecmp.o \
  ./o64/arctic/libc/string/memchr.o \
  ./o64/arctic/libc/string/strcat.o \

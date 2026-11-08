@@ -704,6 +704,10 @@
     ./arctic/libc/stdlib/system.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/system.c
 
+./o32/arctic/libc/stdlib/wcstombs.o: \
+    ./arctic/libc/stdlib/wcstombs.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/wcstombs.c
+
 ./o32/arctic/libc/string/casecmp.o: \
     ./arctic/libc/string/casecmp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/string/casecmp.c
@@ -2696,6 +2700,10 @@
 ./o64/arctic/libc/stdlib/system.o: \
     ./arctic/libc/stdlib/system.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/system.c
+
+./o64/arctic/libc/stdlib/wcstombs.o: \
+    ./arctic/libc/stdlib/wcstombs.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/wcstombs.c
 
 ./o64/arctic/libc/string/casecmp.o: \
     ./arctic/libc/string/casecmp.c $(DANCY_DEPS)
