@@ -1080,6 +1080,10 @@
     ./arctic/libc/wchar/wcsncmp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wcsncmp.c
 
+./o32/arctic/libc/wchar/wcsnlen.o: \
+    ./arctic/libc/wchar/wcsnlen.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wcsnlen.c
+
 ./o32/arctic/libc/wchar/wctob.o: \
     ./arctic/libc/wchar/wctob.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wctob.c
@@ -3084,6 +3088,10 @@
 ./o64/arctic/libc/wchar/wcsncmp.o: \
     ./arctic/libc/wchar/wcsncmp.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/wchar/wcsncmp.c
+
+./o64/arctic/libc/wchar/wcsnlen.o: \
+    ./arctic/libc/wchar/wcsnlen.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wchar/wcsnlen.c
 
 ./o64/arctic/libc/wchar/wctob.o: \
     ./arctic/libc/wchar/wctob.c $(DANCY_DEPS)
