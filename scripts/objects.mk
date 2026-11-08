@@ -188,6 +188,10 @@
     ./arctic/libc/fcntl/open.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/fcntl/open.c
 
+./o32/arctic/libc/getopt/getopt.o: \
+    ./arctic/libc/getopt/getopt.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/getopt/getopt.c
+
 ./o32/arctic/libc/glob/glob.o: \
     ./arctic/libc/glob/glob.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/glob/glob.c
@@ -2176,6 +2180,10 @@
 ./o64/arctic/libc/fcntl/open.o: \
     ./arctic/libc/fcntl/open.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/fcntl/open.c
+
+./o64/arctic/libc/getopt/getopt.o: \
+    ./arctic/libc/getopt/getopt.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/getopt/getopt.c
 
 ./o64/arctic/libc/glob/glob.o: \
     ./arctic/libc/glob/glob.c $(DANCY_DEPS)
