@@ -52,6 +52,7 @@ int wctob(wint_t c);
 int wcwidth(wchar_t w);
 
 int wcsncmp(const wchar_t *ws1, const wchar_t *ws2, size_t n);
+wchar_t *wmemcpy(wchar_t *ws1, const wchar_t *ws2, size_t n);
 
 __Dancy_Header_End
 

@@ -1088,6 +1088,10 @@
     ./arctic/libc/wchar/wcwidth.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wcwidth.c
 
+./o32/arctic/libc/wchar/wmemcpy.o: \
+    ./arctic/libc/wchar/wmemcpy.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/wchar/wmemcpy.c
+
 ./o32/arctic/libc/wctype/iswalnum.o: \
     ./arctic/libc/wctype/iswalnum.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/wctype/iswalnum.c
@@ -3088,6 +3092,10 @@
 ./o64/arctic/libc/wchar/wcwidth.o: \
     ./arctic/libc/wchar/wcwidth.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/wchar/wcwidth.c
+
+./o64/arctic/libc/wchar/wmemcpy.o: \
+    ./arctic/libc/wchar/wmemcpy.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/wchar/wmemcpy.c
 
 ./o64/arctic/libc/wctype/iswalnum.o: \
     ./arctic/libc/wctype/iswalnum.c $(DANCY_DEPS)
