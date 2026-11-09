@@ -44,6 +44,9 @@ int mbsinit(const mbstate_t *ps);
 size_t mbrtowc(wchar_t *pwc, const char *s, size_t n, mbstate_t *ps);
 size_t mbrlen(const char *s, size_t n, mbstate_t *ps);
 
+size_t mbsrtowcs(wchar_t *dst, const char **src, size_t n, mbstate_t *ps);
+size_t wcsrtombs(char *dst, const wchar_t **src, size_t n, mbstate_t *ps);
+
 size_t wcslen(const wchar_t *ws);
 size_t wcsnlen(const wchar_t *ws, size_t n);
 size_t wcrtomb(char *s, wchar_t w, mbstate_t *ps);
