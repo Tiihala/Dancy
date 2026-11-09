@@ -98,6 +98,10 @@ int ioctl_internal(int fd, int request, long long arg, long long *retval)
 			alignment = sizeof(size_t);
 			size = sizeof(struct __dancy_fb);
 			break;
+		case __DANCY_IOCTL_TTY_SYNC:
+			alignment = sizeof(char);
+			size = sizeof(struct __dancy_tty);
+			break;
 		default:
 			r = DE_UNSUPPORTED;
 			break;

@@ -861,6 +861,18 @@ static int n_ioctl(struct vfs_node *node,
 		return 0;
 	}
 
+	if (request == __DANCY_IOCTL_TTY_SYNC) {
+		struct __dancy_tty *d = (void *)((addr_t)arg);
+
+		memset(d, 0, sizeof(*d));
+
+		lock_shared_data(shared_data);
+		snprintf(&d->name[0], 16, "/dev/pts/%d", shared_data->pty_i);
+		unlock_shared_data(shared_data);
+
+		return 0;
+	}
+
 	return DE_UNSUPPORTED;
 }
 

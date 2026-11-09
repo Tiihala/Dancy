@@ -120,6 +120,9 @@ long pathconf(const char *path, int name);
 
 int access(const char *path, int mode);
 
+char *ttyname(int fd);
+int ttyname_r(int fd, char *name, size_t size);
+
 __Dancy_Header_End
 
 #endif

@@ -55,6 +55,11 @@ struct __dancy_fb {
 	const void *s;
 };
 
+struct __dancy_tty {
+	char name[16];
+	char reserved[16];
+};
+
 #define __DANCY_IOCTL_TCGETS \
 	__DANCY_IOCTL(0x1000, __DANCY_IOCTL_ARG_POINTER)
 #define __DANCY_IOCTL_TCSETS \
@@ -85,6 +90,9 @@ struct __dancy_fb {
 	__DANCY_IOCTL(0x1040, __DANCY_IOCTL_ARG_POINTER)
 #define __DANCY_IOCTL_FB_UPDATE \
 	__DANCY_IOCTL(0x1041, __DANCY_IOCTL_ARG_POINTER)
+
+#define __DANCY_IOCTL_TTY_SYNC \
+	__DANCY_IOCTL(0x1050, __DANCY_IOCTL_ARG_POINTER)
 
 __Dancy_Header_End
 
