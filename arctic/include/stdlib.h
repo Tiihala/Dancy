@@ -89,6 +89,7 @@ int putenv(char *str);
 size_t mbstowcs(wchar_t *dest, const char *str, size_t size);
 size_t wcstombs(char *dest, const wchar_t *str, size_t size);
 int mbtowc(wchar_t *dest, const char *str, size_t size);
+int wctomb(char *dest, wchar_t w);
 int mblen(const char *str, size_t size);
 
 typedef struct { int quot; int rem; } div_t;
