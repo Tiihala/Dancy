@@ -49,6 +49,7 @@ DANCY_HEADERS= \
  ./arctic/include/pty.h \
  ./arctic/include/pwd.h \
  ./arctic/include/regex.h \
+ ./arctic/include/search.h \
  ./arctic/include/setjmp.h \
  ./arctic/include/signal.h \
  ./arctic/include/spawn.h \
