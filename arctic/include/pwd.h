@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Antti Tiihala
+ * Copyright (c) 2025, 2026 Antti Tiihala
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,6 +23,38 @@
 #include <__dancy/core.h>
 
 __Dancy_Header_Begin
+
+#ifndef __DANCY_TYPEDEF_GID_T
+#define __DANCY_TYPEDEF_GID_T
+typedef __dancy_gid_t gid_t;
+#endif
+
+#ifndef __DANCY_TYPEDEF_UID_T
+#define __DANCY_TYPEDEF_UID_T
+typedef __dancy_uid_t uid_t;
+#endif
+
+struct passwd {
+	char *pw_name;
+	uid_t pw_uid;
+	gid_t pw_gid;
+	char *pw_dir;
+	char *pw_shell;
+};
+
+void endpwent(void);
+void setpwent(void);
+
+struct passwd * getpwent (void);
+
+struct passwd *getpwnam(const char *name);
+struct passwd *getpwuid(uid_t uid);
+
+int getpwnam_r(const char *name, struct passwd *pwd, char *buffer,
+	size_t buffer_size, struct passwd **result);
+
+int getpwuid_r(uid_t uid, struct passwd *pwd, char *buffer,
+	size_t buffer_size, struct passwd **result);
 
 __Dancy_Header_End
 

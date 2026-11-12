@@ -74,6 +74,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/poll/poll.o \
  ./o32/arctic/libc/poll/ppoll.o \
  ./o32/arctic/libc/pty/openpty.o \
+ ./o32/arctic/libc/pwd/pwd.o \
  ./o32/arctic/libc/regex/regcomp.o \
  ./o32/arctic/libc/regex/regerror.o \
  ./o32/arctic/libc/regex/regexec.o \
@@ -365,6 +366,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/poll/poll.o \
  ./o64/arctic/libc/poll/ppoll.o \
  ./o64/arctic/libc/pty/openpty.o \
+ ./o64/arctic/libc/pwd/pwd.o \
  ./o64/arctic/libc/regex/regcomp.o \
  ./o64/arctic/libc/regex/regerror.o \
  ./o64/arctic/libc/regex/regexec.o \
