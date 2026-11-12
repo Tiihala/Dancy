@@ -19,11 +19,18 @@
 
 #include <__dancy/syscall.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 char *getcwd(char *buffer, size_t size)
 {
 	int r;
+
+	if (buffer == NULL && size == 0)
+		size = 256;
+
+	if (buffer == NULL && (buffer = malloc(size)) == NULL)
+		return (errno = ENOMEM), NULL;
 
 	r = (int)__dancy_syscall2(__dancy_syscall_getcwd, buffer, size);
 
