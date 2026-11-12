@@ -56,6 +56,8 @@ typedef __dancy_gid_t gid_t;
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 
+#define _POSIX_VERSION 200809L
+
 int close(int fd);
 
 int fsync(int fd);
@@ -82,7 +84,12 @@ pid_t getppid(void);
 pid_t getsid(pid_t pid);
 
 uid_t getuid(void);
+uid_t geteuid(void);
 gid_t getgid(void);
+gid_t getegid(void);
+
+int setuid(uid_t uid);
+int setgid(gid_t gid);
 
 pid_t tcgetpgrp(int fd);
 int tcsetpgrp(int fd, pid_t pgrp);
