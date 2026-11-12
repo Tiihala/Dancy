@@ -34,6 +34,8 @@ __Dancy_Header_Begin
 #define WSTOPSIG(status)    (((status) >> 8) & 255)
 #define WTERMSIG(status)    (((status) >> 0) & 127)
 
+#define WIFCONTINUED(status) (0)
+
 #ifndef __DANCY_TYPEDEF_ID_T
 #define __DANCY_TYPEDEF_ID_T
 typedef __dancy_id_t id_t;
