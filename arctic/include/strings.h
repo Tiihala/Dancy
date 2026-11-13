@@ -27,6 +27,8 @@ __Dancy_Header_Begin
 int strcasecmp(const char *s1, const char *s2);
 int strncasecmp(const char *s1, const char *s2, size_t n);
 
+void bcopy(const void *src, void *dst, size_t n);
+
 __Dancy_Header_End
 
 #endif
