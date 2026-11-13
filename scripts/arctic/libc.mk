@@ -86,6 +86,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/signal/raise.o \
  ./o32/arctic/libc/signal/signal.o \
  ./o32/arctic/libc/signal/sigset_t.o \
+ ./o32/arctic/libc/signal/suspend.o \
  ./o32/arctic/libc/spawn/actions.o \
  ./o32/arctic/libc/spawn/addclose.o \
  ./o32/arctic/libc/spawn/adddup2.o \
@@ -380,6 +381,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/signal/raise.o \
  ./o64/arctic/libc/signal/signal.o \
  ./o64/arctic/libc/signal/sigset_t.o \
+ ./o64/arctic/libc/signal/suspend.o \
  ./o64/arctic/libc/spawn/actions.o \
  ./o64/arctic/libc/spawn/addclose.o \
  ./o64/arctic/libc/spawn/adddup2.o \

@@ -57,6 +57,7 @@ int sigprocmask(int how, const sigset_t *set, sigset_t *out);
 int sigismember(const sigset_t *set, int sig);
 
 int sigaction(int sig, const struct sigaction *act, struct sigaction *out);
+int sigsuspend(const sigset_t *set);
 
 __Dancy_Header_End
 

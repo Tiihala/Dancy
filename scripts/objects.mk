@@ -344,6 +344,10 @@
     ./arctic/libc/signal/sigset_t.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/signal/sigset_t.c
 
+./o32/arctic/libc/signal/suspend.o: \
+    ./arctic/libc/signal/suspend.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/signal/suspend.c
+
 ./o32/arctic/libc/spawn/actions.o: \
     ./arctic/libc/spawn/actions.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/spawn/actions.c
@@ -2376,6 +2380,10 @@
 ./o64/arctic/libc/signal/sigset_t.o: \
     ./arctic/libc/signal/sigset_t.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/signal/sigset_t.c
+
+./o64/arctic/libc/signal/suspend.o: \
+    ./arctic/libc/signal/suspend.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/signal/suspend.c
 
 ./o64/arctic/libc/spawn/actions.o: \
     ./arctic/libc/spawn/actions.c $(DANCY_DEPS)
