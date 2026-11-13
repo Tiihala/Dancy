@@ -848,6 +848,10 @@
     ./arctic/libc/sys/munmap.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/munmap.c
 
+./o32/arctic/libc/sys/rusage.o: \
+    ./arctic/libc/sys/rusage.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/sys/rusage.c
+
 ./o32/arctic/libc/sys/select.o: \
     ./arctic/libc/sys/select.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/select.c
@@ -2872,6 +2876,10 @@
 ./o64/arctic/libc/sys/munmap.o: \
     ./arctic/libc/sys/munmap.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/sys/munmap.c
+
+./o64/arctic/libc/sys/rusage.o: \
+    ./arctic/libc/sys/rusage.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/sys/rusage.c
 
 ./o64/arctic/libc/sys/select.o: \
     ./arctic/libc/sys/select.c $(DANCY_DEPS)
