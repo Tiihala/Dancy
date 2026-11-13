@@ -324,6 +324,10 @@
     ./arctic/libc/signal/kill.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/signal/kill.c
 
+./o32/arctic/libc/signal/killpg.o: \
+    ./arctic/libc/signal/killpg.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/signal/killpg.c
+
 ./o32/arctic/libc/signal/pending.o: \
     ./arctic/libc/signal/pending.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/signal/pending.c
@@ -2360,6 +2364,10 @@
 ./o64/arctic/libc/signal/kill.o: \
     ./arctic/libc/signal/kill.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/signal/kill.c
+
+./o64/arctic/libc/signal/killpg.o: \
+    ./arctic/libc/signal/killpg.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/signal/killpg.c
 
 ./o64/arctic/libc/signal/pending.o: \
     ./arctic/libc/signal/pending.c $(DANCY_DEPS)

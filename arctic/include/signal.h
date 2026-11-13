@@ -45,6 +45,7 @@ void (*signal(int sig, void (*func)(int)))(int);
 int raise(int sig);
 
 int kill(pid_t pid, int sig);
+int killpg(pid_t pgrp, int sig);
 
 int sigemptyset(sigset_t *set);
 int sigfillset(sigset_t *set);
