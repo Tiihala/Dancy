@@ -29,6 +29,11 @@ typedef size_t jmp_buf[256];
 int setjmp(jmp_buf env);
 void longjmp(jmp_buf env, int val);
 
+typedef size_t sigjmp_buf[256];
+
+int sigsetjmp(sigjmp_buf env, int savemask);
+void siglongjmp(sigjmp_buf env, int val);
+
 __Dancy_Header_End
 
 #endif
