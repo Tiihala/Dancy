@@ -104,6 +104,7 @@ int isatty(int fd);
 
 pid_t fork(void);
 int getpagesize(void);
+int gethostname(char *name, size_t size);
 
 extern char *optarg;
 extern int opterr;
