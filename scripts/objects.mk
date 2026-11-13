@@ -864,6 +864,10 @@
     ./arctic/libc/sys/stat.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/stat.c
 
+./o32/arctic/libc/sys/time.o: \
+    ./arctic/libc/sys/time.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/sys/time.c
+
 ./o32/arctic/libc/sys/umask.o: \
     ./arctic/libc/sys/umask.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/sys/umask.c
@@ -2892,6 +2896,10 @@
 ./o64/arctic/libc/sys/stat.o: \
     ./arctic/libc/sys/stat.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/sys/stat.c
+
+./o64/arctic/libc/sys/time.o: \
+    ./arctic/libc/sys/time.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/sys/time.c
 
 ./o64/arctic/libc/sys/umask.o: \
     ./arctic/libc/sys/umask.c $(DANCY_DEPS)

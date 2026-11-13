@@ -20,11 +20,15 @@
 #ifndef __DANCY_SYS_TIME_H
 #define __DANCY_SYS_TIME_H
 
+#include <__dancy/timeval.h>
 #include <sys/select.h>
 
 __Dancy_Header_Begin
 
 int utimes(const char *path, const struct timeval times[2]);
+
+int gettimeofday(struct timeval *t, void *z);
+int settimeofday(const struct timeval *t, const void *z);
 
 __Dancy_Header_End
 
