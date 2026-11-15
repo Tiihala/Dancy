@@ -110,7 +110,7 @@ extern char *optarg;
 extern int opterr;
 extern int optind;
 extern int optopt;
-int getopt(int argc, char *argv[], const char *optstring);
+int getopt(int argc, char *const argv[], const char *optstring);
 
 unsigned int alarm(unsigned int seconds);
 unsigned int sleep(unsigned int seconds);

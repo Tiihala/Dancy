@@ -25,7 +25,7 @@ int opterr = 1;
 int optind = 1;
 int optopt = '?';
 
-int getopt(int argc, char *argv[], const char *optstring)
+int getopt(int argc, char *const argv[], const char *optstring)
 {
 	__dancy_debug("Error: "
 		"getopt(%d, %p, \"%s\") is not implemented on this OS\n",
