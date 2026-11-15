@@ -28,3 +28,12 @@ int setenv(const char *name, const char *value, int overwrite)
 
 	return (errno = ENOMEM), -1;
 }
+
+int unsetenv(const char *name)
+{
+	__dancy_debug("Error: "
+		"unsetenv(\"%s\") is not implemented on this OS\n",
+		name);
+
+	return (errno = ENOSYS), -1;
+}
