@@ -40,6 +40,7 @@ struct rlimit {
 struct rusage {
 	struct timeval ru_utime;
 	struct timeval ru_stime;
+	long ru_maxrss;
 };
 
 #define PRIO_PROCESS    (0x00010)
