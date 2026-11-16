@@ -656,6 +656,10 @@
     ./arctic/libc/stdlib/bsearch.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/bsearch.c
 
+./o32/arctic/libc/stdlib/environ.o: \
+    ./arctic/libc/stdlib/environ.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/environ.c
+
 ./o32/arctic/libc/stdlib/exit.o: \
     ./arctic/libc/stdlib/exit.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/stdlib/exit.c
@@ -2700,6 +2704,10 @@
 ./o64/arctic/libc/stdlib/bsearch.o: \
     ./arctic/libc/stdlib/bsearch.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/bsearch.c
+
+./o64/arctic/libc/stdlib/environ.o: \
+    ./arctic/libc/stdlib/environ.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/stdlib/environ.c
 
 ./o64/arctic/libc/stdlib/exit.o: \
     ./arctic/libc/stdlib/exit.c $(DANCY_DEPS)
