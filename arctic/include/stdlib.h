@@ -82,6 +82,7 @@ char *mktemp(char *t);
 char *mkdtemp(char *t);
 int mkstemp(char *t);
 
+int clearenv(void);
 int setenv(const char *name, const char *value, int overwrite);
 int unsetenv(const char *name);
 int putenv(char *str);
