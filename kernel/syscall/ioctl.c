@@ -66,6 +66,12 @@ int ioctl_internal(int fd, int request, long long arg, long long *retval)
 		case __DANCY_IOCTL_TCSETSF:
 			size = sizeof(struct __dancy_termios);
 			break;
+		case __DANCY_IOCTL_TCIFLUSH:
+			break;
+		case __DANCY_IOCTL_TCOFLUSH:
+			break;
+		case __DANCY_IOCTL_TCIOFLUSH:
+			break;
 		case __DANCY_IOCTL_TIOCGWINSZ:
 			alignment = sizeof(short);
 			size = sizeof(struct __dancy_winsize), rw = 1;

@@ -433,6 +433,24 @@ static int n_ioctl(struct vfs_node *node,
 		return 0;
 	}
 
+	if (request == __DANCY_IOCTL_TCIFLUSH)
+		request = __DANCY_IOCTL_TCIOFLUSH;
+
+	if (request == __DANCY_IOCTL_TCOFLUSH)
+		return 0;
+
+	if (request == __DANCY_IOCTL_TCIOFLUSH) {
+		unsigned char buffer[32];
+
+		for (;;) {
+			size_t size = sizeof(buffer);
+			int r = node->n_read(node, 0, &size, &buffer[0]);
+
+			if (r != 0 || size == 0)
+				return r;
+		}
+	}
+
 	if (request == __DANCY_IOCTL_TIOCGWINSZ) {
 		void *d = (void *)((addr_t)arg);
 		const struct __dancy_winsize *s = &com_buffer[i].winsize;

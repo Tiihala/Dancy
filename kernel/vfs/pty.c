@@ -745,6 +745,36 @@ static int n_poll(struct vfs_node *node, int events, int *revents)
 	return 0;
 }
 
+static void tciflush_locked(struct pty_internal_data *internal_data,
+	struct pty_shared_data *shared_data)
+{
+	if (internal_data->type == pty_type_main) {
+		shared_data->buffer[0].start = shared_data->buffer[0].end;
+		event_reset(shared_data->buffer[0].event);
+
+	} else {
+		shared_data->buffer[1].start = shared_data->buffer[1].end;
+		event_reset(shared_data->buffer[1].event);
+
+		shared_data->eof = 0;
+	}
+}
+
+static void tcoflush_locked(struct pty_internal_data *internal_data,
+	struct pty_shared_data *shared_data)
+{
+	if (internal_data->type == pty_type_main) {
+		shared_data->buffer[1].end = shared_data->buffer[1].start;
+		event_reset(shared_data->buffer[1].event);
+
+		shared_data->icanon.size = 0;
+
+	} else {
+		shared_data->buffer[0].end = shared_data->buffer[0].start;
+		event_reset(shared_data->buffer[0].event);
+	}
+}
+
 static int func_tiocspgrp(struct task *task, void *arg)
 {
 	__dancy_pid_t *group = arg;
@@ -801,6 +831,31 @@ static int n_ioctl(struct vfs_node *node,
 			shared_data->icanon.size = 0;
 		}
 		memcpy(d, s, size);
+		unlock_shared_data(shared_data);
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_TCIFLUSH) {
+		lock_shared_data(shared_data);
+		tciflush_locked(internal_data, shared_data);
+		unlock_shared_data(shared_data);
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_TCOFLUSH) {
+		lock_shared_data(shared_data);
+		tcoflush_locked(internal_data, shared_data);
+		unlock_shared_data(shared_data);
+
+		return 0;
+	}
+
+	if (request == __DANCY_IOCTL_TCIOFLUSH) {
+		lock_shared_data(shared_data);
+		tciflush_locked(internal_data, shared_data);
+		tcoflush_locked(internal_data, shared_data);
 		unlock_shared_data(shared_data);
 
 		return 0;
