@@ -79,6 +79,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/regex/regerror.o \
  ./o32/arctic/libc/regex/regexec.o \
  ./o32/arctic/libc/regex/regfree.o \
+ ./o32/arctic/libc/search/bst.o \
  ./o32/arctic/libc/signal/action.o \
  ./o32/arctic/libc/signal/kill.o \
  ./o32/arctic/libc/signal/killpg.o \
@@ -378,6 +379,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/regex/regerror.o \
  ./o64/arctic/libc/regex/regexec.o \
  ./o64/arctic/libc/regex/regfree.o \
+ ./o64/arctic/libc/search/bst.o \
  ./o64/arctic/libc/signal/action.o \
  ./o64/arctic/libc/signal/kill.o \
  ./o64/arctic/libc/signal/killpg.o \
