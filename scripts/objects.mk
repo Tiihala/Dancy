@@ -1080,6 +1080,10 @@
     ./arctic/libc/unistd/sleep.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/sleep.c
 
+./o32/arctic/libc/unistd/symlink.o: \
+    ./arctic/libc/unistd/symlink.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/symlink.c
+
 ./o32/arctic/libc/unistd/tcpgrp.o: \
     ./arctic/libc/unistd/tcpgrp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/tcpgrp.c
@@ -3140,6 +3144,10 @@
 ./o64/arctic/libc/unistd/sleep.o: \
     ./arctic/libc/unistd/sleep.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/sleep.c
+
+./o64/arctic/libc/unistd/symlink.o: \
+    ./arctic/libc/unistd/symlink.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/symlink.c
 
 ./o64/arctic/libc/unistd/tcpgrp.o: \
     ./arctic/libc/unistd/tcpgrp.c $(DANCY_DEPS)

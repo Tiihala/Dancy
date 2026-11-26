@@ -71,6 +71,7 @@ int rmdir(const char *path);
 int unlink(const char *path);
 
 ssize_t readlink(const char *path, char *buffer, size_t size);
+int symlink(const char *path1, const char *path2);
 
 int dup(int fd);
 int dup2(int fd, int new_fd);

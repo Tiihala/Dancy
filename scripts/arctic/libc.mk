@@ -270,6 +270,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/unistd/readlink.o \
  ./o32/arctic/libc/unistd/rmdir.o \
  ./o32/arctic/libc/unistd/sleep.o \
+ ./o32/arctic/libc/unistd/symlink.o \
  ./o32/arctic/libc/unistd/tcpgrp.o \
  ./o32/arctic/libc/unistd/truncate.o \
  ./o32/arctic/libc/unistd/ttyname.o \
@@ -571,6 +572,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/unistd/readlink.o \
  ./o64/arctic/libc/unistd/rmdir.o \
  ./o64/arctic/libc/unistd/sleep.o \
+ ./o64/arctic/libc/unistd/symlink.o \
  ./o64/arctic/libc/unistd/tcpgrp.o \
  ./o64/arctic/libc/unistd/truncate.o \
  ./o64/arctic/libc/unistd/ttyname.o \
