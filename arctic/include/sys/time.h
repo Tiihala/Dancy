@@ -25,6 +25,21 @@
 
 __Dancy_Header_Begin
 
+struct itimerval {
+	struct timeval it_interval;
+	struct timeval it_value;
+};
+
+enum __dancy_enum_itimer {
+	ITIMER_REAL,
+	ITIMER_VIRTUAL,
+	ITIMER_PROF
+};
+
+int getitimer(int which, struct itimerval *value);
+int setitimer(int which, const struct itimerval *new_value,
+	struct itimerval *old_value);
+
 int utimes(const char *path, const struct timeval times[2]);
 
 int gettimeofday(struct timeval *t, void *z);
