@@ -1068,6 +1068,10 @@
     ./arctic/libc/unistd/read.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/read.c
 
+./o32/arctic/libc/unistd/readlink.o: \
+    ./arctic/libc/unistd/readlink.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/readlink.c
+
 ./o32/arctic/libc/unistd/rmdir.o: \
     ./arctic/libc/unistd/rmdir.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/rmdir.c
@@ -3124,6 +3128,10 @@
 ./o64/arctic/libc/unistd/read.o: \
     ./arctic/libc/unistd/read.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/read.c
+
+./o64/arctic/libc/unistd/readlink.o: \
+    ./arctic/libc/unistd/readlink.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/readlink.c
 
 ./o64/arctic/libc/unistd/rmdir.o: \
     ./arctic/libc/unistd/rmdir.c $(DANCY_DEPS)

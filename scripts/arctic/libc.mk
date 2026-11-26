@@ -267,6 +267,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/unistd/pathconf.o \
  ./o32/arctic/libc/unistd/pipe.o \
  ./o32/arctic/libc/unistd/read.o \
+ ./o32/arctic/libc/unistd/readlink.o \
  ./o32/arctic/libc/unistd/rmdir.o \
  ./o32/arctic/libc/unistd/sleep.o \
  ./o32/arctic/libc/unistd/tcpgrp.o \
@@ -567,6 +568,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/unistd/pathconf.o \
  ./o64/arctic/libc/unistd/pipe.o \
  ./o64/arctic/libc/unistd/read.o \
+ ./o64/arctic/libc/unistd/readlink.o \
  ./o64/arctic/libc/unistd/rmdir.o \
  ./o64/arctic/libc/unistd/sleep.o \
  ./o64/arctic/libc/unistd/tcpgrp.o \

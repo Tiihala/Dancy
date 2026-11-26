@@ -70,6 +70,8 @@ int chdir(const char *path);
 int rmdir(const char *path);
 int unlink(const char *path);
 
+ssize_t readlink(const char *path, char *buffer, size_t size);
+
 int dup(int fd);
 int dup2(int fd, int new_fd);
 int pipe(int fd[2]);
