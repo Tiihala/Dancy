@@ -41,6 +41,38 @@ long double frexpl(long double x, int *e);
 #define FP_SUBNORMAL (3)
 #define FP_ZERO      (4)
 
+#if defined(__GNUC__)
+
+#define fpclassify(x)         (__builtin_fpclassify(1, 0, 2, 3, 4, (x)))
+#define isfinite(x)           (__builtin_isfinite((x)))
+#define isgreater(x, y)       (__builtin_isgreater((x), (y)))
+#define isgreaterequal(x, y)  (__builtin_isgreaterequal((x), (y)))
+#define isinf(x)              (__builtin_isinf_sign((x)))
+#define isless(x, y)          (__builtin_isless((x), (y)))
+#define islessequal(x, y)     (__builtin_islessequal((x), (y)))
+#define islessgreater(x, y)   (__builtin_islessgreater((x), (y)))
+#define isnan(x)              (__builtin_isnan((x)))
+#define isnormal(x)           (__builtin_isnormal((x)))
+#define isunordered(x, y)     (__builtin_isunordered((x), (y)))
+#define signbit(x)            (__builtin_signbit((x)))
+
+#else
+
+#define fpclassify(x)         (__dancy_debug("Error: fpclassify()\n"), 0)
+#define isfinite(x)           (__dancy_debug("Error: isfinite()\n"), 0)
+#define isgreater(x, y)       (__dancy_debug("Error: isgreater()\n"), 0)
+#define isgreaterequal(x, y)  (__dancy_debug("Error: isgreaterequal()\n"), 0)
+#define isinf(x)              (__dancy_debug("Error: isinf()\n"), 0)
+#define isless(x, y)          (__dancy_debug("Error: isless()\n"), 0)
+#define islessequal(x, y)     (__dancy_debug("Error: islessequal()\n"), 0)
+#define islessgreater(x, y)   (__dancy_debug("Error: islessgreater()\n"), 0)
+#define isnan(x)              (__dancy_debug("Error: isnan()\n"), 0)
+#define isnormal(x)           (__dancy_debug("Error: isnormal()\n"), 0)
+#define isunordered(x, y)     (__dancy_debug("Error: isunordered()\n"), 0)
+#define signbit(x)            (__dancy_debug("Error: signbit()\n"), 0)
+
+#endif
+
 double acos(double x);
 float acosf(float x);
 double acosh(double x);
