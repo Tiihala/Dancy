@@ -256,6 +256,10 @@
     ./arctic/libc/locale/set.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/locale/set.c
 
+./o32/arctic/libc/math/ceil.o: \
+    ./arctic/libc/math/ceil.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/math/ceil.c
+
 ./o32/arctic/libc/math/floor.o: \
     ./arctic/libc/math/floor.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/math/floor.c
@@ -2336,6 +2340,10 @@
 ./o64/arctic/libc/locale/set.o: \
     ./arctic/libc/locale/set.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/locale/set.c
+
+./o64/arctic/libc/math/ceil.o: \
+    ./arctic/libc/math/ceil.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/math/ceil.c
 
 ./o64/arctic/libc/math/floor.o: \
     ./arctic/libc/math/floor.c $(DANCY_DEPS)

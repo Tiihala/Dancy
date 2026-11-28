@@ -64,6 +64,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/libgen/dirname.o \
  ./o32/arctic/libc/locale/conv.o \
  ./o32/arctic/libc/locale/set.o \
+ ./o32/arctic/libc/math/ceil.o \
  ./o32/arctic/libc/math/floor.o \
  ./o32/arctic/libc/math/ldexp.o \
  ./o32/arctic/libc/math/pow.o \
@@ -370,6 +371,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/libgen/dirname.o \
  ./o64/arctic/libc/locale/conv.o \
  ./o64/arctic/libc/locale/set.o \
+ ./o64/arctic/libc/math/ceil.o \
  ./o64/arctic/libc/math/floor.o \
  ./o64/arctic/libc/math/ldexp.o \
  ./o64/arctic/libc/math/pow.o \
