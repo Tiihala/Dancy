@@ -268,6 +268,10 @@
     ./arctic/libc/math/ldexp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/math/ldexp.c
 
+./o32/arctic/libc/math/log10.o: \
+    ./arctic/libc/math/log10.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/math/log10.c
+
 ./o32/arctic/libc/math/pow.o: \
     ./arctic/libc/math/pow.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/math/pow.c
@@ -2352,6 +2356,10 @@
 ./o64/arctic/libc/math/ldexp.o: \
     ./arctic/libc/math/ldexp.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/math/ldexp.c
+
+./o64/arctic/libc/math/log10.o: \
+    ./arctic/libc/math/log10.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/math/log10.c
 
 ./o64/arctic/libc/math/pow.o: \
     ./arctic/libc/math/pow.c $(DANCY_DEPS)
