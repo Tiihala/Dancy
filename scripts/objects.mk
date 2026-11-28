@@ -1020,6 +1020,10 @@
     ./arctic/libc/unistd/getcwd.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/getcwd.c
 
+./o32/arctic/libc/unistd/getgid.o: \
+    ./arctic/libc/unistd/getgid.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/getgid.c
+
 ./o32/arctic/libc/unistd/getpage.o: \
     ./arctic/libc/unistd/getpage.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/getpage.c
@@ -3088,6 +3092,10 @@
 ./o64/arctic/libc/unistd/getcwd.o: \
     ./arctic/libc/unistd/getcwd.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/getcwd.c
+
+./o64/arctic/libc/unistd/getgid.o: \
+    ./arctic/libc/unistd/getgid.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/getgid.c
 
 ./o64/arctic/libc/unistd/getpage.o: \
     ./arctic/libc/unistd/getpage.c $(DANCY_DEPS)
