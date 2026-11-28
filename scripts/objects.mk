@@ -264,6 +264,10 @@
     ./arctic/libc/math/ldexp.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/math/ldexp.c
 
+./o32/arctic/libc/math/pow.o: \
+    ./arctic/libc/math/pow.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/math/pow.c
+
 ./o32/arctic/libc/misc/__assert.o: \
     ./arctic/libc/misc/__assert.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/misc/__assert.c
@@ -2340,6 +2344,10 @@
 ./o64/arctic/libc/math/ldexp.o: \
     ./arctic/libc/math/ldexp.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/math/ldexp.c
+
+./o64/arctic/libc/math/pow.o: \
+    ./arctic/libc/math/pow.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/math/pow.c
 
 ./o64/arctic/libc/misc/__assert.o: \
     ./arctic/libc/misc/__assert.c $(DANCY_DEPS)
