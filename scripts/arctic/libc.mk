@@ -261,6 +261,7 @@ ARCTIC_LIBC_OBJECTS_32= \
  ./o32/arctic/libc/unistd/getpid.o \
  ./o32/arctic/libc/unistd/getppid.o \
  ./o32/arctic/libc/unistd/getsid.o \
+ ./o32/arctic/libc/unistd/getuid.o \
  ./o32/arctic/libc/unistd/hostname.o \
  ./o32/arctic/libc/unistd/isatty.o \
  ./o32/arctic/libc/unistd/lseek.o \
@@ -563,6 +564,7 @@ ARCTIC_LIBC_OBJECTS_64= \
  ./o64/arctic/libc/unistd/getpid.o \
  ./o64/arctic/libc/unistd/getppid.o \
  ./o64/arctic/libc/unistd/getsid.o \
+ ./o64/arctic/libc/unistd/getuid.o \
  ./o64/arctic/libc/unistd/hostname.o \
  ./o64/arctic/libc/unistd/isatty.o \
  ./o64/arctic/libc/unistd/lseek.o \

@@ -1044,6 +1044,10 @@
     ./arctic/libc/unistd/getsid.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/getsid.c
 
+./o32/arctic/libc/unistd/getuid.o: \
+    ./arctic/libc/unistd/getuid.c $(DANCY_DEPS)
+	$(ARCTIC_O32)$@ ./arctic/libc/unistd/getuid.c
+
 ./o32/arctic/libc/unistd/hostname.o: \
     ./arctic/libc/unistd/hostname.c $(DANCY_DEPS)
 	$(ARCTIC_O32)$@ ./arctic/libc/unistd/hostname.c
@@ -3108,6 +3112,10 @@
 ./o64/arctic/libc/unistd/getsid.o: \
     ./arctic/libc/unistd/getsid.c $(DANCY_DEPS)
 	$(ARCTIC_O64)$@ ./arctic/libc/unistd/getsid.c
+
+./o64/arctic/libc/unistd/getuid.o: \
+    ./arctic/libc/unistd/getuid.c $(DANCY_DEPS)
+	$(ARCTIC_O64)$@ ./arctic/libc/unistd/getuid.c
 
 ./o64/arctic/libc/unistd/hostname.o: \
     ./arctic/libc/unistd/hostname.c $(DANCY_DEPS)
